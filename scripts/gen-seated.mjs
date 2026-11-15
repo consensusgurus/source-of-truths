@@ -31,6 +31,7 @@ import fs from 'fs';
 import { ruleState, solutions, ringKey, partKey } from '../lib/seated-engine.js';
 import { SPEC, NOTES } from './gen-seated-spec.mjs';
 import { MONTHS } from './six-verify-common.mjs';
+import { dress } from './seated-words.mjs';
 
 const FILE = new URL('../app/seated/puzzles.js', import.meta.url);
 const START = '2026-11-14';
@@ -42,9 +43,10 @@ export const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i
 export const rng = (a) => () => { a |= 0; a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 
 // THE GUESTS ARE SUDOCLUE'S CAST (owner, 2026-11-15: "let's re use the names we have from sudoclue ... and use
-// the same images"): a first name of seven letters at most from lib/sudoclue-art.js, which the client draws
-// with that game's portrait. Boards 1 and 2 went live the day before with their own family names (Grandma
-// Rose, Uncle Bill ...) and are kept as they are; the client draws those guests as a coloured disc with an initial.
+// the same images"; then "it needs to use only names from sudoclue"): a first name of seven letters at most
+// from lib/sudoclue-art.js, which the client draws with that game's portrait. EVERY board, the two launch
+// boards included (renamed 2026-11-15; their rules and answers are unchanged). Each guest also carries a
+// title for the evening and some are tied to each other (scripts/seated-words.mjs).
 import { CAST } from '../lib/sudoclue-art.js';
 export const GUESTS = Object.keys(CAST).filter((k) => !CAST[k].cat && k.length <= 7);
 // The reason printed before the tag ("Different tables." and so on, lib/seated-engine.js TAG).
@@ -184,6 +186,7 @@ while (iso(day) <= UNTIL) {
   const row = { num: rows.length + 1, quizId: `seated-${m}-${dd}-${String(y).slice(2)}`, live, dateLabel: `${MONTHS[m - 1]} ${dd}, ${y}` };
   if (dow === 0) row.sunday = true;
   Object.assign(row, { band: intro ? 'intro' : spec[0], event: spec[1], ...got });
+  dress(row); // the titles (Uncle, Aunt, Cousin, Boss ...), the ties between guests, and every request's words
   const n = {}; got.rules.forEach((r) => { n[r.t] = (n[r.t] || 0) + 1; });
   console.log(`${live} ${row.band.padEnd(8)} ${spec[1].padEnd(18)} ${String(got.guests.length).padStart(2)} guests ${String(got.rules.length).padStart(2)} requests  ${Object.entries(n).map(([k, v]) => `${k} ${v}`).join(', ')}  (deal ${salt})`);
   rows.push(row); save(rows);

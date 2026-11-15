@@ -23,6 +23,7 @@
 // where they sit, then the full-screen fill opens with the ladder climb.
 
 import React, { useState } from 'react';
+import { COLS_CSS } from '@/lib/practical-cols';
 import SimpleDaily from '../SimpleDaily';
 import { endSolved } from '@/lib/end-verdict';
 import { wt, why, holds, anyMove, rankOf } from '@/lib/bag-engine';
@@ -62,7 +63,7 @@ const pills = (it) => {
 const say = (it) => `${it.n}, ${it.w} pounds, ${it.c === 0 ? 'takes nothing on top' : it.c > 20 ? 'takes anything on top' : `takes ${it.c} pounds on top`}${flagOf(it) ? `, ${FLAG[flagOf(it)][2].toLowerCase()}` : ''}`;
 
 const CSS = `
-.bag{align-self:center;width:100%;max-width:560px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--bg-ink);line-height:1.4;
+.bag{align-self:center;width:100%;max-width:1040px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--bg-ink);line-height:1.4;
 --bg-bg:#ffffff;--bg-ink:#141414;--bg-mute:#6b6b6b;--bg-grey:#f1f1ef;--bg-grey2:#e3e3df;--bg-ok:#bfe6c8;--bg-bad:#f3b0b0;--bg-sat:62%;--bg-lit:84%;--bg-acc:var(--pst-acc,#fecdd3);--bg-on:var(--pst-on-acc,#141414);}
 .stage-page[data-stage-theme='dark'] .bag,.pst.dk .bag{--bg-bg:#161616;--bg-ink:#f2f2ee;--bg-mute:#a3a39d;--bg-grey:#232323;--bg-grey2:#333333;--bg-ok:#3f7a52;--bg-bad:#9c5050;--bg-sat:40%;--bg-lit:66%;}
 .bag button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;margin:0;}
@@ -210,7 +211,8 @@ function Board({ P, s, setS, active, done, held, release }) {
 
   return (
     <div className="bag">
-      <style dangerouslySetInnerHTML={html(CSS)} />
+      <style dangerouslySetInnerHTML={html(CSS + COLS_CSS)} />
+      <div className="pz-wrap"><div className="pz-cols"><div className="pz-main">
       <div className="bg-stat" aria-label="The shop so far">
         <div><b>{N - s.belt.length}/{N}</b><span>Bagged</span></div>
         <div><b>{s.rb}</b><span>Re-bags</span></div>
@@ -242,20 +244,7 @@ function Board({ P, s, setS, active, done, held, release }) {
             </div>);
         })}
       </div>
-
-      {won && !held ? (
-        <>
-          <div className="bg-card">
-            <div className="bg-cardh">Bagging Ladder</div>
-            {rank.rows.map((r, i) => <div key={r.name} className={`bg-row${i === rank.at ? ' me' : ''}`}><b>{r.name}</b><span>{i === rank.at ? 'You · ' : ''}{r.label}</span></div>)}
-          </div>
-          <div className="bg-card">
-            <div className="bg-cardh">The Shop</div>
-            <div className="bg-row"><b>Re-bags</b><span>{s.rb}</span></div>
-            <div className="bg-row"><b>Items</b><span>{N} in {B} bags</span></div>
-          </div>
-        </>
-      ) : (
+      {won && !held ? null : (
         <>
           {done ? null : <div className="bg-msg" aria-live="polite">{live ? note || (s.mv || s.rb ? '' : `Tap one of the ${NUM[P.reach]} items in reach, then a bag.`) : ''}</div>}
           {s.belt.length ? (
@@ -272,6 +261,24 @@ function Board({ P, s, setS, active, done, held, release }) {
               </div>
             </>
           ) : null}
+        </>
+      )}
+      </div>
+      <div className="pz-side">
+      {won && !held ? (
+        <>
+          <div className="bg-card">
+            <div className="bg-cardh">Bagging Ladder</div>
+            {rank.rows.map((r, i) => <div key={r.name} className={`bg-row${i === rank.at ? ' me' : ''}`}><b>{r.name}</b><span>{i === rank.at ? 'You · ' : ''}{r.label}</span></div>)}
+          </div>
+          <div className="bg-card">
+            <div className="bg-cardh">The Shop</div>
+            <div className="bg-row"><b>Re-bags</b><span>{s.rb}</span></div>
+            <div className="bg-row"><b>Items</b><span>{N} in {B} bags</span></div>
+          </div>
+        </>
+      ) : (
+        <>
           <div className="bg-card">
             <div className="bg-cardh">How to Read an Item</div>
             <div className="bg-key"><span dangerouslySetInnerHTML={html(`<span class="bg-pl">${SCALE}3</span>`)} /><span>Its weight in pounds. The bar on a bag fills as you load it.</span></div>
@@ -284,6 +291,7 @@ function Board({ P, s, setS, active, done, held, release }) {
           {done ? null : <button type="button" className="bg-btn" onClick={empty} disabled={!live || s.belt.length === N}>Empty the Bags</button>}
         </>
       )}
+      </div></div></div>
 
       {finale ? (
         <div className="bg-fin" style={{ animationDelay: `${openAt(N)}ms` }} onClick={release} role="status" aria-label={`${rank.rows[rank.at].name}. ${rb(s.rb)}.`}>
@@ -319,7 +327,7 @@ const GAME = {
   result: (P, s, won) => ({ score: won ? 10 : 0, total: 10, correct: won ? 1 : 0, guessesUsed: s.rb }),
   metric: (P, s, won) => (won ? s.rb : null),
   Board,
-  wide: false,
+  wide: true,
   holdMs: (P, s, won) => { if (!won) return 1200; const r = rankOf(P, s.rb), n = P.items.length; return climbAt(n) + (RUNG_H - 1 - r.at) * STEP + 250 + 1500; },
   title: (P, s, won) => (won ? rankName(P, s) : endSolved(false)),
   eyebrow: (P, s, { sundayLabel }) => `${sundayLabel || `${BAND[P.band]} · ${P.shop}`} · No. ${P.num}`,

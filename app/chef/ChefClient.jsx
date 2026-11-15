@@ -21,6 +21,7 @@
 // as a tray.
 
 import React, { useState } from 'react';
+import { COLS_CSS } from '@/lib/practical-cols';
 import SimpleDaily from '../SimpleDaily';
 import { endSolved } from '@/lib/end-verdict';
 import { STATIONS, STATION_NAME, MENU, HOLD, SIT_WEIGHT, dishList, newState, cloneState, isOpen, canStart, start, unstart, hasTray, plate, tick, isDone, penalty, sitNow, waitNow, rankOf } from '@/lib/chef-engine';
@@ -32,11 +33,14 @@ const html = (s) => ({ __html: s });
 const STEP = 150, OPEN = 900, CLIMB = 1350;
 
 const CSS = `
-.chef{align-self:center;width:100%;max-width:560px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--ck-ink);line-height:1.35;
+.chef{align-self:center;width:100%;max-width:1040px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--ck-ink);line-height:1.35;
 ${CHEF_LIGHT}}
 .stage-page[data-stage-theme='dark'] .chef{${CHEF_DARK}}
 .chef button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;margin:0;}
 ${CHEF_ART_CSS}
+${COLS_CSS}
+.ck-bar{order:9;}
+@container pz (min-width:820px){.ck-tix{grid-template-columns:repeat(2,1fr) !important;}.ck-bar{position:static;padding-top:2px;}}
 .ck-on{--ck-ln:#141414;color:#141414;}
 .ck-stat{display:flex;border:1px solid var(--ck-ink);border-radius:10px;overflow:hidden;background:var(--ck-bg);}
 .ck-stat div{flex:1;padding:6px 4px;text-align:center;border-left:1px solid var(--ck-ink);}
@@ -166,6 +170,7 @@ function Board({ P, s, setS, active, done, held, release }) {
   return (
     <div className="chef">
       <style dangerouslySetInnerHTML={html(CSS)} />
+      <div className="pz-wrap"><div className="pz-cols"><div className="pz-main">
       <div className="ck-stat" aria-label="Service so far">
         <div><b>{s.m}</b><span>Minute</span></div>
         <div><b>{waitNow(P, s)}</b><span>Table Wait</span></div>
@@ -216,6 +221,14 @@ function Board({ P, s, setS, active, done, held, release }) {
         </div>
         <div className="ck-floor" />
       </div>
+      {done ? null : (
+        <div className="ck-bar">
+          <div className="ck-msg" aria-live="polite">{live ? note : ''}</div>
+          <button type="button" className="ck-next" onClick={next} disabled={!live}>Next Minute</button>
+        </div>
+      )}
+      </div>
+      <div className="pz-side">
 
       {won && !held ? (
         <>
@@ -256,12 +269,7 @@ function Board({ P, s, setS, active, done, held, release }) {
           </div>
         </>
       )}
-      {done ? null : (
-        <div className="ck-bar">
-          <div className="ck-msg" aria-live="polite">{live ? note : ''}</div>
-          <button type="button" className="ck-next" onClick={next} disabled={!live}>Next Minute</button>
-        </div>
-      )}
+      </div></div></div>
 
       {finale ? (
         <div className="ck-fin" onClick={release} role="status" aria-label={`${rank.rows[rank.at].name}. ${pts(penalty(s))}.`}>
@@ -292,7 +300,7 @@ const GAME = {
   result: (P, s, won) => ({ score: won ? 10 : 0, total: 10, correct: won ? 1 : 0, guessesUsed: penalty(s) }),
   metric: (P, s, won) => (won ? penalty(s) : null),
   Board,
-  wide: false,
+  wide: true,
   holdMs: (P, s, won) => { if (!won) return 1200; const r = rankOf(P, penalty(s)); return CLIMB + (r.rows.length - 1 - r.at) * STEP + 250 + 1500; },
   title: (P, s, won) => (won ? rankName(P, s) : endSolved(false)),
   eyebrow: (P, s, { sundayLabel }) => `${sundayLabel || `${BAND[P.band]} · ${P.service}`} · No. ${P.num}`,

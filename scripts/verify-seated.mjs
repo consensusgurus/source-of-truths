@@ -31,8 +31,10 @@ for (const p of PUZZLES) {
   const short = new Set();
   for (const g of p.guests) {
     if (!g.n || g.n.length > 7) bad(p.num, `the chair name ${g.n} is longer than seven letters`);
-    // from board 3 on every guest is one of Sudoclue's cast, so the client has a portrait to draw
-    if (p.num > 2 && (!GUESTS.includes(g.n) || g.full !== g.n)) bad(p.num, `${g.n} is not one of Sudoclue's cast`);
+    // every guest is one of Sudoclue's cast, so the client has a portrait to draw (owner, 2026-11-15: "only
+    // names from sudoclue"), with a title for the evening in front (Uncle, Aunt, Boss ...: scripts/seated-words.mjs)
+    if (!GUESTS.includes(g.n)) bad(p.num, `${g.n} is not one of Sudoclue's cast`);
+    if (!/^[A-Z][A-Za-z-]*( [a-zA-Z]+)* [A-Z]/.test(g.full) || !g.full.endsWith(` ${g.n}`)) bad(p.num, `${g.full} is not a title and then ${g.n}`);
     if (!g.full.includes(g.n)) bad(p.num, `${g.full} does not contain the chair name ${g.n}`);
     if (short.has(g.n)) bad(p.num, `two guests are called ${g.n}`); short.add(g.n);
     if (!Number.isInteger(g.hue) || g.hue < 0 || g.hue >= 360) bad(p.num, `${g.n} has no colour`);

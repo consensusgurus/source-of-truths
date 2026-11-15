@@ -19,11 +19,15 @@
 // the ladder climb, the same shape as Chef's and Pack's.
 
 import React, { useState } from 'react';
+import { COLS_CSS } from '@/lib/practical-cols';
 import SimpleDaily from '../SimpleDaily';
 import { endSolved } from '@/lib/end-verdict';
 import { seatOf, ruleState, seatedCount, tagOf, rankOf } from '@/lib/seated-engine';
 // the guests are Sudoclue's cast, with the same drawn portraits (owner, 2026-11-15: "re use the names we have
-// from sudoclue ... and use the same images ... people images")
+// from sudoclue ... and use the same images ... people images"; then "it needs to use only names from sudoclue
+// ... they all need image icons like sudoclue has"): every guest, on every board, has a face on the chair, on
+// the Still Standing chip and beside each request that names them. Their titles and ties (Uncle, Aunt, married,
+// brothers) are in the words, scripts/seated-words.mjs.
 import { CAST, portrait } from '@/lib/sudoclue-art';
 
 const BAND = { intro: 'Intro', gentle: 'Gentle', moderate: 'Moderate', tough: 'Tough', sunday: 'Sunday Edition' };
@@ -41,7 +45,7 @@ const roomLine = (P) => {
 const GLASS = '<svg class="st-ico" viewBox="0 0 120 48" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M38 6l14 3-3 13a7.5 7.5 0 01-14.6-3.2zM41 29.5l-3 12M31 39l14 3.2"/><path d="M82 6L68 9l3 13a7.5 7.5 0 0014.6-3.2zM79 29.5l3 12M89 39l-14 3.2"/><path d="M60 2v5M53 4l2 4M67 4l-2 4"/></svg>';
 
 const CSS = `
-.seated{align-self:center;width:100%;max-width:560px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--st-ink);line-height:1.4;
+.seated{align-self:center;width:100%;max-width:1040px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--st-ink);line-height:1.4;
 --st-bg:#ffffff;--st-ink:#141414;--st-mute:#6b6b6b;--st-grey:#f1f1ef;--st-grey2:#e3e3df;--st-ok:#bfe6c8;--st-bad:#f3b0b0;--st-sat:64%;--st-lit:83%;--st-acc:var(--pst-acc,#fecdd3);--st-on:var(--pst-on-acc,#141414);}
 .stage-page[data-stage-theme='dark'] .seated,.pst.dk .seated{--st-bg:#161616;--st-ink:#f2f2ee;--st-mute:#a3a39d;--st-grey:#232323;--st-grey2:#333333;--st-ok:#3f7a52;--st-bad:#9c5050;--st-sat:42%;--st-lit:66%;}
 .seated button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;margin:0;}
@@ -86,6 +90,8 @@ const CSS = `
 .st-req i{font-style:normal;flex:none;width:22px;height:22px;border-radius:999px;border:1px solid var(--st-ink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;line-height:1;margin-top:1px;}
 .st-req.ok i{background:var(--st-ok);}.st-req.bad i{background:var(--st-bad);}
 .st-req b{font-weight:800;}
+.st-req>div{flex:1;min-width:0;}
+.st-who{display:flex;flex:none;margin-top:-1px;}.st-who .st-pt{width:26px;height:26px;}.st-who .st-pt+.st-pt{margin-left:-9px;}.st-pt svg{width:100%;height:100%;display:block;}
 .st-req.mine{background:var(--st-grey);}
 .seated button.st-btn{border:1px solid var(--st-ink);border-radius:10px;padding:9px 4px;font-weight:800;font-size:14px;background:var(--st-bg);text-align:center;line-height:1.3;width:100%;}
 .seated button.st-btn:disabled{opacity:.45;cursor:default;}
@@ -244,7 +250,8 @@ function Board({ P, s, setS, active, done, held, release }) {
 
   return (
     <div className="seated">
-      <style dangerouslySetInnerHTML={html(CSS)} />
+      <style dangerouslySetInnerHTML={html(CSS + COLS_CSS)} />
+      <div className="pz-wrap"><div className="pz-cols"><div className="pz-main">
       <div className="st-stat" aria-label="The room so far">
         <div><b>{placed}/{N}</b><span>Seated</span></div>
         <div><b>{met}/{P.rules.length}</b><span>Requests Met</span></div>
@@ -255,6 +262,8 @@ function Board({ P, s, setS, active, done, held, release }) {
         <div><b>{P.event}</b><span>{roomLine(P)} · {P.rules.length} requests</span></div>
       </div>
       <div className="st-board">{svg}</div>
+      </div>
+      <div className="pz-side">
 
       {won && !held ? (
         <>
@@ -287,6 +296,8 @@ function Board({ P, s, setS, active, done, held, release }) {
             {P.rules.map((r, i) => (
               <div key={i} className={`st-req${st[i] === 'open' ? '' : ` ${st[i]}`}${live && sel != null && (r.a === sel || r.b === sel) ? ' mine' : ''}`}>
                 <i aria-hidden="true">{st[i] === 'ok' ? '✓' : st[i] === 'bad' ? '✕' : ''}</i>
+                <span className="st-who" aria-hidden="true">{[r.a, r.b].filter((g) => g != null && CAST[P.guests[g].n]).map((g) => (
+                  <span key={g} className="st-pt"><svg viewBox="0 0 100 100" width="24" height="24" dangerouslySetInnerHTML={html(portrait(P.guests[g].n))} /></span>))}</span>
                 <div>{r.why} <b>{tagOf(P, r)}</b></div>
               </div>
             ))}
@@ -294,6 +305,7 @@ function Board({ P, s, setS, active, done, held, release }) {
           {done ? null : <button type="button" className="st-btn" onClick={clear} disabled={!live || !placed}>Clear the Tables</button>}
         </>
       )}
+      </div></div></div>
 
       {finale ? (
         <div className="st-fin" style={{ animationDelay: `${openAt(N)}ms` }} onClick={release} role="status" aria-label={`${rank.rows[rank.at].name}. ${rs(s.rs)}.`}>
@@ -330,7 +342,7 @@ const GAME = {
   result: (P, s, won) => ({ score: won ? 10 : 0, total: 10, correct: won ? 1 : 0, guessesUsed: s.rs }),
   metric: (P, s, won) => (won ? s.rs : null),
   Board,
-  wide: false,
+  wide: true,
   holdMs: (P, s, won) => { if (!won) return 1200; const r = rankOf(P, s.rs), n = P.guests.length; return climbAt(n) + (RUNG_H - 1 - r.at) * STEP + 250 + 1500; },
   title: (P, s, won) => (won ? rankName(P, s) : endSolved(false)),
   eyebrow: (P, s, { sundayLabel }) => `${sundayLabel || `${BAND[P.band]} · ${P.event}`} · No. ${P.num}`,

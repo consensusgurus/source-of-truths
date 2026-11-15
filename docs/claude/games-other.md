@@ -2932,3 +2932,32 @@ pushing does not catch a duplicate declaration. Two rules from it:
   each add a line to `PREMIERES` before they reach an anchor that no longer exists, and stop half way. They are
   records of what was done, not tools to run twice.
 
+
+## The practical puzzles spread out on a wide screen; Seated is all Sudoclue's cast (owner, 2026-11-15)
+
+Owner: "many of these new puzzles should use wider screen space better ... puzzle area and clues should
+adjust dynamically. here the tickets can fit on the right side on wider screen."
+
+- `lib/practical-cols.js` (`COLS_CSS`): a game wraps its play area in `.pz-main` and its clues in `.pz-side`,
+  inside `.pz-cols` inside `.pz-wrap`. Narrow, the wrappers are `display:contents` and everything stacks in
+  one 560px column exactly as before. When the space the stage gives the game is 820px or more (a CONTAINER
+  query on `.pz-wrap`, so it follows the full-screen stage, the stage with the site navigation open, or a run
+  embed) the clues take a 300-360px column on the right. The game sets `wide: true` so the stage column grows
+  on a desktop. `.pz-wrap` must never wrap the full-screen finale (a size container is a containing block for
+  `position:fixed`).
+- Using it: Chef (kitchen and Next Minute left, Ticket Rail right in two columns; the bar carries `order:9`
+  so it still rides the bottom on a phone), Seated (room left; message, Still Standing, Requests right),
+  Errands (map and buttons left; Rules and Timetable right), Bag (bags and belt left; the key right), Pack
+  (the load and its controls left; To Load right). New practical puzzles with a clue list should use it too.
+- Seated: "it needs to use only names from sudoclue ... still create relationships between them like husband
+  wife, uncles, parents, friends ... they all need image icons like sudoclue has." Every guest on every board
+  (the two launch boards renamed, rules and answers untouched) is from `lib/sudoclue-art.js` CAST, with a
+  face on the chair, on the Still Standing chip and beside each request that names them. `scripts/seated-words.mjs`
+  `dress(row)` gives each guest a title for the room (Uncle, Aunt, Cousin, Nana, Godfather at family tables;
+  Bridesmaid, Best Man at weddings; Boss, Intern, Client at the office; Classmate, Prom Queen at the reunion;
+  Donor, Trustee at the gala) and ties some of them: married couples (Aunt and Uncle, Grandma and Grandpa, Mom
+  and Dad), a parent and child (Aunt or Uncle, and Cousin), siblings who share a title, exes, best friends,
+  high school sweethearts at the reunion. Only `full` and `why` change, never the guests' order, the rules or
+  `sol`. `WOMEN` there lists the cast drawn as women; add a new woman to the cast there too. gen-seated calls
+  `dress` on every new day; verify-seated checks every guest is in the cast and every `full` is a title and
+  then the name.

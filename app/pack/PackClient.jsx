@@ -19,6 +19,8 @@
 // opens the full-screen fill with the ladder climb, the same shape as Chef's.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { COLS_CSS } from '@/lib/practical-cols';
+const PK_WIDE = '@container pz (min-width:820px){.pk-tray{grid-template-columns:repeat(2,1fr) !important;}}';
 import SimpleDaily from '../SimpleDaily';
 import { endSolved } from '@/lib/end-verdict';
 import { useStageTheme } from '@/lib/stage-theme';
@@ -47,7 +49,7 @@ const vehSvg = (name, hub) => {
 };
 
 const CSS = `
-.pack{align-self:center;width:100%;max-width:560px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--pk-ink);line-height:1.4;
+.pack{align-self:center;width:100%;max-width:1040px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--pk-ink);line-height:1.4;
 --pk-bg:#ffffff;--pk-ink:#141414;--pk-mute:#6b6b6b;--pk-grey:#f1f1ef;--pk-grey2:#e3e3df;--pk-grid:#dcdad4;--pk-wa:#f1f1ef;--pk-wb:#e7e7e3;--pk-bad:#f0a8a8;--pk-acc:var(--pst-acc,#f3c4f5);--pk-on:var(--pst-on-acc,#141414);--pk-dk:0;}
 .stage-page[data-stage-theme='dark'] .pack,.pst.dk .pack{--pk-dk:1;--pk-bg:#161616;--pk-ink:#f2f2ee;--pk-mute:#a3a39d;--pk-grey:#232323;--pk-grey2:#333333;--pk-grid:#3a3936;--pk-wa:#222220;--pk-wb:#1b1b19;--pk-bad:#b56a6a;}
 .pack button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;margin:0;}
@@ -278,7 +280,8 @@ function Board({ P, s, setS, active, done, held, release }) {
 
   return (
     <div className="pack">
-      <style dangerouslySetInnerHTML={html(CSS)} />
+      <style dangerouslySetInnerHTML={html(CSS + COLS_CSS + PK_WIDE)} />
+      <div className="pz-wrap"><div className="pz-cols"><div className="pz-main">
       <div className="pk-stat" aria-label="The load so far">
         <div><b>{s.placed.length}/{N}</b><span>Loaded</span></div>
         <div><b>{s.rp}</b><span>Re-packs</span></div>
@@ -303,7 +306,8 @@ function Board({ P, s, setS, active, done, held, release }) {
           </div>
         </div>
       )}
-
+      </div>
+      <div className="pz-side">
       {won && !held ? (
         <>
           <div className="pk-card">
@@ -338,6 +342,7 @@ function Board({ P, s, setS, active, done, held, release }) {
           )}
         </>
       )}
+      </div></div></div>
 
       {finale && !EMBED ? (
         <div className="pk-fin" style={{ animationDelay: `${openAt(N)}ms` }} onClick={release} role="status" aria-label={`${rank.rows[rank.at].name}. ${rp(s.rp)}.`}>
@@ -371,7 +376,7 @@ const GAME = {
   result: (P, s, won) => ({ score: won ? 10 : 0, total: 10, correct: won ? 1 : 0, guessesUsed: s.rp }),
   metric: (P, s, won) => (won ? s.rp : null),
   Board,
-  wide: false,
+  wide: true,
   holdMs: (P, s, won) => { if (!won) return 1200; const r = rankOf(P, s.rp), n = P.items.length; return climbAt(n) + (RUNG_H - 1 - r.at) * STEP + 250 + 1500; },
   title: (P, s, won) => (won ? rankName(P, s) : endSolved(false)),
   eyebrow: (P, s, { sundayLabel }) => `${sundayLabel || `${BAND[P.band]} · ${P.vehicle}`} · No. ${P.num}`,

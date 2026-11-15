@@ -19,6 +19,7 @@
 // they were driven, then the full-screen fill opens with the ladder climb.
 
 import React, { useState } from 'react';
+import { COLS_CSS } from '@/lib/practical-cols';
 import SimpleDaily from '../SimpleDaily';
 import { endSolved } from '@/lib/end-verdict';
 import { walk, ruleState, pathBetween, clock, rankOf } from '@/lib/errands-engine';
@@ -50,7 +51,7 @@ const pic = (k, x, y, size) => `<g transform="translate(${x - size / 2} ${y - si
 const CAR = '<svg class="er-ico" viewBox="0 0 120 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M22 34h-8v-9l8-3 8-10h30l12 10 20 4v8h-8"/><path d="M34 34h36"/><circle cx="28" cy="34" r="6"/><circle cx="78" cy="34" r="6"/><path d="M33 22h36L60 14H40z"/><path d="M50 14v8"/><path d="M98 12h10M102 18h10M96 24h8"/></svg>';
 
 const CSS = `
-.errands{align-self:center;width:100%;max-width:560px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--er-ink);line-height:1.4;
+.errands{align-self:center;width:100%;max-width:1040px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--er-ink);line-height:1.4;
 --er-bg:#ffffff;--er-ink:#141414;--er-mute:#6b6b6b;--er-grey:#f1f1ef;--er-grey2:#e3e3df;--er-road:#dcdcd6;--er-block:#eef4ea;--er-ok:#bfe6c8;--er-bad:#f3b0b0;--er-sat:62%;--er-lit:84%;--er-acc:var(--pst-acc,#fecdd3);--er-on:var(--pst-on-acc,#141414);}
 .stage-page[data-stage-theme='dark'] .errands,.pst.dk .errands{--er-bg:#161616;--er-ink:#f2f2ee;--er-mute:#a3a39d;--er-grey:#232323;--er-grey2:#333333;--er-road:#3d3d3a;--er-block:#1d241d;--er-ok:#3f7a52;--er-bad:#9c5050;--er-sat:40%;--er-lit:66%;}
 .errands button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;margin:0;}
@@ -173,7 +174,8 @@ function Board({ P, s, setS, active, done, held, release }) {
 
   return (
     <div className="errands">
-      <style dangerouslySetInnerHTML={html(CSS)} />
+      <style dangerouslySetInnerHTML={html(CSS + COLS_CSS)} />
+      <div className="pz-wrap"><div className="pz-cols"><div className="pz-main">
       <div className="er-stat" aria-label="The trip so far">
         <div><b>{s.route.length}/{N}</b><span>Stops</span></div>
         <div><b>{w.blocks - (full || s.home ? 0 : w.homeBlocks)}</b><span>Blocks Driven</span></div>
@@ -205,7 +207,20 @@ function Board({ P, s, setS, active, done, held, release }) {
           })}
         </svg>
       </div>
-
+      {won && !held ? null : (
+        <>
+          {done ? null : <div className="er-msg" aria-live="polite">{live ? note || (s.route.length ? '' : 'Tap the stops in the order you will drive them.') : ''}</div>}
+          {done ? null : (
+            <div className="er-btns">
+              <button type="button" className="er-btn" onClick={undo} disabled={!live || !s.route.length}>Undo</button>
+              <button type="button" className="er-btn" onClick={reset} disabled={!live || !s.route.length}>Start Over</button>
+              <button type="button" className="er-btn go" data-go="1" onClick={go} disabled={!live || !full || broken > 0}>Drive Home</button>
+            </div>
+          )}
+        </>
+      )}
+      </div>
+      <div className="pz-side">
       {won && !held ? (
         <>
           <div className="er-card">
@@ -221,14 +236,6 @@ function Board({ P, s, setS, active, done, held, release }) {
         </>
       ) : (
         <>
-          {done ? null : <div className="er-msg" aria-live="polite">{live ? note || (s.route.length ? '' : 'Tap the stops in the order you will drive them.') : ''}</div>}
-          {done ? null : (
-            <div className="er-btns">
-              <button type="button" className="er-btn" onClick={undo} disabled={!live || !s.route.length}>Undo</button>
-              <button type="button" className="er-btn" onClick={reset} disabled={!live || !s.route.length}>Start Over</button>
-              <button type="button" className="er-btn go" data-go="1" onClick={go} disabled={!live || !full || broken > 0}>Drive Home</button>
-            </div>
-          )}
           <div className="er-card">
             <div className="er-cardh">The Rules</div>
             {P.rules.map((r, i) => (
@@ -248,6 +255,7 @@ function Board({ P, s, setS, active, done, held, release }) {
           </div>
         </>
       )}
+      </div></div></div>
 
       {finale ? (
         <div className="er-fin" style={{ animationDelay: `${openAt(N)}ms` }} onClick={release} role="status" aria-label={`${rank.rows[rank.at].name}. ${behindLine(behind)}.`}>
@@ -278,7 +286,7 @@ const GAME = {
   result: (P, s, won) => ({ score: won ? 10 : 0, total: 10, correct: won ? 1 : 0, guessesUsed: won ? behindOf(P, s) : 0 }),
   metric: (P, s, won) => (won ? behindOf(P, s) : null),
   Board,
-  wide: false,
+  wide: true,
   holdMs: (P, s, won) => { if (!won) return 1200; const r = rankOf(behindOf(P, s)), n = P.stops.length; return climbAt(n) + (RUNG_H - 1 - r.at) * STEP + 250 + 1500; },
   title: (P, s, won) => (won ? rankName(P, s) : endSolved(false)),
   eyebrow: (P, s, { sundayLabel }) => `${sundayLabel || `${BAND[P.band]} · ${P.day}`} · No. ${P.num}`,
