@@ -15,6 +15,48 @@ export const dynamic = 'force-dynamic';
 
 const TOKEN_RE = /^[\w.-]{1,400}$/;
 const GAME_RE = /^[a-z][a-z0-9-]{1,23}$/;
+const PATH_RE = /^\/[A-Za-z0-9\-_/.]{0,200}$/;
+
+// Which page is being installed. Without this every install made from a page that
+// has no manifest of its own (the kids hub, a kids game, a list, a quiz) opened the
+// HOMEPAGE, because the root manifest's start_url is /?src=pwa and phones launch the
+// manifest's start_url, not the page the player was on (owner, 2026-11-15). Order:
+// the Referer the browser sends on the manifest fetch (the exact page), then the
+// ?path= a section layout passes as a fallback (app/kids/layout.js), then the root.
+function installPath(req, url) {
+  const clean = (p) => {
+    if (!p || !PATH_RE.test(p)) return '';
+    const t = p.length > 1 ? p.replace(/\/+$/, '') : p;
+    if (t.startsWith('/api') || t.startsWith('/_next')) return '';
+    return t || '/';
+  };
+  const ref = req.headers.get('referer') || '';
+  if (ref) {
+    try {
+      const r = new URL(ref);
+      if (r.host === url.host) {
+        const p = clean(r.pathname);
+        if (p) return p;
+      }
+    } catch (e) { /* fall through */ }
+  }
+  return clean(url.searchParams.get('path') || '') || '/';
+}
+
+// The root manifest re-pointed at one page: its own id (so it installs as its own
+// app beside the main one), its own start_url, and the kids look under /kids.
+function pageManifest(base, path) {
+  if (path === '/') return base;
+  const mf = { ...base, id: path, start_url: `${path}?src=pwa` };
+  if (path === '/kids' || path.startsWith('/kids/')) {
+    mf.name = 'Mind Loft Kids';
+    mf.short_name = 'Mind Loft Kids';
+    mf.description = 'Little puzzles, big thinking. Gentle daily puzzles and matching games for kids. Free, no sign-up.';
+    mf.background_color = '#fff6e0';
+    mf.theme_color = '#fff6e0';
+  }
+  return mf;
+}
 
 export async function GET(req) {
   const url = new URL(req.url);
@@ -34,7 +76,7 @@ export async function GET(req) {
     try { token = (await mintHandoff(decodeURIComponent(anonCookie), undefined, PWA_TTL_MS)) || ''; } catch (e) { token = ''; }
   }
   // Diagnostics for Vercel logs; never log the token itself.
-  console.log('[pwa-manifest]', JSON.stringify({ game: game || 'root', cookie: !!anonCookie, minted: !!token }));
+  console.log('[pwa-manifest]', JSON.stringify({ game: game || 'root', path: game ? '' : installPath(req, url), cookie: !!anonCookie, minted: !!token }));
 
   let mf = null;
   if (game) {
@@ -47,7 +89,7 @@ export async function GET(req) {
       return new NextResponse('Not found', { status: 404 });
     }
   } else {
-    mf = rootManifest();
+    mf = pageManifest(rootManifest(), installPath(req, url));
   }
 
   if (token) {

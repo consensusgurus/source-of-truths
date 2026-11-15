@@ -396,6 +396,12 @@ which is what puts the `sot_vid` cookie on the manifest fetch.
   **reloads once** so the app renders signed in (components mounted before the async claim and
   read empty storage). Loop-safe: adoption clears the freshness stamp. The claim route moved from
   edge to node runtime for the supabase client; only the minting middleware must stay edge.
+- **Installs open the page they were made from (2026-11-15).** With no `game` param the route
+  re-points the root manifest at the installing page: the Referer on the manifest fetch, else a
+  `?path=` fallback (`app/kids/layout.js` passes `/kids`), else `/`. That page gets its own `id`
+  and `start_url` (`<path>?src=pwa`); `/kids*` installs are named Mind Loft Kids with the butter
+  theme. `/` keeps id `/` so existing home installs are unchanged. Never set a Referrer-Policy of
+  `no-referrer` site-wide; it would send every install back to the homepage.
 - **Diagnostics in Vercel function logs:** `[pwa-manifest] {game, cookie, minted}` on every
   manifest fetch and `[identity-claim] {valid, account}` on every claim. On the next
   install-signout report these two lines say whether the fetch carried a cookie, whether a token
