@@ -435,6 +435,7 @@ const LAUNCHED = (() => {
   return m;
 })();
 const SORTS_KEPT = new Set(['pop', 'diff', 'new']);
+const NEWEST_ROW = 12;   // how many puzzles the phone home's Newest row holds
 const TOP_WAIT_MS = 1500;   // how long the phone's Top Puzzles row waits for the week's counts
 const TOP_PUZZLES = 25;
 const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'dojocolor', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye'];   // dojocolor beside the Dojo (2026-11-08)
@@ -1710,10 +1711,11 @@ export default function StageToday() {
   // default"; Skills was the default from 2026-10-18). A reader who PICKED
   // Skills keeps it: the pick is remembered per browser and read in a layout
   // effect, so they never see the categories flash first.
+  // SKILLS ARE GONE AS AN INDEX (owner, 2026-11-15, later the same day: "We are
+  // going to dump skills everywhere from the site as an alternative to
+  // categories"). The index is categories for everyone; a stored 'skill' pick is
+  // no longer read and no switch is drawn. The skill panes' code is still here.
   const [ixLens, setIxLens] = useState('cat');
-  useIsoLayoutEffect(() => {
-    try { if (localStorage.getItem(IX_KEY) === 'skill') setIxLens('skill'); } catch (e) { /* storage off */ }
-  }, []);
   // SWITCHING THE LENS WITH A PANE OF THE OTHER LENS OPEN COLLAPSES THE INDEX
   // (owner, 2026-10-19). A category pane has no button in the skill index (and a
   // skill pane none in the categories), so it hung on with its titles and no
@@ -2851,12 +2853,7 @@ export default function StageToday() {
       {/* SKILLS OR CATEGORIES (owner, 2026-10-18): the index groups the dailies
           by the skill they sharpen until the reader picks Categories, and the
           choice is remembered. Reorder belongs to the categories alone. */}
-      {reorder ? null : (
-        <div className="sty-ixsw" role="group" aria-label="Group puzzles by">
-          <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
-          <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
-        </div>
-      )}
+      {/* The Skills / Categories switch was here until 2026-11-15. */}
       {(reorder ? ordNow.map((cat) => ({ cat })) : lensCats).map(({ cat }, ci) => (reorder ? (
         <div key={cat} className={'sty-ixb sty-ixr' + (cat === ALL_ID || cat === MINE_ID ? ' sty-ixrt' : '') + (paneOn === cat ? ' on' : '')}
           style={cat === ALL_ID || cat === MINE_ID ? { '--cc': 'var(--stg-ink)', '--cci': 'var(--stg-ink)' } : { '--cc': hueFor(cat), '--cci': inkFor(cat) }}>
@@ -4485,7 +4482,7 @@ export default function StageToday() {
       {/* THE ENTRY DOOR: first visit then weekly, always dark, replaced the daily arrival. See app/EntryDoor.jsx. */}
       {/* A SKILL TILE OPENS THAT SKILL'S PANE (owner, 2026-10-18), and shows the
           skill index for this visit without changing what the reader stored. */}
-      <EntryDoor onPick={(id) => { if (isSkillId(id) && !runsMq) setIxLens('skill'); goPane(id); }} />
+      <EntryDoor onPick={(id) => goPane(id)} />
       {/* NEW-GAME PREMIERES: once per launch, returning players who have not
           played it, after the arrival has finished. See app/PremierePop.jsx. */}
       <PremierePop />
@@ -4781,7 +4778,7 @@ export default function StageToday() {
                     then the tiles grown to fill the screen, All / My Puzzles in the
                     same grid, and the Categories / Skills switch the last thing on
                     it. Sideways, 3 or 4 tiles across, whatever fits. */}
-                <div className="mph-fold" ref={foldRef}>
+                <div className="mph-fold m2" ref={foldRef}>
                 {/* TOP RUNS, TOP PUZZLES (owner, 2026-11-15, mockup 2B): two rows
                     that flick sideways. Every run, in the order the panes use
                     (unfinished first, then finishes in 24 hours, then players).
@@ -4817,65 +4814,93 @@ export default function StageToday() {
                   }
                   const order = topOrder.current || (topOk && (fav || !topWait) ? rankTop(null) : []);
                   const topPz = order.filter((k) => !done.has(k)).slice(0, TOP_PUZZLES).map((k) => alpha.find((g) => g.key === k)).filter(Boolean);
+                  // M2 (owner, 2026-11-15): the categories are chips that fill their rows,
+                  // then sideways rows of full cards: Top Runs, My Puzzles (when there
+                  // are any), Top Puzzles, Newest. Newest always shows.
+                  const rowsOf = (list) => {
+                    const n = list.length; if (!n) return [];
+                    const rows = Math.ceil(n / 3); const base = Math.floor(n / rows); const extra = n % rows;
+                    const out = []; let at = 0;
+                    for (let r = 0; r < rows; r += 1) { const sz = base + (r < extra ? 1 : 0); out.push(list.slice(at, at + sz)); at += sz; }
+                    return out;
+                  };
+                  const chips = [{ id: ALL_ID, all: true, label: `All ${alpha.length}` }, ...orderedCats.map((c) => ({ id: c.cat, label: catShortLabel(c.cat) || catLabel(c.cat) }))];
+                  const mine = [...pinned].sort((a, b) => (done.has(a.key) - done.has(b.key)) || a.name.localeCompare(b.name));
+                  const newest = alpha.filter((g) => LAUNCHED[g.key] && !done.has(g.key))
+                    .sort((a, b) => String(LAUNCHED[b.key]).localeCompare(String(LAUNCHED[a.key])) || a.name.localeCompare(b.name)).slice(0, NEWEST_ROW);
+                  const hCard = (g) => {
+                    const isDone = done.has(g.key);
+                    const r = standBy[g.key];
+                    const on = !!(favorites && favorites.includes(g.key));
+                    const href = mGoHref(g);
+                    return (
+                      <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={href} style={mTone(g.cat)}
+                        onClick={(e) => floodNav(e, href, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
+                        <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{SHARE_TILE[g.key] ? <img src={SHARE_TILE[g.key]} alt="" width="92" height="92" decoding="async" /> : <GamePreview gameKey={g.key} square />}</span>
+                        {!isDone ? <span className="mey">{catLabel(g.cat) + ' · Daily Puzzle'}</span> : null}
+                        <b>{g.name}</b>
+                        <em className="mx">{fullDesc(g)}</em>
+                        <FactRow k={g.key} />
+                        {isDone || inprog.has(g.key) ? <small>{isDone ? (r ? `You #${r.rank} of ${r.field}` : 'Played') : 'Resume'}</small> : null}
+                        {board ? (() => {
+                          const d = boardBy[g.key] || { board: [], plays: 0 };
+                          const pl = Number(d.plays || d.field) || 0;
+                          const ld = Array.isArray(d.board) && d.board[0] ? d.board[0] : null;
+                          return (
+                            <span className="mcs">
+                              <span className="ld">{ld ? <>#1 <b>{ld.username}</b></> : pl ? 'No solve yet' : 'Open. Be first.'}</span>
+                              <span className="ct pc" title="Plays today">{pl.toLocaleString('en-US')}</span>
+                            </span>
+                          );
+                        })() : null}
+                        {canPin ? (
+                          <button type="button" className={'st' + (on ? ' on' : '')} aria-label={on ? `Unstar ${g.name}` : `Star ${g.name}`}
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(g.key); }}>
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill={on ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinejoin="round" aria-hidden="true">
+                              <path d="M12 4l2.4 5 5.6.8-4 3.9 1 5.5-5-2.7-5 2.7 1-5.5-4-3.9 5.6-.8z" />
+                            </svg>
+                          </button>
+                        ) : null}
+                      </a>
+                    );
+                  };
+                  const sec = (title, more, onMore, body) => (
+                    <div className="mph-sec">
+                      <div className="mph-sh"><span className="mph-lab">{title}</span>{more ? <button type="button" className="mph-more" onClick={onMore}>{more}</button> : null}</div>
+                      {body}
+                    </div>
+                  );
                   return (
                     <>
-                      {topRuns.length ? (
-                        <div className="mph-tops">
-                          <div className="mph-lab">Top Runs</div>
-                          <div className="mph-flick">
-                            {topRuns.map((c) => {
-                              const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
-                              const fin = runFull(c);
-                              const line = fin ? (st && st.rank ? `Played · #${st.rank}` : 'Played') : st && st.players ? `${fmtN(st.players)} played today` : null;
-                              return (
-                                <a key={c.id} className={'mph-t mph-tp' + (fin ? ' done' : '')} href={withTq(circuitEntryHref(c.id))} title={c.blurb || c.name} style={mTone(pillCat(c, null))}>
-                                  <b>{c.name}</b>{line ? <em>{line}</em> : null}
-                                </a>
-                              );
-                            })}
+                      <div className="mph-chips" role="group" aria-label="Categories">
+                        {rowsOf(chips).map((row, ri) => (
+                          <div key={ri} className="mph-crow">
+                            {row.map((c) => (c.all ? (
+                              <button key={c.id} type="button" className="mph-chip all" onClick={() => mOpen(ALL_ID)}><b>{c.label}</b></button>
+                            ) : (
+                              <button key={c.id} type="button" className="mph-t mph-chip" style={mTone(rampCat(c.id))}
+                                onClick={(e) => floodIn(e, () => mOpen(c.id), { label: 'b', target: '.mph-htx .t > span', toTop: true, color: paneGround(rampCat(c.id)) })}><b>{c.label}</b></button>
+                            )))}
                           </div>
-                        </div>
-                      ) : null}
-                      <div className="mph-tops">
-                        <div className="mph-lab">Top Puzzles</div>
-                        <div className="mph-flick">
-                          {topPz.map((g) => (
-                            <a key={g.key} className="mph-t mph-tp" href={mGoHref(g)} style={mTone(g.cat)}>
-                              <b>{g.name}</b><em>{g.tag}</em>
-                            </a>
-                          ))}
-                        </div>
+                        ))}
                       </div>
-                      <div className="mph-lab mph-clab">{ixLens === 'skill' ? 'Skills' : 'Categories'}</div>
+                      {topRuns.length ? sec('Top Runs', `All ${topRuns.length} Runs`, () => mOpen(CIRC_ID), (
+                        <div className="mph-rgts">
+                          {topRuns.filter((c) => !c.poly).map((c) => {
+                            const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+                            return <RunGateTile key={c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={runCatOf(c)}
+                              lead={st && st.lead} plays={st && st.players} fin={runFull(c)} rank={st && st.rank} done={done} />;
+                          })}
+                        </div>
+                      )) : null}
+                      {mine.length ? sec('My Puzzles', `All ${mine.length}`, () => mOpen(MINE_ID), <div className="mph-gg det mph-hrow">{mine.map(hCard)}</div>) : null}
+                      {sec('Top Puzzles', 'All Puzzles', () => mOpen(ALL_ID), <div className="mph-gg det mph-hrow">{topPz.map(hCard)}</div>)}
+                      {newest.length ? sec('Newest', 'All by Newest', () => { pickSort('new'); mOpen(ALL_ID); }, <div className="mph-gg det mph-hrow">{newest.map(hCard)}</div>) : null}
                     </>
                   );
                 })()}
-                <div className="mph-grid">
-                  {lensCats.map(({ cat, games }) => {
-                    const rc = rampCat(cat);
-                    const nd = games.filter((g) => done.has(g.key)).length;
-                    return (
-                      <button key={cat} type="button" className={'mph-t' + (catShortLabel(cat) ? ' lw' + Math.min(200, Math.max(120, Math.ceil(catLabel(cat).length) * 10)) : '')} style={mTone(rc)} onClick={(e) => floodIn(e, () => mOpen(cat), { label: 'b', target: '.mph-htx .t > span', toTop: true, color: paneGround(rc) })}>
-                        <b>{catShortLabel(cat) ? <><span className="lf">{catLabel(cat)}</span><span className="sf">{catShortLabel(cat)}</span></> : catLabel(cat)}</b>
-                        {/* ONE COUNT, ONE BAR, EVERY TILE (owner, 2026-11-11, mockup M1B):
-                            "4 of 39" and a bar of today's plays, in Categories and in
-                            Skills alike. The tile keeps its full colour. */}
-                        <em className="pg"><span>{nd} of {games.length}</span><i aria-hidden="true"><u style={{ width: `${games.length ? Math.round((nd / games.length) * 100) : 0}%` }} /></i></em>
-                      </button>
-                    );
-                  })}
-                  {/* All Puzzles / My Puzzles close the grid, the same size as the tiles. */}
-                  <button type="button" className="mph-big" onClick={() => mOpen(ALL_ID)}><b>All Puzzles</b><em className="pg"><span>{alphaDone} of {alpha.length}</span><i aria-hidden="true"><u style={{ width: `${alpha.length ? Math.round((alphaDone / alpha.length) * 100) : 0}%` }} /></i></em></button>
-                  <button type="button" className="mph-big" onClick={() => mOpen(MINE_ID)}><b>My Puzzles</b>{pinned.length ? (() => { const pd = pinned.filter((g) => done.has(g.key)).length; return <em className="pg"><span>{pd} of {pinned.length}</span><i aria-hidden="true"><u style={{ width: `${Math.round((pd / pinned.length) * 100)}%` }} /></i></em>; })() : <em>Star any puzzle</em>}</button>
                 </div>
-                </div>
-                <div className="mph-seg" role="group" aria-label="Group puzzles by">
-                  <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
-                  <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
-                </div>
-                {/* JUST OFF THE FIRST SCREEN (owner, 2026-11-15): the Categories /
-                    Skills switch, the gold ticket bar, the ranks, then Everything
-                    Else. The first screen is the two Top rows and the tiles. */}
+                {/* BELOW THE ROWS: the gold ticket bar, the ranks, then Everything Else. */}
                 {mDraw ? (
                   <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
                     <span>{(() => { const n = who && mTix.count != null ? Number(mTix.count) || 0 : 0; return <><b>{who && mTix.count == null ? '\u2013' : formatTickets(n)} {n === 1 ? 'Ticket' : 'Tickets'}</b> for the {DRAWING.prizeLabel} Drawing</>; })()}</span>
@@ -8724,6 +8749,24 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-grid em.pg > span{flex:none;white-space:nowrap;}
   .sty-mph .mph-grid em.pg > i{flex:1 1 auto;min-width:16px;height:5px;border-radius:3px;overflow:hidden;background:color-mix(in srgb, currentColor 18%, transparent);}
   .sty-mph .mph-grid em.pg > i > u{display:block;height:100%;background:currentColor;text-decoration:none;}
+  /* THE PHONE HOME, M2 (owner, 2026-11-15, the same night as 2B): category
+     chips that FILL their rows (never a lone chip on the last line: rowsOf
+     deals 3,3,3,2), then sideways rows of full Details cards. The page
+     scrolls; nothing is fitted to one screen any more. */
+  .sty-mph .mph-fold.m2{min-height:0;gap:14px;}
+  .sty-mph .mph-chips{display:flex;flex-direction:column;gap:7px;margin-top:-12px;}
+  .sty-mph .mph-crow{display:flex;gap:7px;}
+  .sty-mph .mph-chip{flex:1 1 0;min-width:0;min-height:42px;box-sizing:border-box;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:0;padding:0 8px;border-radius:999px;font:inherit;text-align:center;}
+  .sty-mph .mph-chip b{font-size:14.5px;font-weight:800;line-height:1.2;letter-spacing:-0.01em;white-space:nowrap;padding-bottom:.06em;}
+  .sty-mph .mph-chip.all{border:1px solid var(--stg-ink);background:var(--stg-ink);color:var(--stg-ground, #fff);}
+  .sty-mph .mph-sec{display:flex;flex-direction:column;gap:7px;min-width:0;}
+  .sty-mph .mph-sh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+  .sty-mph .mph-sh .mph-lab{margin:0;}
+  .sty-mph .mph-more{border:0;background:transparent;color:var(--stg-ink);font:inherit;font-size:12.5px;font-weight:800;line-height:1.3;text-decoration:underline;text-underline-offset:3px;padding:4px 0;}
+  .sty-mph .mph-gg.det.mph-hrow{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;overflow-anchor:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:1px 1px 3px;margin:-1px -1px -3px;}
+  .sty-mph .mph-gg.det.mph-hrow::-webkit-scrollbar{display:none;}
+  .sty-mph .mph-gg.det.mph-hrow > .mph-g{flex:0 0 80%;min-width:0;box-sizing:border-box;}
+  .sty-mph .mph-fold.m2 .mph-rgts{padding-bottom:3px;}
   /* TOP RUNS, TOP PUZZLES (owner, 2026-11-15, mockup 2B): two rows that flick
      sideways above the tiles, two big tiles and part of a third on show (owner,
      2026-11-15: "larger tiles, wider, maybe with more height"). The
@@ -8750,6 +8793,9 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
 }
 @media (max-width:900px) and (orientation:landscape) and (max-height:600px){
   .sty-mph > .sty-mdraw{display:none;}
+}
+@media (max-width:900px) and (min-width:600px){
+  .sty-mph .mph-gg.det.mph-hrow > .mph-g{flex-basis:44%;}
 }
 @media (max-width:599px){
   .sty-mph .mph-grid{--mcols:3;}

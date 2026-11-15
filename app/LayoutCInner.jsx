@@ -576,7 +576,7 @@ export default function LayoutCInner({ gameKey }) {
     } catch (e) {}
   }, []);
   useIsoLayoutEffect(() => {
-    try { if (localStorage.getItem(IX_KEY) === 'skill') setIxLens('skill'); } catch (e) {}
+    /* Skills are gone as an index (owner, 2026-11-15): categories for everyone. */
   }, []);
 
   useEffect(() => {
@@ -870,11 +870,6 @@ export default function LayoutCInner({ gameKey }) {
                 );
               });
             })()}
-          </div>
-          {/* THE SWITCH UNDER THE CATEGORIES (owner, 2026-10-26), as on the home. */}
-          <div className="sty-ixsw" role="group" aria-label="Group puzzles by">
-            <button type="button" aria-pressed={ixLens === 'skill'} onClick={() => pickIx('skill')}>Skills</button>
-            <button type="button" aria-pressed={ixLens === 'cat'} onClick={() => pickIx('cat')}>Categories</button>
           </div>
           {/* EVERYTHING ELSE, as on the home (owner, 2026-10-26): a label, then one
               outlined box in the home's order and groups. */}

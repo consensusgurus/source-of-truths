@@ -172,6 +172,23 @@ export default function EntryDoor({ onPick }) {
   phaseRef.current = phase;
 
   // Live games per skill (any listing), for the count on each tile.
+  // THE DOOR SHOWS CATEGORIES (owner, 2026-11-15: skills are gone from the site
+  // as an alternative to categories). Ten chips on a phone, dealt 3,3,2,2 so
+  // every row is full and no chip sits alone on a last line: `span` is each
+  // chip's share of a six-column grid. A chip opens that category on the home.
+  const entryCats = useMemo(() => {
+    if (!phase) return [];
+    let live = [];
+    try { live = liveDailyKeys(today || undefined); } catch (e) { live = []; }
+    const list = RAMP_ORDER.map((cat) => ({
+      cat, name: cat === 'Word' ? 'Words' : cat, short: cat === 'Crowd Psychology' ? 'Crowd' : null,
+      n: live.filter((k) => DAILY_GAME_MAP[k] && DAILY_GAME_MAP[k].cat === cat).length,
+    })).filter((x) => x.n);
+    const n = list.length; const rows = Math.ceil(n / 3) || 1; const base = Math.floor(n / rows); const extra = n % rows;
+    let at = 0;
+    for (let r = 0; r < rows; r += 1) { const sz = base + (r < extra ? 1 : 0); for (let q = 0; q < sz; q += 1) list[at + q].span = Math.round(6 / sz); at += sz; }
+    return list;
+  }, [phase, today]);
   const counts = useMemo(() => {
     if (!phase) return {};
     const out = {};
@@ -495,26 +512,22 @@ export default function EntryDoor({ onPick }) {
               ) : null}
             </div>
           </div>
-          <h2 className="ent-ask"><span className="ent-ask-d">What do you want to sharpen today?</span><span className="ent-ask-m">Or pick what you want to sharpen</span></h2>
+          <h2 className="ent-ask"><span className="ent-ask-d">What do you want to sharpen today?</span><span className="ent-ask-m">Or pick a category</span></h2>
           <ul className="ent-tiles">
-            {SKILLS.map((x, i) => {
-              const n = counts[x.id] || 0;
-              const meta = n ? `${n} games` : '';
-              return (
-                <li key={x.id} style={{ '--i': i }}>
-                  <button type="button" className="ent-tile" style={{ '--c': CATEGORY_RAMP[x.ramp] }} onClick={() => pickSkill(x.id)}
-                    aria-label={`${x.name}: open its puzzles on the home page`}>
-                    <span className="ent-sk">
-                      {x.short ? <><span className="ent-cl">{x.name}</span><span className="ent-cs">{x.short}</span></> : x.name}
-                    </span>
-                    <span className="ent-meta">
-                      <span>{meta}</span>
-                      <span className="ent-go" aria-hidden="true">→</span>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
+            {entryCats.map((x, i) => (
+              <li key={x.cat} style={{ '--i': i, '--sp': x.span }}>
+                <button type="button" className="ent-tile" style={{ '--c': categoryColor(x.cat) }} onClick={() => toHome(x.cat)}
+                  aria-label={`${x.name}: open its puzzles on the home page`}>
+                  <span className="ent-sk">
+                    {x.short ? <><span className="ent-cl">{x.name}</span><span className="ent-cs">{x.short}</span></> : x.name}
+                  </span>
+                  <span className="ent-meta">
+                    <span>{x.n ? `${x.n} games` : ''}</span>
+                    <span className="ent-go" aria-hidden="true">→</span>
+                  </span>
+                </button>
+              </li>
+            ))}
           </ul>
           <div className="ent-foot">
             <button type="button" ref={btnRef} className="ent-go-all" onClick={() => toHome('all')}>
@@ -847,9 +860,9 @@ const CSS = `
   .ent-m-d{font-size:13.5px;font-weight:700;line-height:1.3}
   .ent-m-go{margin-top:auto;font-size:13.5px;font-weight:800;line-height:1.2;background:#08222e;color:#ffffff;padding:7px 13px;border-radius:999px}
   .ent-ask{margin-top:20px;font-size:16px;line-height:1.3;letter-spacing:-.01em;text-align:left;max-width:none}
-  .ent-tiles{flex:none;margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;max-width:none}
-  .ent-tiles li{flex:none}
-  .ent-tile{min-height:44px;flex-direction:row;align-items:center;gap:0;padding:0 15px;border-radius:999px}
+  .ent-tiles{flex:none;margin-top:10px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:none;gap:8px;max-width:none}
+  .ent-tiles li{grid-column:span var(--sp, 2)}
+  .ent-tile{min-height:44px;flex-direction:row;align-items:center;justify-content:center;gap:0;padding:0 8px;border-radius:999px}
   .ent-sk{font-size:15px;line-height:1.2;white-space:nowrap}
   .ent-meta{display:none}
   .ent-pg > .ent-foot{margin-top:auto;padding-top:16px}
