@@ -66,7 +66,8 @@ import { CATEGORY_RAMP, RAMP_INK, RAMP_ORDER, categoryColor } from '@/lib/catego
 import { SKILLS, SKILL_MAP, skillPool, primarySkill } from '@/lib/daily-skills';
 import { TIERS } from '@/lib/daily-difficulty';
 import { GLYPHS, GLYPH_BOX } from '@/lib/game-glyphs';
-import { DISPLAY_CIRCUITS, circuitKeysFor, runHref } from '@/lib/circuits';
+import { DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, runHref } from '@/lib/circuits';
+import { FEATURED_KEYS, FEATURED_RECENT } from '@/lib/featured';
 import { hasSundayEdition, isSundayET } from '@/lib/sunday-editions';
 import { LIGHT_OFFER_KEY, writeStageTheme } from '@/lib/stage-theme';
 import MindLoftMark from './MindLoftMark';
@@ -86,6 +87,7 @@ const LINES = ['Sharpen Your Mind', 'Gain IQ Points', 'Elevate Your Thinking'];
 const TIER_C = { gentle: CATEGORY_RAMP[1], steady: CATEGORY_RAMP[3], tough: CATEGORY_RAMP[5], any: CATEGORY_RAMP[0] };
 // A run's one-line pitch on its tile. Falls back to the circuit's blurb.
 const PICK_WAIT_MS = 1200;
+const START_WAIT_MS = 1200;   // how long the phone's two start tiles wait for the week's counts
 const RUN_TAG = {
   deduction: 'Five logic cases, one law school verdict',
   dojo: 'Three sudokus, one score, a belt',
@@ -229,10 +231,11 @@ export default function EntryDoor({ onPick }) {
     return () => clearTimeout(t);
   }, [phase]);
 
-  // The week's ratings and plays are asked for once the skill page is up, so
-  // they are in hand by the time a reader has picked a skill.
+  // The week's ratings and plays are asked for as soon as the door is up (the
+  // curtain included, since 2026-11-15), so the phone's two start tiles have
+  // their counts by the time the curtain lifts.
   useEffect(() => {
-    if (phase !== 'page' || asked.current) return;
+    if (!phase || asked.current) return;
     asked.current = true;
     const j = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     Promise.all([
@@ -243,6 +246,7 @@ export default function EntryDoor({ onPick }) {
       setData({
         ratings: (d && d.ratings) || {},
         week: (p && p.week) || {},
+        uniq: p && p.uniq && Object.keys(p.uniq).length ? p.uniq : null,
         monday: m && m.boards && Object.keys(m.boards).length ? m : null,
       });
     });
@@ -331,6 +335,49 @@ export default function EntryDoor({ onPick }) {
     window.location.assign(href);
   }
 
+  // THE PHONE'S TWO START TILES (owner, 2026-11-15, mockup A): the top run and
+  // the top puzzle, side by side above the skills.
+  //   TOP PUZZLE: the most UNIQUE players over seven days (one person replaying
+  //   counts once), and it must be in NO run today and in the Featured pool
+  //   (lib/featured.js). If no Featured puzzle qualifies, the best puzzle that
+  //   is in no run stands in.
+  //   TOP RUN: the run whose games average the most unique players.
+  // The pick is made once, when the page shows: with the counts if they are in,
+  // else after START_WAIT_MS in the pools' own order. It never changes after.
+  const [stReady, setStReady] = useState(false);
+  const stPick = useRef(null);
+  useEffect(() => {
+    if (phase !== 'page' || stReady) return undefined;
+    if (data) { setStReady(true); return undefined; }
+    const id = setTimeout(() => setStReady(true), START_WAIT_MS);
+    return () => clearTimeout(id);
+  }, [phase, data, stReady]);
+  const liveN = useMemo(() => { try { return phase && today ? liveDailyKeys(today).length : 0; } catch (e) { return 0; } }, [phase, today]);
+  if (stReady && !stPick.current && today) {
+    try {
+      const uq = data ? (data.uniq || data.week || {}) : {};
+      const n = (k) => uq[k] || 0;
+      const inRun = new Set(RUN_GAMES);
+      let run = null; let rn = -1;
+      for (const c of DISPLAY_CIRCUITS) {
+        let keys = [];
+        try { keys = circuitKeysFor(c.id, today) || []; } catch (e) { keys = []; }
+        keys = keys.filter((k) => DAILY_GAME_MAP[k]);
+        if (!keys.length) continue;
+        for (const k of keys) inRun.add(k);
+        const avg = keys.reduce((t2, k) => t2 + n(k), 0) / keys.length;
+        if (avg > rn) { rn = avg; run = { id: c.id, name: c.name, tag: RUN_TAG[c.id] || c.blurb || '', cat: DAILY_GAME_MAP[keys[0]].cat, href: runHref(c.id) }; }
+      }
+      const open = liveDailyKeys(today).filter((k) => DAILY_GAME_MAP[k] && !inRun.has(k));
+      const feat = [...FEATURED_KEYS, ...FEATURED_RECENT].filter((k) => open.includes(k));
+      const best = (list) => list.slice().sort((a, b) => n(b) - n(a))[0] || null;   // a stable sort: ties keep the pool's order
+      const pk = best(feat) || best(open);
+      const g = pk ? DAILY_GAME_MAP[pk] : null;
+      stPick.current = { run, game: g ? { key: g.key, name: g.name, tag: g.tag || '', cat: g.cat, href: g.href || '/' + g.key } : null };
+    } catch (e) { stPick.current = { run: null, game: null }; }
+  }
+  const start = stPick.current;
+
   // ---- step data ----
   const sk = skill ? SKILL_MAP[skill] : null;
   const ratings = (data && data.ratings) || {};
@@ -417,7 +464,35 @@ export default function EntryDoor({ onPick }) {
       <style dangerouslySetInnerHTML={{ __html: CSS + CSS2 }} />
       {(
         <div className={'ent-pg' + (phase === 'page' || phase === 'picks' ? ' rise' : '')} aria-hidden={curtain || phase === 'picks' ? 'true' : undefined}>
-          <h2 className="ent-ask">What do you want to sharpen today?</h2>
+          {/* THE PHONE'S OPENING (owner, 2026-11-15, mockup A): the name, what the
+              site is, and two things to play right now. Hidden above 760px. */}
+          <div className="ent-m">
+            <div className="ent-m-brand">
+              <span className="ent-mk"><MindLoftMark size="1em" ink="#08222e" accent="#7dd3fc" title="" /></span>
+              Mind Loft
+            </div>
+            <p className="ent-m-h">{liveN ? `${liveN} free puzzles, new every day.` : 'Free puzzles, new every day.'}</p>
+            <p className="ent-m-sub">No sign-up. Start with what most people are playing.</p>
+            <div className="ent-m-two">
+              {start && start.run ? (
+                <button type="button" className="ent-m-t" style={{ '--c': categoryColor(start.run.cat) }} onClick={() => go(start.run.href)} aria-label={`${start.run.name}: start the run`}>
+                  <span className="ent-m-k">Top Run</span>
+                  <span className="ent-m-n">{start.run.name}</span>
+                  {start.run.tag ? <span className="ent-m-d">{start.run.tag}</span> : null}
+                  <span className="ent-m-go">Play <span aria-hidden="true">&rarr;</span></span>
+                </button>
+              ) : null}
+              {start && start.game ? (
+                <button type="button" className="ent-m-t" style={{ '--c': categoryColor(start.game.cat) }} onClick={() => go(start.game.href)} aria-label={`${start.game.name}: play today's puzzle`}>
+                  <span className="ent-m-k">Top Puzzle</span>
+                  <span className="ent-m-n">{start.game.name}</span>
+                  {start.game.tag ? <span className="ent-m-d">{start.game.tag}</span> : null}
+                  <span className="ent-m-go">Play <span aria-hidden="true">&rarr;</span></span>
+                </button>
+              ) : null}
+            </div>
+          </div>
+          <h2 className="ent-ask"><span className="ent-ask-d">What do you want to sharpen today?</span><span className="ent-ask-m">Or pick what you want to sharpen</span></h2>
           <ul className="ent-tiles">
             {SKILLS.map((x, i) => {
               const n = counts[x.id] || 0;
@@ -440,7 +515,7 @@ export default function EntryDoor({ onPick }) {
           </ul>
           <div className="ent-foot">
             <button type="button" ref={btnRef} className="ent-go-all" onClick={close}>
-              Proceed to all of today&apos;s puzzles <span aria-hidden="true">→</span>
+              <span className="ent-ask-d">Proceed to all of today&apos;s puzzles</span><span className="ent-ask-m">{liveN ? `See All ${liveN} Puzzles` : 'See All Puzzles'}</span> <span aria-hidden="true">→</span>
             </button>
             <p className="ent-h">
               Loft your Mind in the{' '}
@@ -683,6 +758,7 @@ const CSS = `
 .ent-meta{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;font-weight:700}
 .ent-meta b{font-weight:800;font-variant-numeric:tabular-nums}
 .ent-cs{display:none}
+.ent-m,.ent-ask-m{display:none}
 .ent-go{transition:transform .18s ease}
 .ent-tile:hover .ent-go{transform:translateX(3px)}
 .ent-go-all{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:16px 28px;border:0;border-radius:999px;cursor:pointer;font:inherit;font-weight:700;font-size:16px;
@@ -745,6 +821,45 @@ const CSS = `
 @media (max-width:760px) and (max-height:600px){
   .ent-tile{padding:8px 11px}
   .ent-sk{font-size:15px}
+}
+/* THE PHONE'S ENTRY PAGE, MOCKUP A (owner, 2026-11-15). The name on top, what
+   the site is, the top run and the top puzzle side by side, the ten skills as
+   chips, and one outlined button to everything. Still one screen, no scroll:
+   the two tiles hold their height while the counts are on their way. */
+@media (max-width:760px){
+  .ent-pg{align-items:stretch;gap:0;padding-top:max(20px,env(safe-area-inset-top,0px))}
+  .ent-ask-d{display:none}
+  .ent-ask-m{display:inline}
+  .ent-m{display:flex;flex-direction:column}
+  .ent-m-brand{display:flex;align-items:center;font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.2;color:#08222e}
+  .ent-pg.rise .ent-m{animation:ent-up .55s cubic-bezier(.2,.7,.2,1) both}
+  .ent-pg.rise .ent-m .ent-mk{animation:none}
+  .ent-m-h{margin:20px 0 0;font-size:clamp(26px,7.9vw,31px);line-height:1.12;font-weight:800;letter-spacing:-.03em;color:#08222e;text-wrap:balance;padding-bottom:.06em}
+  .ent-m-sub{margin:8px 0 0;font-size:15.5px;font-weight:600;line-height:1.4;color:#3d5260}
+  .ent-m-two{margin-top:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;min-height:158px}
+  .ent-m-t{min-width:0;display:flex;flex-direction:column;align-items:flex-start;gap:5px;text-align:left;padding:12px 12px 12px;border:1px solid #08222e;border-radius:14px;background:color-mix(in srgb, var(--c) 60%, #ffffff);color:#08222e;font:inherit;cursor:pointer}
+  .ent-m-t:focus-visible{outline:3px solid #08222e;outline-offset:3px}
+  .ent-m-k{font-size:12px;font-weight:800;line-height:1.2;background:#08222e;color:#ffffff;padding:4px 10px;border-radius:999px}
+  .ent-m-n{margin-top:3px;font-size:21px;font-weight:800;letter-spacing:-.025em;line-height:1.15;padding-bottom:.06em}
+  .ent-m-d{font-size:13.5px;font-weight:700;line-height:1.3}
+  .ent-m-go{margin-top:auto;font-size:13.5px;font-weight:800;line-height:1.2;background:#08222e;color:#ffffff;padding:7px 13px;border-radius:999px}
+  .ent-ask{margin-top:20px;font-size:16px;line-height:1.3;letter-spacing:-.01em;text-align:left;max-width:none}
+  .ent-tiles{flex:none;margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;max-width:none}
+  .ent-tiles li{flex:none}
+  .ent-tile{min-height:44px;flex-direction:row;align-items:center;gap:0;padding:0 15px;border-radius:999px}
+  .ent-sk{font-size:15px;line-height:1.2;white-space:nowrap}
+  .ent-meta{display:none}
+  .ent-pg > .ent-foot{margin-top:auto;padding-top:16px}
+  .ent-pg .ent-foot .ent-h{display:none}
+  .ent-pg .ent-go-all{background:#ffffff;color:#08222e;border:1px solid #08222e;font-weight:800}
+  .ent-pg .ent-go-all:hover{background:#ffffff}
+}
+@media (max-width:760px) and (max-height:640px){
+  .ent-m-h{margin-top:12px;font-size:24px}
+  .ent-m-two{margin-top:12px;min-height:138px}
+  .ent-m-n{font-size:19px}
+  .ent-ask{margin-top:14px}
+  .ent-tile{min-height:40px;padding:0 13px}
 }
 @media (prefers-reduced-motion:reduce){
   .ent-pg.rise *, .ent-pg.rise .ent-mk{animation:none!important}

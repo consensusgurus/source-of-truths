@@ -45,6 +45,7 @@ import { gameBlurb } from '@/lib/game-blurbs';
 const LIVE_KEYS = new Set(liveDailyKeys());
 const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
 import { SUDOKU_POOL, DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
+import { FEATURED_KEYS, FEATURED_RECENT } from '@/lib/featured';
 import GameGlyph from '../GameGlyph';
 import GamePreview, { GP_CSS } from '../GamePreview';
 import RunGateTile, { RGT_CSS, MoreRunsTile, BuildRunTile } from './RunGateTile';
@@ -3089,10 +3090,7 @@ export default function StageToday() {
   const closeMFind = () => { setMFind(false); setFindQ(''); };
   // THE FEATURED ROW (owner, 2026-11-13): on All Puzzles, the first row under
   // the runs. A key that is not live yet (Chef) is simply skipped until it is.
-  const FEATURED_KEYS = ['pack', 'chef', 'mop', 'carmen'];
-  // Puzzles that left the Featured row recently. With FEATURED_KEYS they are
-  // the pool the phone home's Top Puzzles row leads with (owner, 2026-11-15).
-  const FEATURED_RECENT = ['sudoclue'];   // Pack in, Sudoclue out (owner, 2026-11-14: five would wrap on desktop)
+  // FEATURED_KEYS and FEATURED_RECENT live in lib/featured.js (the entry door reads them too).
   // UNIVERSAL (owner, 2026-10-26): "if im on sudoku page, i should be able to
   // search all puzzles and quizzes." A query searches every live daily from
   // whatever pane it is typed in, and the quiz catalogue under them.
@@ -4758,12 +4756,6 @@ export default function StageToday() {
                     same grid, and the Categories / Skills switch the last thing on
                     it. Sideways, 3 or 4 tiles across, whatever fits. */}
                 <div className="mph-fold" ref={foldRef}>
-                {mDraw ? (
-                  <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
-                    <span>{(() => { const n = who && mTix.count != null ? Number(mTix.count) || 0 : 0; return <><b>{who && mTix.count == null ? '\u2013' : formatTickets(n)} {n === 1 ? 'Ticket' : 'Tickets'}</b> for the {DRAWING.prizeLabel} Drawing</>; })()}</span>
-                    <u>Ways to Earn</u>
-                  </a>
-                ) : null}
                 {/* TOP RUNS, TOP PUZZLES (owner, 2026-11-15, mockup 2B): two rows
                     that flick sideways. Every run, in the order the panes use
                     (unfinished first, then finishes in 24 hours, then players).
@@ -4776,19 +4768,29 @@ export default function StageToday() {
                     while the order has that many left. */}
                 {(() => {
                   const topRuns = [...circuits].sort((a, b) => (runFull(a) - runFull(b)) || (done24(b) - done24(a)) || (((runStat[b.id] || {}).players || 0) - ((runStat[a.id] || {}).players || 0)) || ((b.pop || 0) - (a.pop || 0)));
-                  if (!topOrder.current && day && circuits.length && (fav || !topWait)) {
+                  // The order is FIXED for the visit only once the week's counts
+                  // are in hand. Until then (a slow server, after TOP_WAIT_MS) the
+                  // row shows a provisional order on today's plays, and settles
+                  // once when the counts land. Fixing the provisional order left
+                  // a phone with two tiles when the board had not loaded either.
+                  const rankTop = (uq) => {
                     const inRun = new Set(RUN_GAMES);
                     for (const c of circuits) for (const g of c.games) inRun.add(g.key);
-                    const uq = fav && !fav.failed ? (fav.uniq && Object.keys(fav.uniq).length ? fav.uniq : fav.week) : null;
                     const cnt = (g) => (uq ? uq[g.key] || 0 : playsBy.get(g.key) || 0);
                     const by = (a, b) => (cnt(b) - cnt(a)) || a.name.localeCompare(b.name);
                     const pool = alpha.filter((g) => !inRun.has(g.key));
+                    const any = pool.some((g) => cnt(g) > 0);
                     const feat = new Set([...FEATURED_KEYS, ...FEATURED_RECENT]);
                     const lead = pool.filter((g) => feat.has(g.key)).sort(by).slice(0, 2);
-                    const rest = pool.filter((g) => !lead.includes(g) && cnt(g) > 0).sort(by);
-                    topOrder.current = [...lead, ...rest].map((g) => g.key);
+                    const rest = pool.filter((g) => !lead.includes(g) && (cnt(g) > 0 || !any)).sort(by);
+                    return [...lead, ...rest].map((g) => g.key);
+                  };
+                  const topOk = !!day && circuits.length > 0;
+                  if (!topOrder.current && topOk && fav && !fav.failed) {
+                    topOrder.current = rankTop(fav.uniq && Object.keys(fav.uniq).length ? fav.uniq : fav.week);
                   }
-                  const topPz = (topOrder.current || []).filter((k) => !done.has(k)).slice(0, TOP_PUZZLES).map((k) => alpha.find((g) => g.key === k)).filter(Boolean);
+                  const order = topOrder.current || (topOk && (fav || !topWait) ? rankTop(null) : []);
+                  const topPz = order.filter((k) => !done.has(k)).slice(0, TOP_PUZZLES).map((k) => alpha.find((g) => g.key === k)).filter(Boolean);
                   return (
                     <>
                       {topRuns.length ? (
@@ -4861,6 +4863,15 @@ export default function StageToday() {
                     <a className="join" href="/?signup=1" onClick={(e) => { e.preventDefault(); openChooseName(); }}>Pick a name to keep a rank and earn tickets</a>
                   )}
                 </div>
+                {/* THE DRAWING SITS UNDER THE RANKS, off the first screen (owner,
+                    2026-11-15: "take back space by moving the gold ticket line
+                    down off screen"). The Top rows took its place. */}
+                {mDraw ? (
+                  <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
+                    <span>{(() => { const n = who && mTix.count != null ? Number(mTix.count) || 0 : 0; return <><b>{who && mTix.count == null ? '\u2013' : formatTickets(n)} {n === 1 ? 'Ticket' : 'Tickets'}</b> for the {DRAWING.prizeLabel} Drawing</>; })()}</span>
+                    <u>Ways to Earn</u>
+                  </a>
+                ) : null}
                 <div className="mph-lab">Everything Else</div>
                 <div className="mph-list">
                   <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<em>{circuits.filter(runFull).length} of {circuits.length}</em><span>&rarr;</span></button>
@@ -8631,20 +8642,27 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-grid em.pg > i{flex:1 1 auto;min-width:16px;height:5px;border-radius:3px;overflow:hidden;background:color-mix(in srgb, currentColor 18%, transparent);}
   .sty-mph .mph-grid em.pg > i > u{display:block;height:100%;background:currentColor;text-decoration:none;}
   /* TOP RUNS, TOP PUZZLES (owner, 2026-11-15, mockup 2B): two rows that flick
-     sideways above the tiles, three tiles and the edge of a fourth on show. The
+     sideways above the tiles, two big tiles and part of a third on show (owner,
+     2026-11-15: "larger tiles, wider, maybe with more height"). The
      row keeps its height while the counts are on their way, so nothing jumps.
+     THE ROW IS PADDED top and bottom: it clips its overflow to scroll, and on
+     an iPhone that shaved the tiles' bottom outline (owner report, 2026-11-15).
      NO SCROLL SNAP: the runs re-sort as their counts land, and a snapped row
      follows its old first tile sideways, so the row opened part scrolled.
      The tiles go three across upright to make the room. */
   .sty-mph .mph-fold > .mph-tops{flex:none;display:flex;flex-direction:column;gap:6px;min-width:0;}
   .sty-mph .mph-fold .mph-lab{margin-top:0;}
   .sty-mph .mph-fold > .mph-clab{flex:none;margin-bottom:-4px;}
-  .sty-mph .mph-flick{display:flex;gap:8px;min-height:80px;overflow-x:auto;overflow-y:hidden;overflow-anchor:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .sty-mph .mph-flick{display:flex;gap:8px;min-height:104px;padding:1px 0 3px;overflow-x:auto;overflow-y:hidden;overflow-anchor:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .sty-mph .mph-flick::-webkit-scrollbar{display:none;}
-  .sty-mph .mph-flick > .mph-tp{flex:0 0 29.5%;min-width:0;min-height:80px;box-sizing:border-box;justify-content:space-between;gap:4px;padding:9px 10px 10px;text-decoration:none;}
-  .sty-mph .mph-flick > .mph-tp b{font-size:15px;font-weight:800;line-height:1.2;letter-spacing:-0.01em;padding-bottom:.08em;}
-  .sty-mph .mph-flick > .mph-tp em{font-size:12px;line-height:1.3;}
+  .sty-mph .mph-flick > .mph-tp{flex:0 0 42%;min-width:0;min-height:104px;box-sizing:border-box;justify-content:space-between;gap:6px;padding:12px 13px 12px;text-decoration:none;}
+  .sty-mph .mph-flick > .mph-tp b{font-size:18.5px;font-weight:800;line-height:1.18;letter-spacing:-0.01em;padding-bottom:.08em;}
+  .sty-mph .mph-flick > .mph-tp em{font-size:13.5px;line-height:1.3;}
+  .sty-mph > .sty-mdraw{margin-top:10px;}
   .sty-mph .mph-flick > .mph-tp.done{background:transparent;border-color:var(--stg-ink);color:var(--stg-ink);}
+}
+@media (max-width:900px) and (orientation:landscape) and (max-height:600px){
+  .sty-mph > .sty-mdraw{display:none;}
 }
 @media (max-width:599px){
   .sty-mph .mph-grid{--mcols:3;}

@@ -2801,7 +2801,7 @@ Owner, from the phone home mockups: "we will go with 2B", with both rows flickin
 `app/today/StageToday.jsx` (the `.mph-tops` blocks at the top of `.mph-fold`, and the CSS under
 "TOP RUNS, TOP PUZZLES").
 
-- **The first screen, top to bottom:** the drawing, Top Runs, Top Puzzles, a "Categories" (or "Skills")
+- **The first screen, top to bottom:** Top Runs, Top Puzzles, a "Categories" (or "Skills")
   label, the tiles, the switch. The tiles go THREE across upright (All Puzzles and My Puzzles close the
   grid as before) with 15px names; 600px and up is unchanged.
 - **Top Runs is every run**, in the order the panes use: unfinished first, then finishes in the last
@@ -2820,3 +2820,25 @@ Owner, from the phone home mockups: "we will go with 2B", with both rows flickin
   (`topOrder`). The phone home now asks for `/api/quiz/my-plays` on its first screen.
 - When a puzzle leaves the Featured row, move its key to `FEATURED_RECENT`; when it is no longer
   "recent", delete it there.
+- **The drawing bar is under the ranks, off the first screen** (owner, same day: "take back space by
+  moving the gold ticket line down off screen"), and the Top tiles are big: two on show and part of a
+  third (42% wide, 104px tall, 18.5px names). No scroll snap on the rows: the runs re-sort as their
+  counts land, and a snapped row followed its old first tile sideways.
+- **The puzzle order is fixed only once the week's counts are in.** Before that the row is provisional
+  (today's plays) and settles once. Fixing the provisional order left a phone with two tiles.
+- `FEATURED_KEYS` and `FEATURED_RECENT` moved to `lib/featured.js`; the entry door reads them too.
+
+## The phone's entry page, mockup A (owner, 2026-11-15)
+
+Owner picked A from the entry mockups, with two tiles in place of one hero. Built in `app/EntryDoor.jsx`
+(the `.ent-m` block and the last phone CSS block); 761px and up is unchanged.
+
+- Top to bottom: the mark and name, "N free puzzles, new every day." (the live count), a line, the
+  **Top Run** and **Top Puzzle** tiles side by side, "Or pick what you want to sharpen" with the ten
+  skills as chips (short names, a chip opens the skill's picks as before), and one outlined button,
+  "See All N Puzzles". The "Loft your Mind" line is hidden on a phone; the name is at the top.
+- **Top Puzzle:** the most unique players over seven days, never in a run today, and from the Featured
+  pool (`lib/featured.js`). If no Featured puzzle qualifies, the best puzzle in no run stands in.
+- **Top Run:** the run whose games average the most unique players (the door has no per-run board read).
+- The door now asks for the counts as soon as it is up, curtain included. The pick is made once when the
+  page shows (after `START_WAIT_MS` without counts, in the pools' own order) and never changes.
