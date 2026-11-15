@@ -31,6 +31,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { T } from '@/lib/theme';
 import { gameActive } from '@/lib/game-active';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 // NEAR-INSTANT (owner, 2026-11-10). This is a START-GATE offer, not an ending
 // pop-up, so the 10s after-the-game floor (2026-10-17) never applied to it: at
@@ -225,7 +226,7 @@ export default function RunDoorPop({ id = 'pricecheck', ready = false, self = ''
   useEffect(() => {
     if (!D || !ready || fired.current) return undefined;
     const t = setTimeout(() => {
-      if (fired.current || gameActive() || !shouldOffer(id, game)) return;
+      if (fired.current || gameActive() || !shouldOffer(id, game) || !claimPop('rundoor')) return;
       fired.current = true;
       try { localStorage.setItem(doorKey(id, game), etToday()); } catch (e) {}
       setOpen(true);

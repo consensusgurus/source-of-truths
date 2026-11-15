@@ -79,6 +79,7 @@ import { X } from 'lucide-react';
 import { circuitGamesFor, circuitName, circuitSlotFor, rampFor, runHref } from '@/lib/circuits';
 import { T } from '@/lib/theme';
 import { gameActive } from '@/lib/game-active';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 const STORE = 'sot_gauntlet_nudge';
 const ID = 'gauntlet';
@@ -117,6 +118,7 @@ export default function GauntletPop({ ready = false, unplayed = false, day = '' 
       // not evidence it has been seen.
       if (gameActive()) return;
       try { if (localStorage.getItem(STORE) === now.day) return; } catch (e) {}
+      if (!claimPop('gauntlet')) return;   // one pop-up a visit
       try { localStorage.setItem(STORE, now.day); } catch (e) {}
       fired.current = true;
       // Deep's day topic, in its own chunk, awaited before the pop-up appears

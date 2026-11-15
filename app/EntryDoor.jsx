@@ -72,6 +72,7 @@ import { hasSundayEdition, isSundayET } from '@/lib/sunday-editions';
 import { LIGHT_OFFER_KEY, writeStageTheme } from '@/lib/stage-theme';
 import MindLoftMark from './MindLoftMark';
 import { etToday } from './useDayStats';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 const KEY = 'sot_entry_v1';
 // ONCE A WEEK (owner, 2026-10-16): the first visit, then a returning reader
@@ -213,6 +214,8 @@ export default function EntryDoor({ onPick }) {
       // seen, but a door on every load would be worse, so it stays shut.
       if (!preview) { clearWait(); return undefined; }
     }
+    // The door is the visit's one pop-up (lib/pop-budget.js).
+    if (!preview) claimPop('entry');
     setIsNew(fresh);
     setSunday(isSundayET());
     let still = false;

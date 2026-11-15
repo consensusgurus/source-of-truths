@@ -26,6 +26,7 @@ import { X } from 'lucide-react';
 import { RAMP_INK } from '@/lib/category-ramp';
 import { gameActive } from '@/lib/game-active';
 import { scrimClose } from './PremierePop';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 const STAMP = 'sot_pop_eagleeye';
 const BUSY = '.scp-scrim, .ent-door, .sty-vnote, .gpp-scrim, .stg-tpop, .prm-scrim, .etp-scrim, .cnp-scrim, .stf, .loft-back, .dec-backdrop';
@@ -67,6 +68,7 @@ export default function EagleEyePop() {
       quiet += 400;
       if (quiet < 1600) return;
       clearInterval(t);
+      if (!force && !claimPop('eagleeye')) return;   // one pop-up a visit
       if (!force) { try { localStorage.setItem(STAMP, new Date().toISOString().slice(0, 10)); } catch (e) {} }
       setOpen(true);
     }, 400);

@@ -2863,3 +2863,26 @@ The home Details view draws each puzzle card the way its share image looks: a sm
 
 - Games with a nicer share card show a cut of it in that square: `lib/share-tile.js` lists them and the cuts live in `public/og/tile/<key>.png` (224px square; the art half of a scene card, or the white board card of a board card). Re-cut a game's tile whenever its share card is re-baked. A key not listed falls back to its GamePreview drawing.
 - Run tiles were briefly given numbered leg blocks and put back the same night (owner: "the run category titles don't need numbers above them"); they are unchanged.
+- Run tiles (`app/today/RunGateTile.jsx`) draw their legs as the gauntlet share card does: separate numbered blocks in their ladder colours, still one row.
+- Desktop Details only; the phone home was being reworked the same night and was left alone.
+- **Later the same day:** the entry page's "See All N Puzzles" (and the desktop "Proceed" button) opens
+  the All Puzzles pane, not the tiles. A skill picked at the door no longer switches a phone's index to
+  Skills (desktop still does, since a skill pane needs the skill index there). The door is `100svh` tall
+  on a phone so its button clears the browser's bottom bar. The sky house never draws the deeper-blue
+  outline (`outlineFor` in lib/mindloft-mark.js); other pastels keep it. Static PNGs were not redrawn.
+
+## ONE POP-UP A VISIT: `lib/pop-budget.js` (owner rule, 2026-11-15)
+
+"New users are getting far too many pop-ups - at most once per visit." Every pop-up that opens itself
+calls `claimPop('<name>')` at the moment it would open: after `gameActive()` and every other test, and
+BEFORE it stamps itself seen. The first to ask owns the visit; the rest are told no and, having stamped
+nothing, keep their turn for a later visit. The entry door claims the visit too, so a new visitor who
+gets the door gets nothing else that visit.
+
+- A visit is the tab's session, or four hours from the pop-up that claimed it, whichever ends first.
+- In the budget: the entry door, the new-game card, groups, Space Cadet, Eagle Eye, the home Gauntlet
+  prompt, the look intro and the light offer, the drawing, email-ticket and thanks cards, and every run
+  offer (run doors on start gates, Trivia door, Encore, Gauntlet More / Back, Dojo, More Runs, the nudge).
+- Not in it: anything opened by a press (How to play, the look menu, Choose a Name, search), trophies,
+  and a game's own in-play sheets (Price Check's Items). Preview links always open.
+- **A new pop-up calls `gameActive()` and then `claimPop()` before it opens, and stamps only after.**

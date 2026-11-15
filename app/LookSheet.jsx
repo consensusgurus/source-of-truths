@@ -1,4 +1,5 @@
 'use client';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 // THE PAGE LOOK MENU (owner, 2026-10-19). Every cap's look icon opens this; the
 // one-tap light/dark flip is retired. Two choices:
 //
@@ -125,6 +126,7 @@ export default function LookSheet() {
       if (document.querySelector(BUSY) || document.querySelector('.lks')) { t = setTimeout(tick, 500); return; }
       const b = visibleSwitch();
       if (!b) { t = setTimeout(tick, 500); return; }
+      if (!preview && !claimPop('look')) return;   // one pop-up a visit; unstamped, so it shows on a later one
       if (!preview) {
         try {
           window.localStorage.setItem(LOOK_INTRO_KEY, 'shown');

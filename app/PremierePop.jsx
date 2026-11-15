@@ -61,6 +61,7 @@ import { fetchDayStatus, etToday } from './useDayStats';
 import { seenBeforeToday } from '@/lib/visitor';
 import { gameActive } from '@/lib/game-active';
 import { premiereQueue, daysAgo } from '@/lib/premiere-queue';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 const KEY = (k) => `sot_premiere_${k}`;      // a run's launch card
 // A game's card. A new name on 2026-11-14: the old stamp was written for every open
@@ -171,6 +172,7 @@ export default function PremierePop() {
         if (arrivalBusy() && Date.now() - started < 15000) { timers.push(setTimeout(tick, 300)); return; }
         if (Date.now() - started >= 15000 && arrivalBusy()) return;
         if (gameActive()) return;
+        if (!force && !claimPop('premiere')) return;   // one pop-up a visit; nothing stamped, so the card keeps its day
         // the run and its members are stamped, and the day; the single-game queue keeps its turn
         if (!force) { try { localStorage.setItem(KEY(runCand.id), today); for (const k of runCand.keys) localStorage.setItem(GKEY(k), today); } catch (e) {} try { localStorage.setItem(DAY_KEY, today); } catch (e) {} }
         setRun(runCand);
@@ -201,6 +203,7 @@ export default function PremierePop() {
         if (arrivalBusy() && Date.now() - started < 15000) { timers.push(setTimeout(tick, 300)); return; }
         if (Date.now() - started >= 15000 && arrivalBusy()) return;
         if (gameActive()) return;
+        if (!force && !claimPop('premiere')) return;   // one pop-up a visit; nothing stamped, so the card keeps its day
         // Stamp the game on the card and the day. Every other launch keeps its turn.
         if (!force) { try { localStorage.setItem(GKEY(next), today); localStorage.setItem(DAY_KEY, today); } catch (e) {} }
         setGames([next]);

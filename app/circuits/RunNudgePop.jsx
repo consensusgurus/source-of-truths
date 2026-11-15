@@ -14,6 +14,7 @@ import { X } from 'lucide-react';
 import { T } from '@/lib/theme';
 import { RUN_DOORS, runDoneToday } from './RunDoorPop';
 import { gameActive } from '@/lib/game-active';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -50,6 +51,7 @@ export default function RunNudgePop({ target = 'gauntlet', chain = null, ready =
       fired.current = true;
       const n = nextFrom(0);
       if (n < 0) return;
+      if (!claimPop('runnudge')) return;   // one pop-up a visit
       setIdx(n);
       if (onOpen) onOpen();
     };

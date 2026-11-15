@@ -30,6 +30,7 @@ import { circuitKeysFor, SUDOKU_POOL } from '@/lib/circuits';
 import { isNewerVisitor } from '@/lib/visitor';
 import { RUN_DOOR_CSS, runDoneToday } from './RunDoorPop';
 import { gameActive } from '@/lib/game-active';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 export const DOJO_POP_STORE = 'sot_dojo_pop';
 // 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
@@ -86,6 +87,7 @@ export default function DojoPop({ ready = false, self = '' }) {
           .map((k) => { const x = DAILY_GAME_MAP[k]; return { key: k, name: x.name, tag: x.tag || '', color: x.colorNavy || '#93c5fd', href: x.href || `/${k}` }; });
       }
       if (!dojo && !more.length) return;
+      if (!claimPop('dojo')) return;   // one pop-up a visit
       try { localStorage.setItem(DOJO_POP_STORE, today); } catch (e) {}
       fired.current = true;
       const keys = circuitKeysFor(rid, today);

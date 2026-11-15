@@ -45,6 +45,7 @@ import { readStageTheme } from '@/lib/stage-theme';
 import { afterGameConcludes, trackPostGame } from '@/lib/post-game-gate';
 import { drawingIsLive } from '@/lib/drawing';
 import { gameActive } from '@/lib/game-active';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 // ONCE A WEEK (owner, 2026-10-04, same day it shipped as once ever): at most one
 // thank-you pop-up per browser per seven days, whichever version. LAST_KEY holds
@@ -191,6 +192,7 @@ export default function ThanksPop() {
     } catch (e) { return undefined; }
     const t = setTimeout(() => {
       if (blockedHere() || anotherModalOpen() || gameActive()) return;
+      if (!claimPop('thanks')) return;   // one pop-up a visit
       show('return');
     }, RETURN_WAIT_MS);
     return () => clearTimeout(t);
@@ -213,6 +215,7 @@ export default function ThanksPop() {
       cancel = afterGameConcludes(() => {
         if (blockedHere() || anotherModalOpen() || gameActive()) return;
         try { if (shownThisWeek() || sessionStorage.getItem(SHOWN_KEY)) return; } catch (e) { return; }
+        if (!claimPop('thanks')) return;
         show('done');
       });
     };

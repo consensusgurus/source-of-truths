@@ -26,6 +26,7 @@ import { useEffect, useState } from 'react';
 import { scrimClose } from './PremierePop';
 import { X } from 'lucide-react';
 import { gameActive } from '@/lib/game-active';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 const KEY = 'sot_groups_pop';
 // First session a NAMED reader was seen in, and this session's verdict.
@@ -90,8 +91,10 @@ export default function GroupsPop() {
           if (Date.now() - started < 20000) timers.push(setTimeout(tick, 400));
           return;
         }
+        if (!force && popSpent('groups')) return;   // one pop-up a visit: unstamped, so it keeps its turn
         if (!force) { try { localStorage.setItem(KEY, new Date().toISOString().slice(0, 10)); } catch (e) {} }
         if (gameActive()) return;
+        if (!force && !claimPop('groups')) return;
         setMail(savedEmail());
         setOpen(true);
       };

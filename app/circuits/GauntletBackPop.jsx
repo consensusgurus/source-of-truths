@@ -20,6 +20,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { RUN_DOOR_CSS, RUN_DOORS } from './RunDoorPop';
 import { gameActive } from '@/lib/game-active';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 // 10s floor (owner, 2026-10-17): no pop-up lands within ten seconds of a game or run ending.
 const OPEN_MS = 10000;
@@ -62,7 +63,7 @@ export default function GauntletBackPop({ ready = false, games = [], href = '/tr
   useEffect(() => {
     if (!ready || fired.current) return undefined;
     const t = setTimeout(() => {
-      if (fired.current || gameActive()) return;
+      if (fired.current || gameActive() || !claimPop('gauntletback')) return;
       fired.current = true;
       setOpen(true);
       try { cbs.current.onShown && cbs.current.onShown(); } catch (e) {}

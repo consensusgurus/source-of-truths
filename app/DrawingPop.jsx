@@ -19,6 +19,7 @@ import { readRunParam } from '@/lib/circuits';
 import { readStageTheme } from '@/lib/stage-theme';
 import { afterGameConcludes, trackPostGame } from '@/lib/post-game-gate';
 import { DRAWING_COPY, drawingIsLive, drawingDaysLeft, formatOdds, ticketLabel } from '@/lib/drawing';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 const LAST_KEY = 'sot_drawing_last';
 const SHOWN_KEY = 'sot_drawing_shown';
@@ -149,6 +150,7 @@ export default function DrawingPop() {
       cancel = afterGameConcludes(() => {
         if (blockedHere() || anotherModalOpen()) return;
         try { if (shownThisWeek() || sessionStorage.getItem(SHOWN_KEY)) return; } catch (e) { return; }
+        if (!claimPop('drawing')) return;   // one pop-up a visit
         show();
       });
     };

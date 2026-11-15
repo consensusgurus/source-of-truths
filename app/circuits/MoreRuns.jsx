@@ -29,6 +29,7 @@ import { RUN_DOORS, runDoneToday } from './RunDoorPop';
 import { circuitKeysFor } from '@/lib/circuits';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 import { gameActive } from '@/lib/game-active';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 export const RUN_ORDER = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'dojocolor', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye'];
 export const RUNS_POP_STORE = 'sot_runs_pop';
@@ -212,6 +213,7 @@ export default function MoreRunsPop({ self, ready = false, delay = 3500, fireOnL
       } catch (e) { return; }
       const open = otherRuns(self).filter((id) => !runDoneToday(id));
       if (!open.length) return;
+      if (!claimPop('moreruns')) return;   // one pop-up a visit
       try { localStorage.setItem(RUNS_POP_STORE, new Date().toISOString().slice(0, 10)); } catch (e) {}
       setIds(open);
     };

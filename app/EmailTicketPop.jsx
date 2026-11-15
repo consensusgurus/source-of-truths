@@ -26,6 +26,7 @@ import { DAILY_GAMES } from '@/lib/daily-games';
 import { useStageTheme } from '@/lib/stage-theme';
 import { ensureMyRefCode } from '@/lib/referrals';
 import { gameActive, isRunPath } from '@/lib/game-active';
+import { claimPop, popSpent } from '@/lib/pop-budget';
 
 const KEY = 'sot_email_ticket_until';
 const HIDE_MS = 3 * 24 * 60 * 60 * 1000;
@@ -103,6 +104,7 @@ export default function EmailTicketPop() {
         if (!document.querySelector(FINISH_SEL)) return;
         if (now - lastInput.current < QUIET_MS) return;
       } else if (now - lastInput.current < 1500) return;
+      if (!claimPop('emailticket')) return;   // one pop-up a visit
       const id = identity();
       setNamed(!!(id && id.username));
       setName(id && id.username ? id.username : '');
