@@ -420,6 +420,8 @@ const TILES_KEY = 'sot_home_tiles';
 // Trivia). All Puzzles shows all five.
 // Math Gauntlet restored beside the Trivia Gauntlet (owner, 2026-10-13 evening).
 // Trivia Encore beside the Gauntlet (owner, 2026-10-14).
+const TOP_WAIT_MS = 1500;   // how long the phone's Top Puzzles row waits for the week's counts
+const TOP_PUZZLES = 25;
 const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'dojocolor', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye'];   // dojocolor beside the Dojo (2026-11-08)
 // CIRCUITS-PANE ONLY: a circuit listed here is never offered on the main page
 // (pills, phone runs, the shelf peek), only when the reader opens Circuits.
@@ -3053,15 +3055,28 @@ export default function StageToday() {
   const [fav, setFav] = useState(null);
   const favAsked = useRef(false);
   const favWanted = !!(railCat && fitFor(railCat.games.length)) || sortBy === 'pop'
-    || (mid && (!!railCat || paneOn === MINE_ID || (paneOn === ALL_ID && viewOf(ALL_ID) === 'list')));
+    || (mid && (!!railCat || paneOn === MINE_ID || (paneOn === ALL_ID && viewOf(ALL_ID) === 'list')))
+    || (runsMq && !picked);   // the phone home's Top Puzzles row (2026-11-15)
   useEffect(() => {
     if (!favWanted || favAsked.current) return;
     favAsked.current = true;
     const qs = identityQs();
     fetch('/api/quiz/my-plays' + (qs ? '?' + qs : '')).then((r) => r.json())
-      .then((d) => setFav({ mine: (d && d.mine) || {}, site: (d && d.site) || {}, week: (d && d.week) || {}, failed: !(d && d.mine) }))
-      .catch(() => setFav({ mine: {}, site: {}, week: {}, failed: true }));
+      .then((d) => setFav({ mine: (d && d.mine) || {}, site: (d && d.site) || {}, week: (d && d.week) || {}, uniq: (d && d.uniq) || null, failed: !(d && d.mine) }))
+      .catch(() => setFav({ mine: {}, site: {}, week: {}, uniq: null, failed: true }));
   }, [favWanted]);
+  // THE PHONE HOME'S TOP ROWS (owner, 2026-11-15, mockup 2B). Two sideways
+  // rows open the phone's first screen: every run, then the 25 top puzzles.
+  // The puzzle row never waits long on a slow server: after TOP_WAIT_MS it
+  // ranks on today's plays instead, and the order it first shows is the order
+  // for the visit (topOrder), so no tile moves under a thumb.
+  const [topWait, setTopWait] = useState(true);
+  const topOrder = useRef(null);
+  useEffect(() => {
+    if (!runsMq || picked || !topWait) return undefined;
+    const id = setTimeout(() => setTopWait(false), TOP_WAIT_MS);
+    return () => clearTimeout(id);
+  }, [runsMq, picked, topWait]);
   // A to Z until the week's counts land, so nothing jumps twice.
   // THE SEARCH IN THE TITLE ROW (owner, 2026-10-26): it fills the space beside
   // the pane title and filters the pane's puzzles by name and description as
@@ -3074,7 +3089,10 @@ export default function StageToday() {
   const closeMFind = () => { setMFind(false); setFindQ(''); };
   // THE FEATURED ROW (owner, 2026-11-13): on All Puzzles, the first row under
   // the runs. A key that is not live yet (Chef) is simply skipped until it is.
-  const FEATURED_KEYS = ['pack', 'chef', 'mop', 'carmen'];   // Pack in, Sudoclue out (owner, 2026-11-14: five would wrap on desktop)
+  const FEATURED_KEYS = ['pack', 'chef', 'mop', 'carmen'];
+  // Puzzles that left the Featured row recently. With FEATURED_KEYS they are
+  // the pool the phone home's Top Puzzles row leads with (owner, 2026-11-15).
+  const FEATURED_RECENT = ['sudoclue'];   // Pack in, Sudoclue out (owner, 2026-11-14: five would wrap on desktop)
   // UNIVERSAL (owner, 2026-10-26): "if im on sudoku page, i should be able to
   // search all puzzles and quizzes." A query searches every live daily from
   // whatever pane it is typed in, and the quiz catalogue under them.
@@ -4746,6 +4764,64 @@ export default function StageToday() {
                     <u>Ways to Earn</u>
                   </a>
                 ) : null}
+                {/* TOP RUNS, TOP PUZZLES (owner, 2026-11-15, mockup 2B): two rows
+                    that flick sideways. Every run, in the order the panes use
+                    (unfinished first, then finishes in 24 hours, then players).
+                    Then 25 puzzles that are in NO run today, ranked by UNIQUE
+                    players over seven days (one person replaying counts once):
+                    the two best of the Featured pool lead, the rest follow, and
+                    a puzzle nobody played is left out. A PLAYED PUZZLE DROPS OUT
+                    and the next one in the order takes the open place (owner,
+                    2026-11-15), so the row is always 25 things still to play
+                    while the order has that many left. */}
+                {(() => {
+                  const topRuns = [...circuits].sort((a, b) => (runFull(a) - runFull(b)) || (done24(b) - done24(a)) || (((runStat[b.id] || {}).players || 0) - ((runStat[a.id] || {}).players || 0)) || ((b.pop || 0) - (a.pop || 0)));
+                  if (!topOrder.current && day && circuits.length && (fav || !topWait)) {
+                    const inRun = new Set(RUN_GAMES);
+                    for (const c of circuits) for (const g of c.games) inRun.add(g.key);
+                    const uq = fav && !fav.failed ? (fav.uniq && Object.keys(fav.uniq).length ? fav.uniq : fav.week) : null;
+                    const cnt = (g) => (uq ? uq[g.key] || 0 : playsBy.get(g.key) || 0);
+                    const by = (a, b) => (cnt(b) - cnt(a)) || a.name.localeCompare(b.name);
+                    const pool = alpha.filter((g) => !inRun.has(g.key));
+                    const feat = new Set([...FEATURED_KEYS, ...FEATURED_RECENT]);
+                    const lead = pool.filter((g) => feat.has(g.key)).sort(by).slice(0, 2);
+                    const rest = pool.filter((g) => !lead.includes(g) && cnt(g) > 0).sort(by);
+                    topOrder.current = [...lead, ...rest].map((g) => g.key);
+                  }
+                  const topPz = (topOrder.current || []).filter((k) => !done.has(k)).slice(0, TOP_PUZZLES).map((k) => alpha.find((g) => g.key === k)).filter(Boolean);
+                  return (
+                    <>
+                      {topRuns.length ? (
+                        <div className="mph-tops">
+                          <div className="mph-lab">Top Runs</div>
+                          <div className="mph-flick">
+                            {topRuns.map((c) => {
+                              const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
+                              const fin = runFull(c);
+                              const line = fin ? (st && st.rank ? `Played · #${st.rank}` : 'Played') : st && st.players ? `${fmtN(st.players)} played today` : null;
+                              return (
+                                <a key={c.id} className={'mph-t mph-tp' + (fin ? ' done' : '')} href={withTq(circuitEntryHref(c.id))} title={c.blurb || c.name} style={mTone(pillCat(c, null))}>
+                                  <b>{c.name}</b>{line ? <em>{line}</em> : null}
+                                </a>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
+                      <div className="mph-tops">
+                        <div className="mph-lab">Top Puzzles</div>
+                        <div className="mph-flick">
+                          {topPz.map((g) => (
+                            <a key={g.key} className="mph-t mph-tp" href={mGoHref(g)} style={mTone(g.cat)}>
+                              <b>{g.name}</b><em>{g.tag}</em>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="mph-lab mph-clab">{ixLens === 'skill' ? 'Skills' : 'Categories'}</div>
+                    </>
+                  );
+                })()}
                 <div className="mph-grid">
                   {lensCats.map(({ cat, games }) => {
                     const rc = rampCat(cat);
@@ -8554,6 +8630,28 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-grid em.pg > span{flex:none;white-space:nowrap;}
   .sty-mph .mph-grid em.pg > i{flex:1 1 auto;min-width:16px;height:5px;border-radius:3px;overflow:hidden;background:color-mix(in srgb, currentColor 18%, transparent);}
   .sty-mph .mph-grid em.pg > i > u{display:block;height:100%;background:currentColor;text-decoration:none;}
+  /* TOP RUNS, TOP PUZZLES (owner, 2026-11-15, mockup 2B): two rows that flick
+     sideways above the tiles, three tiles and the edge of a fourth on show. The
+     row keeps its height while the counts are on their way, so nothing jumps.
+     The tiles go three across upright to make the room. */
+  .sty-mph .mph-fold > .mph-tops{flex:none;display:flex;flex-direction:column;gap:6px;min-width:0;}
+  .sty-mph .mph-fold .mph-lab{margin-top:0;}
+  .sty-mph .mph-fold > .mph-clab{flex:none;margin-bottom:-4px;}
+  .sty-mph .mph-flick{display:flex;gap:8px;min-height:80px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .sty-mph .mph-flick::-webkit-scrollbar{display:none;}
+  .sty-mph .mph-flick > .mph-tp{flex:0 0 31%;min-width:0;min-height:80px;box-sizing:border-box;scroll-snap-align:start;justify-content:space-between;gap:4px;padding:9px 10px 10px;text-decoration:none;}
+  .sty-mph .mph-flick > .mph-tp b{font-size:15px;font-weight:800;line-height:1.2;letter-spacing:-0.01em;padding-bottom:.08em;}
+  .sty-mph .mph-flick > .mph-tp em{font-size:12px;line-height:1.3;}
+  .sty-mph .mph-flick > .mph-tp.done{background:transparent;border-color:var(--stg-ink);color:var(--stg-ink);}
+}
+@media (max-width:599px){
+  .sty-mph .mph-grid{--mcols:3;}
+  .sty-mph .mph-grid > .mph-t,.sty-mph .mph-grid > .mph-big{padding:8px 9px 9px;}
+  .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:15px;letter-spacing:-0.02em;}
+  .sty-mph .mph-grid > .mph-t em,.sty-mph .mph-grid > .mph-big em{font-size:12px;}
+  .sty-mph .mph-grid em.pg{gap:6px;}
+}
+@media (max-width:900px){
   /* The ranks are plain figures, as in the desktop cap: no box, no dividers. */
   .sty-mph .sty-mst{border:0;border-radius:0;}
   .sty-mph .sty-mst > a{border-left:0;}

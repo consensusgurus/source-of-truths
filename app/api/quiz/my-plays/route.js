@@ -34,7 +34,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const anonId = (searchParams.get('anonId') || '').trim() || null;
   const email = (searchParams.get('email') || '').trim() || null;
-  const empty = { mine: {}, site: {}, week: {}, days: DAYS };
+  const empty = { mine: {}, site: {}, week: {}, uniq: {}, days: DAYS };
   try {
     let myKeys = new Set();
     if (anonId || email) {
@@ -53,6 +53,10 @@ export async function GET(request) {
     }
     const site = {};
     const week = {};
+    // UNIQUE PLAYERS over the same seven days (owner, 2026-11-15): one person
+    // playing a game a hundred times counts once. Feeds the phone home's Top
+    // Puzzles row; `week` stays the count of plays.
+    const seen = new Map();
     const mine = {};
     for (const r of (data || [])) {
       const m = r && r.quiz_id ? String(r.quiz_id).match(RE) : null;
@@ -60,7 +64,11 @@ export async function GET(request) {
       const key = m[1];
       site[key] = (site[key] || 0) + 1;
       const wi = slot.get(`${Number(m[2])}-${Number(m[3])}-${Number(m[4])}`);
-      if (wi !== undefined && wi >= DAYS - WEEK) week[key] = (week[key] || 0) + 1;
+      if (wi !== undefined && wi >= DAYS - WEEK) {
+        week[key] = (week[key] || 0) + 1;
+        const pid = r.user_id ? `u:${r.user_id}` : r.anon_id ? `a:${r.anon_id}` : null;
+        if (pid) { let st = seen.get(key); if (!st) { st = new Set(); seen.set(key, st); } st.add(pid); }
+      }
       if (!myKeys.size) continue;
       const isMine = (r.user_id && myKeys.has(`u:${r.user_id}`)) || (r.anon_id && myKeys.has(`a:${r.anon_id}`));
       if (!isMine) continue;
@@ -94,7 +102,9 @@ export async function GET(request) {
         solveRate: me.runs ? Math.round((me.solved / me.runs) * 100) : null,
       };
     }
-    return NextResponse.json({ mine, site, week, days: DAYS }, { headers: { 'Cache-Control': 'private, max-age=60' } });
+    const uniq = {};
+    for (const [k, st] of seen) uniq[k] = st.size;
+    return NextResponse.json({ mine, site, week, uniq, days: DAYS }, { headers: { 'Cache-Control': 'private, max-age=60' } });
   } catch (e) {
     return NextResponse.json(empty, { headers: { 'Cache-Control': 'no-store' } });
   }

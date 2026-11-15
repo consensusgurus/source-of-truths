@@ -2794,3 +2794,29 @@ ten because the colour schemes are good. He picked "option A" from a mockup and 
 
 - Anon (`anBoard`) and Glyph (`glBoard`, the stage IIFE hoisted) play on PlayStage `wide`, with their boards wearing `.pst-raw` so their own buttons keep their styles. Glyph's `stageOn` sits after its `const revealed` line (a TDZ trap if it moves above it).
 - Glyph on the white stage uses ink blocks and a 1px ink grid, as in the stage mockup. Its page block colour leans on `--stg-dk`, which the white stage forces to 100%, so the blocks used to come out grey. In the light looks the numbered cells take the stage pastel (`--pst-acc`, 45% wash, full on the cursor with an ink ring); in the dark looks the blocks are black.
+
+## The phone home's Top Runs and Top Puzzles rows (owner, 2026-11-15, mockup 2B)
+
+Owner, from the phone home mockups: "we will go with 2B", with both rows flicking sideways. Built in
+`app/today/StageToday.jsx` (the `.mph-tops` blocks at the top of `.mph-fold`, and the CSS under
+"TOP RUNS, TOP PUZZLES").
+
+- **The first screen, top to bottom:** the drawing, Top Runs, Top Puzzles, a "Categories" (or "Skills")
+  label, the tiles, the switch. The tiles go THREE across upright (All Puzzles and My Puzzles close the
+  grid as before) with 15px names; 600px and up is unchanged.
+- **Top Runs is every run**, in the order the panes use: unfinished first, then finishes in the last
+  24 hours, then players today, then the sum of its games' plays.
+- **Top Puzzles is 25 puzzles, none of them in a run today** (`RUN_GAMES` plus every game in today's
+  lineups from `circuits`). Ranked by UNIQUE players over seven days: `/api/quiz/my-plays` now returns
+  `uniq` beside `week`, one count per player however often they replayed ("if one person plays Four
+  100 times it only counts for 1"). The two best of the Featured pool lead (`FEATURED_KEYS` plus
+  `FEATURED_RECENT`, the puzzles that recently left the row), then the rest by unique players; a
+  puzzle nobody played is left out.
+- **A played puzzle drops out of Top Puzzles** and the next one in the order takes the open place
+  (owner, 2026-11-15: "refill with new ones working in order"), so the row shows up to 25 puzzles
+  still to play. A finished run stays in Top Runs, at the end.
+- **It never waits long and never re-sorts.** The row holds its height; after `TOP_WAIT_MS` (1.5s)
+  without the week's counts it ranks on today's plays, and the first order shown is kept for the visit
+  (`topOrder`). The phone home now asks for `/api/quiz/my-plays` on its first screen.
+- When a puzzle leaves the Featured row, move its key to `FEATURED_RECENT`; when it is no longer
+  "recent", delete it there.
