@@ -2940,8 +2940,11 @@ implement". Logic. `/dash`.
 - **Files.** `app/dash/`, `lib/dash-engine.js`, `scripts/gen-dash.mjs` (append only), `gen-dash-spec.mjs`,
   `verify-dash.mjs`, `wire-dash.mjs` (do not re-run), `gen-dash-tiles.py`, `bake-dash-og.mjs`. The bank runs
   to 2027-01-03.
-- **Not done.** The car jumps, it does not drive. Give Up does not show the best route. Not in Featured or a
-  run. The live page was checked on the dev server (boards 1 and 8, phone and wide, light and dark), not with
+- **The car drives** (owner, 2026-11-15: "make the car animated"): a new stop runs the car along that leg's
+  streets and the leg's line draws in behind it, about 110ms a block and never over 0.9s. Undo and Start Over
+  jump. Off under reduced motion. The last leg is its own `<path>` for this; do not fold it back into the route.
+- **In Featured** from 2026-11-15 (first in the row; Carmen, the oldest of the four, moved to FEATURED_RECENT).
+- **Not done.** Give Up does not show the best route. Not in a run. The live page was checked on the dev server (boards 1 and 8, phone and wide, light and dark), not with
   a production build.
 
 ## Board previews for the everyday puzzles were redrawn (2026-11-15)

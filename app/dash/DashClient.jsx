@@ -20,10 +20,17 @@
 // on it, one colour per order shared by its restaurant (a circle) and its door
 // (a square). The names and numbers live in the order list.
 //
+// THE CAR DRIVES (owner, 2026-11-15: "make the car animated"). A tap that adds a
+// stop runs the car along the streets of that leg, across then down as the route
+// is drawn, and the leg's line draws in behind it. About 110ms a block, never over
+// 0.9s, so a long drive is still quick. Undo and Start Over jump: only a new stop
+// drives. Nothing waits for it: a second tap mid-drive simply starts the next leg
+// from where the last one ends. Off under prefers-reduced-motion.
+//
 // THE BOARD NEVER MOVES AT THE FINISH (owner rule): the doors pop in the order
 // they were delivered, then the full-screen fill opens with the ladder climb.
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { COLS_CSS } from '@/lib/practical-cols';
 import SimpleDaily from '../SimpleDaily';
 import { endSolved } from '@/lib/end-verdict';
@@ -140,9 +147,26 @@ function Board({ P, s, setS, active, done, held, release }) {
   const M = 22, gap = (340 - 2 * M) / (P.W - 1), gy = gap * 0.8, Hh = M + (P.H - 1) * gy + M;
   const X = (x) => M + x * gap, Y = (y) => M + y * gy;
   const R = gap > 55 ? 14 : 11.5;
-  const line = w.pts.map(([x, y], k) => `${k ? 'L' : 'M'}${X(x)} ${Y(y)}`).join('');
+  const d = (pts) => pts.map(([x, y], k) => `${k ? 'L' : 'M'}${X(x)} ${Y(y)}`).join('');
   const busy = (c) => P.orders.some((o) => (o.r[0] === c[0] && o.r[1] === c[1]) || (o.h[0] === c[0] && o.h[1] === c[1]));
-  const off = busy(w.pos) ? R * 0.95 : 0;
+  const offOf = (c) => (busy(c) ? R * 0.95 : 0);
+  const off = offOf(w.pos);
+  // the last leg is its own line, so it can draw in behind the car
+  const before = s.taps.length ? walk(P, s.taps.slice(0, -1)) : null;
+  const leg = before ? [before.pos].concat(before.pos[0] !== w.pos[0] && before.pos[1] !== w.pos[1] ? [[w.pos[0], before.pos[1]]] : [], [w.pos]) : null;
+  const carRef = useRef(null), legRef = useRef(null), seen = useRef(s.taps.length);
+  useEffect(() => {
+    const n = s.taps.length, was = seen.current; seen.current = n;
+    if (n !== was + 1 || !leg || !carRef.current || !carRef.current.animate) return;
+    try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (e) { return; }
+    const len = leg.slice(1).map((p, i) => Math.abs(p[0] - leg[i][0]) + Math.abs(p[1] - leg[i][1])), all = len.reduce((a, b) => a + b, 0);
+    if (!all) return;
+    const o0 = offOf(leg[0]), o1 = offOf(w.pos), at = (p, o) => `translate(${X(p[0]) - o}px, ${Y(p[1]) + o}px)`;
+    const frames = leg.map((p, i) => ({ transform: at(p, i === 0 ? o0 : i === leg.length - 1 ? o1 : 0), offset: i === 0 ? 0 : i === leg.length - 1 ? 1 : len[0] / all }));
+    const opts = { duration: Math.min(900, Math.max(320, all * 110)), easing: 'ease-in-out' };
+    try { carRef.current.animate(frames, opts); if (legRef.current) legRef.current.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], opts); } catch (e) { /* the car is simply already there */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.taps.length]);
 
   const tap = (i) => {
     if (finale) { release(); return; }
@@ -176,7 +200,8 @@ function Board({ P, s, setS, active, done, held, release }) {
           {Array.from({ length: (P.W - 1) * (P.H - 1) }, (_, k) => { const x = k % (P.W - 1), y = Math.floor(k / (P.W - 1)); return <rect key={k} className="ds-blk" x={X(x) + 6} y={Y(y) + 6} width={gap - 12} height={gy - 12} rx={4} />; })}
           {Array.from({ length: P.H }, (_, y) => <line key={`rh${y}`} className="ds-road" x1={X(0)} y1={Y(y)} x2={X(P.W - 1)} y2={Y(y)} strokeWidth={6} />)}
           {Array.from({ length: P.W }, (_, x) => <line key={`rv${x}`} className="ds-road" x1={X(x)} y1={Y(0)} x2={X(x)} y2={Y(P.H - 1)} strokeWidth={6} />)}
-          {w.pts.length > 1 ? <path className="ds-route" d={line} strokeWidth={3} /> : null}
+          {before && before.pts.length > 1 ? <path className="ds-route" d={d(before.pts)} strokeWidth={3} /> : null}
+          {leg && leg.length > 1 ? <path ref={legRef} className="ds-route" d={d(leg)} strokeWidth={3} pathLength={1} strokeDasharray={1} strokeDashoffset={0} /> : null}
           <circle className="ds-at" cx={X(P.start[0])} cy={Y(P.start[1])} r={5} strokeWidth={2} />
           {P.orders.map((o, i) => {
             const x = X(o.r[0]), y = Y(o.r[1]);
@@ -198,7 +223,7 @@ function Board({ P, s, setS, active, done, held, release }) {
                   : <text className="ds-emo" x={x + q} y={y - q + 3.3} textAnchor="middle" fontSize={9}>{o.e}</text>}
               </g>);
           })}
-          <g className="ds-car" pointerEvents="none" transform={`translate(${X(w.pos[0]) - off} ${Y(w.pos[1]) + off})`}>
+          <g ref={carRef} className="ds-car" pointerEvents="none" style={{ transform: `translate(${X(w.pos[0]) - off}px, ${Y(w.pos[1]) + off}px)` }}>
             <circle r={9.5} />
             <path d="M-5.5 2.2v-2l1.6-.5 1.5-2.4h4.6l1.9 2.4 1.6.6v1.9M-3.4 2.2h6.6" fill="none" stroke="var(--ds-bg)" strokeWidth={1.3} strokeLinecap="round" strokeLinejoin="round" />
             <circle cx={-3.4} cy={2.6} r={1.1} style={{ fill: 'var(--ds-bg)' }} /><circle cx={3.4} cy={2.6} r={1.1} style={{ fill: 'var(--ds-bg)' }} />
