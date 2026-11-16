@@ -74,6 +74,20 @@ Never reintroduce a literal `'Top Ten'` in any list header. The `top3` variant c
 
 ## Deploy — Claude pushes directly via the stored PAT (DEFAULT)
 
+### Second push path: the cloud clone (owner rule, 2026-11-16)
+
+If the stored PAT push returns 403, use the cloud clone instead of reporting the deploy as stuck.
+The owner wants pushes to land; he does not want to be handed a command to run himself.
+
+1. Build the commit as usual (plumbing on the device repo, based on a fresh `FETCH_HEAD`).
+2. Attach the repo to the session with `add_repo` (`consensusgurus/source-of-truths`, access `push`).
+3. Move the commit across: on the device, `git update-ref refs/heads/<name> <commit>` and
+   `git bundle create <file> <name> ^<base>`; copy the bundle into a connected folder and
+   `device_stage_files` it; in a shallow cloud clone, `git fetch <bundle> <name>:<name>`.
+4. Check `git ls-remote origin refs/heads/main` still equals your base, then
+   `git -c push.negotiate=true push origin <name>:main`.
+
+
 Claude deploys by pushing the new `lib/data.js` straight to `origin/main` using a stored fine-grained
 Personal Access Token. The repo now lives **outside OneDrive** (`C:\dev\source-of-truths`), which is what
 makes direct sandbox pushes reliable: the OneDrive mount used to block ref updates and `.git/index.lock`

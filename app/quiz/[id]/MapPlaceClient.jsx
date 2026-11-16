@@ -691,7 +691,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
                   <ClueBox current={promptCity ? promptCity.name : ''} clues={cities.map((c) => c.name)} textStyle={{ fontFamily: SERIF, fontWeight: 800, fontSize: 'clamp(22px, 3.4vw, 30px)', lineHeight: 1.05 }} />
                 </div>
 {US ? (
-                <div style={{ position: 'relative', maxWidth: 1100, margin: '0 auto', borderRadius: 8, overflow: 'hidden', border: `1px solid var(--stg-line,${COLORS.faded}44)`, background: UM.sea }}>
+                <div style={{ position: 'relative', maxWidth: 1100, width: 'min(100%, calc((100dvh - 300px) * 1.61))', minWidth: 'min(100%, 320px)', margin: '0 auto', borderRadius: 8, overflow: 'hidden', border: `1px solid var(--stg-line,${COLORS.faded}44)`, background: UM.sea }}>
                   {!geo ? <div style={{ aspectRatio: '1000 / 621' }} /> : (<>
                   <style dangerouslySetInnerHTML={{ __html: `.usm-pick:hover{fill:${UM.hover}}` }} />
                   <svg ref={svgRef} viewBox={`${view.x.toFixed(1)} ${view.y.toFixed(1)} ${view.w.toFixed(1)} ${view.h.toFixed(1)}`} onClick={handleMapClick} onPointerDown={onPtrDown} onPointerMove={onPtrMove} onPointerUp={onPtrUp} onPointerLeave={onPtrUp} style={{ display: 'block', width: '100%', height: 'auto', cursor: vb && dragRef.current ? 'grabbing' : PICK_STATE ? 'pointer' : 'crosshair', touchAction: vb ? 'none' : 'manipulation', userSelect: 'none' }} role="img" aria-label={PICK_STATE ? 'Map of the lower 48 states. Click the state the company is based in.' : 'Map of the lower 48 states. Click as close as you can to the company headquarters.'}>
