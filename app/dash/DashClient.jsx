@@ -15,7 +15,18 @@
 // best possible shift (`best` on the row; the taps that make it never reach the
 // browser), lower first, then the clock. The Tip Ladder names the rung.
 //
-// THE MAP IS KEPT PLAIN ON PURPOSE (owner, 2026-11-15: "the visual grid could
+// THE MAP IS NIGHT SHIFT (owner, 2026-11-16, on three mocked looks: "I like night shift and the
+// improvements you offered"). The town is always after dark, in the light register and the dark
+// one alike: plum blocks with lit windows, a glowing rose route, restaurants bright as signs,
+// the tip popping at the door it was earned at, and a car with headlights pointing the way it
+// last drove. The colours are fixed hexes on purpose (N below), not theme variables, so do not
+// tokenise them. It matches the share card (scripts/bake-dash-og.mjs).
+// The two improvements came with it: EVERY STOP IS NUMBERED on the map in the order driven
+// (and listed with its time at the finish), and THE SHIFT BAR under the stats shows the whole
+// shift as one bar (driving, waiting, stops, what is left) with every order standing at the
+// minute it stops being hot, fresh, cold or frozen.
+//
+// WHAT FOLLOWS WAS THE FIRST LOOK AND STILL HOLDS FOR CLUTTER: THE MAP IS KEPT PLAIN ON PURPOSE (owner, 2026-11-15: "the visual grid could
 // look cleaner and more compact"): grey blocks, thin streets, no names printed
 // on it, one colour per order shared by its restaurant (a circle) and its door
 // (a square). The names and numbers live in the order list.
@@ -53,6 +64,7 @@ const html = (s) => ({ __html: s });
 const NUM = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 const Cap = (s) => s[0].toUpperCase() + s.slice(1);
 const hue = (i) => (i * 47 + 20) % 360;
+const N = { bg: '#1a1423', block: '#2d2438', off: '#3b3047', lit: '#fde68a', road: '#3a2f48', water: '#15304a', ripple: '#3d6a8f', park: '#1f3a2a', tree: '#2f5a3c', bridge: '#5b4a66', route: '#fda4af', glow: '#fb7185', ok: '#bbf7d0', late: '#fde68a', ink: '#141414' };
 const HOUSE = 'M-6 0.5L0 -5.5 6 0.5M-4.2 -0.8V5.5H4.2V-0.8';
 const CAR = '<svg class="ds-ico" viewBox="0 0 120 48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M22 34h-8v-9l8-3 8-10h30l12 10 20 4v8h-8"/><path d="M34 34h36"/><circle cx="28" cy="34" r="6"/><circle cx="78" cy="34" r="6"/><path d="M33 22h36L60 14H40z"/><path d="M50 14v8"/><path d="M40 4h20v6H40zM46 4V1h8v3"/></svg>';
 
@@ -68,13 +80,14 @@ const CSS = `
 .ds-ev{display:flex;align-items:center;gap:12px;color:var(--pst-ink,var(--ds-ink));}
 .ds-ico{width:84px;height:34px;flex:none;display:block;}
 .ds-ev b{display:block;font-size:15px;font-weight:800;line-height:1.3;}.ds-ev span{font-size:12px;color:var(--pst-mute,var(--ds-mute));}
-.ds-map{border:1px solid var(--ds-ink);border-radius:10px;background:var(--ds-bg);padding:4px;}
+.ds-map{border:1px solid var(--ds-ink);border-radius:10px;background:#1a1423;padding:4px;}
+.ds-bar{display:block;width:100%;height:auto;}.ds-bar text{font-family:'Manrope',system-ui,sans-serif;}
 .ds-map svg{display:block;width:100%;height:auto;touch-action:manipulation;-webkit-user-select:none;user-select:none;}
 .ds-map text{font-family:'Manrope',system-ui,sans-serif;pointer-events:none;}
 .ds-blk{fill:var(--ds-block);}
 .ds-road{stroke:var(--ds-road);stroke-linecap:round;}
 .ds-dug{fill:var(--ds-bad);stroke:var(--ds-ink);}
-.ds-route{fill:none;stroke:var(--ds-ink);stroke-linejoin:round;stroke-linecap:round;}
+.ds-route{fill:none;stroke:#fda4af;stroke-linejoin:round;stroke-linecap:round;}
 .ds-stop{cursor:pointer;}
 .ds-stop circle.c{fill:hsl(var(--h) var(--ds-sat) var(--ds-lit));stroke:var(--ds-ink);}
 .ds-stop.in circle.c{fill:var(--ds-acc);}
@@ -107,14 +120,13 @@ const CSS = `
 .ds-ord.bag{background:var(--ds-acc);color:var(--ds-on);}.ds-ord.bag small{color:var(--ds-on);}
 .ds-ord.fin{background:var(--ds-grey);}
 .ds-ord:disabled{cursor:default;}
-.ds-rest circle.c,.ds-house rect.c{fill:hsl(var(--h) var(--ds-sat) var(--ds-lit));stroke:var(--ds-ink);}
+.ds-rest circle.c{fill:hsl(var(--h) 70% 80%);stroke:#141414;}.ds-rest circle.halo{fill:hsl(var(--h) 80% 65%);opacity:.28;}.ds-house rect.c{fill:hsl(var(--h) 60% 78%);stroke:#141414;}
 .ds-rest,.ds-house{cursor:pointer;}
 .ds-rest.gone{opacity:.3;}
-.ds-house.bag rect.c{fill:var(--ds-acc);stroke-width:2.2;}
-.ds-house.fin rect.c{fill:var(--ds-ok);}
-.ds-house .bd{fill:var(--ds-bg);stroke:var(--ds-ink);}
-.ds-car circle{fill:var(--ds-ink);}
-.ds-at{fill:none;stroke:var(--ds-ink);}
+.ds-house.bag rect.c{stroke:#fda4af;stroke-width:3;}
+.ds-house.fin rect.c{fill:#bbf7d0;}.ds-house.fin.cold rect.c{fill:#fde68a;}
+.ds-house .bd{fill:#1a1423;stroke:hsl(var(--h) 70% 80%);}
+.ds-at{fill:#1a1423;stroke:#fda4af;}
 .ds-emo{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;}
 .ds-btns{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:6px;}
 .dash button.ds-btn{border:1px solid var(--ds-ink);border-radius:10px;padding:9px 4px;font-weight:800;font-size:14px;background:var(--ds-bg);text-align:center;line-height:1.3;}
@@ -143,7 +155,7 @@ const rankName = (P, s) => { const r = rankOf(shortOf(P, s)); return r.rows[r.at
 const WHY = { full: 'Bag Full', late: 'Too Late', end: 'Past Closing' };
 
 function Board({ P, s, setS, active, done, held, release }) {
-  const N = P.orders.length;
+  const N0 = P.orders.length;
   const [note, setNote] = useState('');
   const live = active && !done;
   const w = walk(P, s.taps);
@@ -197,6 +209,13 @@ function Board({ P, s, setS, active, done, held, release }) {
   const reset = () => { if (!live || !s.taps.length) return; setS({ ...s, taps: [] }); setNote('Back at the start.'); };
   const go = () => { if (!live || !w.count) return; setS({ ...s, over: true, short, mv: s.mv + 1 }); };
 
+  // the shift so far as stretches of the bar: driving, waiting for food, a stop
+  const bits = []; { let t0 = 0; for (const g of w.legs) { const stop = g.t - STAY, wait = stop - (g.wait || 0); if (wait > t0) bits.push([t0, wait, 'd']); if (stop > wait) bits.push([wait, stop, 'w']); bits.push([stop, g.t, 's']); t0 = g.t; } }
+  const T = (m) => 8 + 324 * Math.min(m, P.end) / P.end;
+  // every order stands on the bar at the minute it stops keeping; neighbours take turns on two rows
+  const marks = P.orders.map((o, i) => ({ i, x: T(o.by) })).sort((a, b) => a.x - b.x); marks.forEach((m, k) => { m.row = k && m.x - marks[k - 1].x < 15 ? 1 - marks[k - 1].row : 0; });
+  // which way the car last drove (it starts facing east)
+  const heading = leg && leg.length > 1 ? Math.atan2((leg[leg.length - 1][1] - leg[leg.length - 2][1]) * gy, (leg[leg.length - 1][0] - leg[leg.length - 2][0]) * gap) * 180 / Math.PI : 0;
   const rank = won ? rankOf(short) : null;
   const order = Object.keys(w.del).map(Number).sort((a, b) => w.del[a].t - w.del[b].t);
   const idle = live ? note || (s.taps.length ? (stuck ? 'No moves left. End the shift, or undo.' : '') : 'Tap an order to pick it up, then again to drop it off.') : '';
@@ -210,43 +229,74 @@ function Board({ P, s, setS, active, done, held, release }) {
         <div><b>{w.bag.length ? <span className="ds-emo" style={{ fontSize: 17, color: 'inherit' }}>{w.bag.map((i) => P.orders[i].e).join(' ')}</span> : 'Empty'}</b><span>Bag of {Cap(NUM[P.cap])}</span></div>
         <div><b>${w.earn}</b><span>Tips</span></div>
       </div>
-      <div className="ds-cap"><b>{P.day}</b> · {clock(0)} to {clock(P.end)} · {PER} min a block, {STAY} a stop</div>
+      <svg className="ds-bar" viewBox="0 0 340 55" role="img" aria-label={`The shift from ${clock(0)} to ${clock(P.end)}. It is ${clock(w.t)}.`}>
+        <defs><clipPath id="ds-barclip"><rect x={8} y={12} width={324} height={12} rx={6} /></clipPath></defs>
+        <rect x={8} y={12} width={324} height={12} rx={6} style={{ fill: 'var(--ds-grey)' }} />
+        <g clipPath="url(#ds-barclip)">{bits.map(([t0, t1, k], j) => <rect key={j} x={T(t0)} y={12} width={Math.max(0, T(t1) - T(t0))} height={12} style={{ fill: k === 's' ? 'var(--ds-ink)' : k === 'w' ? 'var(--ds-mute)' : N.glow }} />)}</g>
+        <rect x={8} y={12} width={324} height={12} rx={6} fill="none" style={{ stroke: 'var(--ds-ink)' }} strokeWidth={1} />
+        <path d={`M${T(w.t)} 10l-4.5-7h9z`} style={{ fill: 'var(--ds-ink)' }} />
+        {marks.map((m) => { const o = P.orders[m.i], y = m.row ? 51 : 39; return (
+          <g key={m.i} opacity={w.del[m.i] ? 0.3 : 1}>
+            <line x1={m.x} y1={24} x2={m.x} y2={m.row ? 40 : 28} style={{ stroke: 'var(--ds-ink)' }} strokeWidth={1.2} />
+            <text className="ds-emo" x={m.x} y={y} textAnchor="middle" fontSize={11}>{o.e}</text>
+          </g>); })}
+        <text x={8} y={53} fontSize={9.5} fontWeight={700} style={{ fill: 'var(--ds-mute)' }}>{clock(0)}</text>
+        <text x={332} y={53} fontSize={9.5} fontWeight={700} textAnchor="end" style={{ fill: 'var(--ds-mute)' }}>{clock(P.end)}</text>
+      </svg>
       <div className="ds-map">
-        <svg viewBox={`0 0 340 ${Hh}`} className={finale ? 'ds-fin-on' : undefined} role="img" aria-label={`A town of ${P.W} by ${P.H} corners with ${N} restaurants and ${N} doors`}>
-          {Array.from({ length: (P.W - 1) * (P.H - 1) }, (_, k) => { const x = k % (P.W - 1), y = Math.floor(k / (P.W - 1)); return covered.has(`${x},${y}`) ? null : <rect key={k} className="ds-blk" x={X(x) + 6} y={Y(y) + 6} width={gap - 12} height={gy - 12} rx={4} />; })}
+        <svg viewBox={`0 0 340 ${Hh}`} className={finale ? 'ds-fin-on' : undefined} role="img" aria-label={`A town at night, ${P.W} by ${P.H} corners, with ${N0} restaurants and ${N0} doors`}>
+          <defs><filter id="ds-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" /></filter></defs>
           {P.river ? (P.river.axis === 'h'
-            ? <rect className="ds-water" x={0} y={Y(P.river.at) + 3} width={340} height={gy - 6} />
-            : <rect className="ds-water" x={X(P.river.at) + 3} y={0} width={gap - 6} height={Hh} />) : null}
-          {(P.parks || []).map(([bx, by, bw, bh], k) => <rect key={`pk${k}`} className="ds-park" x={X(bx) + 6} y={Y(by) + 6} width={bw * gap - 12} height={bh * gy - 12} rx={6} />)}
-          {P.river ? P.river.bridges.map((b) => { const h = P.river.axis === 'h', x1 = h ? X(b) : X(P.river.at), y1 = h ? Y(P.river.at) : Y(b), x2 = h ? x1 : X(P.river.at + 1), y2 = h ? Y(P.river.at + 1) : y1; return <line key={`br${b}`} className="ds-bridge" x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth={10} />; }) : null}
-          {segments(P).map((e) => <line key={`st${e.join()}`} className="ds-road" x1={X(e[0])} y1={Y(e[1])} x2={X(e[2])} y2={Y(e[3])} strokeWidth={6} />)}
-          {before && before.pts.length > 1 ? <path className="ds-route" d={d(before.pts)} strokeWidth={3} /> : null}
-          {leg && leg.length > 1 ? <path ref={legRef} className="ds-route" d={d(leg)} strokeWidth={3} pathLength={1} strokeDasharray={1} strokeDashoffset={0} /> : null}
-          <circle className="ds-at" cx={X(P.start[0])} cy={Y(P.start[1])} r={5} strokeWidth={2} />
+            ? <rect x={0} y={Y(P.river.at) + 5} width={340} height={gy - 10} fill={N.water} />
+            : <rect x={X(P.river.at) + 5} y={0} width={gap - 10} height={Hh} fill={N.water} />) : null}
+          {Array.from({ length: (P.W - 1) * (P.H - 1) }, (_, k) => {
+            const x = k % (P.W - 1), y = Math.floor(k / (P.W - 1)); if (covered.has(`${x},${y}`)) return null;
+            const bw = gap - 12, bh = gy - 12, cols = Math.floor((bw - 6) / 9), rows = Math.floor((bh - 6) / 9), px = X(x) + 6 + (bw - cols * 9 + 3.5) / 2, py = Y(y) + 6 + (bh - rows * 9 + 3.5) / 2;
+            return (
+              <g key={k}><rect x={X(x) + 6} y={Y(y) + 6} width={bw} height={bh} rx={5} fill={N.block} />
+                {Array.from({ length: cols * rows }, (_, q) => { const i = q % cols, j = Math.floor(q / cols), on = (x * 7 + y * 5 + i * 3 + j * 2 + P.num) % 4 === 0; return <rect key={q} x={px + i * 9} y={py + j * 9} width={5.5} height={5.5} rx={1.1} fill={on ? N.lit : N.off} />; })}
+              </g>);
+          })}
+          {(P.parks || []).map(([bx, by, bw, bh], k) => (
+            <g key={`pk${k}`}><rect x={X(bx) + 6} y={Y(by) + 6} width={bw * gap - 12} height={bh * gy - 12} rx={7} fill={N.park} />
+              {[[0.18, 0.32], [0.4, 0.68], [0.62, 0.3], [0.84, 0.64]].map(([a, b], j) => <circle key={j} cx={X(bx) + bw * gap * a} cy={Y(by) + bh * gy * b} r={5} fill={N.tree} />)}
+              <circle cx={X(bx) + bw * gap * 0.5} cy={Y(by) + bh * gy * 0.4} r={2.4} fill={N.lit} />
+            </g>))}
+          {P.river ? P.river.bridges.map((b) => { const h = P.river.axis === 'h', x1 = h ? X(b) : X(P.river.at), y1 = h ? Y(P.river.at) : Y(b), x2 = h ? x1 : X(P.river.at + 1), y2 = h ? Y(P.river.at + 1) : y1; return <line key={`br${b}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke={N.bridge} strokeWidth={11} />; }) : null}
+          {segments(P).map((e) => <line key={`st${e.join()}`} x1={X(e[0])} y1={Y(e[1])} x2={X(e[2])} y2={Y(e[3])} stroke={N.road} strokeWidth={5} strokeLinecap="round" />)}
+          {w.pts.length > 1 ? <path d={d(w.pts)} fill="none" stroke={N.glow} strokeWidth={11} strokeLinejoin="round" strokeLinecap="round" opacity={0.32} filter="url(#ds-glow)" /> : null}
+          {before && before.pts.length > 1 ? <path className="ds-route" d={d(before.pts)} strokeWidth={3.4} /> : null}
+          {leg && leg.length > 1 ? <path ref={legRef} className="ds-route" d={d(leg)} strokeWidth={3.4} pathLength={1} strokeDasharray={1} strokeDashoffset={0} /> : null}
+          <circle className="ds-at" cx={X(P.start[0])} cy={Y(P.start[1])} r={5} strokeWidth={2.4} />
           {P.orders.map((o, i) => {
             const x = X(o.r[0]), y = Y(o.r[1]);
             return (
               <g key={`r${i}`} data-rest={i} className={`ds-rest${w.picked.includes(i) ? ' gone' : ''}`} onClick={() => tap(i)} style={{ '--h': hue(i) }}>
-                <circle className="c" cx={x} cy={y} r={R} />
+                <circle className="halo" cx={x} cy={y} r={R + 3.5} />
+                <circle className="c" cx={x} cy={y} r={R} strokeWidth={1.4} />
                 <text className="ds-emo" x={x} y={y + R * 0.4} textAnchor="middle" fontSize={R * 1.15}>{o.e}</text>
               </g>);
           })}
           {P.orders.map((o, i) => {
-            const x = X(o.h[0]), y = Y(o.h[1]), fin = !!w.del[i], at = order.indexOf(i), q = R * 0.92;
+            const x = X(o.h[0]), y = Y(o.h[1]), got = w.del[i], fin = !!got, at = order.indexOf(i), q = R * 0.92, py = o.h[1] === 0 ? y + q + 3 : y - q - 15;
             return (
-              <g key={`h${i}`} data-house={i} className={`ds-house ds-stop${fin ? ' fin' : w.bag.includes(i) ? ' bag' : ''}`} onClick={() => tap(i)}
+              <g key={`h${i}`} data-house={i} className={`ds-house ds-stop${fin ? (got.tip < o.tip ? ' fin cold' : ' fin') : w.bag.includes(i) ? ' bag' : ''}`} onClick={() => tap(i)}
                 style={{ '--h': hue(i), ...(finale && fin ? { animationDelay: `${150 + at * POP}ms` } : null) }}>
-                <rect className="c" x={x - q} y={y - q} width={q * 2} height={q * 2} rx={4.5} />
+                <rect className="c" x={x - q} y={y - q} width={q * 2} height={q * 2} rx={4.5} strokeWidth={1.4} />
                 <path d={HOUSE} transform={`translate(${x} ${y + 0.5}) scale(${R / 13})`} fill="none" stroke="#141414" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
-                <circle className="bd" cx={x + q} cy={y - q} r={7} />
-                {fin ? <path d={`M${x + q - 3} ${y - q}l2.2 2.2 3.8-4.2`} fill="none" stroke="var(--ds-ink)" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
-                  : <text className="ds-emo" x={x + q} y={y - q + 3.3} textAnchor="middle" fontSize={9}>{o.e}</text>}
+                {fin ? <g><rect x={x - 15} y={py} width={30} height={13} rx={6.5} fill={got.tip < o.tip ? N.late : N.ok} stroke={N.ink} strokeWidth={1} /><text x={x} y={py + 9.7} textAnchor="middle" fontSize={9} fontWeight={800} fill={N.ink}>+${got.tip}</text></g>
+                  : <g><circle className="bd" cx={x + q} cy={y - q} r={7} strokeWidth={1.1} /><text className="ds-emo" x={x + q} y={y - q + 3.3} textAnchor="middle" fontSize={9}>{o.e}</text></g>}
               </g>);
           })}
+          {w.legs.map((g, k) => { const c = g.kind === 'pick' ? P.orders[g.i].r : P.orders[g.i].h, x = X(c[0]) + R * 0.95, y = Y(c[1]) + R * 0.95; return (
+            <g key={`n${k}`} pointerEvents="none"><circle cx={x} cy={y} r={6.2} fill={N.glow} stroke={N.ink} strokeWidth={0.8} /><text x={x} y={y + 3} textAnchor="middle" fontSize={k > 8 ? 7.5 : 8.5} fontWeight={800} fill={N.ink}>{k + 1}</text></g>); })}
           <g ref={carRef} className="ds-car" pointerEvents="none" style={{ transform: `translate(${X(w.pos[0]) - off}px, ${Y(w.pos[1]) + off}px)` }}>
-            <circle r={9.5} />
-            <path d="M-5.5 2.2v-2l1.6-.5 1.5-2.4h4.6l1.9 2.4 1.6.6v1.9M-3.4 2.2h6.6" fill="none" stroke="var(--ds-bg)" strokeWidth={1.3} strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx={-3.4} cy={2.6} r={1.1} style={{ fill: 'var(--ds-bg)' }} /><circle cx={3.4} cy={2.6} r={1.1} style={{ fill: 'var(--ds-bg)' }} />
+            <g transform={`rotate(${heading})`}>
+              <path d="M7 0L46 -11V11z" fill={N.lit} opacity={0.22} />
+              <rect x={-9} y={-5.5} width={18} height={11} rx={4} fill="#ffffff" stroke={N.ink} strokeWidth={1} />
+              <rect x={1.5} y={-3.8} width={4} height={7.6} rx={1.3} fill="#93c5fd" />
+              <circle cx={8} cy={-3.4} r={1.3} fill={N.lit} /><circle cx={8} cy={3.4} r={1.3} fill={N.lit} />
+            </g>
           </g>
         </svg>
       </div>
@@ -277,6 +327,10 @@ function Board({ P, s, setS, active, done, held, release }) {
             <div className="ds-row"><b>On Offer</b><span>${offer(P)}</span></div>
             <div className="ds-row"><b>Orders Delivered</b><span>{w.count}</span></div>
             <div className="ds-row"><b>Blocks Driven</b><span>{w.blocks}</span></div>
+          </div>
+          <div className="ds-card">
+            <div className="ds-cardh">The Route</div>
+            {w.legs.map((g, k) => <div key={k} className="ds-row"><b>{k + 1}. {g.kind === 'pick' ? 'Pick Up' : 'Drop'} {P.orders[g.i].n}</b><span>{clock(g.t)}{g.kind === 'drop' ? ` · +$${g.tip}` : ''}</span></div>)}
           </div>
         </>
       ) : null}
@@ -340,11 +394,12 @@ const GAME = {
   rules: (P) => ({
     lead: 'One shift, more orders than you can deliver. Make the most you can in tips.',
     steps: [
-      <><b>Tap an order</b> to drive to its restaurant and pick it up. <b>Tap it again</b> to drive to its door and drop it off. You can tap the list or the map: a restaurant is a circle and its door is a square of the same colour.</>,
+      <><b>Tap an order</b> to drive to its restaurant and pick it up. <b>Tap it again</b> to drive to its door and drop it off. You can tap the list or the map: a restaurant is a circle and its door is a square of the same colour. Every stop you make is numbered on the map.</>,
       <>The shift runs from {clock(0)} to {clock(P.end)}. Every <b>block</b> takes {PER} minutes and every <b>stop</b> takes {STAY}. Nothing counts after {clock(P.end)}.</>,
       <>Your <b>bag holds {NUM[P.cap]}</b>, so you can pick up orders that are heading the same way before you drop any of them.</>,
       <>Every order is good <b>until</b> a set time: hot food stays hot, fresh food stays fresh, and ice cream stays frozen. After that the tip drops a dollar for every two minutes.{P.orders.some((o) => o.ready) ? <> An order marked <b>Ready</b> is not cooked yet: arrive early and you wait.</> : null}</>,
       ...(P.river || (P.parks && P.parks.length) || (P.diag && P.diag.length) ? [<>You can only drive where there is a street.{P.river ? <> The <b>river</b> is crossed only at its bridges.</> : null}{P.parks && P.parks.length ? <> A <b>park</b> has no streets through it.</> : null}{P.diag && P.diag.length ? <> The <b>avenue</b> cuts corner to corner, and each step of it counts as one block.</> : null}</>] : []),
+      <>The <b>bar</b> above the map is your shift: what you have driven, where you stopped and what is left. Each order stands on it at the minute it stops keeping.</>,
       <>Each row shows what its next tap would do from where you are now: when you would arrive and what it would pay. Trying a plan costs nothing. <b>Undo</b> steps back and <b>Start Over</b> clears the night.</>,
       <>Press <b>End Shift</b> when you are happy with the night. That is the shift you are scored on.</>,
     ],

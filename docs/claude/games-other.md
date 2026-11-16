@@ -2936,7 +2936,17 @@ implement". Logic. `/dash`.
   "Too Late"). The page does the arithmetic; the player does the choosing. Keep that.
 - **TRYING A PLAN IS FREE.** Undo and Start Over cost nothing. Only **End Shift** commits, and it needs at least
   one delivery.
-- **THE MAP IS PLAIN ON PURPOSE.** Owner on the mockup, 2026-11-15: "the visual grid could look cleaner and
+- **THE MAP IS NIGHT SHIFT** (owner, 2026-11-16, choosing from three mocked looks: "I like night shift and the
+  improvements you offered"). The town is always after dark, in BOTH registers: plum blocks with lit windows,
+  a glowing rose route, restaurants bright as signs, the tip popping at the door it was earned at (green, or
+  yellow when it came late), and a car with headlights turned the way it last drove. The colours are fixed
+  hexes (`N` in the client), deliberately not theme tokens, and they match the share card. This is a
+  deliberate exception to "boards sit on white or grey"; do not "fix" it.
+  Two improvements shipped with it: **every stop is numbered** on the map in the order driven, with the full
+  list and times in a Route card at the finish, and **the shift bar** above the map draws the shift as one
+  bar (driving rose, waiting grey, stops ink, the rest empty) with each order standing at the minute it stops
+  keeping. The bar replaced the one-line caption.
+- **THE MAP IS STILL PLAIN IN WHAT IT SAYS.** Owner on the mockup, 2026-11-15: "the visual grid could look cleaner and
   more compact". So: grey blocks, thin streets, no names printed on the map, streets closer together down the
   page than across (`gy = gap * 0.8`) so a phone shows the map and the orders together, and the orders are a
   list of rows, not cards. Do not add rooftops, lane lines or labels back.
