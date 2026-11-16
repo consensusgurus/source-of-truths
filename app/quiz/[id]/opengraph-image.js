@@ -22,7 +22,7 @@ async function renderCard({ params }) {
   const quiz = getQuiz(id)
   if (!quiz) return renderQuizCard({ id, title: 'Mind Loft Quiz', blurb: '', category: 'Quiz' })
   // A series with one hand-baked card shared by every part (e.g. Fortune 500 HQ Hunt, public/og/fortune-500-hq.png).
-  if (quiz.series === 'fortune-500-hq') return new Response(null, { status: 302, headers: { Location: '/og/fortune-500-hq.png', 'Cache-Control': 'public, max-age=86400' } })
+  if (quiz.series === 'fortune-500-hq' || quiz.series === 'fortune-500-hq-states') return new Response(null, { status: 302, headers: { Location: `/og/${quiz.series}.png`, 'Cache-Control': 'public, max-age=86400' } })
   return renderQuizCard({ id, title: quiz.title, blurb: quiz.blurb, category: quiz.category })
 }
 

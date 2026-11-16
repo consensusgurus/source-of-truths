@@ -34,6 +34,7 @@ import { useChallengeRun, ChallengeRunOverlay } from './useChallengeRun';
 import useAbandonFlush from './useAbandonFlush';
 import { quizDept as deptOf, DEPT_LABEL } from '@/lib/quiz-departments';
 import { PLACE_MAP_GEO } from '@/lib/place-map-geo';
+import { geoAlbers, geoDistance } from 'd3-geo';
 import Grain from '../../Grain';
 import Footer from '../../Footer';
 import QuizNavHeader from '../../quizzes/QuizNavHeader';
@@ -65,6 +66,26 @@ const SERIF = "'Manrope', system-ui, -apple-system, sans-serif";
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
 const MAP = { land: '#e7ebf0', line: '#9aa6b4', sea: '#dbe6f1' };
+// The lower-48 board (region 'usa', the Fortune 500 HQ series) has its own
+// palette per register so the state lines read on both grounds.
+const US_MAP = {
+  light: { land: '#f4f6f9', line: '#8f9cad', sea: '#d3e2f1', hover: '#e3eaf3' },
+  dark: { land: '#2b3547', line: '#66758c', sea: '#151e2b', hover: '#364257' },
+};
+
+// The two-letter state a company's HQ is in: 'Moline, IL' -> 'IL'.
+function hqState(c) {
+  if (c && c.st) return c.st;
+  const m = /,\s*([A-Z]{2})$/.exec((c && c.hq) || '');
+  return m ? m[1] : null;
+}
+// State-pick grading. DC is a few pixels wide even zoomed out, so a DC company
+// also counts on Maryland or Virginia, the two states that wrap it.
+function stateOk(c, st) {
+  const want = hqState(c);
+  if (want === 'DC') return st === 'DC' || st === 'MD' || st === 'VA';
+  return st === want;
+}
 
 function fmtWhen(iso) {
   if (!iso) return '';
@@ -138,9 +159,35 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
   const quiz = useMemo(() => getQuiz(quizId), [quizId]);
   const chRun = useChallengeRun(quizId);
 
+  // THE US MAP (2026-11-16). region 'usa' (the Fortune 500 HQ series) draws the
+  // lower 48 on an Albers projection with every state line, about twice the old
+  // width, with zoom. pick: 'state' turns the board into a click-the-state quiz.
+  // The geometry is a lazy import so no other place-map quiz pays for it.
+  const US = !!(quiz && quiz.region === 'usa');
+  const PICK_STATE = US && quiz.pick === 'state';
+  const [usGeo, setUsGeo] = useState(null);
+  useEffect(() => {
+    if (!US) return undefined;
+    let on = true;
+    import('@/lib/us-albers-geo.js').then((m) => { if (on) setUsGeo(m.US_ALBERS); }).catch(() => {});
+    return () => { on = false; };
+  }, [US]);
+  const UM = US_MAP[stageTheme === 'light' || !QSTAGE ? 'light' : 'dark'];
+  const INK_MAP = UM === US_MAP.dark ? '#e9edf4' : '#1d2633';
+
   // ── Projection + outline paths (built once from the region geometry + cities) ──
   const geo = useMemo(() => {
     if (!quiz) return null;
+    if (quiz.region === 'usa') {
+      if (!usGeo) return null;
+      const p = geoAlbers().scale(usGeo.scale).translate(usGeo.translate);
+      return {
+        W: usGeo.W, H: usGeo.H, us: true, states: usGeo.states,
+        mainPath: null, islandPaths: [], lakePaths: [],
+        proj: (lon, lat) => p([lon, lat]),
+        inv: (x, y) => p.invert([x, y]),
+      };
+    }
     const region = PLACE_MAP_GEO[quiz.region];
     const cities = quiz.cities || [];
     if (!region || !cities.length) return null;
@@ -167,7 +214,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
       lakePaths: (region.lakes || []).filter((r) => r.length >= 4).map(pathOf),
       proj, invX, invY,
     };
-  }, [quiz]);
+  }, [quiz, usGeo]);
 
   const cities = quiz && quiz.cities ? quiz.cities : [];
   const total = cities.length;
@@ -229,6 +276,43 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
   const revealingRef = useRef(false);
   const viewedRef = useRef(false);
   const svgRef = useRef(null);
+
+  // Zoom + pan (US board). vb is the visible window in map units, null = whole
+  // map. A press that moves more than 6px is a pan, and the click it ends in is
+  // swallowed so a drag never places a pin.
+  const [vb, setVb] = useState(null);
+  const dragRef = useRef(null);
+  const movedRef = useRef(false);
+  const view = vb || (geo ? { x: 0, y: 0, w: geo.W, h: geo.H } : { x: 0, y: 0, w: 640, h: 600 });
+  const zk = geo && US ? view.w / geo.W : 1;
+  function clampView(v) {
+    const W = geo.W, H = geo.H;
+    const w = Math.min(W, Math.max(W / 8, v.w));
+    const h = w * H / W;
+    return { w, h, x: Math.min(W - w, Math.max(0, v.x)), y: Math.min(H - h, Math.max(0, v.y)) };
+  }
+  function zoomBy(f) {
+    if (!geo) return;
+    const v = view;
+    const cx = v.x + v.w / 2, cy = v.y + v.h / 2;
+    const nv = clampView({ w: v.w / f, x: cx - v.w / f / 2, y: cy - (v.w / f) * geo.H / geo.W / 2 });
+    setVb(nv.w >= geo.W - 0.5 ? null : nv);
+  }
+  function onPtrDown(e) {
+    if (!US) return;
+    movedRef.current = false;
+    dragRef.current = { sx: e.clientX, sy: e.clientY, v: view };
+  }
+  function onPtrMove(e) {
+    const d = dragRef.current;
+    if (!d || !vb || !svgRef.current) return;
+    const dx = e.clientX - d.sx, dy = e.clientY - d.sy;
+    if (!movedRef.current && Math.hypot(dx, dy) < 6) return;
+    movedRef.current = true;
+    const k = d.v.w / svgRef.current.getBoundingClientRect().width;
+    setVb(clampView({ w: d.v.w, x: d.v.x - dx * k, y: d.v.y - dy * k }));
+  }
+  function onPtrUp() { dragRef.current = null; }
 
   const points = placements.reduce((s, p) => s + (p.pts || 0), 0);
   const isTopScore = phase === 'done' && board.best != null && lastElapsed != null
@@ -292,6 +376,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
     setFlashIdx(-1);
     setIdx(0);
     setRevealAll(false);
+    setVb(null);
     setRemaining(timeLimit * 1000);
     setPhase('playing');
     startRef.current = Date.now();
@@ -309,13 +394,28 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
     if (idx >= total) return;
     const svg = svgRef.current;
     if (!svg) return;
+    if (US && movedRef.current) { movedRef.current = false; return; }
     const r = svg.getBoundingClientRect();
-    const px = ((e.clientX - r.left) / r.width) * geo.W;
-    const py = ((e.clientY - r.top) / r.height) * geo.H;
+    const px = view.x + ((e.clientX - r.left) / r.width) * view.w;
+    const py = view.y + ((e.clientY - r.top) / r.height) * view.h;
     const city = cities[order[idx]];
-    const miles = milesBetween(geo.invX(px), geo.invY(py), city.lon, city.lat);
-    const pts = scoreFor(miles);
-    const placement = { cityIdx: order[idx], x: px, y: py, pts, miles };
+    let placement;
+    if (PICK_STATE) {
+      const st = e.target && e.target.getAttribute ? e.target.getAttribute('data-st') : null;
+      if (!st) return; // the sea is not a pick
+      const ok = stateOk(city, st);
+      placement = { cityIdx: order[idx], x: px, y: py, st, ok, pts: ok ? maxPer : 0, miles: 0 };
+    } else {
+      let miles;
+      if (geo.us) {
+        const ll = geo.inv(px, py);
+        if (!ll) return;
+        miles = geoDistance(ll, [city.lon, city.lat]) * 3958.8;
+      } else {
+        miles = milesBetween(geo.invX(px), geo.invY(py), city.lon, city.lat);
+      }
+      placement = { cityIdx: order[idx], x: px, y: py, pts: scoreFor(miles), miles };
+    }
     revealingRef.current = true;
     setPlacements((prev) => { const next = [...prev, placement]; setFlashIdx(next.length - 1); return next; });
     const nextIdx = idx + 1;
@@ -326,7 +426,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
       setFlashIdx(-1);
       if (endedRef.current) return;
       if (nextIdx >= total) finishGame();
-    }, 700);
+    }, US ? 950 : 700);
   }
 
   function finishGame() {
@@ -416,6 +516,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
   // done screen) every true city with its name.
   function Markers() {
     if (!geo) return null;
+    if (geo.us) return <UsMarkers />;
     const els = [];
     placements.forEach((p, i) => {
       const hot = i === flashIdx || phase === 'done';
@@ -455,6 +556,47 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
     return <g>{els}</g>;
   }
 
+  // The US board's markers, sized by the zoom so a pin stays the same size on
+  // screen. Solid connector (no dashed lines on Mind Loft), and the true HQ
+  // city is named on the reveal so a miss teaches something.
+  function UsMarkers() {
+    const k = zk;
+    const halo = UM.sea;
+    const els = [];
+    if (!PICK_STATE) {
+      placements.forEach((p, i) => {
+        const hot = i === flashIdx;
+        const a = 6 * k;
+        els.push(
+          <g key={`x${i}`} opacity={hot ? 1 : 0.5}>
+            <line x1={p.x - a} y1={p.y - a} x2={p.x + a} y2={p.y + a} stroke={COLORS.rust} strokeWidth={(hot ? 2.4 : 1.5) * k} strokeLinecap="round" />
+            <line x1={p.x - a} y1={p.y + a} x2={p.x + a} y2={p.y - a} stroke={COLORS.rust} strokeWidth={(hot ? 2.4 : 1.5) * k} strokeLinecap="round" />
+          </g>
+        );
+      });
+    }
+    if (flash && phase === 'playing') {
+      const c = cities[flash.cityIdx];
+      const t = geo.proj(c.lon, c.lat);
+      const good = flash.pts >= maxPer * 0.7;
+      const tone = good ? COLORS.forest : flash.pts >= maxPer * 0.3 ? COLORS.ember : COLORS.rust;
+      const label = PICK_STATE
+        ? (flash.ok ? `+${flash.pts}` : `It's ${c.hq}`)
+        : `${Math.round(flash.miles)} mi · +${flash.pts}`;
+      const lx = PICK_STATE ? flash.x : (flash.x + t[0]) / 2;
+      const ly = (PICK_STATE ? flash.y : Math.min(flash.y, t[1])) - 12 * k;
+      els.push(
+        <g key="flash" pointerEvents="none">
+          {!PICK_STATE && <line x1={flash.x} y1={flash.y} x2={t[0]} y2={t[1]} stroke={INK_MAP} strokeOpacity={0.55} strokeWidth={1.2 * k} />}
+          <circle cx={t[0]} cy={t[1]} r={5 * k} fill={COLORS.forest} stroke={T.white} strokeWidth={1.6 * k} />
+          {!PICK_STATE && <text x={t[0]} y={t[1] + 17 * k} textAnchor="middle" fontFamily={MONO} fontSize={11 * k} fontWeight={700} fill={INK_MAP} stroke={halo} strokeWidth={3 * k} paintOrder="stroke">{c.hq}</text>}
+          <text x={lx} y={ly} textAnchor="middle" fontFamily={MONO} fontSize={13 * k} fontWeight={800} fill={tone} stroke={halo} strokeWidth={3.4 * k} paintOrder="stroke">{label}</text>
+        </g>
+      );
+    }
+    return <g pointerEvents="none">{els}</g>;
+  }
+
   const recap = phase === 'done' ? placements.map((p) => ({ name: cities[p.cityIdx].hq ? `${cities[p.cityIdx].name} (${cities[p.cityIdx].hq})` : cities[p.cityIdx].name, miles: p.miles, pts: p.pts })).sort((a, b) => b.pts - a.pts) : [];
 
   // Mobile fullscreen play popup: open while the game is actively running.
@@ -478,7 +620,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
           tint={quizTint(quiz)}
           name={quiz.title}
           cat={DEPT_LABEL[deptOf(quiz)] || quiz.category || 'Quiz'}
-          dateLabel={`${total} ${total === 1 ? 'place' : 'places'}`}
+          dateLabel={US ? `${total} companies` : `${total} ${total === 1 ? 'place' : 'places'}`}
           outcome={phase === 'done' ? (points === maxPoints ? 'won' : points > 0 ? 'part' : 'lost') : null}
           figures={phase === 'done' ? [] : [{ v: `${points}/${maxPoints}`, k: 'Score' }]}
           progress={maxPoints ? points / maxPoints : 0}
@@ -517,7 +659,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
                 </div>
                 <div style={{ textAlign: 'right', minWidth: 0 }}>
                   <div style={{ fontFamily: MONO, fontSize: 'clamp(19px, 5.6vw, 28px)', lineHeight: 1, color: phase === 'playing' ? (lowClock ? `var(--stg-acc-ink,${COLORS.ember})` : `var(--stg-ink,${COLORS.ink})`) : `var(--stg-mute,${COLORS.faded})` }}>{phase === 'playing' ? fmtTime(secsLeft) : fmtTime(timeLimit)}</div>
-                  <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED }}>{phase === 'idle' ? `${total} cities` : `City ${Math.min(idx + (phase === 'playing' ? 1 : 0), total)}/${total}`}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: FADED }}>{phase === 'idle' ? `${total} ${US ? 'companies' : 'cities'}` : `${US ? 'Company' : 'City'} ${Math.min(idx + (phase === 'playing' ? 1 : 0), total)}/${total}`}</div>
                 </div>
               </div>
               {phase === 'playing' && (
@@ -545,9 +687,33 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
             {phase === 'playing' && (
               <div style={{ marginTop: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, justifyContent: 'center', marginBottom: 10 }}>
-                  <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: `var(--stg-acc-ink,${COLORS.ember})` }}>Find</span>
+                  <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: `var(--stg-acc-ink,${COLORS.ember})` }}>{PICK_STATE ? 'Home state of' : US ? 'HQ of' : 'Find'}</span>
                   <ClueBox current={promptCity ? promptCity.name : ''} clues={cities.map((c) => c.name)} textStyle={{ fontFamily: SERIF, fontWeight: 800, fontSize: 'clamp(22px, 3.4vw, 30px)', lineHeight: 1.05 }} />
                 </div>
+{US ? (
+                <div style={{ position: 'relative', maxWidth: 1100, margin: '0 auto', borderRadius: 8, overflow: 'hidden', border: `1px solid var(--stg-line,${COLORS.faded}44)`, background: UM.sea }}>
+                  {!geo ? <div style={{ aspectRatio: '1000 / 621' }} /> : (<>
+                  <style dangerouslySetInnerHTML={{ __html: `.usm-pick:hover{fill:${UM.hover}}` }} />
+                  <svg ref={svgRef} viewBox={`${view.x.toFixed(1)} ${view.y.toFixed(1)} ${view.w.toFixed(1)} ${view.h.toFixed(1)}`} onClick={handleMapClick} onPointerDown={onPtrDown} onPointerMove={onPtrMove} onPointerUp={onPtrUp} onPointerLeave={onPtrUp} style={{ display: 'block', width: '100%', height: 'auto', cursor: vb && dragRef.current ? 'grabbing' : PICK_STATE ? 'pointer' : 'crosshair', touchAction: vb ? 'none' : 'manipulation', userSelect: 'none' }} role="img" aria-label={PICK_STATE ? 'Map of the lower 48 states. Click the state the company is based in.' : 'Map of the lower 48 states. Click as close as you can to the company headquarters.'}>
+                    <rect x="0" y="0" width={geo.W} height={geo.H} fill={UM.sea} />
+                    {geo.states.map((st) => {
+                      let fill = null;
+                      if (PICK_STATE && flash && phase === 'playing') {
+                        if (st.a === hqState(cities[flash.cityIdx])) fill = COLORS.forest;
+                        else if (flash.st === st.a) fill = COLORS.rust;
+                      }
+                      return <path key={st.a} d={st.d} data-st={PICK_STATE ? st.a : undefined} className={PICK_STATE ? 'usm-pick' : undefined} fill={UM.land} style={fill ? { fill, fillOpacity: 0.62 } : undefined} stroke={UM.line} strokeWidth={0.8} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />;
+                    })}
+                    <Markers />
+                  </svg>
+                  <div style={{ position: 'absolute', right: 10, top: 10, display: 'flex', borderRadius: 8, overflow: 'hidden', border: `1px solid ${UM.line}`, background: UM.land }}>
+                    {[['−', () => zoomBy(1 / 1.6), !vb, 'Zoom out'], ['+', () => zoomBy(1.6), !!(vb && vb.w <= geo.W / 8 + 0.5), 'Zoom in'], ['Reset', () => setVb(null), !vb, 'Show the whole map']].map(([lab, fn, off, aria], bi) => (
+                      <button key={lab} type="button" aria-label={aria} disabled={off} onClick={(ev) => { ev.stopPropagation(); fn(); }} style={{ minWidth: lab === 'Reset' ? 54 : 36, height: 32, padding: '0 10px', border: 'none', borderLeft: bi ? `1px solid ${UM.line}` : 'none', background: 'transparent', color: INK_MAP, opacity: off ? 0.4 : 1, fontFamily: MONO, fontSize: lab === 'Reset' ? 11 : 17, fontWeight: 800, letterSpacing: lab === 'Reset' ? '0.08em' : 0, textTransform: 'uppercase', cursor: off ? 'default' : 'pointer' }}>{lab}</button>
+                    ))}
+                  </div>
+                  </>)}
+                </div>
+                ) : (
                 <div style={{ maxWidth: 560, margin: '0 auto', borderRadius: 6, overflow: 'hidden', border: `1px solid var(--stg-line,${COLORS.faded}44)`, background: MAP.sea }}>
                   <svg ref={svgRef} viewBox={`0 0 ${geo ? geo.W : 640} ${geo ? geo.H.toFixed(1) : 600}`} onClick={handleMapClick} style={{ display: 'block', width: '100%', height: 'auto', cursor: 'crosshair', touchAction: 'manipulation' }} role="img" aria-label="State map. Click as close as you can to the named city.">
                     <rect x="0" y="0" width={geo ? geo.W : 640} height={geo ? geo.H : 600} fill={MAP.sea} />
@@ -557,6 +723,7 @@ export default function MapPlaceClient({ quizId, mobile = false }) {
                     <Markers />
                   </svg>
                 </div>
+                )}
                 <div style={{ marginTop: 16, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button className="qz-giveup" onClick={giveUp} style={ghostBtn(false)}><Flag size={12} strokeWidth={2.5} /> Give up</button>
                 </div>

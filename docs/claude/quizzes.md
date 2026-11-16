@@ -1235,3 +1235,21 @@ Everything to regenerate lives in `scripts/fortune-500-hq/` (f500.txt, geocode.c
 also every part's hero. Re-bake with `node scripts/fortune-500-hq/bake-og.mjs` from the repo root. The
 card shows all 500 HQ dots unlabelled and a decoy click mark in the Great Basin, so it leaks no answer.
 No launch pop-up for this series (owner, 2026-11-13).
+
+## Fortune 500 US board + HQ States series (owner, 2026-11-16)
+
+The owner found the HQ Hunt map too small and too bare (560px, flat projection, no state lines).
+`region: 'usa'` on a place-map now draws `lib/us-albers-geo.js` instead of `PLACE_MAP_GEO.usa`: the
+lower 48 + DC from us-atlas states-10m on d3 `geoAlbers`, every state line drawn, up to 1100px wide,
+light and dark palettes, with zoom (+, -, Reset) and drag-to-pan once zoomed (a press that moves 6px is a
+pan and never places a pin). Distance is great-circle (`geoDistance`), and the reveal names the true HQ
+city. The geometry is a lazy import, so only the `usa` quizzes load it. Rebuild with
+`scripts/fortune-500-hq/gen-us-albers.mjs`. Only the Fortune 500 quizzes use `region: 'usa'`.
+
+**HQ States** (`fortune-500-hq-states-1` .. `-20`, `pick: 'state'`, `series: 'fortune-500-hq-states'`):
+the same 500 companies on the same board, reshuffled with a different seed (`gen-states.cjs`), and the
+player clicks the HQ's state: right state 100, wrong 0 (the clicked state flashes red, the right one
+green, and the label names the HQ city). 120s a part. Grading reads the two-letter state off `hq`;
+the three Washington, DC companies also count on Maryland or Virginia, since DC is a few pixels wide.
+Its own share card and hero, `public/og/fortune-500-hq-states.png` (`bake-og-states.mjs`), wired the
+same way as the Hunt's card.
