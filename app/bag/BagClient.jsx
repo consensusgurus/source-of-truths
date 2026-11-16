@@ -60,7 +60,10 @@ const pills = (it) => {
   const f = flagOf(it);
   return `<span class="bg-pills"><span class="bg-pl">${SCALE}${it.w}</span><span class="bg-pl ${it.c === 0 ? 'h0' : it.c > 20 ? 'ha' : 'hn'}">${PRESS}${it.c > 20 ? 'any' : it.c}</span>${f ? `<span class="bg-pl f ${FLAG[f][0]}">${FLAG[f][1]}</span>` : ''}</span>`;
 };
-const say = (it) => `${it.n}, ${it.w} pounds, ${it.c === 0 ? 'takes nothing on top' : it.c > 20 ? 'takes anything on top' : `takes ${it.c} pounds on top`}${flagOf(it) ? `, ${FLAG[flagOf(it)][2].toLowerCase()}` : ''}`;
+// Frozen things carry the cold mark and ride in the cold bag, but are called what they are
+// (owner, 2026-11-15: not everything is "hot", and not everything cold is merely cold).
+const FROZEN = new Set(['Ice Cream', 'Peas', 'Pizza']);
+const say = (it) => `${it.n}, ${it.w} pounds, ${it.c === 0 ? 'takes nothing on top' : it.c > 20 ? 'takes anything on top' : `takes ${it.c} pounds on top`}${flagOf(it) ? `, ${it.cold && FROZEN.has(it.n) ? 'frozen' : FLAG[flagOf(it)][2].toLowerCase()}` : ''}`;
 
 const CSS = `
 .bag{align-self:center;width:100%;max-width:1040px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--bg-ink);line-height:1.4;
@@ -155,8 +158,8 @@ const rankName = (P, s) => { const r = rankOf(P, s.rb); return r.rows[r.at].name
 const shopLine = (P) => `${NUM[P.bags.length][0].toUpperCase()}${NUM[P.bags.length].slice(1)} bags · reach of ${NUM[P.reach]}`;
 const REFUSE = (P, r, b) => ({
   full: `Bag ${b + 1} is full.`, heavy: `Bag ${b + 1} would tear over ${P.bags[b].limit} lb.`,
-  crush: `That would crush the ${r.hit != null ? P.items[r.hit].n.toLowerCase() : 'item under it'}.`, cold: 'Keep the cold things in one bag.',
-  hot: 'Hot food and cold food do not share a bag.', chem: 'Cleaning products stay away from the food.', solo: 'That one needs a bag to itself.',
+  crush: `That would crush the ${r.hit != null ? P.items[r.hit].n.toLowerCase() : 'item under it'}.`, cold: 'Keep the cold and frozen things in one bag.',
+  hot: 'Hot food does not share a bag with cold or frozen food.', chem: 'Cleaning products stay away from the food.', solo: 'That one needs a bag to itself.',
 }[r.code]);
 
 function Board({ P, s, setS, active, done, held, release }) {
@@ -283,7 +286,7 @@ function Board({ P, s, setS, active, done, held, release }) {
             <div className="bg-cardh">How to Read an Item</div>
             <div className="bg-key"><span dangerouslySetInnerHTML={html(`<span class="bg-pl">${SCALE}3</span>`)} /><span>Its weight in pounds. The bar on a bag fills as you load it.</span></div>
             <div className="bg-key"><span dangerouslySetInnerHTML={html(`<span class="bg-pl h0">${PRESS}0</span><span class="bg-pl hn">${PRESS}2</span><span class="bg-pl ha">${PRESS}any</span>`)} /><span>What it takes on top: nothing, 2 lb, or anything.</span></div>
-            {flags.includes('cold') ? <div className="bg-key"><span dangerouslySetInnerHTML={html(`<span class="bg-pl f c">${SNOW}</span>`)} /><span>Cold. Every cold thing goes in the same bag.</span></div> : null}
+            {flags.includes('cold') ? <div className="bg-key"><span dangerouslySetInnerHTML={html(`<span class="bg-pl f c">${SNOW}</span>`)} /><span>Cold or frozen. They all go in the same bag.</span></div> : null}
             {flags.includes('hot') ? <div className="bg-key"><span dangerouslySetInnerHTML={html(`<span class="bg-pl f h">${FLAME}</span>`)} /><span>Hot. Never in a bag with anything cold.</span></div> : null}
             {flags.includes('chem') ? <div className="bg-key"><span dangerouslySetInnerHTML={html(`<span class="bg-pl f m">${DROP}</span>`)} /><span>Cleaning. Never in a bag with food.</span></div> : null}
             {flags.includes('solo') ? <div className="bg-key"><span dangerouslySetInnerHTML={html(`<span class="bg-pl f s">${ALONE}</span>`)} /><span>Rides alone, in a bag to itself.</span></div> : null}
@@ -355,7 +358,7 @@ const GAME = {
   aboutTitle: 'About Bag',
   about: [
     'Bag is a free daily grocery-bagging puzzle from Mind Loft. Groceries come down a checkout belt and only the first few are in reach. Pick one, tap a bag, and it goes on top. The whole shop has to end up bagged.',
-    'The rules are the ones every bagger knows. A bag holds four items and tears over nine pounds. Nothing can be crushed: eggs, bread and chips take nothing on top, tomatoes and cereal take a little, cans and potatoes take anything. All the cold things share one bag. Hot food never shares a bag with cold food, cleaning products never share a bag with anything you eat, and a melon gets a bag to itself.',
+    'The rules are the ones every bagger knows. A bag holds four items and tears over nine pounds. Nothing can be crushed: eggs, bread and chips take nothing on top, tomatoes and cereal take a little, cans and potatoes take anything. All the cold and frozen things share one bag. Hot food never shares a bag with cold food, cleaning products never share a bag with anything you eat, and a melon gets a bag to itself.',
     'Nothing has to be memorised. Every item carries small marks for its weight, what it takes on top and whether it is cold, hot or a cleaning product, and every bag shows a weight bar and its free slots. The moment you pick something up, each bag turns green or red and says why.',
     'The shop grows through the week: a corner shop of eight items on Monday, a hot item on Tuesday, cleaning products and a fourth bag on Wednesday, a belt you can only reach two deep on Friday, and on Sunday the big shop of eighteen items in six bags. Taking an item back out is a re-bag, and the Bagging Ladder names your rung by how few you needed, from Crushed the Eggs up to Bagger of the Year.',
     <>More everyday puzzles: <a href="/seated" style={{ color: 'inherit', fontWeight: 800 }}>Seated</a>, <a href="/chef" style={{ color: 'inherit', fontWeight: 800 }}>Chef</a>, <a href="/pack" style={{ color: 'inherit', fontWeight: 800 }}>Pack</a> and <a href="/mop" style={{ color: 'inherit', fontWeight: 800 }}>Mop</a>.</>,

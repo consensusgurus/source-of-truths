@@ -2654,6 +2654,11 @@ key `pack`, category **Visual**, skills Spatial and Planning. On the shared stag
 
 ## Chef: the daily kitchen puzzle (launched 2026-11-14)
 
+**A salad wilts, it does not go cold** (owner, 2026-11-15, after asking why Dash called every order hot and
+"do we have similar issues in chef or bag?"): a cold-station dish that sits too long reads "wilted" and "Wilted.
+Remake."; a cooked one still reads "went cold" and "Cold. Recook.". A ticket that never sat reads "straight out",
+not "hot". Words only: the engine's `cold` flag and the scoring are unchanged.
+
 Owner's idea, 2026-11-13: "a new restaurant kitchen puzzle where different items take different times
 and require different limited cooking resources like stove oven etc. get the full orders out as
 efficiently as possible as they come in", and "all orders have to go out together". Mocked up the same
@@ -2817,6 +2822,11 @@ and Bag mocked up, and picked this one ("Seated - it's great"). Logic. `/seated`
 
 ## Bag: the daily grocery-bagging puzzle (launched 2026-11-14)
 
+**Frozen things are called frozen** (owner, 2026-11-15, same note as Chef's): Ice Cream, Peas and Pizza still
+carry the cold mark and ride in the cold bag, but the copy says "cold and frozen" and a screen reader hears
+"frozen" (`FROZEN` in the client). Words only: cold and frozen are still ONE rule. Whether frozen should behave
+differently from cold is the owner's open question from 2026-11-14.
+
 Owner, 2026-11-14: the third "practical puzzle" mockup, taken further with "better graphical help", then
 "ok i like it but start gentle" and "also need hot foods that cant sit by frozen or cold foods". Logic. `/bag`.
 
@@ -2906,6 +2916,22 @@ implement". Logic. `/dash`.
   taps (`lib/dash-engine.js`). A block is 2 minutes and a stop is 2. The bag holds two (three on Saturday and
   Sunday). A late drop loses $1 for every 2 minutes; an order marked Ready is not cooked at six and you wait.
   Nothing is picked up that could not reach its door by closing, and nothing is dropped after it.
+- **EVERY ORDER SAYS WHAT IT IS** (owner, 2026-11-15: "Why do all say hot until when not all are hot and some
+  are cold / frozen? Why not use fresh until for room temp items, frozen until for ice cream"). The kind is read
+  off the restaurant's picture (`KINDS` in the engine, so every board ever dealt has one): **Hot until, Fresh
+  until, Cold until, Frozen until**, and a late one "arrived cold", "past its best", "warm" or "melting". It
+  changes words only; every kind loses its tip at the same rate. A NEW restaurant needs its picture in `KINDS`
+  (verify-dash fails otherwise). Never write "hot" or "goes cold" about orders in general in site copy.
+- **THE TOWN IS NOT ALWAYS A PLAIN GRID** (owner, same day: "maybe make the grid a bit more complicated? Not
+  just a grid?"). From board 3 a row may carry `river` (water between two rows or columns of corners, crossed
+  only at its `bridges`), `parks` (blocks merged into one; the streets inside are gone, and so is the corner in
+  the middle of a two by two park) and `diag` (an avenue cutting corner to corner, each step one block).
+  Distance is steps on the shortest way, breadth-first (`blocks`, `pathBetween`). The client draws the streets
+  from the engine's own list (`segments`), so what is drawn is what can be driven. By weekday (`MAP` in the
+  spec): Mon a park, Tue an avenue, Wed a river, Thu a river and a park, Fri a river and an avenue, Sat an
+  avenue and two parks, Sun all three. A deal is kept only if the map changes what the night is worth.
+  BOARDS 1 AND 2 ARE PLAIN GRIDS and stay so (live before this); boards 3 to 50 were re-dealt on 2026-11-15
+  before any was live. A row with no feature runs the old plain-grid code path exactly.
 - **EVERY ROW PREVIEWS ITS NEXT TAP** from where the car is now ("Pick Up 6:06", "Drop 6:22 · $9", "Bag Full",
   "Too Late"). The page does the arithmetic; the player does the choosing. Keep that.
 - **TRYING A PLAN IS FREE.** Undo and Start Over cost nothing. Only **End Shift** commits, and it needs at least
@@ -2930,7 +2956,7 @@ implement". Logic. `/dash`.
   plans (always the biggest tip, always the nearest pickup, one at a time) by the day's margin.
   `scripts/verify-dash.mjs` re-proves all of it. The best ROUTE is not required to be unique: ties do not
   matter when the score is dollars short.
-- **Restaurants** are invented names of twelve letters at most with a food emoji. No real chains, and nothing
+- **Restaurants** are invented names of twelve letters at most with a food emoji (24 of them, four cold or frozen). No real chains, and nothing
   of DoorDash's: not its red and white, not "Dasher". The owner chose the name knowing the overlap.
 - **Sets.** Everyday puzzles was full at five, so it was split: Everyday puzzles keeps Seated, Chef and Mop,
   and a new set, Around town puzzles (`/logic-puzzles/around-town`), holds Bag, Errands and Dash. Finish set:

@@ -12,10 +12,13 @@
 //     the day's range and fewer than are on offer, and it is at least 60% of the offer
 //   - stacking pays (a bag of one makes less) and both plain plans fall short by the
 //     day's margin
+//   - THE MAP: boards 1 and 2 are plain grids; from board 3 the weekday's features (MAP) are all
+//     present and well formed, every place can be reached, and the map changes what the night is worth
+//   - every restaurant's picture has a kind (hot, fresh, cold or frozen)
 //   - the Tip Ladder has eight rungs
 import { checker, checkDays, dowOf } from './six-verify-common.mjs';
-import { solve, walk, offer, rankOf, RUNGS, BOUNDS, PER, STAY } from '../lib/dash-engine.js';
-import { SPEC, PLACES } from './gen-dash-spec.mjs';
+import { solve, walk, offer, rankOf, blocks, isPlain, KINDS, RUNGS, BOUNDS, PER, STAY } from '../lib/dash-engine.js';
+import { SPEC, PLACES, MAP, PLAIN_UNTIL } from './gen-dash-spec.mjs';
 import { biggestFirst, nearestFirst } from './gen-dash.mjs';
 const { PUZZLES } = await import(new URL('../app/dash/puzzles.js', import.meta.url));
 const { bad, done } = checker('dash');
@@ -23,7 +26,8 @@ checkDays('dash', PUZZLES, bad, '2026-11-15');
 const KNOWN = new Map(PLACES);
 for (const [n] of PLACES) if (n.length > 12) bad(0, `the restaurant name ${n} is too long for an order row`);
 if (RUNGS.length !== 8 || BOUNDS.length !== 7 || rankOf(0).at !== 0 || rankOf(999).at !== 7) bad(0, 'the Tip Ladder is not eight rungs');
-const dist = (a, b) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);
+const pictures = new Set(Object.values(KINDS).flat());
+for (const [n, e] of PLACES) if (!pictures.has(e)) bad(0, `${n} has a picture with no kind (hot, fresh, cold or frozen)`);
 for (const p of PUZZLES) {
   const intro = p.num === 1, spec = SPEC[intro ? 1 : dowOf(p.live)], band = intro ? 'intro' : spec[0];
   const [, name, [W, H], N, end, cap, late, range, margin] = spec;
@@ -40,8 +44,37 @@ for (const p of PUZZLES) {
     for (const c of [o.r, o.h]) { if (!inside(c)) bad(p.num, `${o.n} is outside the town`); if (seen.has(c.join())) bad(p.num, `${o.n} shares a corner`); seen.add(c.join()); }
     if (!Number.isInteger(o.tip) || o.tip < 4 || o.tip > 12) bad(p.num, `${o.n} tips $${o.tip}`);
     if (o.ready % 2 || o.by % 2 || o.ready < 0 || o.by > p.end) bad(p.num, `${o.n} has an odd or out-of-shift time`);
-    if (o.ready + STAY + dist(o.r, o.h) * PER + STAY > o.by) bad(p.num, `${o.n} cannot reach its door hot even picked up the moment it is ready`);
+    if (o.ready + STAY + blocks(p, o.r, o.h) * PER + STAY > o.by) bad(p.num, `${o.n} cannot reach its door hot even picked up the moment it is ready`);
   });
+  // THE MAP: boards 1 and 2 are plain grids; after them the weekday decides what the town carries
+  const kinds = p.num <= PLAIN_UNTIL ? [] : MAP[dowOf(p.live)];
+  if (!kinds.length) { if (!isPlain(p)) bad(p.num, 'a plain board carries a map feature'); }
+  else {
+    const want = (k) => kinds.filter((x) => x === k).length, taken = new Set();
+    if (!!p.river !== !!want('river')) bad(p.num, `river ${p.river ? 'present' : 'missing'}`);
+    if ((p.parks || []).length !== want('park')) bad(p.num, `${(p.parks || []).length} parks, expected ${want('park')}`);
+    if (!!(p.diag && p.diag.length) !== !!want('avenue')) bad(p.num, `avenue ${p.diag ? 'present' : 'missing'}`);
+    if (p.river) {
+      const { axis, at, bridges } = p.river, across = axis === 'h' ? p.W : p.H, along = axis === 'h' ? p.H : p.W;
+      if (!['h', 'v'].includes(axis) || at < 1 || at > along - 3) bad(p.num, 'the river is off the map or hugs an edge');
+      if (bridges.length < 2 || bridges.some((b, i) => b < 0 || b >= across || (i && b - bridges[i - 1] < 2))) bad(p.num, 'the bridges are too few, off the map or side by side');
+      for (let i = 0; i < across - 1; i++) taken.add(axis === 'h' ? `${i},${at}` : `${at},${i}`);
+    }
+    for (const [bx, by, bw, bh] of p.parks || []) {
+      if (bx < 0 || by < 0 || bx + bw > p.W - 1 || by + bh > p.H - 1 || bw * bh < 2 || bw > 2 || bh > 2) bad(p.num, 'a park is off the map or the wrong size');
+      for (let x = bx; x < bx + bw; x++) for (let y = by; y < by + bh; y++) { if (taken.has(`${x},${y}`)) bad(p.num, 'a park overlaps the river or another park'); taken.add(`${x},${y}`); }
+      if (bw === 2 && bh === 2 && [p.start, ...p.orders.flatMap((o) => [o.r, o.h])].some((c) => c[0] === bx + 1 && c[1] === by + 1)) bad(p.num, 'a place sits in the middle of a park');
+    }
+    (p.diag || []).forEach(([a, b, c, d], i) => {
+      if (c - a !== 1 || Math.abs(d - b) !== 1 || !inside([a, b]) || !inside([c, d])) bad(p.num, 'an avenue step is not one block corner to corner');
+      if (i && (p.diag[i - 1][2] !== a || p.diag[i - 1][3] !== b)) bad(p.num, 'the avenue is broken');
+      if (taken.has(`${a},${Math.min(b, d)}`)) bad(p.num, 'the avenue runs through the river or a park');
+    });
+    const places = [p.start, ...p.orders.flatMap((o) => [o.r, o.h])];
+    if (places.some((c) => !Number.isFinite(blocks(p, p.start, c)))) bad(p.num, 'a place cannot be reached');
+    const { river, parks, diag, ...flat } = p;
+    if (solve(flat).best === p.best) bad(p.num, 'the map does not matter: a plain grid is worth the same');
+  }
   const { best } = solve(p), w = walk(p, p.sol);
   if (best !== p.best) bad(p.num, `best is $${best}, stored $${p.best}`);
   if (w.earn !== p.best || w.skipped) bad(p.num, `the stored shift makes $${w.earn} with ${w.skipped} taps skipped`);

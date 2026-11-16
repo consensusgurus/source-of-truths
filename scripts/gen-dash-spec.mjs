@@ -11,10 +11,25 @@ export const SPEC = {
   6: ['tough', 'Saturday Night', [7, 6], 9, 90, 3, 3, [6, 8], 7],
   0: ['sunday', 'The Big Night', [7, 7], 10, 120, 3, 4, [7, 9], 8],
 };
+// THE MAP (owner, 2026-11-15: "maybe make the grid a bit more complicated? Not just a grid?"). What each
+// weekday's town carries, from board 3 on (boards 1 and 2 were dealt as plain grids and stay so). A park
+// closes the streets inside it, a river is crossed only at its bridges, an avenue cuts corner to corner.
+export const MAP = {
+  1: ['park'],
+  2: ['avenue'],
+  3: ['river'],
+  4: ['river', 'park'],
+  5: ['river', 'avenue'],
+  6: ['avenue', 'park', 'park'],
+  0: ['river', 'avenue', 'park'],
+};
+export const PLAIN_UNTIL = 2;   // the last board dealt before the map features
 // name (twelve letters at most) and picture. Invented names, no real chains.
 export const PLACES = [
   ["Sal's Slice", '🍕'], ['Patty Shack', '🍔'], ['Koi House', '🍣'], ['Luna Tacos', '🌮'], ['Golden Bowl', '🍜'], ['Green Fork', '🥗'],
   ['Wing Yard', '🍗'], ['Curry Leaf', '🍛'], ['Dumpling Den', '🥟'], ['Hero Subs', '🥪'], ['Bento Corner', '🍱'], ['Scoop Shop', '🍨'],
   ['Donut Dock', '🍩'], ['Burrito Bay', '🌯'], ['Pasta Nova', '🍝'], ['Falafel Stop', '🥙'], ['Fry House', '🍟'], ['Bagel Bench', '🥯'],
   ['Waffle Hut', '🧇'], ['Soup Pot', '🍲'],
+  // added 2026-11-15 with the food kinds, so cold and frozen orders turn up more often (lib/dash-engine.js KINDS)
+  ['Gelato Lab', '🍧'], ['Soft Serve', '🍦'], ['Smoothie Bar', '🥤'], ['Boba Stop', '🧋'],
 ];

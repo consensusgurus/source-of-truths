@@ -20,6 +20,15 @@
 // on it, one colour per order shared by its restaurant (a circle) and its door
 // (a square). The names and numbers live in the order list.
 //
+// THE TOWN IS NOT ALWAYS A PLAIN GRID (owner, 2026-11-15: "maybe make the grid a bit more
+// complicated? Not just a grid?"). From board 3 a town may have a river crossed only at its
+// bridges, parks that close the streets inside them, and an avenue cutting corner to corner.
+// The streets are drawn one by one from the engine's list, so what is drawn is what can be
+// driven. Still nothing printed on the map.
+//
+// EVERY ORDER SAYS WHAT IT IS (owner, same day): Hot until, Fresh until, Cold until, Frozen
+// until, read off the restaurant's picture (lib/dash-engine.js KINDS).
+//
 // THE CAR DRIVES (owner, 2026-11-15: "make the car animated"). A tap that adds a
 // stop runs the car along the streets of that leg, across then down as the route
 // is drawn, and the leg's line draws in behind it. About 110ms a block, never over
@@ -34,7 +43,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { COLS_CSS } from '@/lib/practical-cols';
 import SimpleDaily from '../SimpleDaily';
 import { endSolved } from '@/lib/end-verdict';
-import { walk, next, anyMove, clock, rankOf, offer, PER, STAY } from '@/lib/dash-engine';
+import { walk, next, anyMove, clock, rankOf, offer, segments, kindOf, UNTIL, SPOILT, PER, STAY } from '@/lib/dash-engine';
 
 const BAND = { intro: 'Intro', gentle: 'Gentle', moderate: 'Moderate', tough: 'Tough', sunday: 'Sunday Edition' };
 const STEP = 140, RUNG_H = 8, POP = 170;
@@ -49,8 +58,8 @@ const CAR = '<svg class="ds-ico" viewBox="0 0 120 48" fill="none" stroke="curren
 
 const CSS = `
 .dash{align-self:center;width:100%;max-width:1040px;display:flex;flex-direction:column;gap:10px;font-family:'Manrope',system-ui,sans-serif;font-weight:600;color:var(--ds-ink);line-height:1.4;
---ds-bg:#ffffff;--ds-ink:#141414;--ds-mute:#6b6b6b;--ds-grey:#f1f1ef;--ds-grey2:#e3e3df;--ds-road:#dcdcd6;--ds-block:#f3f3f0;--ds-ok:#bfe6c8;--ds-warn:#f8e3a1;--ds-bad:#f3b0b0;--ds-sat:62%;--ds-lit:84%;--ds-acc:var(--pst-acc,#fecdd3);--ds-on:var(--pst-on-acc,#141414);}
-.stage-page[data-stage-theme='dark'] .dash,.pst.dk .dash{--ds-bg:#161616;--ds-ink:#f2f2ee;--ds-mute:#a3a39d;--ds-grey:#232323;--ds-grey2:#333333;--ds-road:#3d3d3a;--ds-block:#1f1f1f;--ds-ok:#3f7a52;--ds-warn:#8a6d1c;--ds-bad:#9c5050;--ds-sat:40%;--ds-lit:66%;}
+--ds-bg:#ffffff;--ds-ink:#141414;--ds-mute:#6b6b6b;--ds-grey:#f1f1ef;--ds-grey2:#e3e3df;--ds-road:#dcdcd6;--ds-block:#f3f3f0;--ds-water:#d3e6f3;--ds-park:#dcebd6;--ds-ok:#bfe6c8;--ds-warn:#f8e3a1;--ds-bad:#f3b0b0;--ds-sat:62%;--ds-lit:84%;--ds-acc:var(--pst-acc,#fecdd3);--ds-on:var(--pst-on-acc,#141414);}
+.stage-page[data-stage-theme='dark'] .dash,.pst.dk .dash{--ds-bg:#161616;--ds-ink:#f2f2ee;--ds-mute:#a3a39d;--ds-grey:#232323;--ds-grey2:#333333;--ds-road:#3d3d3a;--ds-block:#1f1f1f;--ds-water:#1d3340;--ds-park:#22321f;--ds-ok:#3f7a52;--ds-warn:#8a6d1c;--ds-bad:#9c5050;--ds-sat:40%;--ds-lit:66%;}
 .dash button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0;margin:0;}
 .ds-stat{display:flex;border:1px solid var(--ds-ink);border-radius:10px;overflow:hidden;background:var(--ds-bg);}
 .ds-stat div{flex:1;padding:6px 4px;text-align:center;border-left:1px solid var(--ds-ink);}
@@ -86,6 +95,7 @@ const CSS = `
 .ds-row.me{background:var(--ds-acc);color:var(--ds-on);}.ds-row.me span{color:var(--ds-on);font-weight:800;}
 .ds-row em{font-style:normal;font-weight:800;font-variant-numeric:tabular-nums;min-width:44px;display:inline-block;}
 .ds-row.late em,.ds-row.late b{color:var(--ds-ink);}.ds-row.late{background:var(--ds-bad);}
+.ds-water{fill:var(--ds-water);}.ds-bridge{stroke:var(--ds-ink);stroke-linecap:butt;}.ds-park{fill:var(--ds-park);}
 .ds-cap{text-align:center;font-size:12.5px;color:var(--pst-mute,var(--ds-mute));line-height:1.5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ds-cap b{font-weight:800;color:var(--pst-ink,var(--ds-ink));}
 .ds-ord{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;width:100%;padding:5px 12px !important;border-top:1px solid var(--ds-grey2) !important;text-align:left;min-height:46px;}
@@ -147,22 +157,28 @@ function Board({ P, s, setS, active, done, held, release }) {
   const M = 22, gap = (340 - 2 * M) / (P.W - 1), gy = gap * 0.8, Hh = M + (P.H - 1) * gy + M;
   const X = (x) => M + x * gap, Y = (y) => M + y * gy;
   const R = gap > 55 ? 14 : 11.5;
+  // blocks that are water or park, so no grey block is drawn there
+  const covered = new Set();
+  if (P.river) for (let i = 0; i < (P.river.axis === 'h' ? P.W : P.H) - 1; i++) covered.add(P.river.axis === 'h' ? `${i},${P.river.at}` : `${P.river.at},${i}`);
+  for (const [bx, by, bw, bh] of P.parks || []) for (let x = bx; x < bx + bw; x++) for (let y = by; y < by + bh; y++) covered.add(`${x},${y}`);
   const d = (pts) => pts.map(([x, y], k) => `${k ? 'L' : 'M'}${X(x)} ${Y(y)}`).join('');
   const busy = (c) => P.orders.some((o) => (o.r[0] === c[0] && o.r[1] === c[1]) || (o.h[0] === c[0] && o.h[1] === c[1]));
   const offOf = (c) => (busy(c) ? R * 0.95 : 0);
   const off = offOf(w.pos);
   // the last leg is its own line, so it can draw in behind the car
   const before = s.taps.length ? walk(P, s.taps.slice(0, -1)) : null;
-  const leg = before ? [before.pos].concat(before.pos[0] !== w.pos[0] && before.pos[1] !== w.pos[1] ? [[w.pos[0], before.pos[1]]] : [], [w.pos]) : null;
+  const leg = before ? w.pts.slice(before.pts.length - 1) : null;
   const carRef = useRef(null), legRef = useRef(null), seen = useRef(s.taps.length);
   useEffect(() => {
     const n = s.taps.length, was = seen.current; seen.current = n;
     if (n !== was + 1 || !leg || !carRef.current || !carRef.current.animate) return;
     try { if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (e) { return; }
-    const len = leg.slice(1).map((p, i) => Math.abs(p[0] - leg[i][0]) + Math.abs(p[1] - leg[i][1])), all = len.reduce((a, b) => a + b, 0);
+    // (an avenue step is one block, like any street)
+    const len = leg.slice(1).map((p, i) => Math.max(Math.abs(p[0] - leg[i][0]), Math.abs(p[1] - leg[i][1]))), all = len.reduce((a, b) => a + b, 0);
     if (!all) return;
+    let run = 0; const at01 = leg.map((_, i) => (i === 0 ? 0 : (run += len[i - 1]) / all));
     const o0 = offOf(leg[0]), o1 = offOf(w.pos), at = (p, o) => `translate(${X(p[0]) - o}px, ${Y(p[1]) + o}px)`;
-    const frames = leg.map((p, i) => ({ transform: at(p, i === 0 ? o0 : i === leg.length - 1 ? o1 : 0), offset: i === 0 ? 0 : i === leg.length - 1 ? 1 : len[0] / all }));
+    const frames = leg.map((p, i) => ({ transform: at(p, i === 0 ? o0 : i === leg.length - 1 ? o1 : 0), offset: at01[i] }));
     const opts = { duration: Math.min(900, Math.max(320, all * 110)), easing: 'ease-in-out' };
     try { carRef.current.animate(frames, opts); if (legRef.current) legRef.current.animate([{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], opts); } catch (e) { /* the car is simply already there */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -175,7 +191,7 @@ function Board({ P, s, setS, active, done, held, release }) {
     if (n.kind === 'done') { setNote(`${o.n} is delivered. Use Undo to step back.`); return; }
     if (n.kind === 'no') { setNote(n.why === 'full' ? `The bag holds ${NUM[P.cap]}. Drop an order off first.` : n.why === 'end' ? `You cannot reach that door by ${clock(P.end)}.` : `No time left to pick up ${o.n} and deliver it.`); return; }
     setS({ ...s, taps: s.taps.concat(i), mv: s.mv + 1 });
-    setNote(n.kind === 'pick' ? (n.wait ? `Waited ${n.wait} minutes for ${o.n}.` : '') : n.tip < o.tip ? `${o.n} arrived cold: $${n.tip} of $${o.tip}.` : '');
+    setNote(n.kind === 'pick' ? (n.wait ? `Waited ${n.wait} minutes for ${o.n}.` : '') : n.tip < o.tip ? `${o.n} ${SPOILT[kindOf(o)]}: $${n.tip} of $${o.tip}.` : '');
   };
   const undo = () => { if (!live || !s.taps.length) return; setS({ ...s, taps: s.taps.slice(0, -1) }); setNote(''); };
   const reset = () => { if (!live || !s.taps.length) return; setS({ ...s, taps: [] }); setNote('Back at the start.'); };
@@ -197,9 +213,13 @@ function Board({ P, s, setS, active, done, held, release }) {
       <div className="ds-cap"><b>{P.day}</b> · {clock(0)} to {clock(P.end)} · {PER} min a block, {STAY} a stop</div>
       <div className="ds-map">
         <svg viewBox={`0 0 340 ${Hh}`} className={finale ? 'ds-fin-on' : undefined} role="img" aria-label={`A town of ${P.W} by ${P.H} corners with ${N} restaurants and ${N} doors`}>
-          {Array.from({ length: (P.W - 1) * (P.H - 1) }, (_, k) => { const x = k % (P.W - 1), y = Math.floor(k / (P.W - 1)); return <rect key={k} className="ds-blk" x={X(x) + 6} y={Y(y) + 6} width={gap - 12} height={gy - 12} rx={4} />; })}
-          {Array.from({ length: P.H }, (_, y) => <line key={`rh${y}`} className="ds-road" x1={X(0)} y1={Y(y)} x2={X(P.W - 1)} y2={Y(y)} strokeWidth={6} />)}
-          {Array.from({ length: P.W }, (_, x) => <line key={`rv${x}`} className="ds-road" x1={X(x)} y1={Y(0)} x2={X(x)} y2={Y(P.H - 1)} strokeWidth={6} />)}
+          {Array.from({ length: (P.W - 1) * (P.H - 1) }, (_, k) => { const x = k % (P.W - 1), y = Math.floor(k / (P.W - 1)); return covered.has(`${x},${y}`) ? null : <rect key={k} className="ds-blk" x={X(x) + 6} y={Y(y) + 6} width={gap - 12} height={gy - 12} rx={4} />; })}
+          {P.river ? (P.river.axis === 'h'
+            ? <rect className="ds-water" x={0} y={Y(P.river.at) + 3} width={340} height={gy - 6} />
+            : <rect className="ds-water" x={X(P.river.at) + 3} y={0} width={gap - 6} height={Hh} />) : null}
+          {(P.parks || []).map(([bx, by, bw, bh], k) => <rect key={`pk${k}`} className="ds-park" x={X(bx) + 6} y={Y(by) + 6} width={bw * gap - 12} height={bh * gy - 12} rx={6} />)}
+          {P.river ? P.river.bridges.map((b) => { const h = P.river.axis === 'h', x1 = h ? X(b) : X(P.river.at), y1 = h ? Y(P.river.at) : Y(b), x2 = h ? x1 : X(P.river.at + 1), y2 = h ? Y(P.river.at + 1) : y1; return <line key={`br${b}`} className="ds-bridge" x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth={10} />; }) : null}
+          {segments(P).map((e) => <line key={`st${e.join()}`} className="ds-road" x1={X(e[0])} y1={Y(e[1])} x2={X(e[2])} y2={Y(e[3])} strokeWidth={6} />)}
           {before && before.pts.length > 1 ? <path className="ds-route" d={d(before.pts)} strokeWidth={3} /> : null}
           {leg && leg.length > 1 ? <path ref={legRef} className="ds-route" d={d(leg)} strokeWidth={3} pathLength={1} strokeDasharray={1} strokeDashoffset={0} /> : null}
           <circle className="ds-at" cx={X(P.start[0])} cy={Y(P.start[1])} r={5} strokeWidth={2} />
@@ -272,7 +292,7 @@ function Board({ P, s, setS, active, done, held, release }) {
           return (
             <button type="button" key={i} data-ord={i} className={`ds-ord${d ? ' fin' : w.bag.includes(i) ? ' bag' : ''}`} onClick={() => tap(i)} disabled={!live} style={{ '--h': hue(i) }}>
               <span className="sw ds-emo" aria-hidden="true">{o.e}</span>
-              <span><b>{o.n} · ${o.tip}</b><small>{o.ready ? `Ready ${clock(o.ready)} · ` : ''}Hot until {clock(o.by)}</small></span>
+              <span><b>{o.n} · ${o.tip}</b><small>{o.ready ? `Ready ${clock(o.ready)} · ` : ''}{UNTIL[kindOf(o)]} {clock(o.by)}</small></span>
               <i className={cls}>{txt}</i>
             </button>);
         })}
@@ -323,11 +343,12 @@ const GAME = {
       <><b>Tap an order</b> to drive to its restaurant and pick it up. <b>Tap it again</b> to drive to its door and drop it off. You can tap the list or the map: a restaurant is a circle and its door is a square of the same colour.</>,
       <>The shift runs from {clock(0)} to {clock(P.end)}. Every <b>block</b> takes {PER} minutes and every <b>stop</b> takes {STAY}. Nothing counts after {clock(P.end)}.</>,
       <>Your <b>bag holds {NUM[P.cap]}</b>, so you can pick up orders that are heading the same way before you drop any of them.</>,
-      <>Every order is <b>hot until</b> a set time. After that the tip drops a dollar for every two minutes.{P.orders.some((o) => o.ready) ? <> An order marked <b>Ready</b> is not cooked yet: arrive early and you wait.</> : null}</>,
+      <>Every order is good <b>until</b> a set time: hot food stays hot, fresh food stays fresh, and ice cream stays frozen. After that the tip drops a dollar for every two minutes.{P.orders.some((o) => o.ready) ? <> An order marked <b>Ready</b> is not cooked yet: arrive early and you wait.</> : null}</>,
+      ...(P.river || (P.parks && P.parks.length) || (P.diag && P.diag.length) ? [<>You can only drive where there is a street.{P.river ? <> The <b>river</b> is crossed only at its bridges.</> : null}{P.parks && P.parks.length ? <> A <b>park</b> has no streets through it.</> : null}{P.diag && P.diag.length ? <> The <b>avenue</b> cuts corner to corner, and each step of it counts as one block.</> : null}</>] : []),
       <>Each row shows what its next tap would do from where you are now: when you would arrive and what it would pay. Trying a plan costs nothing. <b>Undo</b> steps back and <b>Start Over</b> clears the night.</>,
       <>Press <b>End Shift</b> when you are happy with the night. That is the shift you are scored on.</>,
     ],
-    knack: 'The biggest tip is not always worth the drive. Look for two restaurants close together whose doors lie the same way, and for the order that goes cold first.',
+    knack: 'The biggest tip is not always worth the drive. Look for two restaurants close together whose doors lie the same way, and for the order that will not keep.',
     footer: 'Ending a shift with at least one delivery counts. The fewest dollars short of the best possible shift ranks first, then the clock, and the Tip Ladder names your rung.',
   }),
   pitch: (P) => `${Cap(NUM[P.orders.length])} orders, $${offer(P)} on offer and not enough time. How much can you make?`,
@@ -336,9 +357,9 @@ const GAME = {
   aboutTitle: 'About Dash',
   about: [
     'Dash is a free daily delivery puzzle from Mind Loft. You drive one evening shift in a small town seen from above. Restaurants have orders waiting, every order has a door to reach and a tip, and there is never time to deliver them all. Choose which orders to take and in what order, and finish the night with as much in tips as you can.',
-    'Three things shape the night. Every block of driving takes two minutes and every pickup or drop-off takes two more. Your bag holds two orders, three at the weekend, so you can stack pickups that are heading the same way. And every order is hot until a set time: after that the tip falls a dollar for every two minutes it is late.',
+    'Three things shape the night. Every block of driving takes two minutes and every pickup or drop-off takes two more. Your bag holds two orders, three at the weekend, so you can stack pickups that are heading the same way. And every order keeps only until a set time, hot, fresh, cold or frozen: after that the tip falls a dollar for every two minutes it is late.',
     'Trying a plan costs nothing. Each order shows when you would arrive and what it would pay from where the car is now, and Undo steps back as far as you like. The puzzle is in the choosing: the biggest tip is often a long drive, and the best shift usually leaves a tempting order behind. Every board has a best possible total, and you are scored on how many dollars short of it you finish.',
-    'The town grows through the week: five orders in an hour on Monday, food that is not ready yet from Wednesday, ninety minutes and more orders by Thursday, a bag of three on Saturday, and on Sunday the big night of ten restaurants across the largest town. The Tip Ladder names your rung, from Wrong Address up to Five Stars.',
+    'The town is not always a plain grid: a river is crossed only at its bridges, a park closes the streets inside it, and an avenue cuts corner to corner. It grows through the week: five orders in an hour on Monday, food that is not ready yet from Wednesday, ninety minutes and more orders by Thursday, a bag of three on Saturday, and on Sunday the big night of ten restaurants across the largest town. The Tip Ladder names your rung, from Wrong Address up to Five Stars.',
     <>More everyday puzzles: <a href="/errands" style={{ color: 'inherit', fontWeight: 800 }}>Errands</a>, <a href="/bag" style={{ color: 'inherit', fontWeight: 800 }}>Bag</a>, <a href="/chef" style={{ color: 'inherit', fontWeight: 800 }}>Chef</a>, <a href="/seated" style={{ color: 'inherit', fontWeight: 800 }}>Seated</a>, <a href="/pack" style={{ color: 'inherit', fontWeight: 800 }}>Pack</a> and <a href="/mop" style={{ color: 'inherit', fontWeight: 800 }}>Mop</a>.</>,
   ],
 };

@@ -20,7 +20,7 @@ export const metadata = {
   openGraph: {
     images: [{ url: '/og/dash.png', width: 1200, height: 630, alt: "Dash, a daily delivery driver puzzle from Mind Loft" }],
     title: "Dash: The Daily Delivery Puzzle",
-    description: "One shift, too many orders. Make the most in tips before the food goes cold.",
+    description: "One shift, too many orders. Make the most in tips before the clock runs out.",
     url: '/dash',
     type: 'website',
     siteName: 'Mind Loft',
@@ -29,7 +29,7 @@ export const metadata = {
     images: ['/og/dash.png'],
     card: 'summary_large_image',
     title: "Dash: The Daily Delivery Puzzle",
-    description: "One shift, too many orders. Make the most in tips before the food goes cold.",
+    description: "One shift, too many orders. Make the most in tips before the clock runs out.",
   },
 };
 
@@ -40,7 +40,7 @@ const gameJsonLd = {
   alternateName: "Dash: The Daily Delivery Puzzle",
   url: `${SITE_URL}/dash`,
   description:
-    "A free daily delivery driver puzzle: a town of streets seen from above, restaurants with orders waiting and a door for each. There is never time to deliver them all. The bag holds two orders, every block and every stop costs minutes, and a tip shrinks once the food goes cold. Tap an order to pick it up and again to drop it off, and finish the shift with the most in tips. The town grows from five orders on Monday to ten restaurants on Sunday, and the Tip Ladder ranks the night by how many dollars short of the best possible shift it finished.",
+    "A free daily delivery driver puzzle: a town of streets seen from above, restaurants with orders waiting and a door for each. There is never time to deliver them all. The bag holds two orders, every block and every stop costs minutes, and a tip shrinks once its order runs late. Tap an order to pick it up and again to drop it off, and finish the shift with the most in tips. The town grows from five orders on Monday to ten restaurants on Sunday, and the Tip Ladder ranks the night by how many dollars short of the best possible shift it finished.",
   genre: ["Logic puzzle", "Route planning puzzle", "Delivery puzzle", "Puzzle"],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

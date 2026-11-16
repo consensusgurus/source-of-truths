@@ -157,7 +157,8 @@ function Board({ P, s, setS, active, done, held, release }) {
     if (!live) return;
     const probe = cloneState(s), ev = tick(P, probe), say = [];
     if (ev.ready.length) say.push(`${ev.ready.map((i) => MENU[L[i].k][0]).join(', ')} ready on the pass.`);
-    if (ev.cold.length) say.push(`${ev.cold.map((i) => MENU[L[i].k][0]).join(', ')} went cold.`);
+    // (a salad does not go cold, it wilts: owner, 2026-11-15, on Dash calling every order hot)
+    for (const cold of [false, true]) { const gone = ev.cold.filter((i) => (MENU[L[i].k][1] === 'cold') === cold); if (gone.length) say.push(`${gone.map((i) => MENU[L[i].k][0]).join(', ')} ${cold ? 'wilted' : 'went cold'}.`); }
     if (ev.printed.length) say.push(`New ticket ${ev.printed.map((i) => i + 1).join(', ')}.`);
     change((n) => tick(P, n)); setNote(say.join(' '));
   };
@@ -239,7 +240,7 @@ function Board({ P, s, setS, active, done, held, release }) {
           <div className="ck-card">
             <div className="ck-cardh">The Service</div>
             <div className="ck-row"><b>Penalty</b><span>{penalty(s)} ({s.wait} wait + {SIT_WEIGHT} x {s.sit} sat)</span></div>
-            {P.tickets.map((t, i) => <div key={i} className="ck-row"><b>Ticket {i + 1}</b><span>{s.t[i].out - t.at} min wait &middot; {s.t[i].sat ? `sat ${s.t[i].sat}` : 'hot'}</span></div>)}
+            {P.tickets.map((t, i) => <div key={i} className="ck-row"><b>Ticket {i + 1}</b><span>{s.t[i].out - t.at} min wait &middot; {s.t[i].sat ? `sat ${s.t[i].sat}` : 'straight out'}</span></div>)}
           </div>
         </>
       ) : (
@@ -255,7 +256,7 @@ function Board({ P, s, setS, active, done, held, release }) {
                     if (x.t !== ti) return null;
                     const d = s.d[i], [nm, st, tm] = MENU[x.k];
                     let c = '', r = '';
-                    if (d.st === 'todo') { r = `${d.cold ? 'Cold. Recook. ' : ''}${STATION_NAME[st]} ${tm} min`; c = `${d.cold ? 'cold ' : ''}${canStart(P, s, i) ? '' : 'blocked'}`; }
+                    if (d.st === 'todo') { r = `${d.cold ? (st === 'cold' ? 'Wilted. Remake. ' : 'Cold. Recook. ') : ''}${STATION_NAME[st]} ${tm} min`; c = `${d.cold ? 'cold ' : ''}${canStart(P, s, i) ? '' : 'blocked'}`; }
                     else if (d.st === 'cook') { r = `${WHERE[st]}, ${d.rem} min`; c = 'cook'; }
                     else if (d.st === 'pass') { r = tray ? 'Ready. Tap to tray' : 'Ready, waiting'; c = `wait${tray ? ' can' : ''}`; }
                     else { r = 'On the tray'; c = 'tray'; }
@@ -315,7 +316,7 @@ const GAME = {
       <><b>Tap a dish</b> on a check to fire it. Every dish needs its own station for a set number of minutes, and a station only has so many slots. A dish fired this minute can be tapped again to pull it back.</>,
       <><b>Next Minute</b> runs the clock. Nothing moves until you tap it, and new tickets print as the service goes on.</>,
       <>A finished dish waits on <b>the pass</b>. Once every dish on a check has been fired, the check becomes a <b>tray</b>: tap a waiting dish to put it on its tray. The order goes out when the tray holds every dish.</>,
-      <>Every minute a table waits costs <b>1</b>. Every minute a finished dish sits costs <b>{SIT_WEIGHT}</b>, and after {HOLD} minutes it goes cold and has to be cooked again.</>,
+      <>Every minute a table waits costs <b>1</b>. Every minute a finished dish sits costs <b>{SIT_WEIGHT}</b>, and after {HOLD} minutes it is past saving (hot food goes cold, a salad wilts) and has to be made again.</>,
       <>Today&rsquo;s line is {line(P)}.</>,
     ],
     knack: 'Work back from the slowest dish on the ticket. Fire it first, then start each quicker dish late enough that everything lands in the same minute.',
