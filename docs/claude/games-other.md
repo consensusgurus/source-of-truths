@@ -2894,6 +2894,56 @@ push including share link image". Logic. `/errands`.
 - **Not done.** The map is plain blocks and streets; the owner wants real-looking graphics on these puzzles.
   Not in Featured or a run.
 
+## Dash: the daily delivery puzzle (launched 2026-11-15)
+
+Owner, 2026-11-15: his own idea, "a DoorDash/delivery driver puzzle where user has to maximize tips across large
+grid with 10 or so restaurants", named Dash by him, mocked up, then "Also need cool share link image. Build and
+implement". Logic. `/dash`.
+
+- **The game.** One evening shift in a town of streets from above. Every order is a restaurant (a circle), a
+  door (a square of the same colour), a tip and a hot-until time, and there is never time for all of them. The
+  first tap of an order drives to its restaurant, the second to its door, so the whole state is one list of
+  taps (`lib/dash-engine.js`). A block is 2 minutes and a stop is 2. The bag holds two (three on Saturday and
+  Sunday). A late drop loses $1 for every 2 minutes; an order marked Ready is not cooked at six and you wait.
+  Nothing is picked up that could not reach its door by closing, and nothing is dropped after it.
+- **EVERY ROW PREVIEWS ITS NEXT TAP** from where the car is now ("Pick Up 6:06", "Drop 6:22 · $9", "Bag Full",
+  "Too Late"). The page does the arithmetic; the player does the choosing. Keep that.
+- **TRYING A PLAN IS FREE.** Undo and Start Over cost nothing. Only **End Shift** commits, and it needs at least
+  one delivery.
+- **THE MAP IS PLAIN ON PURPOSE.** Owner on the mockup, 2026-11-15: "the visual grid could look cleaner and
+  more compact". So: grey blocks, thin streets, no names printed on the map, streets closer together down the
+  page than across (`gy = gap * 0.8`) so a phone shows the map and the orders together, and the orders are a
+  list of rows, not cards. Do not add rooftops, lane lines or labels back.
+- **Scoring.** SOLVE_ONLY (10 or 0). The miss column is **dollars short** of the best possible shift (`best`
+  on the row; it reaches the browser, the taps `sol` do not), stored on the state at commit. Lower first, then
+  the clock.
+- **The Tip Ladder** (fixed cut-offs in dollars short: 0, 2, 4, 7, 11, 16, 22): Five Stars, Top Earner, Rush
+  Hour Pro, Regular, Side Hustle, Slow Night, Cold Fries, Wrong Address. Names are Claude's.
+- **The week** (`scripts/gen-dash-spec.mjs`): Mon Quiet Night 5 orders in an hour, Tue Dinner Shift 6, Wed
+  Midweek Run 6 with one not ready at six (all three Gentle: the owner wants Monday to Wednesday easy), Thu
+  Busy Night 7 in 90 minutes with two not ready, Fri Friday Rush 8 with three, Sat Saturday Night 9 with a bag
+  of three in a wider town, Sun The Big Night 10 restaurants, two hours, a bag of three, 7 by 7 corners.
+  THE BANK OPENS WITH AN INTRO BOARD: Sunday 11-15 is a Monday-size Quiet Night, band `intro`.
+- **How a board is judged.** The best shift is found by search over every state (place, minute, bag, picked).
+  A deal is kept only if the best shift leaves at least one order behind and delivers a number in the day's
+  range, is at least 60% of the money on offer, beats a bag of one (stacking pays), and beats both plain
+  plans (always the biggest tip, always the nearest pickup, one at a time) by the day's margin.
+  `scripts/verify-dash.mjs` re-proves all of it. The best ROUTE is not required to be unique: ties do not
+  matter when the score is dollars short.
+- **Restaurants** are invented names of twelve letters at most with a food emoji. No real chains, and nothing
+  of DoorDash's: not its red and white, not "Dasher". The owner chose the name knowing the overlap.
+- **Sets.** Everyday puzzles was full at five, so it was split: Everyday puzzles keeps Seated, Chef and Mop,
+  and a new set, Around town puzzles (`/logic-puzzles/around-town`), holds Bag, Errands and Dash. Finish set:
+  On the clock (Dash, Errands, Chef).
+- **Share card.** `scripts/bake-dash-og.mjs`: a town at night with lit windows and a glowing route, hand-baked
+  (HAND_BAKED), its Details cut in `public/og/tile/dash.png`.
+- **Files.** `app/dash/`, `lib/dash-engine.js`, `scripts/gen-dash.mjs` (append only), `gen-dash-spec.mjs`,
+  `verify-dash.mjs`, `wire-dash.mjs` (do not re-run), `gen-dash-tiles.py`, `bake-dash-og.mjs`. The bank runs
+  to 2027-01-03.
+- **Not done.** The car jumps, it does not drive. Give Up does not show the best route. Not in Featured or a
+  run. The live page was checked on the dev server (boards 1 and 8, phone and wide, light and dark), not with
+  a production build.
+
 ## Board previews for the everyday puzzles were redrawn (2026-11-15)
 
 Owner: "need to fix the Mop gameboard preview on main page - i can't tell what that is?" The square tile

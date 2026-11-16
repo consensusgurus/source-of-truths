@@ -330,6 +330,11 @@ const Errands = () => (
   <g><path d="M112 22H184M112 46H184M112 70H184M124 10V82M148 10V82M172 10V82" className="sm3" /><path d="M124 70H148V46H172V22" className="s3" />
     <rect x={116} y={62} width={16} height={16} rx={3} className="d" /><circle cx={148} cy={46} r={7.5} className="w" /><circle cx={172} cy={22} r={7.5} className="w" /></g>
 );
+// a delivery run on a grid of streets: restaurants are circles, doors are squares
+const Dash = () => (
+  <g><path d="M112 22H184M112 46H184M112 70H184M124 10V82M148 10V82M172 10V82" className="sm3" /><path d="M124 22H172V70H148" className="s3" />
+    <circle cx={124} cy={22} r={7.5} className="w" /><rect x={164.5} y={38.5} width={15} height={15} rx={3} className="d" /><circle cx={148} cy={70} r={7.5} className="w" /><rect x={116.5} y={62.5} width={15} height={15} rx={3} className="m" /></g>
+);
 // three grocery bags side by side, filled to different heights
 const Bag = () => (
   <g><path d="M134 28v-8a14 14 0 0128 0v8" className="s2" /><path d="M118 28h60l-5 50h-50z" className="w" />
@@ -753,7 +758,7 @@ export const TILE_BY_KEY = {
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
   suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
-  connect: Connect, mop: Mop, chef: Chef, seated: Seated, bag: Bag, errands: Errands, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
+  connect: Connect, mop: Mop, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,

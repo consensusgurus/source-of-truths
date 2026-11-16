@@ -275,6 +275,11 @@ const Errands = () => (
   <g><path d="M118 66h42V42h44V20" className="s5" fill="none" /><rect x={110} y={58} width={16} height={16} rx={4} className="w" />
     <circle cx={160} cy={66} r={8} className="m" /><circle cx={160} cy={42} r={8} className="m" /><circle cx={204} cy={20} r={8} className="m" /></g>
 );
+// Dash: a delivery run, two restaurants (circles) and a door (a square)
+const Dash = () => (
+  <g><path d="M120 22h84v44h-44" className="s5" fill="none" /><circle cx={120} cy={22} r={8} className="m" /><circle cx={204} cy={44} r={8} className="m" />
+    <rect x={152} y={58} width={16} height={16} rx={4} className="w" /></g>
+);
 // Bag: three items stacked in a bag, the lightest on top
 const Bag = () => (
   <g><path d="M126 14h68l-5 60h-58z" className="s5" fill="none" /><rect x={138} y={54} width={44} height={14} rx={3} className="m" /><rect x={138} y={37} width={44} height={14} rx={3} className="m" /><rect x={146} y={22} width={28} height={12} rx={3} className="w" /></g>
@@ -415,7 +420,7 @@ const BY_KEY = {
   // Logic
   venn: Venn, lamps: Lamps, plot: Plot, paths: Track, tangled: Tangle, chomp: Maze, hedge: Maze, topple: () => <Block />,
   roll: () => <Block die />, jig: Jig, saw: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,
-  connect: Dots, mop: Mop, chef: Chef, seated: Seated, bag: Bag, errands: Errands, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
+  connect: Dots, mop: Mop, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
   // End Game
   turn: Othello, four: Four, gift: Quarto, yose: Go, mate: () => <Chess target={4} />, check: () => <Chess target={11} />,
   chain: () => <Chess target={14} />, defend: () => <Chess target={21} />, swindle: () => <Chess target={7} />, queen: () => <Chess target={18} />,
