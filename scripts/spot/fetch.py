@@ -9,7 +9,7 @@ rows = [json.loads(l.strip().rstrip(',')) for l in src.splitlines() if l.strip()
 want = [int(x) for x in sys.argv[1].split(',')]
 out = os.path.join(HERE, 'src')
 os.makedirs(out, exist_ok=True)
-UA = {'User-Agent': 'MindLoftSpot/1.0 (admin@mindloftdaily.com)'}
+UA = {'User-Agent': 'MindLoftSpot/1.0 (m@mindloftdaily.com)'}
 for r in rows:
     if r['num'] not in want:
         continue

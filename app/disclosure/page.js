@@ -58,7 +58,7 @@ export default function DisclosurePage() {
 
       <H2>Questions</H2>
       <p>
-        If you have any questions about how the site makes money, contact us at <a href="mailto:admin@mindloftdaily.com" style={{ color: 'inherit' }}><strong>admin@mindloftdaily.com</strong></a>.
+        If you have any questions about how the site makes money, contact us at <a href="mailto:m@mindloftdaily.com" style={{ color: 'inherit' }}><strong>m@mindloftdaily.com</strong></a>.
       </p>
     </LegalLayout>
   );

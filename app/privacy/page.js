@@ -86,7 +86,7 @@ export default function PrivacyPage() {
 
       <H2>Contact</H2>
       <p>
-        Questions about this policy can be sent to <a href="mailto:admin@mindloftdaily.com" style={{ color: 'inherit' }}><strong>admin@mindloftdaily.com</strong></a>.
+        Questions about this policy can be sent to <a href="mailto:m@mindloftdaily.com" style={{ color: 'inherit' }}><strong>m@mindloftdaily.com</strong></a>.
       </p>
     </LegalLayout>
   );

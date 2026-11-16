@@ -4,7 +4,7 @@
 // Day" sit at the foot of the home's left navigation. Each is a short form that
 // posts to /api/complaints, the same table the list complaints use, so every
 // entry lands in the admin Feedback tab under Notices with the sender's name
-// and a mailto link to reply from admin@mindloftdaily.com. The listId is the
+// and a mailto link to reply from m@mindloftdaily.com. The listId is the
 // page's own route and the listTitle carries a [Tag] prefix, which is how the
 // admin card links back here instead of to /list/<id>.
 import { useMemo, useState } from 'react';
@@ -162,7 +162,7 @@ export default function ReachForm({ kind }) {
             <label className="rf-f"><span>{sponsor ? 'Anything else (optional)' : 'Tell us about it (optional)'}</span>
               <textarea value={f.note} onChange={set('note')} rows={4} maxLength={700} /></label>
             <input className="rf-hp" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.hp} onChange={set('hp')} />
-            {state === 'err' ? <p className="rf-err" role="alert">That did not send. Try again, or email admin@mindloftdaily.com.</p> : null}
+            {state === 'err' ? <p className="rf-err" role="alert">That did not send. Try again, or email m@mindloftdaily.com.</p> : null}
             <button type="submit" className="br-go" disabled={!ready}>{state === 'busy' ? 'Sending' : sponsor && days.length ? `Request ${days.length} Day${days.length === 1 ? '' : 's'} \u00b7 $${total}` : 'Send'}</button>
           </form>
         )}
