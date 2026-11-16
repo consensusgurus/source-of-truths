@@ -260,7 +260,8 @@ const CSS = `
 .rbs-runs,.rbs-games{display:grid;gap:14px;grid-template-columns:repeat(var(--rbs-cols, 4),minmax(0,1fr))}
 /* The run ending is always its own pastel ground, so the tiles keep the
    home's light drawing whatever the site register says. */
-.gsx .rbs .rgt.rgt{background:var(--rgg);color:#0b1b2b;border-color:#0b1b2b}
+.gsx .rbs .rgt.rgt{background:#fff;color:#0b1b2b;border-color:#0b1b2b}
+.gsx .rbs .rgt .rgt-hl{color:#3b4757}
 .gsx .rbs .rgt.rgt-w{background:#fff}
 .gsx .rbs .rgt-more.rgt-more{background:#fff}
 .rbd{display:grid;grid-template-columns:74px minmax(0,1fr);grid-template-areas:"b n" "b f" "b k" "x x" "s s";grid-template-rows:auto auto 1fr auto auto;

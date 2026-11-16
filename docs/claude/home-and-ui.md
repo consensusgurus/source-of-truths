@@ -2620,8 +2620,9 @@ says a thing ONE way. Keep it that way when adding to any of them.
   carry (`scripts/verify-game-blurbs.mjs` enforces the range). The card is a CSS container: when it
   is too narrow for both chips on one line, EVERY card stacks them, so the difficulty chip is never
   silently dropped and rows stay level.
-- **Run tiles** (`app/today/RunGateTile.jsx`): eyebrow "Daily Run", name, ONE headline line, legs,
-  button, crowd strip. No leg count in the eyebrow and no second rule line. The count in the strip
+- **Run tiles** (`app/today/RunGateTile.jsx`; redrawn 2026-11-16, see circuits-and-runs.md): a white
+  card, name and ONE headline line with the run's drawing top right, a "Start" button, then the legs as
+  a band joined to the crowd strip. No eyebrow and no second rule line. The count in the strip
   is the person icon and a number, never the word "playing". More Runs and Build a Run use the same
   skeleton (More Runs lists its three most played as a legs strip).
 - **Cap controls**: View, then Sort, then Group (or Show / Kind on a category pane), then search

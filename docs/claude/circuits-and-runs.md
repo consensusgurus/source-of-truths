@@ -883,6 +883,25 @@ circuit: it sits in SHOWN, PILL_CIRCUITS and MoreRuns beside the Dojo.
   at Diag's), and `primeCircuitClocks` primes for both Dojo ids.
 - **DojoPop** offers the color Dojo after a color sudoku (any key ending `too`), the Dojo after any other.
 
+## The run tile is a white card with the run's own drawing (owner, 2026-11-16)
+
+This SUPERSEDES the look described in the 2026-11-08 section below (category ground, "Daily Run" eyebrow,
+boxed legs above the button, "Start with <first leg>"); the data rules there (GATE_TEXT, ordering, the
+day's spectrum, More Runs) still hold. `app/today/RunGateTile.jsx`, mockup B2 plus the emblems:
+
+- The tile is WHITE in light and the dark card colour in dark, like a puzzle card. The category colour is
+  the start button, the foot (leader, plays) and the drawing. `.rgt-w` / `plain` no longer changes anything.
+- No eyebrow. The name and the one-line headline sit on the left; the run's drawing sits top right
+  (`EMBLEM`, keyed by run id, a 48-unit line drawing: `.f1` fills take the category colour, `.f2` the card).
+  **A new run adds its drawing to `EMBLEM`**, or it wears the flag, which custom runs wear too.
+- The button reads **"Start"** (owner: "get rid of 'start with xxx'"). "Continue the run" and "See your
+  results" are unchanged.
+- The legs are a full-width band JOINED TO THE TOP OF THE LEADER BAR (owner: "the list attached to the
+  bottom on top of the player leader bar"), no box of its own, still one row, a played leg in ink. In dark
+  the band keeps its pastels with ink names.
+- More Runs and Build a Run follow the same build (deck and blocks drawings; Build a Run has no band).
+- A name longer than 17 characters drops a size (`.rgt-name.long`) so it fits beside the drawing.
+
 ## In Details, a run tile is its own start screen, small (owner, 2026-11-08, option B)
 
 `app/today/RunGateTile.jsx`. In the Details view (desktop top row, a category pane's run tiles, the Runs
