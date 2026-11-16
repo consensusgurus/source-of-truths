@@ -1,0 +1,16 @@
+{
+  "id": "/poll",
+  "name": "Poll: Daily Guess the Split Game",
+  "short_name": "Poll",
+  "description": "Five this-or-that questions. Pick yours, then guess how everyone split. From Mind Loft.",
+  "start_url": "/poll?src=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8fa",
+  "theme_color": "#f7f8fa",
+  "icons": [
+    { "src": "/poll-icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/poll-icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/poll-icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

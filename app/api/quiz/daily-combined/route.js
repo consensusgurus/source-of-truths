@@ -9,6 +9,7 @@ import { scoreOutwitGame } from '@/lib/outwit-score';
 import { scoreOutrankGame } from '@/lib/outrank-score';
 import { scoreFeudGame } from '@/lib/feud-score';
 import { scoreHerdGame } from '@/lib/herd-score';
+import { scorePollGame } from '@/lib/poll-score';
 import { attemptsModeForQuizId, attemptsPlan, arcadeRanksForQuizId } from '@/lib/daily-games';
 import { GAME_PUZZLES, etTodayServer, suffixOfDate, gamesForSuffix } from '@/lib/daily-slate';
 import { groupByCode, membersOf, isMissingTable } from '@/lib/groups';
@@ -232,6 +233,8 @@ async function scoreFeudLive(puzzle, cutoffMs, table = 'feud_picks', scorer = sc
 // Herd is adaptive exactly like Feud, and stores its ballots in outwit_picks
 // under herd-* quiz ids, so it reuses scoreFeudLive's read with its own scorer.
 const scoreHerdLive = (puzzle, cutoffMs) => scoreFeudLive(puzzle, cutoffMs, 'outwit_picks', scoreHerdGame);
+// Poll is the same again, under poll-* quiz ids (see lib/poll-score).
+const scorePollLive = (puzzle, cutoffMs) => scoreFeudLive(puzzle, cutoffMs, 'outwit_picks', scorePollGame);
 
 // The guest's single chosen row for a game (their anon rows only), mirroring
 // scoreGame's selection: a completed attempt beats an abandoned one, then the
@@ -597,6 +600,13 @@ export async function GET(request) {
       const hp = (GAME_PUZZLES.herd || []).find((x) => x && x.quizId === herdGame.quizId);
       if (hp) herdLive = await memoCrowd(`herd|${hp.quizId}|${cutoffMs}`, fresh, () => scoreHerdLive(hp, cutoffMs));
     }
+    // And for Poll (live crowd percentages; see lib/poll-score).
+    let pollLive = null;
+    const pollGame = games.find((g) => g.key === 'poll');
+    if (pollGame) {
+      const pp = (GAME_PUZZLES.poll || []).find((x) => x && x.quizId === pollGame.quizId);
+      if (pp) pollLive = await memoCrowd(`poll|${pp.quizId}|${cutoffMs}`, fresh, () => scorePollLive(pp, cutoffMs));
+    }
 
     gameResults = games.map((g) => {
       if (g.key === 'outwit' && outwitLive) {
@@ -610,6 +620,9 @@ export async function GET(request) {
       }
       if (g.key === 'herd' && herdLive) {
         return { key: g.key, quizId: g.quizId, num: g.num, rev: g.rev, href: g.href, field: herdLive.field, plays: herdLive.plays, players: herdLive.players };
+      }
+      if (g.key === 'poll' && pollLive) {
+        return { key: g.key, quizId: g.quizId, num: g.num, rev: g.rev, href: g.href, field: pollLive.field, plays: pollLive.plays, players: pollLive.players };
       }
       const gameRows = rowsByQuiz.get(g.quizId) || [];
       const gr = scoreGame(gameRows);

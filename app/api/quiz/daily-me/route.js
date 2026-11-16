@@ -8,6 +8,7 @@ import { scoreOutwitGame } from '@/lib/outwit-score';
 import { scoreOutrankGame } from '@/lib/outrank-score';
 import { scoreFeudGame } from '@/lib/feud-score';
 import { scoreHerdGame } from '@/lib/herd-score';
+import { scorePollGame } from '@/lib/poll-score';
 import { GAME_PUZZLES, etTodayServer, suffixFromRequest, gamesForSuffix } from '@/lib/daily-slate';
 
 export const dynamic = 'force-dynamic';
@@ -45,6 +46,8 @@ const ADAPTIVE = {
   feud: { table: 'feud_picks', score: scoreFeudGame },
   // Herd stores its ballots in outwit_picks under herd-* quiz ids.
   herd: { table: 'outwit_picks', score: scoreHerdGame },
+  // Poll does too, under poll-* quiz ids.
+  poll: { table: 'outwit_picks', score: scorePollGame },
 };
 
 // Outwit / Outrank / Feud are scored against the live crowd, so their frozen

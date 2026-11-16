@@ -213,6 +213,7 @@ const GAMES = [
   { key: 'streak', href: '/streak', name: 'Streak', tag: 'Forty questions, one life', img: '/games/btn-streak.png' },
   { key: 'feud', href: '/feud', name: 'Feud', tag: 'Match the crowd', img: '/games/btn-feud.png' },
   { key: 'herd', href: '/herd', name: 'Herd', tag: 'Pick what most people pick', img: '/games/btn-herd.png' },
+  { key: 'poll', href: '/poll', name: 'Poll', tag: 'Guess how the crowd split', img: '/games/btn-poll.png' },
   { key: 'babel', href: '/babel', name: 'Babel', tag: 'The bag is empty', img: '/games/btn-babel.png' },
   { key: 'chain', href: '/chain', name: 'Chain', tag: 'Take them, or leave them', img: '/games/btn-chain.png' },
   { key: 'turn', href: '/turn', name: 'Turn', tag: 'Ten squares left', img: '/games/btn-turn.png' },
@@ -262,7 +263,7 @@ const CATEGORIES = [
   // Sudoku circuit's pool, so the shelf, the circuit and the category are one
   // list and cannot drift apart.
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sudstoo', 'sixes', 'sixestoo', 'towers', 'quilt', 'cages', 'coop', 'sando', 'snack', 'mercury', 'mercurytoo', 'fever', 'arrow', 'dart', 'polka', 'dot', 'knight', 'knighttoo', 'diag', 'diagtoo', 'frame', 'trim', 'rim', 'rimtoo', 'lip', 'liptoo', 'giant', 'gianttoo', 'sumo', 'bout', 'window', 'windowtoo', 'five', 'racecar', 'racecartoo', 'kayak', 'kayaktoo', 'whittle'] },
-  { key: 'crowd', label: 'Crowd Psychology', keys: ['herd', 'outwit', 'outrank', 'feud'] },
+  { key: 'crowd', label: 'Crowd Psychology', keys: ['herd', 'poll', 'outwit', 'outrank', 'feud'] },
   { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'filing', 'redact', 'dating', 'extra', 'carmen'] },
   // Logic lost its photo, observation and moving-piece puzzles to Visual, and
   // End Game and Cards merged into Table Games (owner, 2026-11-12).

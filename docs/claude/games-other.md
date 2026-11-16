@@ -98,6 +98,52 @@ day... the first puzzle in read the room... A or B, or A or B or C, or A or B or
 - Client `app/herd/HerdClient.jsx` is built off OutwitClient's frame (class prefix `hd-`); a pick on any question
   but the last moves straight on. Wired by `scripts/wire-herd.mjs`; tiles `scripts/gen-herd-tile.py`.
 
+## Poll is the GUESS-THE-SPLIT crowd game: a pick and a percentage (launched 2026-11-16)
+
+Route `/poll`, key `poll`, Crowd Psychology, skill Reading People, `miss: null`, legacy hue deep teal #0f766e / #5eead4.
+Owner, 2026-11-16: picked it from a pitch of new crowd games, "it should include things like 'cheezits or goldfish',
+wide range of topics. build and implement."
+
+- **The game.** Five questions a day, EVERY ONE A OR B. On each the player gives their OWN honest pick (two cards),
+  then drags a slider to the percentage of today's players they think picked each side. Only the percentage is
+  scored. It fills the gap the other four leave: Herd asks which side wins, Poll asks by how much, so a 52 to 48
+  question is as playable as a 90 to 10 one. No Sunday Edition (five every day) and no `sunday` field.
+- **Scoring is `lib/poll-score.js`**, the one rule for every surface. 20 points a question (100 / the count), one
+  point lost for each percentage point the guess misses the real split by, floor 0, so the day is a real total out
+  of 100. The real split is LEAVE-ONE-OUT (the pool minus the player's own pick), rounded to a whole percent.
+  Board order: points, then smaller total miss, then earliest (`rankPoll`). Adaptive like the other crowd games.
+- **A ballot is ONE INTEGER a question: `pick * 1000 + pct`** (0..100 = picked A, 1000..1100 = picked B; pct is
+  always the guessed share for option A). `encodePoll` / `decodePoll` are the only code that knows it; the client
+  keeps `{ k, p }` and encodes at submit. Do not change the encoding: stored ballots depend on it.
+- **The lean.** The payload carries `lean`: the guessed share for the side the player picked minus its real
+  share, averaged over the day. The result line reads "You overrated how many people agree with you by N points"
+  (or underrated, or "about right" inside 4 points). This is the game's share hook; keep it.
+- **House crowd**: each question's `house` is VOTE COUNTS [A, B] (48 in all), the pool's ESTIMATE laid out as
+  votes. In the pool while at most 10 real players are in (`HOUSE_CUTOFF`), then retired for everyone. It is the
+  author's guess, never data; say so if asked.
+- **No table of its own**: ballots go in `outwit_picks` under `poll-M-D-YY` quiz ids, like Herd. Wired into
+  `/api/quiz/daily-me` (ADAPTIVE), `/api/quiz/crowd-today` (pollGroups) and `/api/quiz/daily-combined`
+  (scorePollLive). Every reader of that table filters by quiz_id; a row that is not a clean Poll ballot is skipped.
+- **The bank**: `scripts/poll-pool.mjs` (418 questions in thirteen topics: food, brand, home, travel, screen, tech,
+  money, work, social, sport, nature, would, misc; each `[topic, question, A, B, est, flags]`) dealt by
+  `scripts/gen-poll.mjs --until <date> --write` (append-only). A day: a brand or food opener, at most two brand
+  pairs (owner's Aorb ruling carried over), one question a topic otherwise, at least one lopsided and one close
+  split, no shared key word within the day or with the five days before, a work question at most once every three
+  days, nothing shared with Herd's bank, seasonal questions (`w: ['MM-DD','MM-DD']`) only inside their window.
+  Banked 2026-11-16 to 2026-12-31, which leaves 152 pool questions. `scripts/verify-poll.mjs` rechecks the bank
+  against the pool and mutation-tests the scorer.
+- **The key-word rule cannot see subjects.** The launch review found two burger chains on one day, toothpaste twice
+  in four days and three bed questions in a week, none sharing a word. They were fixed by hand with same-topic
+  swaps between days. After any new deal, read the days for subject clusters before shipping; the content review
+  gate (`scripts/content-reviewed.json`, entry `poll`) covers it.
+- **NOT in Read the Room.** The run is still Herd, Outwit, Outrank and Feud, a quarter each. Adding Poll as a
+  fifth room means dated room keys, parts, share codes and the card (see how Herd joined on 2026-10-17); it is an
+  owner decision, not a side effect.
+- Client `app/poll/PollClient.jsx` is forked from HerdClient (class prefix `pl-`). The slider is a native range
+  input; the first touch commits 50 so a deliberate 50 counts, and the plus and minus buttons move one point.
+  On the phone stage `.pst button` sets every button's ink, so filled buttons restate their colour in `PL_ST_CSS`.
+  Wired by `scripts/wire-poll.mjs`; tiles and icons `scripts/gen-poll-tile.py`; share card `scripts/bake-og.mjs poll`.
+
 ## Aorb (DELETED 2026-10-27, owner: removed from the site completely; /aorb redirects to /crowd-psychology-games). Kept for history only.
 
 ## Aorb is the A-OR-B CROWD GAME, two picks a pair, and it plays FULL SCREEN (launched 2026-10-23)

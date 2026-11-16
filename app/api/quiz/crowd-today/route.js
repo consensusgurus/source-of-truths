@@ -5,10 +5,12 @@ import { PUZZLES as P_OUTWIT } from '@/app/outwit/puzzles';
 import { PUZZLES as P_OUTRANK } from '@/app/outrank/puzzles';
 import { PUZZLES as P_FEUD } from '@/app/feud/puzzles';
 import { PUZZLES as P_HERD } from '@/app/herd/puzzles';
+import { PUZZLES as P_POLL } from '@/app/poll/puzzles';
 import { scoreOutwitField, HOUSE_CUTOFF as OUTWIT_CUTOFF } from '@/lib/outwit-score';
 import { scoreOutrankField, HOUSE_CUTOFF as OUTRANK_CUTOFF } from '@/lib/outrank-score';
 import { scoreFeudField, HOUSE_CUTOFF as FEUD_CUTOFF } from '@/lib/feud-score';
 import { scoreHerdField, HOUSE_CUTOFF as HERD_CUTOFF } from '@/lib/herd-score';
+import { scorePollField, decodePoll, cleanPollBallot, HOUSE_CUTOFF as POLL_CUTOFF } from '@/lib/poll-score';
 
 // GET /api/quiz/crowd-today?game=outwit|outrank|feud&anonId=..&email=..
 //
@@ -44,6 +46,7 @@ const GAMES = {
   outrank: { puzzles: P_OUTRANK, table: 'outrank_picks' },
   feud: { puzzles: P_FEUD, table: 'feud_picks' },
   herd: { puzzles: P_HERD, table: 'outwit_picks' },
+  poll: { puzzles: P_POLL, table: 'outwit_picks' },
 };
 
 // How many rows a group shows. The panel is a compact strip, not the game's
@@ -211,6 +214,25 @@ function herdGroups(puzzle, pool, mine) {
   return { groups, field: realCount, houseActive: useHouse, headline: `${points} of ${puzzle.prompts.length} with the herd` };
 }
 
+// ── POLL: five questions, each a split the player put a number on ──────────
+function pollGroups(puzzle, pool, mine) {
+  const clean = pool.filter((p) => cleanPollBallot(p.answers, puzzle));
+  if (!cleanPollBallot(mine.answers, puzzle)) return null;
+  const { contexts, totalFor, useHouse, realCount } = scorePollField(puzzle, clean, { houseCutoff: POLL_CUTOFF });
+  const groups = puzzle.prompts.map((pr, i) => {
+    const ctx = contexts[i];
+    const v = mine.answers[i];
+    const d = decodePoll(v);
+    const view = ctx.viewFor(v);
+    const rows = pr.options.map((opt, oi) => ({
+      label: opt, pct: oi === 0 ? view.actual : 100 - view.actual, you: d.pick === oi,
+      tag: d.pick === oi ? 'you' : null,
+    }));
+    return { q: pr.q, note: `+${ctx.ptsFor(v)} pts`, text: `You guessed ${d.pct}% ${pr.options[0]}`, rows };
+  });
+  return { groups, field: realCount, houseActive: useHouse, headline: `${totalFor(mine)} of 100 points` };
+}
+
 // ── OUTWIT: five prompts, each a distribution the player was aiming at ───────
 function outwitGroups(puzzle, pool, mine) {
   const { contexts, useHouse, realCount } = scoreOutwitField(puzzle, pool, { houseCutoff: OUTWIT_CUTOFF });
@@ -303,6 +325,7 @@ export async function GET(request) {
 
     const built = game === 'feud' ? feudGroups(puzzle, pool, mine)
       : game === 'herd' ? herdGroups(puzzle, pool, mine)
+      : game === 'poll' ? pollGroups(puzzle, pool, mine)
       : game === 'outrank' ? outrankGroups(puzzle, pool, mine)
         : outwitGroups(puzzle, pool, mine);
     if (!built) return NextResponse.json({ ok: true, game, played: false });

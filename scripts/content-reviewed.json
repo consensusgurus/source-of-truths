@@ -303,6 +303,11 @@
     "on": "2026-11-12",
     "note": "first ledger entry: 12-01..12-31 read by separate reviewers; disputed figures fixed, played boards included (ranks and results unchanged)"
   },
+  "poll": {
+    "through": "2026-12-31",
+    "on": "2026-11-16",
+    "note": "launch bank 11-16..12-31 (230 questions) read item by item by a separate reviewer, twice: first read led to rewording, three cuts, estimate and window fixes and a re-deal under stricter spread rules; second read of the re-dealt bank found seven blocking items, fixed by same-topic day swaps and two rewords. Estimates are the author's guesses, not data"
+  },
   "herd": {
     "through": "2026-12-31",
     "on": "2026-11-12",

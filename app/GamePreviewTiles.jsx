@@ -523,6 +523,11 @@ const Herd = () => (
     {[0, 1, 2, 3, 4, 5, 6].map((i) => <circle key={i} cx={i < 2 ? 118 + i * 14 : 154 + ((i - 2) % 3) * 12} cy={i < 2 ? 50 : 46 + Math.floor((i - 2) / 3) * 14} r={5} className={i < 2 ? 'm' : 'd'} />)}
     <circle cx={160} cy={74} r={5} className="d" /><circle cx={172} cy={74} r={5} className="d" /></g>
 );
+const Poll = () => (
+  <g><rect x={108} y={6} width={36} height={24} rx={5} className="d" /><T x={126} y={23} s={13} c="tw">A</T><rect x={152} y={6} width={36} height={24} rx={5} className="w" /><T x={170} y={23} s={13}>B</T>
+    <rect x={108} y={46} width={80} height={12} rx={6} className="w" /><rect x={108} y={46} width={50} height={12} rx={6} className="d" /><circle cx={158} cy={52} r={9} className="m" />
+    <T x={124} y={78} s={11}>62%</T><T x={172} y={78} s={11}>38%</T></g>
+);
 // ---- Word ----------------------------------------------------------------
 const Crux = () => (
   <g>{[[0, 1], [1, 1], [2, 1], [3, 1], [1, 0], [1, 2], [1, 3], [3, 0], [3, 2], [3, 3], [2, 3], [0, 3]].map(([c, r], i) => <rect key={i} x={112 + c * 18} y={6 + r * 18} width={18} height={18} className="w" />)}
@@ -764,7 +769,7 @@ export const TILE_BY_KEY = {
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,
   cipher: Cipher, pricer: Pricer, dealer: Dealer, realtor: Realtor, agent: Agent, curator: Curator, picks: Picks,
   // Crowd Psychology
-  outwit: Outwit, outrank: Outrank, feud: Feud, herd: Herd,
+  outwit: Outwit, outrank: Outrank, feud: Feud, herd: Herd, poll: Poll,
   // Word
   crux: Crux, fill: Fill, gram: Gram, stet: Stet, tuck: Tuck, lode: Lode, rung: Rung, anon: Anon, vocab: Vocab, spell: Spell, idiom: Idiom,
   links: Links, hinge: Hinge, babel: Babel, glyph: Glyph, origin: Origin, warmer: Warmer, shards: Shards, strata: Strata, barter: Barter,
