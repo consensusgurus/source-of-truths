@@ -2800,6 +2800,14 @@ Connect. Tile art `scripts/gen-mop-tiles.py`; share card `scripts/bake-og.mjs mo
   front (bottom wall) and leave by the back (top wall). **The Sunday Edition is three 6x6 floors**, Upstairs,
   Ground Floor and Basement, each its own full screen behind a tab row; the view follows the mop and a dot marks
   the floor it is on. Sunday always comes in the front and leaves by the back. It is on `SUNDAY_EDITION_GAMES`.
+- **THE NEW WEEK FROM 2026-11-18 (owner, 2026-11-17, with Mow):** "rework both mop and mow so that earlier week days
+  are harder. today's difficulty should be as easy as it gets and only run on Mondays." That day was a Tuesday Gentle
+  6x6, so Monday alone keeps it and every later day climbs: **Mon** Gentle 6x6, **Tue** Moderate 7x7, **Wed** Moderate
+  8x8, **Thu** Tough two 6x6 floors, **Fri** Tough two 7x7 floors, **Sat** Tough three 6x6 floors (house name Three
+  Floors), **Sun** the Sunday Edition, three 7x7 floors. `RAMP_FROM` / `NEW_WEEK` in `gen-mop.mjs`; `twoStorey(R, S)`
+  and `sunday(R, S)` take the floor size, and 7x7 upper floors draw extra room names (`MORE`). Rows from 11-18 were
+  re-dealt with `--redeal-from 2026-11-18` (the Mondays came back byte for byte); 11-13 to 11-17 stay as dealt.
+  `verify-mop.mjs` holds both weeks.
 - **Look (owner, 2026-11-13).** The piece is a mop. The board sits in a yard of grass with a stone walkway from
   each outside door (the Basement sits in earth). Furniture is drawn from above, one or two tiles, chosen by the
   room it stands in, and some of it stands in the middle of a room ("more items in middle of room like couch":
@@ -2852,6 +2860,14 @@ house in a corner - it should vary". Logic, skills Spatial and Planning, on `app
 - **The ramp, one size a day:** Mon 6x6, Tue 7x6 (Gentle); Wed 7x7, Thu 8x7 (Moderate); Fri 8x8, Sat 9x8 (Tough);
   Sun 9x9, the Sunday Edition, the Estate. About one weekday in three comes and goes by a street gate two squares
   wide; the rest come in from the street (bottom) and leave by the back gate (top, off the Back Yard).
+- **THE NEW RAMP FROM 2026-11-18 (owner, 2026-11-17, with Mop):** Monday alone keeps that day's (a Tuesday's) 7x6
+  and every later day climbs a size: **Mon** 7x6 Gentle, **Tue** 8x7 and **Wed** 8x8 Moderate, **Thu** 9x8, **Fri**
+  9x9, **Sat** 10x9 Tough, **Sun** 10x10 the Estate. `RAMP_FROM` / `NEW_WEEK` in `gen-mow.mjs`, which gained
+  `--redeal-from` (refuses a day that is not in the future). **Sat and Sun are dealt ROUTE FIRST** (`routeFirst`):
+  with random gates a 10x9 yard almost never has any route (zero in 4M deals), so the generator draws a route over
+  the open lawn first (fences ignored, gates in and out re-picked so the checkerboard balances), puts a gate wherever
+  it crosses a fence (at most three per fence), and keeps the yard only if the uniqueness count still says ONE.
+  `verify-mow.mjs` holds both ramps.
 - **The house varies:** none, a whole house standing clear of every fence (grass all round it), or the CORNER of a
   house in a back corner, its roof running out of the picture and its walls standing in for the fence there. A house
   is likelier on Friday to Sunday.

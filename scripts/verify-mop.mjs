@@ -5,6 +5,9 @@
 //     Fri, Sat tough: one 8x8 floor to 2026-11-14, and from 2026-11-20 two 6x6
 //     floors (Upstairs, Ground Floor); Sunday three 6x6 floors (Upstairs,
 //     Ground Floor, Basement)
+//   - from 2026-11-18 (owner, 2026-11-17: Monday alone is the easy day) the new
+//     week: Mon gentle 6x6; Tue moderate 7x7; Wed moderate 8x8; Thu tough two
+//     6x6 floors; Fri tough two 7x7; Sat tough three 6x6; Sun three 7x7
 //   - every floor: rooms cover the floor, every room has a name, furniture stays
 //     on the floor, inside one room and off other furniture, and a doorway joins
 //     two squares that touch across a wall and are both open
@@ -24,13 +27,20 @@ const { bad, done } = checker('mop');
 checkDays('mop', PUZZLES, bad, '2026-11-13');
 const SPEC = { 1: ['gentle', 6], 2: ['gentle', 6], 3: ['moderate', 7], 4: ['moderate', 7], 5: ['tough', 8], 6: ['tough', 8], 0: ['sunday', 6] };
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const RAMP_FROM = '2026-11-18';
+const NEW = { 1: ['gentle', 6, 1], 2: ['moderate', 7, 1], 3: ['moderate', 8, 1], 4: ['tough', 6, 2], 5: ['tough', 7, 2], 6: ['tough', 6, 3], 0: ['sunday', 7, 3] };
 for (const p of PUZZLES) {
-  let [band, size] = SPEC[dowOf(p.live)];
-  const two = band === 'tough' && p.live >= '2026-11-20';
-  if (two) size = 6;
+  let band, size, storeys;
+  if (p.live >= RAMP_FROM) [band, size, storeys] = NEW[dowOf(p.live)];
+  else {
+    [band, size] = SPEC[dowOf(p.live)];
+    storeys = band === 'sunday' ? 3 : band === 'tough' && p.live >= '2026-11-20' ? 2 : 1;
+    if (storeys === 2) size = 6;
+  }
+  const two = storeys === 2, three = storeys === 3;
   if (p.band !== band) bad(p.num, `band ${p.band}, should be ${band}`);
   if (!p.house) bad(p.num, 'no house name');
-  const want = band === 'sunday' ? ['Upstairs', 'Ground Floor', 'Basement'] : two ? ['Upstairs', 'Ground Floor'] : ['House'];
+  const want = three ? ['Upstairs', 'Ground Floor', 'Basement'] : two ? ['Upstairs', 'Ground Floor'] : ['House'];
   if (!Array.isArray(p.floors) || !eq(p.floors.map((f) => f.name), want)) { bad(p.num, `floors should be ${want.join(', ')}`); continue; }
   let broken = false;
   p.floors.forEach((F) => {
@@ -56,14 +66,14 @@ for (const p of PUZZLES) {
     for (const c of F.stairs) if (taken.has(c) || c < 0 || c >= N) say('a staircase under furniture');
   });
   if (broken) continue;
-  const g = band === 'sunday' || two ? 1 : 0, G = p.floors[g], furn = furnOf(G);
+  const g = three || two ? 1 : 0, G = p.floors[g], furn = furnOf(G);
   if (p.start[0] !== g || p.end[0] !== g) bad(p.num, 'the way in and the way out belong on the ground floor');
   const row = (c) => Math.floor(c / G.w);
   if (furn.has(p.start[1]) || furn.has(p.end[1])) bad(p.num, 'a door opens onto furniture');
   if (eq(p.sides, ['S', 'N'])) { if (row(p.start[1]) !== G.h - 1 || row(p.end[1]) !== 0) bad(p.num, 'front door on the bottom wall, back door on the top wall'); }
-  else if (eq(p.sides, ['S', 'S'])) { if (band === 'sunday' || row(p.start[1]) !== G.h - 1 || row(p.end[1]) !== G.h - 1 || Math.abs(p.start[1] - p.end[1]) !== 1) bad(p.num, 'a double front door is two bottom-wall squares side by side, weekdays only'); }
+  else if (eq(p.sides, ['S', 'S'])) { if (three || row(p.start[1]) !== G.h - 1 || row(p.end[1]) !== G.h - 1 || Math.abs(p.start[1] - p.end[1]) !== 1) bad(p.num, 'a double front door is two bottom-wall squares side by side, weekdays only'); }
   else bad(p.num, `sides ${JSON.stringify(p.sides)}`);
-  if (band === 'sunday') {
+  if (three) {
     const [up, gr, dn] = p.floors;
     if (gr.stairs.length !== 4 || !eq(gr.labels, ['Up', 'Up', 'Down', 'Down'])) bad(p.num, 'the ground floor needs two staircases up and two down');
     if (!eq(up.stairs, gr.stairs.slice(0, 2)) || !eq(up.labels, ['Down', 'Down'])) bad(p.num, 'upstairs staircases do not match the ground floor');

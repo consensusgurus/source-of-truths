@@ -21,6 +21,19 @@
 //              two staircases
 //   Sunday     the Sunday Edition: three 6x6 floors (Upstairs, Ground Floor,
 //              Basement) joined by two staircases up and two down
+//
+// THE WEEK FROM 2026-11-18 (owner, 2026-11-17: "rework both mop and mow so that
+// earlier week days are harder. today's difficulty should be as easy as it gets
+// and only run on Mondays"). Today was a Tuesday Gentle 6x6, so only Monday keeps
+// it and every other day climbs a step:
+//   Mon        Gentle    one floor, 6x6
+//   Tue        Moderate  one floor, 7x7
+//   Wed        Moderate  one floor, 8x8
+//   Thu        Tough     two 6x6 floors
+//   Fri        Tough     two 7x7 floors
+//   Sat        Tough     three 6x6 floors (Upstairs, Ground Floor, Basement)
+//   Sunday     the Sunday Edition: three 7x7 floors
+// Rows before 2026-11-18 stay as dealt under the old week above.
 // A weekday comes in the front (bottom wall) and leaves by the back (top wall),
 // or, about one day in three, comes and goes by a front door two tiles wide.
 // Sunday always comes in the front and leaves by the back.
@@ -59,6 +72,9 @@ const NAMES = {
   up: { big: ['Bedroom'], rest: ['Bath', 'Nursery', 'Guest Room', 'Office'] },
   down: { big: ['Rec Room'], rest: ['Laundry', 'Storage', 'Workshop'] },
 };
+// More names for the 7x7 floors of the new week, kept apart so a 6x6 floor
+// deals exactly as it always has.
+const MORE = { up: ['Closet', 'Den'], down: ['Gym', 'Cellar'] };
 
 // Cut a w x h floor into `want` rectangles, every side at least 2.
 function cut(R, w, h, want) {
@@ -86,7 +102,7 @@ function floor(R, kind, size, wantRooms, wantPieces, keep = []) {
   if (rects.length < Math.min(wantRooms, 3)) return null;
   const letters = 'ABCDEFGHIJ';
   const byArea = rects.map((r, i) => [r[2] * r[3], i]).sort((a, b) => b[0] - a[0]).map((a) => a[1]);
-  const pool = shuffle(R, NAMES[kind].rest.slice());
+  const pool = shuffle(R, NAMES[kind].rest.concat(size >= 7 && kind !== 'house' ? MORE[kind] || [] : []));
   if (rects.length - 1 > pool.length) return null;
   const names = {}, room = new Array(N);
   byArea.forEach((ri, rank) => { names[letters[ri]] = rank === 0 ? NAMES[kind].big[0] : pool[rank - 1]; });
@@ -134,8 +150,7 @@ function floor(R, kind, size, wantRooms, wantPieces, keep = []) {
   return F;
 }
 
-function weekday(R, band, same) {
-  const B = BANDS[band];
+function weekday(R, B, same) {
   const F = floor(R, 'house', B.size, B.rooms[0] + Math.floor(R() * (B.rooms[1] - B.rooms[0] + 1)), B.pieces[0] + Math.floor(R() * (B.pieces[1] - B.pieces[0] + 1)));
   if (!F) return null;
   F.name = 'House';
@@ -157,12 +172,12 @@ function weekday(R, band, same) {
 }
 
 const dist = (a, b, w) => Math.abs((a % w) - (b % w)) + Math.abs(Math.floor(a / w) - Math.floor(b / w));
-function sunday(R) {
-  const S = 6, N = S * S;
+function sunday(R, S = 6) {
+  const N = S * S, X = S - 6;
   const st = shuffle(R, Array.from({ length: N }, (_, i) => i)).slice(0, 4);
   const [u1, u2, b1, b2] = st;
   if (dist(u1, u2, S) < 3 || dist(b1, b2, S) < 3) return null;
-  const G = floor(R, 'ground', S, 4 + Math.floor(R() * 2), 3, st);
+  const G = floor(R, 'ground', S, 4 + X + Math.floor(R() * 2), 3 + X * 2, st);
   if (!G) return null;
   G.name = 'Ground Floor'; G.stairs = st; G.labels = ['Up', 'Up', 'Down', 'Down'];
   const furn = furnOf(G), bot = [], top = [];
@@ -178,7 +193,7 @@ function sunday(R) {
   if (rg.capped || rg.count !== 1) return null;
   const other = (kind, name, pair, labels) => {
     for (let t = 0; t < 2500; t++) {
-      const F = floor(R, kind, S, 4 + Math.floor(R() * 2), 4 + Math.floor(R() * 2), pair);
+      const F = floor(R, kind, S, 4 + Math.floor(R() * 2), 4 + X * 2 + Math.floor(R() * 2), pair);
       if (!F) continue;
       F.name = name;
       const M = mopModel({ floors: [F], start: [0, pair[0]], end: [0, pair[1]] });
@@ -208,12 +223,12 @@ function sunday(R) {
 // Friday and Saturday from 2026-11-20: two floors. The ground floor is proved
 // with its staircase pair standing in for the upstairs, then the upstairs
 // between its two staircases, exactly as a Sunday is.
-function twoStorey(R) {
-  const S = 6, N = S * S;
+function twoStorey(R, S = 6) {
+  const N = S * S, X = S - 6;
   const st = shuffle(R, Array.from({ length: N }, (_, i) => i)).slice(0, 2);
   const [u1, u2] = st;
   if (dist(u1, u2, S) < 3) return null;
-  const G = floor(R, 'ground', S, 4 + Math.floor(R() * 2), 3 + Math.floor(R() * 2), st);
+  const G = floor(R, 'ground', S, 4 + X + Math.floor(R() * 2), 3 + X * 2 + Math.floor(R() * 2), st);
   if (!G) return null;
   G.name = 'Ground Floor'; G.stairs = st; G.labels = ['Up', 'Up'];
   const furn = furnOf(G), bot = [], top = [];
@@ -232,7 +247,7 @@ function twoStorey(R) {
   if (rg.capped || rg.count !== 1) return null;
   let up = null;
   for (let t = 0; t < 2500 && !up; t++) {
-    const F = floor(R, 'up', S, 4 + Math.floor(R() * 2), 4 + Math.floor(R() * 2), st);
+    const F = floor(R, 'up', S, 4 + X + Math.floor(R() * 2), 4 + X * 2 + Math.floor(R() * 2), st);
     if (!F) continue;
     F.name = 'Upstairs';
     const M = mopModel({ floors: [F], start: [0, u1], end: [0, u2] });
@@ -254,6 +269,17 @@ function twoStorey(R) {
   return { P: { floors: [up.F, G], start: [1, s], end: [1, e], sides }, sol, routes: 1 };
 }
 const TWO_FROM = '2026-11-20';
+// The new week (see the top of the file), from this day on.
+const RAMP_FROM = '2026-11-18';
+const NEW_WEEK = {
+  1: { band: 'gentle', make: (R) => weekday(R, BANDS.gentle, R() < 0.34), houses: BANDS.gentle.houses },
+  2: { band: 'moderate', make: (R) => weekday(R, BANDS.moderate, R() < 0.34), houses: BANDS.moderate.houses },
+  3: { band: 'moderate', make: (R) => weekday(R, BANDS.tough, R() < 0.34), houses: ['Mansion', 'Estate House', 'Hall'] },
+  4: { band: 'tough', make: (R) => twoStorey(R, 6), houses: BANDS.tough.houses },
+  5: { band: 'tough', make: (R) => twoStorey(R, 7), houses: BANDS.tough.houses },
+  6: { band: 'tough', make: (R) => sunday(R, 6), houses: ['Three Floors'] },
+  0: { band: 'sunday', make: (R) => sunday(R, 7), houses: ['Three Floors'] },
+};
 
 // ── the bank ────────────────────────────────────────────────────────────────
 let rows = [];
@@ -287,12 +313,13 @@ const kept = rows.length;
 for (let i = rows.length; day0 + i * 86400000 <= last; i++) {
   const d = new Date(day0 + i * 86400000), iso = d.toISOString().slice(0, 10), dow = d.getUTCDay();
   const [y, m, dd] = iso.split('-').map(Number);
-  const band = dow === 0 ? 'sunday' : dow <= 2 ? 'gentle' : dow <= 4 ? 'moderate' : 'tough';
+  const NEW = iso >= RAMP_FROM ? NEW_WEEK[dow] : null;
+  const band = NEW ? NEW.band : dow === 0 ? 'sunday' : dow <= 2 ? 'gentle' : dow <= 4 ? 'moderate' : 'tough';
   let got = null, tries = 0;
   for (let a = 0; a < 4000000 && !got; a++) {
     tries = a;
     const R = rng((y * 10000 + m * 100 + dd) * 977 + a * 7919);
-    got = band === 'sunday' ? sunday(R) : (band === 'tough' && iso >= TWO_FROM) ? twoStorey(R) : weekday(R, band, R() < 0.34);
+    got = NEW ? NEW.make(R) : band === 'sunday' ? sunday(R) : (band === 'tough' && iso >= TWO_FROM) ? twoStorey(R) : weekday(R, BANDS[band], R() < 0.34);
   }
   if (!got) throw new Error(`no board for ${iso}`);
   const err = checkRoute(got.P, got.sol);
@@ -300,7 +327,7 @@ for (let i = rows.length; day0 + i * 86400000 <= last; i++) {
   const R2 = rng(i * 31 + 5);
   const row = { num: i + 1, quizId: `mop-${m}-${dd}-${String(y).slice(2)}`, live: iso, dateLabel: `${MONTHS[m - 1]} ${dd}, ${y}` };
   if (dow === 0) row.sunday = true;
-  row.band = band; row.house = band === 'sunday' ? 'Three Floors' : pick(R2, BANDS[band].houses);
+  row.band = band; row.house = NEW ? pick(R2, NEW.houses) : band === 'sunday' ? 'Three Floors' : pick(R2, BANDS[band].houses);
   Object.assign(row, { floors: got.P.floors.map((F) => ({ name: F.name, w: F.w, h: F.h, rooms: F.rooms, names: F.names, pieces: F.pieces, doors: F.doors, stairs: F.stairs, labels: F.labels })), start: got.P.start, end: got.P.end, sides: got.P.sides, sol: got.sol });
   rows.push(row);
   console.log(`${iso} ${band.padEnd(8)} ${mopModel(row).n} tiles, ${got.routes} route(s), ${tries + 1} deals`);

@@ -4,6 +4,8 @@
 //   - the ramp: Mon 6x6, Tue 7x6, Wed 7x7, Thu 8x7, Fri 8x8, Sat 9x8, Sun 9x9,
 //     with the band that goes with the day; at most one house: a whole one
 //     standing clear of every fence, or a corner one filling a back corner
+//   - from 2026-11-18 (owner, 2026-11-17: Monday alone is the easy day) the new
+//     ramp: Mon 7x6, Tue 8x7, Wed 8x8, Thu 9x8, Fri 9x9, Sat 10x9, Sun 10x10
 //   - one floor, the Yard: sections cover it, every section has a name and the
 //     names are distinct, there is a Front Yard, every piece is a known kind,
 //     stays in the yard, inside one section and off every other piece, and a
@@ -18,10 +20,12 @@ const { PUZZLES } = await import(new URL('../app/mow/puzzles.js', import.meta.ur
 const { bad, done } = checker('mow');
 checkDays('mow', PUZZLES, bad, '2026-11-17');
 const SPEC = { 1: ['gentle', 6, 6], 2: ['gentle', 7, 6], 3: ['moderate', 7, 7], 4: ['moderate', 8, 7], 5: ['tough', 8, 8], 6: ['tough', 9, 8], 0: ['sunday', 9, 9] };
+const RAMP_FROM = '2026-11-18';
+const NEW = { 1: ['gentle', 7, 6], 2: ['moderate', 8, 7], 3: ['moderate', 8, 8], 4: ['tough', 9, 8], 5: ['tough', 9, 9], 6: ['tough', 10, 9], 0: ['sunday', 10, 10] };
 const KINDS = new Set(['tree', 'bush', 'hedge', 'flowers', 'veg', 'rock', 'birdbath', 'fountain', 'kennel', 'pond', 'shed', 'trampoline', 'house', 'corner']);
 const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 for (const p of PUZZLES) {
-  const dow = dowOf(p.live), [band, w, h] = SPEC[dow];
+  const dow = dowOf(p.live), [band, w, h] = (p.live >= RAMP_FROM ? NEW : SPEC)[dow];
   if (p.band !== band) bad(p.num, `band ${p.band}, should be ${band}`);
   if (!p.yard) bad(p.num, 'no yard name');
   if (!Array.isArray(p.floors) || p.floors.length !== 1 || p.floors[0].name !== 'Yard') { bad(p.num, 'one floor, the Yard'); continue; }

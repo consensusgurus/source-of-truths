@@ -227,7 +227,7 @@ const GAME = {
   about: [
     'Mow is a free daily route puzzle from Mind Loft, the outdoor sibling of Mop. A yard is drawn from above, with fences, gates, trees, bushes, flower beds, a pond, a shed and sometimes the house, and you push a mower across it one square at a time. Every square of grass has to be mown exactly once, and the last one you mow is inside the gate you leave by.',
     'Run over grass you have already mown and the mower goes straight back to the gate for a replay, with the clock still running. The fastest clean yard tops the daily board, and fewer replays break a tie.',
-    'The yards grow a size every day: six by six on Monday, then a row or a column more each day, up to the nine by nine Estate on Sunday, with the house in the middle of it from Friday. Every yard is generated fresh and solved before it is dealt, so there is always a way round.',
+    'Monday is the easy day, seven by six, and the yard grows a row or a column every day after it, up to the ten by ten Estate on Sunday, with the house more likely from Thursday. Every yard is generated fresh and solved before it is dealt, so there is always a way round.',
     <>More route puzzles: <a href="/mop" style={{ color: 'inherit', fontWeight: 800 }}>Mop</a>, <a href="/connect" style={{ color: 'inherit', fontWeight: 800 }}>Connect</a> and <a href="/chomp" style={{ color: 'inherit', fontWeight: 800 }}>Chomp</a>.</>,
   ],
 };

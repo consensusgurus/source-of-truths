@@ -40,7 +40,7 @@ const gameJsonLd = {
   alternateName: "Mow: The Daily Mow-Every-Square Lawn Puzzle",
   url: `${SITE_URL}/mow`,
   description:
-    "A free daily route puzzle: push a mower across a yard drawn from above, mowing every square of grass exactly once round the trees, bushes, flower beds, pond, shed and house, through the gates in the fences, and finish at the gate out. Running over mown grass is a replay with the clock still running. Yards grow from six by six on Monday to the nine by nine Estate on Sunday; every yard is solved before it is dealt and the clock decides the leaderboard.",
+    "A free daily route puzzle: push a mower across a yard drawn from above, mowing every square of grass exactly once round the trees, bushes, flower beds, pond, shed and house, through the gates in the fences, and finish at the gate out. Running over mown grass is a replay with the clock still running. Yards grow from seven by six on Monday, the easy day, to the ten by ten Estate on Sunday; every yard is solved before it is dealt and the clock decides the leaderboard.",
   genre: ["Logic puzzle", "Route puzzle", "Puzzle"],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

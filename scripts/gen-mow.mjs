@@ -25,6 +25,16 @@
 // goes by the same street gate, two squares wide; the rest come in from the
 // street (bottom) and leave by the back gate (top). Sunday always runs front to
 // back. A yard is kept only if EXACTLY ONE route mows every square once.
+//
+// THE RAMP FROM 2026-11-18 (owner, 2026-11-17: "rework both mop and mow so that
+// earlier week days are harder. today's difficulty should be as easy as it gets
+// and only run on Mondays"). Today was a Tuesday 7x6, so that is Monday now and
+// every day after it climbs a size:
+//   Mon 7x6  Gentle       Tue 8x7  Wed 8x8  Moderate
+//   Thu 9x8  Fri 9x9  Sat 10x9  Tough      Sun 10x10  the Sunday Edition
+// Rows before 2026-11-18 stay as dealt under the old ramp.
+//   --redeal-from <date>  drops the rows from that day on and deals them again;
+//                         refused unless the day is still in the future (Eastern).
 import fs from 'fs';
 import { mopModel, countRoutes, checkRoute, furnOf } from '../lib/mop-engine.js';
 
@@ -33,7 +43,7 @@ const START = '2026-11-17';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const until = (() => { const i = process.argv.indexOf('--until'); return i > 0 ? process.argv[i + 1] : '2026-12-31'; })();
 
-function rng(seed) {
+export function rng(seed) {
   let s = seed >>> 0;
   return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
@@ -49,6 +59,16 @@ export const WEEK = {
   5: { band: 'tough', w: 8, h: 8, sections: [3, 4], pieces: [7, 8], house: true },
   6: { band: 'tough', w: 9, h: 8, sections: [3, 5], pieces: [8, 9], house: true },
   0: { band: 'sunday', w: 9, h: 9, sections: [4, 5], pieces: [9, 10], house: true },
+};
+export const RAMP_FROM = '2026-11-18';
+export const NEW_WEEK = {
+  1: { band: 'gentle', w: 7, h: 6, sections: [2, 3], pieces: [5, 6], house: false },
+  2: { band: 'moderate', w: 8, h: 7, sections: [3, 4], pieces: [7, 8], house: false },
+  3: { band: 'moderate', w: 8, h: 8, sections: [3, 4], pieces: [8, 9], house: false },
+  4: { band: 'tough', w: 9, h: 8, sections: [3, 5], pieces: [8, 9], house: true },
+  5: { band: 'tough', w: 9, h: 9, sections: [4, 5], pieces: [9, 10], house: true },
+  6: { band: 'tough', w: 10, h: 9, sections: [4, 5], pieces: [10, 11], house: true, routeFirst: true },
+  0: { band: 'sunday', w: 10, h: 10, sections: [5, 6], pieces: [13, 15], house: true, routeFirst: true },
 };
 const YARDS = { gentle: ['Lawn', 'Yard', 'Green'], moderate: ['Park', 'Paddock', 'Common'], tough: ['Grounds', 'Homestead', 'Acre'], sunday: ['Estate'] };
 const OTHER = ['Side Yard', 'Garden', 'Orchard', 'Veg Patch', 'Dog Run', 'Meadow'];
@@ -84,7 +104,7 @@ function cut(R, w, h, want) {
   return rects;
 }
 
-function yard(R, spec, same) {
+export function yard(R, spec, same) {
   const { w, h } = spec, N = w * h;
   const want = spec.sections[0] + Math.floor(R() * (spec.sections[1] - spec.sections[0] + 1));
   const rects = cut(R, w, h, want);
@@ -146,21 +166,23 @@ function yard(R, spec, same) {
   if (pieces.length < wantPieces) return null;
   const F = { name: 'Yard', w, h, rooms, names, pieces, doors: [], stairs: [], labels: [] };
   const furn = furnOf(F);
-  // gates: one in every fence between two sections, sometimes two
-  const segs = {};
-  for (let c = 0; c < N; c++) for (const d of [1, w]) {
-    const q = c + d;
-    if ((d === 1 && c % w === w - 1) || q >= N || room[c] === room[q]) continue;
-    const k = [room[c], room[q]].sort().join('');
-    (segs[k] = segs[k] || []).push([c, q]);
+  if (!spec.routeFirst) {
+    // gates: one in every fence between two sections, sometimes two
+    const segs = {};
+    for (let c = 0; c < N; c++) for (const d of [1, w]) {
+      const q = c + d;
+      if ((d === 1 && c % w === w - 1) || q >= N || room[c] === room[q]) continue;
+      const k = [room[c], room[q]].sort().join('');
+      (segs[k] = segs[k] || []).push([c, q]);
+    }
+    for (const k of Object.keys(segs).sort()) {
+      const v = shuffle(R, segs[k].filter(([a, b]) => !furn.has(a) && !furn.has(b)));
+      if (!v.length) continue;
+      F.doors.push(v[0]);
+      if (v.length > 2 && R() < 0.35) F.doors.push(v[1]);
+    }
+    F.doors.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   }
-  for (const k of Object.keys(segs).sort()) {
-    const v = shuffle(R, segs[k].filter(([a, b]) => !furn.has(a) && !furn.has(b)));
-    if (!v.length) continue;
-    F.doors.push(v[0]);
-    if (v.length > 2 && R() < 0.35) F.doors.push(v[1]);
-  }
-  F.doors.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
   // the gates in and out
   const bot = [], top = [];
   for (let x = 0; x < w; x++) { if (!furn.has((h - 1) * w + x)) bot.push((h - 1) * w + x); if (!furn.has(x)) top.push(x); }
@@ -175,6 +197,44 @@ function yard(R, spec, same) {
     if (!bot.length || !back.length) return null;
     s = pick(R, bot); e = pick(R, back); sides = ['S', 'N'];
   }
+  if (spec.routeFirst) {
+    // ROUTE FIRST (the two biggest yards of the new ramp, 2026-11-17). With
+    // gates dealt at random a 10x9 yard almost never has a route at all (one
+    // in several million deals), so draw a route across the open lawn first,
+    // fences ignored, put a gate wherever it crosses a fence, and keep the
+    // yard only if that route is the ONLY one (counted below, as every day).
+    const open = [], idx = new Int32Array(N).fill(-1);
+    for (let c = 0; c < N; c++) if (!furn.has(c)) { idx[c] = open.length; open.push(c); }
+    const adj = open.map((c) => {
+      const out = [], x = c % w;
+      for (const q of [x > 0 ? c - 1 : -1, x < w - 1 ? c + 1 : -1, c - w, c + w]) if (q >= 0 && q < N && idx[q] >= 0) out.push(idx[q]);
+      return shuffle(R, out);
+    });
+    // a path over every open square needs the checkerboard to balance: with
+    // equal counts the two ends differ in colour, with one extra both ends
+    // are on the colour that has it. Re-pick the gates in and out to fit.
+    const col = (c) => ((c % w) + Math.floor(c / w)) & 1;
+    const nb = open.filter((c) => col(c) === 0).length, nw = open.length - nb;
+    const fits = (u, v) => (nb === nw ? col(u) !== col(v) : Math.abs(nb - nw) === 1 && col(u) === col(v) && col(u) === (nb > nw ? 0 : 1));
+    if (!fits(s, e)) {
+      if (same) return null;
+      const back = top.filter((c) => names[room[c]] === 'Back Yard');
+      const pairs = []; for (const u of bot) for (const v of back) if (fits(u, v)) pairs.push([u, v]);
+      if (!pairs.length) return null;
+      [s, e] = pick(R, pairs);
+    }
+    const g = countRoutes(adj, idx[s], idx[e], { cap: 1, nodeCap: 60000 });
+    if (!g.first) return null;
+    const route = g.first.map((i) => open[i]), per = {};
+    for (let i = 1; i < route.length; i++) {
+      const [c, q] = [route[i - 1], route[i]].sort((u, v) => u - v);
+      if (room[c] === room[q]) continue;
+      const k = [room[c], room[q]].sort().join('');
+      if ((per[k] = (per[k] || 0) + 1) > 3) return null;
+      F.doors.push([c, q]);
+    }
+    F.doors.sort((u, v) => u[0] - v[0] || u[1] - v[1]);
+  }
   const P = { floors: [F], start: [0, s], end: [0, e], sides };
   const M = mopModel(P);
   if (M.n < N * 0.6) return null;
@@ -188,6 +248,12 @@ const isMain = import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
   let rows = [];
   if (fs.existsSync(FILE)) rows = (await import(FILE.href)).PUZZLES.slice();
+  const redeal = (() => { const i = process.argv.indexOf('--redeal-from'); return i > 0 ? process.argv[i + 1] : null; })();
+  if (redeal) {
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+    if (!(redeal > today)) throw new Error(`--redeal-from ${redeal} is not in the future (today is ${today}): a live yard is never re-dealt`);
+    rows = rows.filter((r) => r.live < redeal);
+  }
   const HEAD = `// Puzzle data for Mow, the daily mow-every-square lawn puzzle.
 // GENERATED by scripts/gen-mow.mjs; do not edit by hand. Extend with
 // \`node scripts/gen-mow.mjs --until <date>\`, which keeps every row here byte
@@ -209,7 +275,7 @@ export const PUZZLES = [
   for (let i = rows.length; day0 + i * 86400000 <= last; i++) {
     const d = new Date(day0 + i * 86400000), iso = d.toISOString().slice(0, 10), dow = d.getUTCDay();
     const [y, m, dd] = iso.split('-').map(Number);
-    const spec = WEEK[dow];
+    const spec = (iso >= RAMP_FROM ? NEW_WEEK : WEEK)[dow];
     let got = null, tries = 0;
     const t0 = Date.now();
     for (let a = 0; a < 4000000 && !got; a++) {
