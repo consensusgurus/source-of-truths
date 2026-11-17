@@ -694,6 +694,17 @@ function FactRow({ k, one = false }) {
   );
 }
 
+// THE DIFFICULTY RIDES THE EYEBROW (owner, 2026-11-16: "get rid of 'daily
+// puzzle' in the top of each tile and instead replace that with the difficulty
+// label ... we will get rid of all other labels other than difficulty"). The
+// Details card's chip row is gone; the eyebrow reads "Logic · Gentle". An
+// unrated game shows the category alone.
+function eyebrow(cat, k) {
+  const r = DIFF_NOW && Number(DIFF_NOW[k]);
+  const tier = r ? DIFF_TIERS.find((t) => r >= t.lo && r <= t.hi) : null;
+  return tier ? cat + ' \u00b7 ' + tier.label : cat;
+}
+
 function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true, day = null }) {
   const plays = day ? Number(day.plays || day.field) || 0 : null;
   const lead = day && Array.isArray(day.board) && day.board[0] ? day.board[0] : null;
@@ -780,7 +791,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
       {/* DETAILS VIEW (owner, 2026-11-07): shown only under .sty-det. */}
       <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{SHARE_TILE[g.key] ? <img src={SHARE_TILE[g.key]} alt="" width="108" height="108" decoding="async" /> : <GamePreview gameKey={g.key} square />}</span>
       {/* THE SHARE CARD'S EYEBROW (owner, 2026-11-15), Details only. */}
-      <span className="sty-geye">{g.cat + ' \u00b7 Daily Puzzle'}</span>
+      <span className="sty-geye">{eyebrow(g.cat, g.key)}</span>
       <span className="sty-gx">{fullDesc(g)}</span>
       <FactRow k={g.key} one={!!(res || (dots && dots.lead))} />
       <span className="sty-gk">{skillLine(g.key) || '\u00a0'}</span>
@@ -4840,7 +4851,7 @@ export default function StageToday() {
                       <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={href} style={mTone(g.cat)}
                         onClick={(e) => floodNav(e, href, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
                         <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{SHARE_TILE[g.key] ? <img src={SHARE_TILE[g.key]} alt="" width="92" height="92" decoding="async" /> : <GamePreview gameKey={g.key} square />}</span>
-                        {!isDone ? <span className="mey">{catLabel(g.cat) + ' · Daily Puzzle'}</span> : null}
+                        {!isDone ? <span className="mey">{eyebrow(catLabel(g.cat), g.key)}</span> : null}
                         <b>{g.name}</b>
                         <em className="mx">{fullDesc(g)}</em>
                         <FactRow k={g.key} />
@@ -4990,7 +5001,7 @@ export default function StageToday() {
                               board band, glyph by the name, facts row. */}
                           {mDet ? <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{SHARE_TILE[g.key] ? <img src={SHARE_TILE[g.key]} alt="" width="92" height="92" decoding="async" /> : <GamePreview gameKey={g.key} square />}</span> : null}
                           {/* THE SHARE CARD'S EYEBROW ON THE PHONE TOO (owner, 2026-11-15: "this should show on mobile too"). */}
-                          {mDet && !isDone ? <span className="mey">{g.cat + ' \u00b7 Daily Puzzle'}</span> : null}
+                          {mDet && !isDone ? <span className="mey">{eyebrow(g.cat, g.key)}</span> : null}
                           <b>{mDet ? null : pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
                           {mDet ? <em className="mx">{fullDesc(g)}</em> : <em>{g.tag}</em>}
                           {mDet ? <FactRow k={g.key} /> : null}
@@ -8070,6 +8081,10 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det .mph-g:not(.done) em.mx{-webkit-line-clamp:2;}
   .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gfx{flex-wrap:nowrap;margin:9px 0 0;max-height:24px;overflow:hidden;}
   .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gfc{flex:none;white-space:nowrap;}
+  /* NO CHIPS ON THE PHONE CARD EITHER (owner, 2026-11-16): the difficulty is
+     in the eyebrow now. */
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gfx{display:none;}
+  .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gband{margin-bottom:10px;}
   .sty-mph .mph-gg.det .mph-g:not(.done) .mcs{background:color-mix(in srgb, var(--mc) 45%, #fff);}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   /* Moved out of the top block, these still need its tokens. */
@@ -8713,6 +8728,10 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      the eyebrow, the board square's edge, the chips and the crowd strip. */
   .sty-ix.sty-det .sty-g:not(.grp):not(.gw):has(> .sty-gband){background:var(--stg-surf);}
   .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-geye{color:var(--cci, var(--cc));opacity:1;}
+  /* SHORTER CARDS, NO CHIPS (owner, 2026-11-16): the difficulty moved into
+     the eyebrow, so the chip row is gone and the card is as tall as the art. */
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) > .sty-gfx{display:none;}
+  .sty-ix.sty-det .sty-g:has(> .sty-gband) .sty-gband{margin-bottom:13px;}
   /* 3. THE CAP'S CONTROLS, GROUPED BY JOB, each under a small label: View,
      Sort, then whose games (Group) or which kind. The label is drawn from
      data-lab, and only in the cap. */

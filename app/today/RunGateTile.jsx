@@ -218,9 +218,11 @@ export const RGT_CSS = `
   font-size:11.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:clip;}
 .rgt-leg:first-child{border-left:0;}
 .rgt-leg.on{background:#0b1b2b;color:#fff;}
-.rgt-go{display:block;box-sizing:border-box;margin-top:0;padding:10px 8px;border:1px solid #0b1b2b;border-radius:10px;background:var(--rgc);text-align:center;font-weight:900;font-size:15px;
+.rgt-go{display:block;box-sizing:border-box;margin:auto 0;padding:10px 8px;border:1px solid #0b1b2b;border-radius:10px;background:var(--rgc);text-align:center;font-weight:900;font-size:15px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .rgt.fin .rgt-go{background:transparent;}
+/* The button centres in the space between the header and the legs (owner, 2026-11-16:
+   "center these start buttons to fill the space"): margin:auto 0 inside the flex column. */
 /* THE FOOT TAKES THE BUTTON'S COLOUR (owner, 2026-11-12: "the bottom section
    matches the button color (darker)"), on every run tile, the white ones too. */
 .rgt-cs{display:flex;justify-content:space-between;gap:8px;padding:7px 14px 7px 16px;border-top:1px solid #0b1b2b;background:var(--rgc);font-size:12.5px;font-weight:600;white-space:nowrap;}
