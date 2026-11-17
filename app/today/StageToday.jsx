@@ -2740,7 +2740,10 @@ export default function StageToday() {
   // clear; nothing is stored.
   const [catInk, setCatInk] = useState('all');
   const [catKind, setCatKind] = useState([]);
-  useEffect(() => { setCatInk('all'); setCatKind([]); }, [paneOn]);
+  // ALL PUZZLES CATEGORY CHIPS (owner, 2026-11-17): one flat list, no groups;
+  // tapping a category re-sorts it so that category's puzzles lead. Tap again to clear.
+  const [mAllCat, setMAllCat] = useState(null);
+  useEffect(() => { setCatInk('all'); setCatKind([]); setMAllCat(null); }, [paneOn]);
   const flipKind = (k) => setCatKind((cur) => (cur.includes(k) ? cur.filter((x) => x !== k) : [...cur, k]));
   // TILES OR LIST (owner, 2026-10-16), set beside A to Z / Popular. Until the
   // reader picks, each pane keeps the layout it was ruled to have (All Puzzles
@@ -2786,7 +2789,9 @@ export default function StageToday() {
     }
     try {
       const sv = localStorage.getItem(SORT_KEY);
-      setSortBy(SORTS_KEPT.has(sv) ? sv : 'az');
+      // ALL PUZZLES OPENS ON POPULAR (owner, 2026-11-17): the full list, most
+      // played first, whatever the stored sort. A pick made inside still applies.
+      setSortBy(paneOn === ALL_ID ? 'pop' : SORTS_KEPT.has(sv) ? sv : 'az');
       const vv = localStorage.getItem(VIEW_KEY);
       setViewBy(VIEWS.includes(vv) ? vv : null);
     } catch (e) { /* storage off */ }
@@ -4976,23 +4981,14 @@ export default function StageToday() {
               const backTo = mBackTo;
               const mainTone = pc ? mTone(rampCat(paneOn)) : null;
               // PLAYED SINKS TO THE FOOT, UNDER ITS OWN LABEL (owner, 2026-11-11,
-              // N2), in every pane. ALL PUZZLES IS GROUPED BY CATEGORY on a phone
-              // (N3): 177 cards in one column needed places to jump to, so the
-              // open puzzles run category by category, each under a counted
-              // label, with the pane's sort applied inside each group.
-              const openG = sorted.filter((g) => !done.has(g.key));
-              const playedG = sorted.filter((g) => done.has(g.key));
+              // N2), in every pane. ALL PUZZLES IS ONE FLAT LIST (owner, 2026-11-17,
+              // replacing the N3 category groups and Jump To): Popular by default,
+              // and a tapped category chip re-sorts so its puzzles lead.
+              const lead = (list) => (isAll && mAllCat ? [...list.filter((g) => g.cat === mAllCat), ...list.filter((g) => g.cat !== mAllCat)] : list);
+              const openG = lead(sorted.filter((g) => !done.has(g.key)));
+              const playedG = lead(sorted.filter((g) => done.has(g.key)));
               const mGroups = [];
-              if (isAll) {
-                const seen = new Set();
-                for (const c of orderedCats) {
-                  const gs = openG.filter((g) => g.cat === c.cat);
-                  gs.forEach((g) => seen.add(g.key));
-                  if (gs.length) mGroups.push({ id: 'c:' + c.cat, cat: c.cat, games: gs });
-                }
-                const rest = openG.filter((g) => !seen.has(g.key));
-                if (rest.length) mGroups.push({ id: 'rest', cat: null, games: rest });
-              } else if (openG.length) mGroups.push({ id: 'open', cat: null, games: openG });
+              if (openG.length) mGroups.push({ id: 'open', cat: null, games: openG });
               if (playedG.length) mGroups.push({ id: 'played', played: true, games: playedG });
               // ONE PHONE CARD, used by every group and by the Featured row (owner,
               // 2026-11-14: the featured tiles are full size, the same cards as the list).
@@ -5149,20 +5145,19 @@ export default function StageToday() {
                       {catChips(paneOn, 'mph-cf')}
                     </div>
                   ) : null}
-                  {/* JUMP TO A CATEGORY (N3), on All Puzzles only. */}
-                  {isAll && mGroups.filter((x) => x.cat).length > 1 ? (
+                  {/* CATEGORY CHIPS RE-SORT ALL PUZZLES (owner, 2026-11-17; Jump To retired). */}
+                  {isAll && games.length ? (
                     <div className="mph-jump">
-                      <span className="lb">Jump To</span>
-                      <div className="mph-jrow" role="group" aria-label="Jump to a category">
-                        {mGroups.map((x, gi) => (x.cat ? (
-                          <button key={x.id} type="button" style={mTone(rampCat(x.cat))}
-                            onClick={() => { const el = document.getElementById('mj-' + gi); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>{catLabel(x.cat)}</button>
-                        ) : null))}
+                      <div className="mph-jrow" role="group" aria-label="Sort a category to the top">
+                        {orderedCats.filter((c) => games.some((g) => g.cat === c.cat)).map((c) => (
+                          <button key={c.cat} type="button" style={mTone(rampCat(c.cat))} aria-pressed={mAllCat === c.cat}
+                            onClick={() => { setMAllCat((cur) => (cur === c.cat ? null : c.cat)); const el = document.getElementById('mph-list'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}>{catLabel(c.cat)}</button>
+                        ))}
                       </div>
                     </div>
                   ) : null}
                   </div>
-                  {games.length && !(isAll && mGroups.some((x) => x.cat)) ? <div className="mph-lab">Puzzles{openG.length && openG.length < games.length ? <> &middot; {openG.length} left</> : null}</div> : null}
+                  {games.length ? <div className="mph-lab mph-jl" id="mph-list">Puzzles{openG.length && openG.length < games.length ? <> &middot; {openG.length} left</> : null}</div> : null}
                   {isMine && !games.length ? (
                     <p className="mph-note">{who ? 'Nothing starred yet. Tap the star on any puzzle and it shows up here.' : 'Pick a name, then star any puzzle and it shows up here.'}</p>
                   ) : null}
@@ -8897,6 +8892,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-jrow button{flex:none;border:1px solid #08222e;border-radius:999px;padding:7px 14px 8px;font-size:12.5px;font-weight:800;line-height:1.26;
     white-space:nowrap;color:#08222e;background:color-mix(in srgb, var(--mc) 60%, #fff);}
   html[data-stage-color=mono] .sty-mph .mph-jrow button{background:transparent;color:var(--stg-ink);border-color:var(--stg-ink);}
+  .sty-mph .mph-jrow button[aria-pressed=true],html[data-stage-color=mono] .sty-mph .mph-jrow button[aria-pressed=true]{background:var(--stg-ink);color:var(--stg-ground);border-color:var(--stg-ink);}
   .sty-mph .mph-jl{display:flex;align-items:center;gap:7px;scroll-margin-top:calc(var(--mtop-h, 60px) + 150px);}
   .sty-mph .mph-jl > i{flex:none;width:10px;height:10px;border-radius:50%;border:1px solid var(--stg-ink);background:color-mix(in srgb, var(--mc) 60%, #fff);}
   html[data-stage-color=mono] .sty-mph .mph-jl > i{background:transparent;}
