@@ -139,6 +139,7 @@ import { PUZZLES as SPIN_FULL } from '../spin/puzzles';
 import { PUZZLES as CONNECT_FULL } from '../connect/puzzles';
 import { PUZZLES as MOP_FULL } from '../mop/puzzles';
 import { PUZZLES as MOW_FULL } from '../mow/puzzles';
+import { PUZZLES as PLOW_FULL } from '../plow/puzzles';
 import { PUZZLES as CHEF_FULL } from '../chef/puzzles';
 import { PUZZLES as SEATED_FULL } from '../seated/puzzles';
 import { PUZZLES as BAG_FULL } from '../bag/puzzles';
@@ -306,6 +307,7 @@ const SPIN = SPIN_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const CONNECT = CONNECT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const MOP = MOP_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const MOW = MOW_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const PLOW = PLOW_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CHEF = CHEF_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SEATED = SEATED_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const BAG = BAG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -551,6 +553,7 @@ const GAMES = [
   { key: 'connect', name: 'Connect', path: '/connect', tag: 'Join the dots, fill the board', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: CONNECT },
   { key: 'mop', name: 'Mop', path: '/mop', tag: 'Mop every tile once, then get out', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: MOP },
   { key: 'mow', name: 'Mow', path: '/mow', tag: 'Mow every square once, then out the gate', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: MOW },
+  { key: 'plow', name: 'Plow', path: '/plow', tag: 'Plow every street once, then park at the barn', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: PLOW },
   { key: 'chef', name: 'Chef', path: '/chef', tag: 'Get every order out together, hot', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: CHEF },
   { key: 'seated', name: 'Seated', path: '/seated', tag: 'Seat the room, meet every request', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: SEATED },
   { key: 'bag', name: 'Bag', path: '/bag', tag: 'Bag the groceries, crush nothing', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: BAG },

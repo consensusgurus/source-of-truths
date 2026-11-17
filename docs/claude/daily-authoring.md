@@ -406,6 +406,7 @@ archive and hub chips use the short form `Sun`.
 | Spin | an 8x8 photo against the weekday 6x6 (from launch, 2026-11-01) |
 | Connect | a 12x12 board with 10 blocked squares and 9 pairs, proved unique under the player's rules, the top of a ramp from 9x9 on Monday (12x12 with 12 to 14 pairs at launch, 2026-11-01; blocks from 2026-11-02) |
 | Mop | a house on three 6x6 floors (Upstairs, Ground Floor, Basement) joined by two staircases up and two down, against one floor Monday to Thursday and two floors on Friday and Saturday (from launch, 2026-11-13; the two-floor Fridays and Saturdays from 2026-11-20) |
+| Plow | a town of fifty-odd streets across a river with three bridges and three cul-de-sacs, against about seventeen streets on Monday growing every day (from launch, 2026-11-17; the first Sunday, 2026-11-22, is the mockup's Old Town) |
 | Mow | the Estate: a nine by nine yard, against six by six on Monday growing one row or column a day (from launch, 2026-11-17) |
 | Chef | a brunch rush of twelve tickets of three to four dishes on the big line (three burners, two ovens, two grills, two fryers, one cold board), against four to eight tickets on the small line Monday to Saturday (from launch, 2026-11-14) |
 | Pack | a moving van, 4 wide, 7 deep and 4 high, with sixteen pieces of a whole house to load, four of them shaped (a sofa, a loveseat or armchair, a dining table, a desk), against a car or small van of five to thirteen items on the other days |

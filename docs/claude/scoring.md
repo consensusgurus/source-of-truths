@@ -930,7 +930,7 @@ count), and `endEfficiency` reads **Solved!** for any solve, **Perfect!** only a
 minimum. The comparator lives once in `attemptsRanker`; the guest copy in `guestGameResult` mirrors
 it under `eg.order`. Gate: `node scripts/verify-scale-off.mjs`, shown to fail on a swapped order.
 
-## CLOCK FIRST on a first-attempt board: Mop and Mow (owner, 2026-11-16)
+## CLOCK FIRST on a first-attempt board: Mop, Mow and Plow (owner, 2026-11-16; Plow from launch, 2026-11-17)
 
 "scoring will be on completion time with lowest number of replays. replays are accepted. scoring should show total
 replays (0 most likely)". Mop and Mow stay ordinary first-attempt dailies (NOT an attempts mode: a replay after the

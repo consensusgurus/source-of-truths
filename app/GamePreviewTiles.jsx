@@ -368,6 +368,12 @@ const Mow = () => (
     <path d="M119 19H141M119 31H141M119 43H141M119 55H141M119 67H141" className="sm5" />
     <circle cx={170} cy={26} r={11} className="m" /><rect x={160} y={56} width={20} height={14} rx={3} className="d" /><path d="M160 63H150" className="s3" /></g>
 );
+// a snowy crossroads from above: one street plowed dark, the other still white, a block of houses, and the truck
+const Plow = () => (
+  <g><rect x={110} y={8} width={76} height={68} rx={4} className="w" /><path d="M110 42H186" className="s5" /><path d="M134 8V76" className="d6" />
+    <rect x={150} y={14} width={26} height={18} rx={2} className="m" /><rect x={150} y={52} width={26} height={18} rx={2} className="m" />
+    <rect x={128} y={20} width={12} height={16} rx={3} className="d" /><path d="M124 17H144" className="s3" /></g>
+);
 const Connect = () => (
   <g><Grid x={112} y={6} n={4} sz={18} /><path d="M121 15H175V33M121 33V69H157" className="d6" />
     {[[121, 15], [175, 33], [121, 33], [157, 69]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={6} className={i < 2 ? 'd' : 'm'} />)}</g>
@@ -769,7 +775,7 @@ export const TILE_BY_KEY = {
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
   suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
-  connect: Connect, mop: Mop, mow: Mow, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
+  connect: Connect, mop: Mop, mow: Mow, plow: Plow, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,
