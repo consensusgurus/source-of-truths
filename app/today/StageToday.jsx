@@ -4956,6 +4956,10 @@ export default function StageToday() {
                   <button type="button" onClick={() => goPane(EXAM_ID)}>School Tests<span>&rarr;</span></button>
                   <a href="/kids">Kids<span>&rarr;</span></a>
                   <a href={withTq('/lists')}>Top 10 Lists<span>&rarr;</span></a>
+                  {/* ABOUT ME closes the phone's list too (owner, 2026-11-17: "About me
+                      needs to show up in this list, and same one on desktop"); the
+                      desktop index carries it as its last door. */}
+                  <a href={withTq('/about-me')}>About Me<span>&rarr;</span></a>
                 </div>
               </>
             ) : (() => {
