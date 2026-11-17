@@ -180,7 +180,7 @@ export default function Footer() {
           color: NEUTRAL.soft,
         }}
       >
-        <span>© {year} Mind Loft</span>
+        <span>© {year} Mind Loft™</span>
         <span>As an Amazon Associate, Mind Loft earns from qualifying purchases.</span>
       </div>
     </footer>
