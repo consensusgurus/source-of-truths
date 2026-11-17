@@ -112,7 +112,7 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
         ))}
       </span>
       <span className="rgt-cs">
-        <span className="ld">{fin && rank ? <>You: <b>#{rank}</b></> : lead ? <>#1 <b>{lead}</b></> : plays ? 'No finish yet' : 'Open. Be first.'}</span>
+        <span className="ld">{fin && rank ? <>You: <b>#{rank}</b></> : lead ? <>#1 <b>{lead}</b></> : plays ? 'No finish yet' : 'Top spot open'}</span>
         <span className="ct pc">{Number(plays) > 0 ? Number(plays).toLocaleString('en-US') : '\u2013'}</span>
       </span>
     </a>

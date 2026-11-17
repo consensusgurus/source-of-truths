@@ -117,7 +117,7 @@ function LedgerRow({ g, href, data, size = null }) {
         <span className="pcl-lead">
           {!data.ready ? <span className="pcl-wait" aria-hidden="true" />
             : lead ? <><b>{lead.username}</b> <span>{scoreOf(g, lead)}</span></>
-            : <span className="pcl-open">Open. Be first.</span>}
+            : <span className="pcl-open">Top spot open</span>}
           {data.ready && day.field ? <i className="pcl-plays">{day.field.toLocaleString()} {day.field === 1 ? 'play' : 'plays'}</i> : null}
         </span>
         <span className="pcl-cta">{ctaText(day)}</span>
@@ -239,7 +239,7 @@ function MiniTile({ g, href, data }) {
         <span className="pcl-mini-st">
           {!data.ready ? <span className="pcl-wait" aria-hidden="true" />
             : lead ? <><b>{lead.username}</b> {scoreOf(g, lead)}</>
-            : <span className="pcl-open">Open. Be first.</span>}
+            : <span className="pcl-open">Top spot open</span>}
         </span>
       </span>
       <span className="pcl-cta">{ctaText(day)}</span>

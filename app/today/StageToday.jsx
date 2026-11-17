@@ -809,7 +809,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
           strip carries the category and the tile needs no dot or Play link. */}
       {day ? (
         <span className="sty-gpl sty-gcs">
-          <span className="ld">{lead ? <>#1 <b>{lead.username}</b></> : plays ? 'No solve yet' : 'Open. Be first.'}</span>
+          <span className="ld">{lead ? <>#1 <b>{lead.username}</b></> : plays ? 'No solve yet' : 'Top spot open'}</span>
           <span className="ct pc" title="Plays today">{pcN(plays)}</span>
         </span>
       ) : null}
@@ -868,7 +868,7 @@ function LedgerRow({ g, hue, ink, tq, day, dots, res, done, inprog, me, favLoade
       <span className="td">
         {!day ? <span className="ph" aria-hidden="true" />
           : lead ? <><b>{lead.username}</b> <span className="sc">{sc}</span></>
-          : <span className="mu">{plays ? 'No solve yet' : 'Open. Be first.'}</span>}
+          : <span className="mu">{plays ? 'No solve yet' : 'Top spot open'}</span>}
         {day ? <i>{plays.toLocaleString()} {plays === 1 ? 'play' : 'plays'} today{grpLine ? <em>{' · ' + grpLine}</em> : null}</i> : null}
       </span>
       <span className="yu">
@@ -4089,7 +4089,7 @@ export default function StageToday() {
         <span className="td">
           {!st ? <span className="ph" aria-hidden="true" />
             : st.lead ? <b>{st.lead}</b>
-            : <span className="mu">{st.players ? 'No finish yet' : 'Open. Be first.'}</span>}
+            : <span className="mu">{st.players ? 'No finish yet' : 'Top spot open'}</span>}
           {st ? <i>{fmtN(st.players || 0)} {st.players === 1 ? 'player' : 'players'} today</i> : null}
         </span>
         <span className="yu">{runFigs(c)}</span>
@@ -4337,7 +4337,7 @@ export default function StageToday() {
             ? (st && st.rank ? <>You: <b>#{st.rank}</b> of {fmtN(st.players)}</> : <b>Finished</b>)
             : st && st.lead ? <>#1 <b>{st.lead}</b></>
             : c.n ? <b>{c.n} of {c.games.length} played</b>
-            : st && st.players ? 'No finish yet' : 'Open. Be first.'}</span>
+            : st && st.players ? 'No finish yet' : 'Top spot open'}</span>
           <span className="ct pc" title="Players today">{pcN(st && st.players)}</span>
         </span>
         <CircStar c={c} canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite} />
@@ -4874,7 +4874,7 @@ export default function StageToday() {
                           const ld = Array.isArray(d.board) && d.board[0] ? d.board[0] : null;
                           return (
                             <span className="mcs">
-                              <span className="ld">{ld ? <>#1 <b>{ld.username}</b></> : pl ? 'No solve yet' : 'Open. Be first.'}</span>
+                              <span className="ld">{ld ? <>#1 <b>{ld.username}</b></> : pl ? 'No solve yet' : 'Top spot open'}</span>
                               <span className="ct pc" title="Plays today">{pcN(pl)}</span>
                             </span>
                           );
@@ -5025,7 +5025,7 @@ export default function StageToday() {
                             const ld = Array.isArray(d.board) && d.board[0] ? d.board[0] : null;
                             return (
                               <span className="mcs">
-                                <span className="ld">{ld ? <>#1 <b>{ld.username}</b></> : pl ? 'No solve yet' : 'Open. Be first.'}</span>
+                                <span className="ld">{ld ? <>#1 <b>{ld.username}</b></> : pl ? 'No solve yet' : 'Top spot open'}</span>
                                 <span className="ct pc" title="Plays today">{pcN(pl)}</span>
                               </span>
                             );

@@ -908,7 +908,7 @@ day's spectrum, More Runs) still hold. `app/today/RunGateTile.jsx`, mockup B2 pl
 pane, and the phone panes) every run except Polymath is drawn like its gate (GauntletGate): the run's
 category as the ground, "Daily Run · N <unit>", the name large, the bold headline and the rule, the legs
 as one striped bar in their ladder colours (a leg played today goes ink), a full-width start button in
-the category colour, and the crowd strip (leader or "Open. Be first.", N playing) along the foot. The
+the category colour, and the crowd strip (leader or "Top spot open", N playing) along the foot. The
 whole tile links into the run. On the phone the runs sit in a sideways scroll row inside a pane so the
 puzzles stay near the top; the Runs pane stacks them. Tiles and List keep the old run cards and rows.
 The headline and rule come from `GATE_TEXT`, copied from each gate; **a new run with its own gate

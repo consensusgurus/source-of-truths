@@ -86,7 +86,7 @@ function DetailCard({ g, day, diff }) {
       <span className="rbd-k">{skillLine(g.key) || ' '}</span>
       <span className="rbd-x">{descOf(g)}</span>
       <span className="rbd-s">
-        <span className="ld">{lead ? <>#1 <b>{lead.username}</b></> : plays ? 'No solve yet' : 'Open. Be first.'}</span>
+        <span className="ld">{lead ? <>#1 <b>{lead.username}</b></> : plays ? 'No solve yet' : 'Top spot open'}</span>
         <span className="ct">{plays.toLocaleString('en-US')} playing</span>
       </span>
     </a>
