@@ -2864,6 +2864,8 @@ house in a corner - it should vary". Logic, skills Spatial and Planning, on `app
   2026-12-31; a yard is kept only if EXACTLY ONE route mows it. `app/mow/page.js` strips `sol` and future days.
   **Checker** `scripts/verify-mow.mjs`. **Tiles** `scripts/gen-mow-tiles.py`. **Share card** hand-built:
   `scripts/bake-mow-og.mjs` then headless Chrome at 1200x630 into `public/og/mow.png`; `mow` is in `HAND_BAKED`.
+  Its Details-card cut is `public/og/tile/mow.png` (crop 620,20 to 1200,600 of the card, 224px); re-cut it with
+  any re-bake. Launched without it on 2026-11-17 and the home Newest card showed a broken image.
 - **Open:** restock before 2026-12-31.
 
 ## Seated: the daily seating-chart puzzle (launched 2026-11-14)
