@@ -123,6 +123,9 @@ export default function Footer() {
           <Link href="/about" style={{ display: 'inline-block', marginTop: 8, fontSize: 12.5, fontWeight: 700, color: NEUTRAL.ink, textDecoration: 'none' }}>
             About Mind Loft
           </Link>
+          <Link href="/about-me" style={{ display: 'block', marginTop: 6, fontSize: 12.5, fontWeight: 700, color: NEUTRAL.ink, textDecoration: 'none' }}>
+            About Me
+          </Link>
           {vis != null && (<div style={{ fontSize: 11.5, color: NEUTRAL.soft, marginTop: 10 }}>{vis.toLocaleString()} visitors</div>)}
         </div>
         {FOOTER_COLS.map((col) => (

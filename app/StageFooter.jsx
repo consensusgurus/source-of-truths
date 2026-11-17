@@ -73,6 +73,7 @@ export default function StageFooter({ visitors: given }) {
           </span>
           <p>Sharpen your mind: daily puzzles, quizzes, and consensus Top 10 Lists for everything worth knowing.</p>
           <a className="stgf-about" href="/about">About Mind Loft</a>
+          <a className="stgf-about" href="/about-me">About Me</a>
           {visitors != null ? (
             <div className="stgf-vis">{visitors.toLocaleString()}<i>visitors</i></div>
           ) : null}
@@ -120,8 +121,9 @@ const CSS = `
   color:var(--stg-ink);}
 .stgf-brandcol .stgf-brand b em{font-style:normal;color:inherit;}
 .stgf-brandcol p{margin:9px 0 0;font-size:12.5px;line-height:1.55;color:var(--stg-mute);}
-.stgf-about{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:800;
+.stgf-about{display:block;width:fit-content;margin-top:10px;font-size:12.5px;font-weight:800;
   color:var(--stg-ink);text-decoration:none;}
+.stgf-about + .stgf-about{margin-top:6px;}
 .stgf-about:hover{color:var(--stg-acc-ink);}
 /* The visitor count is a FIGURE, drawn the way every other figure on the stage
    is, rather than a sentence of small grey prose. */

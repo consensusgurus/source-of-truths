@@ -889,6 +889,7 @@ export default function LayoutCInner({ gameKey }) {
             {ixHash('sty-comm', 'Most Appreciated')}
             {ixDoor('/submit-a-puzzle', 'Submit or List a Puzzle')}
             {ixDoor('/sponsor-a-day', 'Sponsor a Day')}
+            {ixDoor('/about-me', 'About Me')}
           </div>
         </div>
       </nav>

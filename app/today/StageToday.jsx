@@ -508,6 +508,7 @@ const IX_GLYPHS = {
   lists: <><path d="M10 6h10M10 12h10M10 18h10" /><path d="M4 5.5l1.5-1v4M4 11h2.5l-2.5 2.5h2.5M4 16.5h2.5l-1.3 1.3a1.2 1.2 0 1 1-1.2 1.5" /></>,
   submit: <><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M12 8v8M8 12h8" /></>,
   sponsor: <path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 9.7l5.4-.8z" />,
+  about: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" /></>,
   'sty-board': <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" />,
   'sty-comm': <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" />,
   // The ten skills.
@@ -2904,7 +2905,8 @@ export default function StageToday() {
           last in the index. Each is a door to its own page. */}
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       <a className="sty-ixb sty-ixmv sty-ixm5" href={withTq('/submit-a-puzzle')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('submit', null)}<span><span className="sty-ixl">Submit or List a Puzzle</span><span className="sty-ixs">Submit a Puzzle</span></span></a>
-      <a className="sty-ixb sty-ixmv sty-ixm5 sty-ixend" href={withTq('/sponsor-a-day')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('sponsor', null)}<span>Sponsor a Day</span></a>
+      <a className="sty-ixb sty-ixmv sty-ixm5" href={withTq('/sponsor-a-day')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('sponsor', null)}<span>Sponsor a Day</span></a>
+      <a className="sty-ixb sty-ixmv sty-ixm6 sty-ixend" href={withTq('/about-me')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('about', null)}<span>About Me</span></a>
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
         onClick={() => setReorder((v) => !v)}>
         {reorder ? 'Done' : 'Reorder'}
@@ -7455,6 +7457,8 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
   .sty-ixn:not(.re) .sty-ixma{order:2;}
   .sty-ixn:not(.re) .sty-ixm4{order:3;}
   .sty-ixn:not(.re) .sty-ixm5{order:4;}
+  /* About Me (owner, 2026-11-17) runs full width under the two reach-out doors. */
+  .sty-ixn:not(.re) .sty-ixm6{order:5;grid-column:1 / -1;}
   .sty-ixn:not(.re) .sty-ixsep.sty-ixmv{display:none;}
 }
 @media (max-width:900px) and (prefers-reduced-motion:reduce){
