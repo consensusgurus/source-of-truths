@@ -113,7 +113,7 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
       </span>
       <span className="rgt-cs">
         <span className="ld">{fin && rank ? <>You: <b>#{rank}</b></> : lead ? <>#1 <b>{lead}</b></> : plays ? 'No finish yet' : 'Open. Be first.'}</span>
-        <span className="ct pc">{Number(plays || 0).toLocaleString('en-US')}</span>
+        <span className="ct pc">{Number(plays) > 0 ? Number(plays).toLocaleString('en-US') : '\u2013'}</span>
       </span>
     </a>
   );
@@ -145,7 +145,7 @@ export function MoreRunsTile({ rest, open, onToggle, players, colorOf }) {
         {rest.slice(0, 3).map((c) => (
           <span key={c.id} className="rgt-leg" style={{ '--lc': softGround(colorOf(c), 0.45) }}
             title={`${c.name}: ${Number(players(c) || 0).toLocaleString('en-US')} playing today`}>
-            {String(c.name).replace(/ Gauntlet$/, '').replace(/^Enter the /, '')}<i>{Number(players(c) || 0).toLocaleString('en-US')}</i>
+            {String(c.name).replace(/ Gauntlet$/, '').replace(/^Enter the /, '')}<i>{Number(players(c)) > 0 ? Number(players(c)).toLocaleString('en-US') : '\u2013'}</i>
           </span>
         ))}
       </span>

@@ -3,6 +3,14 @@
 > Split out of CLAUDE.md on 2026-10-29 to keep the auto-loaded file small. Rules here are verbatim and still binding.
 > Scope: Home page, slate, Loft, palette and registers (light/dark), contrast traps, game-page chrome, caps, endings and curtains, pop-ups, how-to-play sheet, touch input
 
+## Play counts never read zero: icon plus a dash (owner, 2026-11-17)
+
+The home's play counts load after the tiles, so every count flashed "0" first. Every `.ct.pc` count on
+the home (game tiles, run tiles, phone `.mcs` strips, `RunGateTile` and its leg chips) prints the person
+icon and an en dash when the count is zero, missing or still loading, via `pcN()` in `StageToday.jsx`.
+Only a real count above zero is printed as a number. This supersedes the older "0 playing is
+information" rule. Do not reintroduce a literal 0.
+
 ## Category shelf headers are FILLED BANDS in real hues (owner, 2026-08-25)
 
 The category shelves on the marquee home (`app/today/TodayClient.jsx`, `.tdy-hd`) carry a header
@@ -2415,8 +2423,8 @@ Esc clears the box. Other panes (Runs, Quizzes, boards) leave the middle empty.
 
 **The crowd on every Details card (owner, 2026-11-08).** The desktop Details card carries the usual
 crowd strip (#1 leader, plays today). The PHONE Details card (`.mph-gg.det .mph-g`) now carries the
-same strip along its foot (`.mcs`): the leader or "No solve yet" / "Open. Be first.", and "N playing"
-even at zero, read from the same `boardBy` the desktop uses.
+same strip along its foot (`.mcs`): the leader or "No solve yet" / "Open. Be first.", and the play
+count, read from the same `boardBy` the desktop uses (zero shows as a dash, see below).
 
 Approved on the "Mind Loft Home: Details Toggle and Rail Breakpoints" canvas.
 
