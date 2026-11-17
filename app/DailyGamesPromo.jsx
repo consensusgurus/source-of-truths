@@ -109,6 +109,7 @@ export const DAILY_GAMES = [
   { key: 'spin', href: '/spin', name: 'Spin', tag: 'turn every square straight', store: 'sot_spin_day', accent: '#6d28d9', bg: '#ede9fe', border: 'rgba(109,40,217,0.4)' },
   { key: 'connect', href: '/connect', name: 'Connect', tag: 'join the dots, fill the board', store: 'sot_connect_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'mop', href: '/mop', name: 'Mop', tag: 'mop every tile once, then get out', store: 'sot_mop_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
+  { key: 'mow', href: '/mow', name: 'Mow', tag: 'mow every square once, then out the gate', store: 'sot_mow_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'chef', href: '/chef', name: 'Chef', tag: 'get every order out together, hot', store: 'sot_chef_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'seated', href: '/seated', name: 'Seated', tag: 'seat the room, meet every request', store: 'sot_seated_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'bag', href: '/bag', name: 'Bag', tag: 'bag the groceries, crush nothing', store: 'sot_bag_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },

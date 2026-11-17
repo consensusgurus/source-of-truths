@@ -307,6 +307,13 @@ const Mop = () => (
     <rect x={160} y={58} width={34} height={12} rx={3} className="m" />
     <rect x={104} y={58} width={30} height={9} rx={3} className="d" /><path d="M119 58L133 50" className="s3" /></g>
 );
+// Mow: a lawn from above with a fence and a gate, stripes where it has been mown, a tree in the way, and the mower
+const Mow = () => (
+  <g><rect x={92} y={8} width={112} height={68} rx={4} className="w" /><path d="M150 8V30M150 48V76" className="s3" />
+    <path d="M101 19H141M101 31H141M101 43H141M101 55H141" className="sm5" />
+    <circle cx={180} cy={28} r={13} className="m" />
+    <rect x={160} y={56} width={24} height={14} rx={3} className="d" /><path d="M160 63H148" className="s3" /></g>
+);
 const Park = () => (
   <g><rect x={88} y={6} width={120} height={72} rx={4} className="w" />
     {[[94, 12, 36, 14, 'm'], [136, 12, 14, 34, 'm'], [100, 32, 36, 14, 'd'], [160, 40, 14, 34, 'm'], [180, 12, 22, 14, 'm']].map(([x, y, w, h, k], i) => <rect key={i} x={x} y={y} width={w} height={h} rx={3} className={k} />)}
@@ -420,7 +427,7 @@ const BY_KEY = {
   // Logic
   venn: Venn, lamps: Lamps, plot: Plot, paths: Track, tangled: Tangle, chomp: Maze, hedge: Maze, topple: () => <Block />,
   roll: () => <Block die />, jig: Jig, saw: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,
-  connect: Dots, mop: Mop, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
+  connect: Dots, mop: Mop, mow: Mow, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
   // End Game
   turn: Othello, four: Four, gift: Quarto, yose: Go, mate: () => <Chess target={4} />, check: () => <Chess target={11} />,
   chain: () => <Chess target={14} />, defend: () => <Chess target={21} />, swindle: () => <Chess target={7} />, queen: () => <Chess target={18} />,

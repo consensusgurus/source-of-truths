@@ -362,6 +362,12 @@ const Mop = () => (
     <path d="M119 19H139M119 31H139M119 43H139M119 55H139M119 67H139M157 19H177" className="sm5" />
     <rect x={152} y={56} width={28} height={9} rx={3} className="d" /><path d="M166 56L178 30" className="s3" /></g>
 );
+// a lawn from above: the left of it mown in stripes, a tree in the way, a fence with a gate, and the mower
+const Mow = () => (
+  <g><rect x={110} y={8} width={76} height={68} rx={4} className="w" /><path d="M150 8V30M150 48V76" className="s3" />
+    <path d="M119 19H141M119 31H141M119 43H141M119 55H141M119 67H141" className="sm5" />
+    <circle cx={170} cy={26} r={11} className="m" /><rect x={160} y={56} width={20} height={14} rx={3} className="d" /><path d="M160 63H150" className="s3" /></g>
+);
 const Connect = () => (
   <g><Grid x={112} y={6} n={4} sz={18} /><path d="M121 15H175V33M121 33V69H157" className="d6" />
     {[[121, 15], [175, 33], [121, 33], [157, 69]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={6} className={i < 2 ? 'd' : 'm'} />)}</g>
@@ -763,7 +769,7 @@ export const TILE_BY_KEY = {
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
   suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
-  connect: Connect, mop: Mop, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
+  connect: Connect, mop: Mop, mow: Mow, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,

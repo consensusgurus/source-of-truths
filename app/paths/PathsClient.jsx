@@ -102,8 +102,17 @@ const COLORS = {
 // terrain cell colour, rounded), the map inside it, the key chips under it.
 const PT_ST_CSS = `
 .pt-st{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;}
-.pt-stbd{max-width:100%;}
-.pt-stpanel{background:var(--pt-cell);border:1px solid var(--pst-cell-line);border-radius:18px;padding:10px;}
+.pt-stbd{max-width:100%;padding-top:16px;}
+.pt-stpanel{background:var(--pt-cell);border:1px solid var(--pst-cell-line);border-radius:18px;padding:10px;position:relative;}
+.pt-perf{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);z-index:3;display:flex;align-items:center;gap:7px;white-space:nowrap;
+  padding:7px 16px;border-radius:999px;background:var(--stg-ink,#0b0d12);color:var(--stg-ground,#fff);border:2px solid var(--stg-ink,#0b0d12);
+  box-shadow:0 4px 14px rgba(0,0,0,.22);font-family:'Manrope',system-ui,sans-serif;pointer-events:none;transition:background .2s,color .2s;}
+.pt-perf b{font-size:22px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums;}
+.pt-perf-k{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.8;}
+.pt-perf-sep{width:1px;height:18px;background:currentColor;opacity:.35;margin:0 3px;}
+.pt-perf-you{opacity:.85;}
+.pt-perf.hit{background:#16a34a;border-color:#0b0d12;color:#fff;}
+@media(max-width:560px){.pt-perf{padding:5px 12px;gap:5px;}.pt-perf b{font-size:18px;}.pt-perf-k{font-size:9.5px;}}
 .pt-st .pt-chips{display:flex;align-items:center;gap:6px;justify-content:center;flex-wrap:wrap;font-size:12px;font-weight:700;}
 .pt-st .pt-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:8px;line-height:1.2;white-space:nowrap;}
 .pt-st .pt-svg{touch-action:none;width:100%;height:auto;display:block;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
@@ -995,7 +1004,8 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
           map and the same marking. Only the furniture around it is the stage's:
           the status line, Finish, Undo / Clear / Hint as ink-outlined buttons,
           and the foot. The map is fitted to the height the stage has, so it
-          grows with a big desktop screen. The perfect cost never shows in play. */}
+          grows with a big desktop screen. The perfect cost sits on the board's top
+          edge (owner, 2026-11-16). */}
       {stageOn && (
         <PlayStage bg={gameColor('paths')} label="Paths" wide big
           eyebrow={`${PUZZLE.sunday ? 'Sunday Edition' : 'Paths'} No. ${PUZZLE.num} · link ${TOWNS.length} towns for the least`}
@@ -1003,7 +1013,19 @@ export default function PathsClient({ puzzles = [], forceNum = null }) {
             <div ref={ptStRef} className="pt-st">
               <style dangerouslySetInnerHTML={{ __html: PT_ST_CSS }} />
               <div className="pt-stbd" style={{ width: ptFit ? `min(100%, ${Math.floor(ptFit * SIZE / (SIZE + 12))}px)` : '100%' }}>
-                <div className="pt-stpanel">{ptSvg}</div>
+                <div className="pt-stpanel">
+                  {/* PERFECT, OVER THE TOP OF THE BOARD (owner, 2026-11-16: "make what a
+                      perfect score in Paths is more prominent. Maybe overlay it on top of
+                      the board at very top"). The target the foot used to whisper now
+                      sits on the map's top edge, with your live cost beside it, and turns
+                      green the moment a linked network matches it. */}
+                  <div className={'pt-perf' + (allLinked && cost === perfect ? ' hit' : '')} aria-label={`Perfect is ${perfect}. Your track costs ${cost}.`}>
+                    <span className="pt-perf-k">Perfect</span><b>{perfect}</b>
+                    <span className="pt-perf-sep" aria-hidden="true" />
+                    <span className="pt-perf-k">Yours</span><b className="pt-perf-you">{cost}</b>
+                  </div>
+                  {ptSvg}
+                </div>
               </div>
               {ptKey}
               {ptReview}

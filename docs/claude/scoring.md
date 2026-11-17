@@ -832,11 +832,13 @@ ends, CDN skipped. It deliberately does NOT wait on this tab's own post: a playe
 cannot change their own place (nobody outranks themselves), so the only thing it adds there
 is one to the play count.
 
-## Daily best-N is 50 from 2026-10-12
+## Daily best-N is 125 from 2026-11-17 (was 50 from 2026-10-12)
 
-`bestNForSuffix` returns 50 (750 ceiling) from `BESTN_CUTOVER_3`, 25 for 07-27..10-11,
-and the older steps before that. Days before the cutover never recompute. Surfaces read
-`bestN` / `maxTotal` off the payload; never hardcode 25, 375, 50 or 750 in copy.
+`bestNForSuffix` returns 125 (1,875 ceiling) from `BESTN_CUTOVER_4` (owner, 2026-11-16:
+"increase the daily puzzle cap that count towards the combined leaderboard at 125 puzzles"),
+50 (750 ceiling) for 10-12..11-16, 25 for 07-27..10-11, and the older steps before that.
+Days before a cutover never recompute. Surfaces read `bestN` / `maxTotal` off the payload;
+never hardcode 25, 375, 50, 750, 125 or 1875 in copy.
 
 ## IQ is a 30-minute SNAPSHOT plus a fresh asker (Vercel cost fix, owner 2026-10-19)
 
@@ -927,6 +929,16 @@ move games' registry `miss` is now **Moves** (their rows print "14 moves · 1:20
 count), and `endEfficiency` reads **Solved!** for any solve, **Perfect!** only at the proven
 minimum. The comparator lives once in `attemptsRanker`; the guest copy in `guestGameResult` mirrors
 it under `eg.order`. Gate: `node scripts/verify-scale-off.mjs`, shown to fail on a swapped order.
+
+## CLOCK FIRST on a first-attempt board: Mop and Mow (owner, 2026-11-16)
+
+"scoring will be on completion time with lowest number of replays. replays are accepted. scoring should show total
+replays (0 most likely)". Mop and Mow stay ordinary first-attempt dailies (NOT an attempts mode: a replay after the
+day is done would be a speedrun of a route you have just seen). Their replays happen INSIDE the one run and are
+posted as `guesses_used`. `CLOCK_FIRST` / `clockFirstQuizId` in `lib/daily-games.js` make the plain comparator in
+`lib/quiz-anon` buildLeaderboard, `lib/daily-combined` scoreGame and `guestGameResult` rank **score, then the clock,
+then replays** for those ids (the depth term moves behind the clock). Mop's earlier boards all posted 0, so no crowned
+day reorders. `gameStats` prints "0 replays" for these two (zeroShows), where every other game hides a zero.
 
 ## A board shows the stat that decides it (owner, 2026-11-03)
 
