@@ -208,6 +208,7 @@ const GAMES = [
   { key: 'errands', href: '/errands', name: 'Errands', tag: 'Plan the round, be home soonest', img: '/games/btn-errands.png' },
   { key: 'dash', href: '/dash', name: 'Dash', tag: 'Too many orders, make the most in tips', img: '/games/btn-dash.png' },
   { key: 'pack', href: '/pack', name: 'Pack', tag: 'Fit it all in the trunk', img: '/games/btn-pack.png' },
+  { key: 'machine', href: '/machine', name: 'Machine', tag: 'Finish the machine, then press Run', img: '/games/btn-machine.png' },
   { key: 'fill', href: '/fill', name: 'Fill', tag: 'Fit every word in the grid', img: '/games/btn-fill.png' },
   { key: 'pairs', href: '/pairs', name: 'Pairs', tag: 'Concentration with a real deck', img: '/games/btn-pairs.png' },
   { key: 'cell', href: '/cell', name: 'Cell', tag: 'The daily FreeCell', img: '/games/btn-cell.png' },
@@ -270,7 +271,7 @@ const CATEGORIES = [
   // Logic lost its photo, observation and moving-piece puzzles to Visual, and
   // End Game and Cards merged into Table Games (owner, 2026-11-12).
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'defuse', 'sudoclue', 'snug', 'connect', 'mop', 'mow', 'plow', 'chef', 'seated', 'bag', 'errands', 'dash', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'ergo', 'docket', 'plot'] },
-  { key: 'visual', label: 'Visual', keys: ['jig', 'saw', 'swap', 'slide', 'spin', 'spot', 'witness', 'focus', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'pack', 'paths', 'chomp'] },
+  { key: 'visual', label: 'Visual', keys: ['jig', 'saw', 'swap', 'slide', 'spin', 'spot', 'witness', 'focus', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'pack', 'machine', 'paths', 'chomp'] },
   { key: 'endgame', label: 'Table Games', keys: ['taire', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib', 'mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
   { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'squash', 'simon', 'dario', 'sweep'] },
 ];

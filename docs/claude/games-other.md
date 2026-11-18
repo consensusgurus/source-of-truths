@@ -2932,6 +2932,56 @@ playable", then "Push to live now with good share link image". Logic, skills Spa
   `chores` with Mop and Mow; Sunday Edition yes.
 - **Open:** restock before 2026-12-31 (`node scripts/gen-plow.mjs --until <date>`).
 
+## Machine: the daily contraption puzzle (launched 2026-11-17)
+
+Owner, 2026-11-17: "look up the game the incredible machine. could we build a daily puzzle like that?", then on the
+mockup "the physics dont work. ball doesnt carry momentum", "we also need a number of other elements for use on
+future days", "placement should be more dynamic, too? rather than just big tiled grid?", "it will be called
+'machine'", then "push and implement immediately. make this the first pop-up people see upon return (put it to the
+front of the queue). the mock-up here can be the first run." Mockup: https://claude.ai/artifact/8uCJWnR44chidCH3aCpH8H.
+Visual, skills Spatial and Planning, on `app/SimpleDaily.jsx`. Wired by `scripts/wire-machine.mjs` beside Pack.
+
+- **The game.** A chain-reaction machine is mostly built. The player drags parts from a tray onto the board (free
+  placement, 10px snap; drag to move, tap for Flip / Remove, drag off the board to put back; the ghost turns red
+  where it would overlap), presses Run, and the machine plays out. A miss leaves the ball paths drawn; Reset goes
+  back to building with the parts where they were. Every Run counts (saved as `runs`, posted as `guesses_used`).
+  Ranked runs, then the clock (the default first-attempt order; NOT in CLOCK_FIRST). Solved 10, give-up 0
+  (SOLVE_ONLY). The save is `{ parts: [{ ti, px, py, dir }], runs, won }`; a stored win is re-run through the engine
+  in `validSave` before it is believed.
+- **The physics is real and deterministic** (`lib/machine-engine.js`, pure ESM, shared by the page, the checker and
+  the mockup). Balls (bowling r24 m3, basketball r22 m1, tennis r15 m0.6, steel r15 m2 and magnetic) on a fixed
+  timestep (gravity 0.2 px/step, two substeps, 60 steps a second on screen), segment colliders with thickness,
+  restitution 0.35, rolling resistance 0.998, ball-on-ball impulses. **Only + - * / and Math.sqrt in anything the
+  simulation reads**, so every browser plays a machine identically; never add trig, hypot or pow there (the
+  drawing in `lib/machine-art.js` may use them). A run ends 50 steps after everything is still (a ball hovering on a
+  fan counts as still), 50 steps after a win, or at 1800 steps.
+- **Parts** (each is colliders plus a rule in the engine and a drawing in the art): shelf, crate, wall, post, floor
+  (a gap is a pit), door (trapdoor), button (face l/r/u; `wires` open doors, start fans, fire cannons), plunger (kicks
+  the `role: 'kick'` ball on Run), ramp, spring (a ball that lands on it from a fall is thrown up at 9.4, keeping its
+  sideways speed), belt, bumper (kicks at 7.5), fan (lane force falling off with distance, damped, divided by mass:
+  lifts a tennis ball, nudges a basketball, ignores a bowling ball), seesaw (a drop on the high end throws whatever
+  sits on the other end), pipe (in the top, out the side at the speed it went in), magnet (steel ball only),
+  dominoes (topple in turn, the last shoves what is in front of it or presses a button), cannon, glue, one-way gate.
+  Goals: hoop (enter from above), bucket, bell, balloon. The mockup's "New parts" section runs a live demo of each.
+- **Bank** `app/machine/puzzles.js`, HAND-BUILT boards tuned in the engine (no generator yet). No. 1 (2026-11-17) is
+  the mockup's board. `app/machine/page.js` strips `sol` and future days. A live board is frozen: an engine change
+  that alters any outcome replays old saves differently, so gate physics changes to future boards if one is ever
+  needed. **Checker** `scripts/verify-machine.mjs`: shape and ranges; the stored machine fits and wins; the empty
+  board misses; NO SINGLE TRAY PART WINS (every part, both ways round, at every 10px spot whose box touches a cell a
+  ball visited in the empty run: a part nowhere near a ball cannot change the run, so the pruning is exact); a spare
+  tray part exists; Sunday on a Sunday and bigger. About a minute for three boards.
+- **Tiles** `scripts/gen-machine-tiles.py`. **Share card** hand-built: the Monday board drawn mid-run (trails, a ball in
+  flight) in headless Chromium at 1200x630 into `public/og/machine.png`; the Details cut `public/og/tile/machine.png`
+  (crop 620,60 to 1180,620, 224px); `machine` is in `HAND_BAKED`.
+- **Premiere: front of the queue.** `{ key: 'machine', ..., front: true }` in PREMIERES. `lib/premiere-queue.js` sorts
+  `front` launches first, and `app/PremierePop.jsx` holds the visit's pop-up budget for a front card while it waits
+  (`holdPop` / `releasePop` in `lib/pop-budget.js`, 20s, page-local), so no faster card takes the visit first. One
+  card a day still holds: a browser that already had today's card gets Machine on its next day.
+- **Placement:** Visual; group Roll and route (Topple, Roll, Chomp, Machine); finish set Rolling puzzles; family with
+  Topple, Roll, Chomp, Tangled and Pack; Sunday Edition yes (a bigger board, more parts).
+- **Open:** the bank runs out fast: restock by hand (and Sunday 2026-11-22 needs its Sunday board) until a generator
+  exists. Pinch to zoom while placing on phones. Fans blow through walls (no occlusion).
+
 ## Seated: the daily seating-chart puzzle (launched 2026-11-14)
 
 Owner, 2026-11-14: asked for more "practical puzzles" in the vein of Mop, Chef and Pack, had Seated, Errands

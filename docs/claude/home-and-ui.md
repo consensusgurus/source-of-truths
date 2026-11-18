@@ -2897,6 +2897,12 @@ gets the door gets nothing else that visit.
   and a game's own in-play sheets (Price Check's Items). Preview links always open.
 - **A new pop-up calls `gameActive()` and then `claimPop()` before it opens, and stamps only after.**
 
+
+**A front launch holds the visit (owner, 2026-11-17, Machine: "make this the first pop-up people see upon return").**
+A PREMIERES line with `front: true` is first in the queue, and while its card is owed `app/PremierePop.jsx` calls
+`holdPop('premiere')`: `claimPop` then refuses every other id for up to 20 seconds (page-local), until the card
+opens or decides not to (`releasePop`). The entry door, groups, Space Cadet, Eagle Eye and the rest keep their turn
+for a later visit, exactly as when they lose the race.
 ## The phone home is M2, and Skills are gone as an index (owner, 2026-11-15, late)
 
 Owner, from a fourth round of mockups: "Implement M2. We are going to dump skills everywhere from the

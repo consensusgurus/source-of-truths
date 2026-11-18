@@ -117,6 +117,7 @@ export const DAILY_GAMES = [
   { key: 'errands', href: '/errands', name: 'Errands', tag: 'plan the round, be home soonest', store: 'sot_errands_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'dash', href: '/dash', name: 'Dash', tag: 'too many orders, make the most in tips', store: 'sot_dash_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'pack', href: '/pack', name: 'Pack', tag: 'fit it all in the trunk', store: 'sot_pack_day', accent: '#a21caf', bg: '#fae8ff', border: 'rgba(162,28,175,0.35)' },
+  { key: 'machine', href: '/machine', name: 'Machine', tag: 'finish the machine, then press Run', store: 'sot_machine_day', accent: '#b45309', bg: '#fef3c7', border: 'rgba(180,83,9,0.35)' },
   { key: 'fill', href: '/fill', name: 'Fill', tag: 'fit every word in the grid', store: 'sot_fill_day', accent: '#047857', bg: '#d1fae5', border: 'rgba(4,120,87,0.4)' },
   { key: 'pairs', href: '/pairs', name: 'Pairs', tag: 'concentration with a real deck', store: 'sot_pairs_day', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.4)' },
   { key: 'cell', href: '/cell', name: 'Cell', tag: 'the daily FreeCell', store: 'sot_cell_day', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.4)' },

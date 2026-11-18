@@ -29,7 +29,14 @@ if (new Set(seen.map((x) => x[0])).size !== seen.length) bad('two cards on one d
 for (let i = 1; i < seen.length; i++) {
   const a = PREMIERES.find((p) => p.key === seen[i - 1][1]).from, b = PREMIERES.find((p) => p.key === seen[i][1]).from;
   if (a > b && b > seen[i - 1][0]) continue; // a launch that had not happened yet
+  if (PREMIERES.find((p) => p.key === seen[i - 1][1]).front) continue; // a front launch jumps the queue on purpose
   if (a > b && seen[i - 1][0] >= b) bad(`${seen[i][1]} (${b}) was shown after the newer ${seen[i - 1][1]} (${a})`);
+}
+// a FRONT launch (owner, 2026-11-17, Machine) is the first card on its first day,
+// ahead of every older launch still waiting
+for (const f of PREMIERES.filter((p) => p.front && ok(p.key))) {
+  const q = premiereQueue(PREMIERES, f.from, ok);
+  if (q[0] !== f.key) bad(`${f.key} is marked front but the queue on ${f.from} opens with ${q[0]}`);
 }
 // every launch still in its queue life on `day` gets a card in the end
 for (const p of PREMIERES) if (ok(p.key) && p.from >= QUEUE_FROM && p.from <= day && !seen.some((x) => x[1] === p.key)) bad(`${p.key} never got a card`);

@@ -61,7 +61,7 @@ import { fetchDayStatus, etToday } from './useDayStats';
 import { seenBeforeToday } from '@/lib/visitor';
 import { gameActive } from '@/lib/game-active';
 import { premiereQueue, daysAgo } from '@/lib/premiere-queue';
-import { claimPop, popSpent } from '@/lib/pop-budget';
+import { claimPop, popSpent, holdPop, releasePop } from '@/lib/pop-budget';
 
 const KEY = (k) => `sot_premiere_${k}`;      // a run's launch card
 // A game's card. A new name on 2026-11-14: the old stamp was written for every open
@@ -184,25 +184,33 @@ export default function PremierePop() {
 
     let cands = open.filter((k) => force || (!playedLocally(k) && !safeGet(GKEY(k))));
     if (!cands.length) return;
+    // A FRONT launch (Machine, owner 2026-11-17: "the first pop-up people see
+    // upon return") holds the visit while the day status and the arrival are
+    // awaited, so a faster card cannot take it first (lib/pop-budget holdPop).
+    const isFront = (k) => PREMIERES.some((p) => p.key === k && p.front);
+    if (!force && isFront(cands[0])) holdPop('premiere');
+    const letGo = () => releasePop('premiere');
 
     const timers = [];
     fetchDayStatus().then((d) => {
-      if (!alive) return;
+      if (!alive) { letGo(); return; }
       if (d && d.archive && !force) {
         cands = cands.filter((k) => !(d.archive[k] && d.archive[k].played > 0));
       }
-      if (!cands.length) return;
+      if (!cands.length) { letGo(); return; }
       // The head of the queue, alone. A game played on another device was dropped
       // just above without using up the day, so the next in line takes its place.
       const next = cands[0];
+      if (!isFront(next)) letGo();
       // Wait out the arrival, then open. Give up after ~15s rather than open
       // onto a page the reader has already started using.
       const started = Date.now();
       const tick = () => {
-        if (!alive) return;
+        if (!alive) { letGo(); return; }
         if (arrivalBusy() && Date.now() - started < 15000) { timers.push(setTimeout(tick, 300)); return; }
-        if (Date.now() - started >= 15000 && arrivalBusy()) return;
-        if (gameActive()) return;
+        if (Date.now() - started >= 15000 && arrivalBusy()) { letGo(); return; }
+        if (gameActive()) { letGo(); return; }
+        letGo();
         if (!force && !claimPop('premiere')) return;   // one pop-up a visit; nothing stamped, so the card keeps its day
         // Stamp the game on the card and the day. Every other launch keeps its turn.
         if (!force) { try { localStorage.setItem(GKEY(next), today); localStorage.setItem(DAY_KEY, today); } catch (e) {} }
@@ -210,7 +218,7 @@ export default function PremierePop() {
       };
       timers.push(setTimeout(tick, 600));
     });
-    return () => { alive = false; timers.forEach(clearTimeout); };
+    return () => { alive = false; timers.forEach(clearTimeout); letGo(); };
   }, []);
 
   useEffect(() => {

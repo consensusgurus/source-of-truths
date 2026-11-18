@@ -443,6 +443,7 @@ archive and hub chips use the short form `Sun`.
 | Towers | a 7x7 skyline instead of the weekday 5x5 (from launch, 2026-08-24) |
 | Mercury | nine thermometers and eight printed digits, against six thermometers and fifteen to thirty digits on weekdays (from launch, 2026-08-24) |
 | Polka | a deal from the top of the measured difficulty distribution (from launch, 2026-08-24) |
+| Machine | a bigger board and more parts in the tray, against 14 x 10 and four parts on weekdays |
 
 **Every daily on the roster runs a Sunday Edition.** A new daily game should decide at launch
 whether it has one (see "Adding a BRAND NEW daily game" below).
