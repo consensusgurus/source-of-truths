@@ -26,7 +26,6 @@
 
 import { useState } from 'react';
 import GameGlyph from './GameGlyph';
-import MindLoftMark from './MindLoftMark';
 
 // The reader's place among their group on this game, or null: the same read
 // the phone's result bar makes (app/StageRoll.jsx).
@@ -99,12 +98,12 @@ export default function EndFirst({
     <div className={'ef' + (phone ? ' ef-ph' : ' ef-dk') + (on ? ' on' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="ef-top">
-        {/* THE WAY HOME (owner, 2026-11-12): the Mind Loft pill, back arrow and
-            mark, top left on every width. It goes where All puzzles goes. */}
-        <a className="ef-home" href={homeHref} aria-label="Back to Mind Loft home">
+        {/* THE WAY HOME (owner, 2026-11-17, replacing the 11-12 Mind Loft pill):
+            the back arrow beside "All Puzzles", top left on every width. It
+            takes the place of the All puzzles button that sat under the plays. */}
+        <a className="ef-home" href={allHref || homeHref} aria-label="All Puzzles">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
-          <MindLoftMark size={16} ink="var(--sst-ink)" accent="var(--sst-ink)" />
-          <span>Mind Loft</span>
+          <span>All Puzzles</span>
         </a>
         <span className="ef-tr">
           {shelfHref ? <a className="ef-tl" href={shelfHref}>Jigsaw puzzle shelf</a> : null}
@@ -156,10 +155,9 @@ export default function EndFirst({
             {bigs.map(([tone, p]) => <Big key={tone} p={p} tone={tone} />)}
           </div>
         ) : null}
-        <div className="ef-sm" style={{ '--ef-n': (chal ? 1 : 0) + 1 + (allHref ? 1 : 0) }}>
+        <div className="ef-sm" style={{ '--ef-n': (chal ? 1 : 0) + 1 }}>
           {chal ? <button type="button" className="ef-sb" onClick={chal.onClick}>{chal.label}</button> : null}
           <button type="button" className="ef-sb" onClick={onFull}>Full Results Page</button>
-          {allHref ? <a className="ef-sb" href={allHref}>All puzzles</a> : null}
         </div>
       </div>
 
@@ -254,7 +252,7 @@ const CSS = `
 .ef-ph .ef-bb small{font-size:12px;}
 .ef-ph .ef-bb .n{font-size:26px;}
 .ef-ph .ef-bb .s{font-size:13px;}
-.ef-ph .ef-sm{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.ef-ph .ef-sm{grid-template-columns:repeat(var(--ef-n,2),minmax(0,1fr));gap:10px;}
 .ef-ph .ef-sm .ef-sb{padding:0 6px;font-size:13.5px;white-space:nowrap;}
 .ef-ph .ef-sm a.ef-sb{grid-column:1 / -1;}
 .ef-sheet{position:fixed;left:0;right:0;bottom:0;z-index:5;max-height:62vh;overflow-y:auto;padding:12px 12px max(22px,env(safe-area-inset-bottom));
