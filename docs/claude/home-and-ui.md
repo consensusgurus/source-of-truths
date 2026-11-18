@@ -2837,6 +2837,11 @@ Owner, from the phone home mockups: "we will go with 2B", with both rows flickin
 - **The puzzle order is fixed only once the week's counts are in.** Before that the row is provisional
   (today's plays) and settles once. Fixing the provisional order left a phone with two tiles.
 - `FEATURED_KEYS` and `FEATURED_RECENT` moved to `lib/featured.js`; the entry door reads them too.
+- **The Featured row is always full (owner, 2026-11-18).** Tiles and Details alike, desktop: as many
+  cards as the All Puzzles grid has columns (`tileCols`); phone: four. `FEATURED_KEYS` lead in order
+  (Machine and Plow first), then the newest launches (`LAUNCHED`) and the most popular puzzles in no
+  run (week's unique players, then today's plays), taken in turn. A puzzle the reader has finished
+  drops out and the next in line backfills it. Built by `featFor(n)` in `StageToday.jsx`.
 
 ## The phone's entry page, mockup A (owner, 2026-11-15)
 

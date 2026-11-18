@@ -3166,7 +3166,32 @@ export default function StageToday() {
       </div>
     );
   })();
-  const featGames = FEATURED_KEYS.map((k) => alpha.find((g) => g.key === k)).filter(Boolean);
+  // THE FEATURED ROW IS ALWAYS FULL (owner, 2026-11-18: "featured should be
+  // filled on detail and tile mode. pull from most popular non-run puzzles and
+  // most recent puzzles to fill ... backfill as those are finished / played").
+  // FEATURED_KEYS lead in their order; then the newest launches and the most
+  // popular puzzles that are in no run, taken in turn, until the row holds as
+  // many cards as the grid has columns (Tiles or Details alike). A puzzle you
+  // have finished drops out and the next in line takes its place.
+  const featFor = (n) => {
+    if (n < 1) return [];
+    const out = []; const seen = new Set();
+    const add = (g) => { if (g && !seen.has(g.key) && !done.has(g.key) && out.length < n) { seen.add(g.key); out.push(g); } };
+    for (const k of FEATURED_KEYS) add(alpha.find((g) => g.key === k));
+    const inRun = new Set(RUN_GAMES);
+    for (const c of circuits) for (const g of c.games) inRun.add(g.key);
+    const wk = fav && !fav.failed ? ((fav.uniq && Object.keys(fav.uniq).length) ? fav.uniq : (fav.week || {})) : {};
+    const cnt = (g) => (wk[g.key] || 0) * 1e4 + (playsBy.get(g.key) || 0);
+    const recent = alpha.filter((g) => LAUNCHED[g.key])
+      .sort((a, b) => String(LAUNCHED[b.key]).localeCompare(String(LAUNCHED[a.key])) || a.name.localeCompare(b.name));
+    const pop = alpha.filter((g) => !inRun.has(g.key)).sort((a, b) => (cnt(b) - cnt(a)) || a.name.localeCompare(b.name));
+    let i = 0; let j = 0;
+    while (out.length < n && (i < recent.length || j < pop.length)) {
+      if (i < recent.length) add(recent[i++]);
+      if (j < pop.length) add(pop[j++]);
+    }
+    return out;
+  };
   const mFindHits = findOn ? findIn(alpha).slice(0, 12) : [];
   const mGoHref = (g) => `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`;
   const mFindBtn = (
@@ -5104,10 +5129,10 @@ export default function StageToday() {
                     );
                   }) : null}
                   {/* THE FEATURED ROW (owner, 2026-11-13): under the runs, two by two. */}
-                  {isAll && featGames.length ? (
+                  {isAll && featFor(4).length ? (
                     <>
                       <div className="mph-lab">Featured</div>
-                      <div className={'mph-gg' + (mDet ? ' det' : '')}>{featGames.map(mCard)}</div>
+                      <div className={'mph-gg' + (mDet ? ' det' : '')}>{featFor(4).map(mCard)}</div>
                     </>
                   ) : null}
                   {/* SORT AND VIEW SHARE ONE ROW (owner, 2026-11-11, mockup M2), each a
@@ -5298,6 +5323,7 @@ export default function StageToday() {
             ));
               // THE FEATURED ROW (owner, 2026-11-13): the first row under the runs,
               // its cards on the grid's own columns (subgrid), then the full list.
+              const featGames = featFor(Math.max(tileCols || 4, 2));
               const feat = mid && !findOn && featGames.length && viewOf(ALL_ID) !== 'list' ? (
                 <div key="bd-feat" className="sty-feat" data-fk="band:feat">
                   <div className="sty-featl">Featured</div>
