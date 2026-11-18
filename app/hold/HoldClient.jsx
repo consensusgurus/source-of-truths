@@ -721,7 +721,7 @@ export default function HoldClient({ puzzles = [], forceNum = null }) {
     const nHeld = popcount(g.sel);
     const q = reveal
       ? (reveal.pts ? 'The best hold. 1 point.' : missLine(hand, reveal.top, reveal.mine))
-      : (SD ? 'Which cards beat both rivals?' : 'Which cards do you keep?');
+      : (SD ? 'Which cards give you the best chance to beat both rivals?' : 'Which cards do you keep?');
     const line = reveal
       ? (SD ? `Drew ${reveal.name}, ${RES_WORD[reveal.res]} · score ${score} of ${TOTAL}` : `Drew ${reveal.k === 'nothing' ? 'no pay' : `${HAND_LABEL[reveal.k]}, pays ${reveal.pay}`} · score ${score} of ${TOTAL}`)
       : `Hand ${Math.min(current + 1, NH)} of ${NH} · ${nHeld === 0 ? 'tap a card to keep it' : nHeld === 5 ? 'keeping all five' : `holding ${nHeld}`}`;
