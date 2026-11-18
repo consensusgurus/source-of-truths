@@ -668,9 +668,9 @@ export const CARD_CSS = `
 .wys-card{color:var(--wys-ink,#08222e);font-family:Manrope,ui-sans-serif,system-ui,sans-serif;min-width:0}
 .wys-sl{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.82;margin-bottom:10px}
 .wys-tabs{display:grid;gap:6px}
-.wys-tab{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;min-height:52px;padding:7px 10px;border:1px solid var(--wys-ink,#08222e);border-radius:12px;
+.wys-tab{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:1px;min-width:0;min-height:52px;padding:7px 10px;border:1px solid var(--wys-ink,#08222e);border-radius:12px;
   background:transparent;color:var(--wys-ink,#08222e);font:inherit;text-align:left;cursor:pointer}
-.wys-tab span{font-size:11.5px;font-weight:800;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em}
+.wys-tab span{font-size:11.5px;font-weight:800;max-width:100%;line-height:1.2;white-space:normal;overflow-wrap:anywhere;text-align:left}
 .wys-tab b{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
 .wys-tab.on{background:var(--wys-ink,#08222e);color:var(--wys-bg,#ffffff)}
 .wys-tab:focus-visible{outline:2px solid var(--wys-ink,#08222e);outline-offset:2px}

@@ -178,7 +178,10 @@ export default function StageRoll({
     setTimeout(() => setToast(''), 4200);
   });
 
-  const beat = (i) => 'srl-beat ' + (phase === i || (phase >= 2 && open && i < 2) ? 'focus' : i < phase ? 'gone' : 'pend');
+  // THE OPENED BAR DOES NOT REPLAY THE MESSAGE (owner, 2026-11-17): the bar
+  // already reads "Solved! 7:48", so opening it shows the board button, the
+  // standings and the stats, never the big verdict, time and pill again.
+  const beat = (i) => 'srl-beat ' + (phase === i || (phase >= 2 && open && i === 1) ? 'focus' : i < phase ? 'gone' : 'pend');
   const anotherBtn = another || hasCal ? (
     hasCal ? (
       <button type="button" className={'sst-ob srl-ab' + (cal ? ' on' : '')} onClick={() => setCal((v) => !v)} aria-expanded={cal}>
@@ -398,7 +401,7 @@ const CSS = `
 .srl-br1{display:flex;align-items:center;gap:4px;width:100%;min-width:0;}
 .srl-bar:not(.chips) .srl-br1{height:100%;}
 .srl-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding-right:6px;}
-.srl-chip2{display:flex;align-items:baseline;justify-content:space-between;gap:4px;min-width:0;padding:6px 9px;border-radius:10px;background:var(--sst-wash);}
+.srl-chip2{display:flex;flex-direction:column;align-items:flex-start;gap:0;min-width:0;padding:5px 9px 6px;border-radius:10px;background:var(--sst-wash);}
 .srl-chip2 i{font-style:normal;font-size:11.5px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .srl-bar .srl-chip2 b{display:inline;width:auto;padding:0;margin:0;font-size:15px;font-weight:800;letter-spacing:0;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:visible;}
 .srl-chip2 small{font-size:10.5px;font-weight:800;}
