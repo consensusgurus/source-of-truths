@@ -208,7 +208,7 @@ const GAMES = [
   { key: 'errands', href: '/errands', name: 'Errands', tag: 'Plan the round, be home soonest', img: '/games/btn-errands.png' },
   { key: 'dash', href: '/dash', name: 'Dash', tag: 'Too many orders, make the most in tips', img: '/games/btn-dash.png' },
   { key: 'pack', href: '/pack', name: 'Pack', tag: 'Fit it all in the trunk', img: '/games/btn-pack.png' },
-  { key: 'machine', href: '/machine', name: 'Machine', tag: 'Finish the machine, then press Run', img: '/games/btn-machine.png' },
+  { key: 'machine', href: '/machine', name: 'Machine', tag: 'Combine simple machines into a solution', img: '/games/btn-machine.png' },
   { key: 'fill', href: '/fill', name: 'Fill', tag: 'Fit every word in the grid', img: '/games/btn-fill.png' },
   { key: 'pairs', href: '/pairs', name: 'Pairs', tag: 'Concentration with a real deck', img: '/games/btn-pairs.png' },
   { key: 'cell', href: '/cell', name: 'Cell', tag: 'The daily FreeCell', img: '/games/btn-cell.png' },

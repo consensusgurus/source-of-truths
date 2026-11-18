@@ -15,12 +15,12 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: 'Free Daily Contraption Puzzle: Machine | Mind Loft',
   description:
-    'A free daily physics puzzle like The Incredible Machine: drag ramps, springs and belts into place, press Run and make the chain reaction do the job.',
+    'A free daily physics puzzle like The Incredible Machine. Combine simple machines and tools into a solution, press Run and see if it works.',
   alternates: { canonical: '/machine' },
   openGraph: {
     images: [{ url: '/og/machine.png', width: 1200, height: 630, alt: 'Machine, a daily contraption puzzle from Mind Loft' }],
     title: 'Machine: The Daily Contraption Puzzle',
-    description: 'A machine that is almost built. Drag the last parts into place, press Run and watch the chain reaction.',
+    description: 'Combine simple machines and tools into a solution. Ramps, springs, belts and seesaws: set them up, press Run and see if it works.',
     url: '/machine',
     type: 'website',
     siteName: 'Mind Loft',
@@ -29,7 +29,7 @@ export const metadata = {
     images: ['/og/machine.png'],
     card: 'summary_large_image',
     title: 'Machine: The Daily Contraption Puzzle',
-    description: 'A machine that is almost built. Drag the last parts into place, press Run and watch the chain reaction.',
+    description: 'Combine simple machines and tools into a solution. Ramps, springs, belts and seesaws: set them up, press Run and see if it works.',
   },
 };
 
@@ -40,7 +40,7 @@ const gameJsonLd = {
   alternateName: 'Machine: The Daily Contraption Puzzle',
   url: `${SITE_URL}/machine`,
   description:
-    'A free daily physics puzzle in the spirit of The Incredible Machine: a chain-reaction machine is mostly built, and you drag a few parts from a tray (ramps, springs, belts, fans, bumpers and more) into place, press Run and watch real physics play out. Balls carry weight and momentum, buttons open trapdoors and start fans, and the day is won when the ball lands in the hoop, rings the bell or drops in the bucket. Ranked on the fewest runs, then the clock.',
+    'A free daily physics puzzle in the spirit of The Incredible Machine: combine simple machines and tools into a solution. Set ramps, springs, belts, fans, bumpers and more from a tray onto a board that is partly built, press Run and real physics plays out. Balls carry weight and momentum, buttons open trapdoors and start fans, and the day is won when the ball lands in the hoop, rings the bell or drops in the bucket. Ranked on the fewest runs, then the clock.',
   genre: ['Puzzle', 'Physics puzzle', 'Logic puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

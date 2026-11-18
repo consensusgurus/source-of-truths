@@ -2933,3 +2933,17 @@ screen (the two small Top rows over three-across tiles).
   the attribute highlights on a single row"): name and a two-line blurb beside the art, then the fact
   chips full width on ONE line (`flex-wrap:nowrap`), then the crowd strip. Applies to every phone
   `.mph-gg.det` card (home rows and panes).
+
+## The play stage's column grows with its game (owner, 2026-11-18)
+
+Owner: "why are buttons at bottom of screen cut off? fine that they are cut off, but i can't even scroll to see them...
+fix this anywhere it's an issue." `.pst` (app/PlayStage.jsx) is a fixed full-window flex row that scrolls inside
+itself, and `.pst-col` used to be STRETCHED to exactly the window height (or the phone foot rule's window + 48px in
+app/StageFoot.jsx). A game taller than that spilled out of the column; the spill ended flush with the window edge with
+the column's bottom padding left behind, so the foot row (Clock / How to play / Give up) sat cut off at the edge even
+scrolled to the end. Fixed with `.pst:not(.inl){align-items:flex-start}`: the min-heights still set the floor, a
+taller game grows the column and scrolls with its padding below. Checked by loading each daily once and comparing
+the first screen with the old rule injected: no game that fit changed (desktop 1280x800 and phone 390x700), and
+Crux, Scour, Links, Span, Tally, Tuck, Alibi, Fill, Outwit, Sworn, Shards and Machine went from cut to padded.
+Jig, Saw, Redact and Carmen pin the column to the window on purpose (`height:100%;min-height:0`) and keep that.
+Rule: never set a fixed height on `.pst-col` unless the board is meant to fill the window and fit it.

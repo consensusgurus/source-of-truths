@@ -38,10 +38,10 @@ function afterLine(f, marker, lines) {
   wr(f, parts.join('\n')); applied++;
 }
 
-const g = { key: 'machine', name: 'Machine', tag: 'Finish the machine, then press Run', promo: 'finish the machine, then press Run', tagLong: 'Drag the last parts into place so the chain reaction does the job',
+const g = { key: 'machine', name: 'Machine', tag: 'Combine simple machines into a solution', promo: 'combine simple machines into a solution', tagLong: 'Combine simple machines and tools into a solution, then press Run',
   how: 'A chain-reaction machine is mostly built. Drag ramps, springs, belts and more from the tray onto the board, press Run and watch real physics play out: balls carry weight and momentum, buttons open trapdoors and start fans, and the day is won when the ball lands in the hoop or rings the bell. Every run counts. Ranked on runs, then the clock.',
-  blurb: 'A contraption that is almost built. Drag the last parts into place, press Run and watch the balls roll, bounce and set each other off.',
-  short: 'Drag the last parts into place and run the machine.',
+  blurb: 'Combine simple machines and tools into a solution. Set up ramps, springs and belts, press Run and see if the ball gets home.',
+  short: 'Combine simple machines and tools into a solution.',
   color: '#b45309', navy: '#fbbf24', bg: '#fef3c7', border: 'rgba(180,83,9,0.35)' };
 
 // 1. lib/daily-games.js: the row, the premiere (front of the queue), solve-only

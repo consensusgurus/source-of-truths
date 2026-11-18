@@ -2953,6 +2953,15 @@ Visual, skills Spatial and Planning, on `app/SimpleDaily.jsx`. Wired by `scripts
   touch; the board shows a faint snapped outline of where it will land (red where it will not fit). Tray chips are
   `touch-action:none` so a phone drag never turns into a page scroll. A miss leaves the ball paths drawn; Reset goes
   back to building with the parts where they were. Every Run counts (saved as `runs`, posted as `guesses_used`).
+- **Copy and card (owner, 2026-11-18: "the share link image looks awful, as does the description... 'drag in the last
+  parts, watch it go'... really? 'Combine simple machines and tools into a solution'").** The owner's line leads every
+  surface: tag "Combine simple machines into a solution", blurbs, gate line, meta and share descriptions. Never
+  "finish the machine" / "watch it go" again. `public/og/machine.png` is a blueprint-blue card: a flat, fully framed
+  board #1 frozen as the basketball drops for the hoop, with the real engine's ball paths, and a row of part chips
+  (Ramp, Spring, Belt, Seesaw, Bumper). `public/og/tile/machine.png` is the board alone on the blueprint. Source:
+  render the card HTML with a bundle of lib/machine-art.js + machine-ui.js + puzzles.js and local Manrope woffs.
+- **Spare parts.** Every board carries at least one tray part the solution does not use (the verifier insists), so
+  "what is the glue pad for?" is answered by the tray hint: not every part is needed.
   Ranked runs, then the clock (the default first-attempt order; NOT in CLOCK_FIRST). Solved 10, give-up 0
   (SOLVE_ONLY). The save is `{ parts: [{ ti, px, py, dir }], runs, won }`; a stored win is re-run through the engine
   in `validSave` before it is believed.

@@ -517,7 +517,7 @@ const GAMES = [
   { key: 'roll', name: 'Roll', path: '/roll', tag: 'Light the squares in order', accent: '#166534', bg: '#dcfce7', border: 'rgba(22,101,52,0.35)', src: ROLL },
   { key: 'tangled', name: 'Tangled', path: '/tangled', tag: 'Untangle the ropes', accent: '#0f766e', bg: '#ccfbf1', border: 'rgba(15,118,110,0.35)', src: TANGLED },
   { key: 'pack', name: 'Pack', path: '/pack', tag: 'Fit it all in the trunk', accent: '#a21caf', bg: '#fae8ff', border: 'rgba(162,28,175,0.35)', src: PACK },
-  { key: 'machine', name: 'Machine', path: '/machine', tag: 'Finish the machine, then press Run', accent: '#b45309', bg: '#fef3c7', border: 'rgba(180,83,9,0.35)', src: MACHINE },
+  { key: 'machine', name: 'Machine', path: '/machine', tag: 'Combine simple machines into a solution', accent: '#b45309', bg: '#fef3c7', border: 'rgba(180,83,9,0.35)', src: MACHINE },
   { key: 'witness', name: 'Witness', path: '/witness', tag: 'What did you see?', accent: '#9f1239', bg: '#ffe4e6', border: 'rgba(159,18,57,0.35)', src: WITNESS },
   { key: 'defuse', name: 'Defuse', path: '/defuse', tag: 'Cut the wires in the safe order', accent: '#7c2d12', bg: '#ffedd5', border: 'rgba(124,45,18,0.35)', src: DEFUSE },
   { key: 'spot', name: 'Spot', path: '/spot', tag: 'Find the seven differences', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: SPOT },

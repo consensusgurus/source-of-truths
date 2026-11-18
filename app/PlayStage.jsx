@@ -123,6 +123,14 @@ const CSS = `
    2026-11-12, the Arcade on the stage); :where keeps the specificity unchanged. */
 .pst button:where(:not(.pst-raw *)){font:inherit;color:var(--pst-ink);cursor:pointer;-webkit-tap-highlight-color:transparent;}
 .pst-col{width:100%;max-width:520px;padding:max(12px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;min-height:100%;}
+/* THE COLUMN GROWS WITH ITS GAME (owner, 2026-11-18: "why are buttons at bottom of screen cut off? ... i can't even scroll
+   to see them... fix this anywhere it's an issue"). .pst is a fixed full-window flex row, and its column used to be
+   STRETCHED to exactly the window height (or the phone foot rule's window + 48px); a game taller than that spilled out
+   past the column, and the spill ended flush with the window edge with the column's bottom padding left behind, so the
+   last row (Clock / How to play / Give up) sat cut off at the edge. Not stretching lets the min-heights do the job: a
+   game that fits keeps exactly the column it had, a taller one grows and scrolls with its padding below. Checked
+   2026-11-18 across every play-stage daily on desktop and phone: only games that overflowed changed. */
+.pst:not(.inl){align-items:flex-start;}
 .pst-top{flex:1 0 auto;display:flex;flex-direction:column;justify-content:safe center;gap:12px;animation:pstRise .3s ease-out both;}
 .pst-eb{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;line-height:1.3;}
 .pst-q{margin:0;text-align:center;font-size:clamp(21px,6.4vw,26px);line-height:1.22;font-weight:800;letter-spacing:-.02em;padding-bottom:.08em;}

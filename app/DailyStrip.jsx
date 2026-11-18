@@ -192,7 +192,7 @@ const GAMES = [
   { key: 'errands', href: '/errands', name: 'Errands', img: '/games/btn-errands.png', store: 'sot_errands_day', tag: "Plan the round, be home soonest" , cat: 'Logic' },
   { key: 'dash', href: '/dash', name: 'Dash', img: '/games/btn-dash.png', store: 'sot_dash_day', tag: "Too many orders, make the most in tips" , cat: 'Logic' },
   { key: 'pack', href: '/pack', name: 'Pack', img: '/games/btn-pack.png', store: 'sot_pack_day', tag: "Fit it all in the trunk" , cat: 'Visual' },
-  { key: 'machine', href: '/machine', name: 'Machine', img: '/games/btn-machine.png', store: 'sot_machine_day', tag: "Finish the machine, then press Run" , cat: 'Visual' },
+  { key: 'machine', href: '/machine', name: 'Machine', img: '/games/btn-machine.png', store: 'sot_machine_day', tag: "Combine simple machines into a solution" , cat: 'Visual' },
   { key: 'fill', href: '/fill', name: 'Fill', img: '/games/btn-fill.png', store: 'sot_fill_day', tag: "Fit every word in the grid" , cat: 'Word' },
   { key: 'pairs', href: '/pairs', name: 'Pairs', img: '/games/btn-pairs.png', store: 'sot_pairs_day', tag: "Concentration with a real deck" , cat: 'Table Games' },
   { key: 'cell', href: '/cell', name: 'Cell', img: '/games/btn-cell.png', store: 'sot_cell_day', tag: "The daily FreeCell" , cat: 'Table Games' },
