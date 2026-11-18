@@ -8895,7 +8895,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-list > * > em{font-style:normal;font-size:12px;font-weight:600;}
   /* Everything Else as twelve tiles, two to a row (owner, 2026-11-18). */
   .sty-mph .mph-list.mt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border:0;border-radius:0;overflow:visible;}
-  .sty-mph .mph-list.mt > *{display:flex;align-items:center;gap:10px;min-height:56px;box-sizing:border-box;padding:10px 12px;
+  .sty-mph .mph-list.mt > *{display:flex;align-items:center;justify-content:flex-start;gap:10px;min-height:56px;box-sizing:border-box;padding:10px 12px;
     border:1px solid var(--stg-ink);border-radius:12px;background:var(--stg-surf);color:var(--stg-ink);font-size:14px;font-weight:700;line-height:1.25;text-align:left;}
   .sty-mph .mph-list.mt > :first-child{border-top:1px solid var(--stg-ink);}
   .sty-mph .mph-list.mt > * > svg{flex:none;}
