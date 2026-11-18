@@ -155,7 +155,28 @@ function Board({ P, s, setS, active, done, held, release }) {
     const u0 = Math.max(0, Math.min(vd[0] - fu, anchor.u - ((fu - 1) >> 1))), v0 = Math.max(0, Math.min(vd[1] - fv, anchor.v - ((fv - 1) >> 1)));
     const a = unV(V, u0, v0), b = unV(V, u0 + fu - 1, v0 + fv - 1), x = Math.min(a[0], b[0]), y = Math.min(a[1], b[1]);
     const d = dropAt(P, occOf(P, s.placed, shapes), o, x, y);
-    return { i: sel, r: ori, p: [x, y, d.z], bad: d.ok ? null : 'tall' };
+    return { i: sel, r: ori, p: [x, y, d.z], bad: d.ok ? null : 'tall', under: d.ok ? null : under(o, x, y) };
+  };
+  // When a drop is too tall, the loaded items it came to rest on that, taken out, would let it
+  // fit (a Shoebox already on the floor where a Beach Chair's seat goes). Null when none would.
+  const under = (o, x, y) => {
+    const out = [];
+    for (let k = 0; k <= s.placed.length; k++) {
+      const occ = occOf(P, s.placed.filter((q) => !out.includes(q.i)), shapes), d = dropAt(P, occ, o, x, y);
+      if (d.ok) return out.length ? out : null;
+      const add = [];
+      for (const c of o.cells) { const cz = c[2] + d.z - 1; if (cz < 0 || cz >= P.H) continue; const v = occ[c[0] + x][c[1] + y][cz]; if (v >= 0 && !add.includes(v)) add.push(v); }
+      if (!add.length) return null;
+      out.push(...add);
+    }
+    return null;
+  };
+  const tallNote = (gg) => {
+    const u = gg && gg.under, nm = (i) => P.items[i].n;
+    if (!u || u.length > 2) return 'It will not clear the roof there.';
+    return u.length === 1
+      ? `The ${nm(u[0])} is under it. Take it out and load the ${nm(gg.i)} first.`
+      : `The ${nm(u[0])} and the ${nm(u[1])} are under it. Take them out and load the ${nm(gg.i)} first.`;
   };
   const g = ghost();
 
@@ -227,7 +248,7 @@ function Board({ P, s, setS, active, done, held, release }) {
 
   const place = () => {
     if (!live || !g || g.i == null) return;
-    if (g.bad) { setNote('It will not clear the roof there.'); return; }
+    if (g.bad) { setNote(g.bad === 'long' ? 'Too long that way. Turn it.' : tallNote(g)); return; }
     hist.current.push(s.placed);
     const placed = s.placed.concat([{ i: g.i, r: g.r, p: g.p }]), nx = firstOut(placed);
     setSel(nx); setOri(0); setAnchor(null);
@@ -241,12 +262,12 @@ function Board({ P, s, setS, active, done, held, release }) {
     const c = at(e); if (!c) return;
     if (anchor && c.u === anchor.u && c.v === anchor.v && g) {
       if (g.i != null && !g.bad) place();
-      else setNote(g.bad === 'long' ? 'Too long that way. Turn it.' : 'It will not clear the roof there.');
+      else setNote(g.bad === 'long' ? 'Too long that way. Turn it.' : tallNote(g));
       return;
     }
     setAnchor(c); setNote('Tap again or press Place.');
   };
-  useEffect(() => { if (!g) return; if (g.bad === 'long') setNote('Too long that way. Turn it.'); else if (g.bad === 'tall') setNote('It will not clear the roof there.'); }, [g && g.bad, ori, anchor && anchor.u, anchor && anchor.v]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!g) return; if (g.bad === 'long') setNote('Too long that way. Turn it.'); else if (g.bad === 'tall') setNote(tallNote(g)); }, [g && g.bad, ori, anchor && anchor.u, anchor && anchor.v]); // eslint-disable-line react-hooks/exhaustive-deps
   const pick = (i) => {
     if (!live) return;
     if (isIn(i)) {
