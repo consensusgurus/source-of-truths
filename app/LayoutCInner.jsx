@@ -94,6 +94,8 @@ html.lc-on .lc-host .stg-fg{position:relative;padding-right:400px;}
    the default on a puzzle page, the game's own stage cap comes back as the
    header, and the menus button rides in it just left of the look switch. */
 html.lc-on.lc-focus .lc-host .stg-fg{padding-right:20px;}
+/* full screen on a wide screen: the figures line up with the header bar above them (2026-11-18), not the window's left edge */
+@media (min-width:900px){html.lc-on.lc-focus .lc-host .stg-fg{padding-left:max(20px, calc((100% - min(1040px, calc(100vw - 48px))) / 2));padding-right:max(20px, calc((100% - min(1040px, calc(100vw - 48px))) / 2));}}
 .stb>.lc-subs{position:static;transform:none;order:1;}
 .stb>.stb-look{order:2;}
 /* With the navigation up the button sits in the site header, by the look switch

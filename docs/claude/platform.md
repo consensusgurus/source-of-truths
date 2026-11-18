@@ -608,6 +608,30 @@ the HTML, nothing reused between loads, and a cold lambda having nothing to show
   figures, which a per-day table cannot supply, so the stored payload plus the memo does the
   job a rollup was meant to do. Revisit only if the row load itself becomes the cost.
 
+### Pulse and Cheat Watch run in SQL, not in memory (migration 65, 2026-11-18)
+
+Owner: "finish the build of the admin panel that doesn't soak up compute, memory resources".
+Snapshot v2 (below) stopped the crashes but every Pulse and Cheat Watch build still held all
+600k+ quiz_results rows in the function. Now:
+
+- **Pulse** (`lib/admin-pulse.js computePulse`) calls `refresh_admin_play_rollup()` (tops up
+  `admin_play_days`, one row per ET day and player, and `admin_player_first`), then
+  `admin_pulse_windows()` (rolling day / week / month and the week-over-week 24h),
+  `admin_play_daily(since, until)` (DAU / WAU / MAU, plays, time, new players, sign-ups per
+  ET day; finished days stored in stats_payloads `admin:playdaily:v1`, so a build asks for
+  two days) and `admin_pulse_referrers()`. No result rows reach the function.
+  `buildPulse` / `playHighs` are kept only as the reference the SQL matches.
+- **Cheat Watch** (`lib/admin-integrity.js`) reads 21 days of rows (8 columns, keyset from the
+  first row in range) instead of the whole table, and the all-time perfect-rate jump comes from
+  `admin_perfect_history()` for just the scored players.
+- **Still on the full cache:** the Analytics part (Daily tab, Plays chart, Players list) in
+  `lib/admin-data.js`, the "Games detail" CSV in `app/api/admin/player-plays`, and the 09:20
+  UTC stats-warm cron's warmAnalytics. They load only on those clicks. Converting them is the
+  next pass if the desk still strains.
+- Migration 65 was applied and backfilled 2026-11-18 (67,518 day-player rows from 2026-06-11,
+  30,314 players). If the rollup is ever wiped, `select * from refresh_admin_play_rollup(1000);`
+  in the SQL Editor rebuilds it in one call.
+
 ### Admin Refresh was dying of memory: snapshot v2 (2026-11-18)
 
 Owner: "the admin panel refresh seems broken / lagged". Measured on the live desk: the first

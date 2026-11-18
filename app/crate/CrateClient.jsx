@@ -48,7 +48,7 @@ function play(M, line) {
 }
 
 const CSS = `
-.crate{align-self:center;width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
+.crate{align-self:center;margin-left:auto;margin-right:auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
 --cr-floor:#f1efea;--cr-floor-line:#ffffff;--cr-wall:#d4cfc5;--cr-wall-lo:#b9b2a5;--cr-crate:#ddb985;--cr-crate-lo:#a87e48;--cr-on:#cfe6c4;--cr-on-lo:#5f9a50;--cr-spot:#6aa35a;--cr-hat:#f2c94c;--cr-skin:#f0c8a0;--cr-shirt:#7aa6d6;--cr-eye:#15171c;--cr-ink:#15171c;}
 /* the dark look: the stored register on load, and the live look switch on <html> */
 .stage-page[data-stage-theme='dark'] .crate,html:is([data-stage-pastel='darktint'],[data-stage-tone='darktint']) .crate{--cr-floor:#1d232c;--cr-floor-line:#151a21;--cr-wall:#3d4552;--cr-wall-lo:#2f3640;--cr-crate:#a7814f;--cr-crate-lo:#76572f;--cr-on:#33502d;--cr-on-lo:#7fbf6a;--cr-spot:#7fbf6a;--cr-hat:#d4ad3a;--cr-skin:#d9ae84;--cr-shirt:#5b87b8;--cr-ink:#eef1f6;}

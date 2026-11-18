@@ -60,7 +60,7 @@ export function Board({ P, s, setS, active, done, onStage }) {
   };
   const mine = () => { if (ctl.current) ctl.current.showParts(sRef.current.parts || []); setAns(null); };
   return (
-    <div style={{ width: '100%', maxWidth: 'min(900px, calc((100dvh - 330px) * 1.4))', alignSelf: 'center' }}>
+    <div style={{ width: '100%', maxWidth: 'min(900px, calc((100dvh - 330px) * 1.4))', alignSelf: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
       <style dangerouslySetInnerHTML={{ __html: MACHINE_CSS }} />
       <div ref={host} />
       {done && !onStage ? (

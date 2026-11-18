@@ -38,7 +38,7 @@ function crossPath() {
 const CROSS = crossPath();
 
 const CSS = `
-.peg{align-self:center;width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
+.peg{align-self:center;margin-left:auto;margin-right:auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
 --pg-board:#ffffff;--pg-edge:#15171c;--pg-hole:#e6e2da;--pg-hole-lo:#cfc9bd;--pg-peg:#e9b8a4;--pg-peg-lo:#c98a73;--pg-sel:#b9d7a8;--pg-sel-lo:#5f9a50;--pg-land:#d9e8d0;--pg-ring:#8b95a8;--pg-shine:rgba(255,255,255,.55);}
 .stage-page[data-stage-theme='dark'] .peg,html:is([data-stage-pastel='darktint'],[data-stage-tone='darktint']) .peg{--pg-board:#171b23;--pg-edge:#eef1f6;--pg-hole:#262c37;--pg-hole-lo:#11151b;--pg-peg:#c98a73;--pg-peg-lo:#e9b8a4;--pg-sel:#5f8f4f;--pg-sel-lo:#a8d595;--pg-land:#2c3f27;--pg-ring:#98a2b3;--pg-shine:rgba(255,255,255,.3);}
 .peg svg{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;touch-action:manipulation;}

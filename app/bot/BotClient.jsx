@@ -37,7 +37,7 @@ const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const CSS = `
-.bot{align-self:center;width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
+.bot{align-self:center;margin-left:auto;margin-right:auto;width:100%;display:flex;flex-direction:column;align-items:center;gap:10px;
 --bt-ink:#15171c;--bt-tile:#efede8;--bt-side1:#dcd8cf;--bt-side2:#c9c4b9;--bt-edge:#9b958a;--bt-lamp:#cfe0f1;--bt-lamp-lo:#9fbfdf;--bt-lit:#f6e3a1;--bt-lit-lo:#e3c25a;--bt-glow:rgba(246,214,110,.55);--bt-bot:#f4f4f2;--bt-bot-lo:#9aa3ae;--bt-eye:#3d7fc4;--bt-arrow:#15171c;--bt-arrow-edge:#fbfaf7;--bt-slot:#f3f1ec;--bt-slot-line:#e2dfd8;--bt-row-on:#d9e8d0;--bt-row-on-ink:#24401c;--bt-card:#ffffff;
 --bt-cF:#cfe0f1;--bt-cJ:#fbdcc4;--bt-cL:#e7d7f0;--bt-cR:#e7d7f0;--bt-cO:#f6e3a1;--bt-c1:#d9e8d0;--bt-c2:#d7ecec;--bt-c3:#f3dbe1;}
 .stage-page[data-stage-theme='dark'] .bot,html:is([data-stage-pastel='darktint'],[data-stage-tone='darktint']) .bot{--bt-ink:#eef1f6;--bt-tile:#232934;--bt-side1:#2a313d;--bt-side2:#20262f;--bt-edge:#4a5463;--bt-lamp:#2f4a66;--bt-lamp-lo:#4b6f95;--bt-lit:#c9a93f;--bt-lit-lo:#f0d273;--bt-glow:rgba(240,210,115,.35);--bt-bot:#dfe3e8;--bt-bot-lo:#7b8592;--bt-eye:#5f98c9;--bt-arrow:#f6e3a1;--bt-arrow-edge:#1b2029;--bt-slot:#1f242e;--bt-slot-line:#2c3340;--bt-row-on:#2c3f27;--bt-row-on-ink:#d9e8d0;--bt-card:#171b23;
