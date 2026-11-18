@@ -3312,6 +3312,16 @@ descriptive genre word in SEO copy, never as the game's name.
   (nineteen). Premiere card behind Machine's front one. Tiles `scripts/gen-crate-tiles.py`,
   share card `public/og/crate.png` (hand-built, HAND_BAKED).
 
+### Show the answer on Crate and Machine (owner, 2026-11-18)
+
+"We need a show answer button for crate and machine." Same pattern as Bot and Peg: once the
+day is over (solved or given up), the board on the results page (Show board) has Show the
+answer, which fetches `sol` from `/api/daily-answer?game=crate|machine&num=N` (404 for a board
+not yet live; the pages still strip `sol`). Crate walks the stored shortest line on the board
+(a move every 130ms, Stop, Back to my warehouse). Machine lays out the stored machine and runs
+it through `playAnswer` in `lib/machine-ui.js`, which never counts a run or calls onRun/onEnd;
+`showParts` puts the player's own machine back.
+
 ## Bot: the daily programming puzzle (launched 2026-11-18)
 
 Light-bot and Logo turtles as a daily (owner, 2026-11-18: picked Bot and Peg from a list of

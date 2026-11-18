@@ -66,9 +66,28 @@ const CSS = `
 @media (pointer:coarse){.crate-pad{display:grid;}}
 `;
 
-function Board({ P, s, setS, active, done }) {
+function Board({ P, s, setS, active, done, onStage }) {
   const M = modelOf(P);
-  const now = useMemo(() => play(M, s.line) || play(M, ''), [M, s.line]);
+  // Show the answer (owner, 2026-11-18), once the day is over: the stored line
+  // comes from /api/daily-answer (the page strips it) and walks on this board.
+  const [ans, setAns] = useState(null); // { line, i } while the answer shows
+  const [ansNote, setAnsNote] = useState('');
+  const shownLine = ans ? ans.line.slice(0, ans.i) : s.line;
+  const now = useMemo(() => play(M, shownLine) || play(M, ''), [M, shownLine]);
+  useEffect(() => {
+    if (!ans || ans.i >= ans.line.length) return undefined;
+    const t = setTimeout(() => setAns((a) => (a ? { ...a, i: a.i + 1 } : a)), ans.i === 0 ? 500 : 130);
+    return () => clearTimeout(t);
+  }, [ans]);
+  const showAnswer = async () => {
+    setAnsNote('');
+    try {
+      const r = await fetch(`/api/daily-answer?game=crate&num=${P.num}`);
+      const j = await r.json();
+      if (!j || typeof j.sol !== 'string' || !play(M, j.sol)) throw new Error('no answer');
+      setAns({ line: j.sol, i: 0 });
+    } catch (e) { setAnsNote('The answer could not be loaded. Try again in a moment.'); }
+  };
   const [note, setNote] = useState(null);
   const [shake, setShake] = useState(0);
   const timers = useRef([]);
@@ -185,7 +204,14 @@ function Board({ P, s, setS, active, done }) {
           ))}
         </div>
       ) : null}
-      <div className={`crate-msg${note && note.bad ? ' bad' : ''}`} aria-live="polite">{live && note ? note.t : ''}</div>
+      <div className={`crate-msg${(note && note.bad) || ansNote ? ' bad' : ''}`} aria-live="polite">
+        {ans ? (ans.i < ans.line.length ? `The answer: move ${ans.i} of ${ans.line.length}` : `The answer: ${movesOf(ans.line.length)}, the fewest possible.`) : ansNote || (live && note ? note.t : '')}
+      </div>
+      {done && !onStage ? (
+        <button type="button" className="sd-tool" onClick={ans ? () => setAns(null) : showAnswer}>
+          {ans ? (ans.i < ans.line.length ? 'Stop' : 'Back to my warehouse') : 'Show the answer'}
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -231,7 +257,7 @@ export const GAME = {
       <>The day is done when <b>every crate</b> is on a spot.</>,
     ],
     knack: 'Work out which crate goes on which spot, and in what order, before you push anything. The crate that would block the others goes last.',
-    footer: 'A finished warehouse ranks on moves, fewest first, then the clock. Giving up scores nothing.',
+    footer: 'A finished warehouse ranks on moves, fewest first, then the clock. Giving up scores nothing. Once the day is over, Show the answer walks the shortest line.',
   }),
   pitch: (P) => `${crates(P)} crates in the ${P.title}. Push every one onto a spot in as few moves as you can.`,
   shareLine: (P, s, won, el) => `Crate #${P.num} · ${P.title} · ${won ? `${movesOf(s.moves || 0)} (best ${P.best.moves}) · ${el}` : 'unfinished'}`,

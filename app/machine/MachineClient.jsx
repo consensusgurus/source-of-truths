@@ -19,7 +19,7 @@
 // The surface is lib/machine-ui.js, mounted on one div; this file only wires it
 // to the shell (app/SimpleDaily.jsx): the save is { parts, runs, won }.
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SimpleDaily from '../SimpleDaily';
 import { mountMachine, MACHINE_CSS } from '@/lib/machine-ui';
 import { run } from '@/lib/machine-engine';
@@ -27,8 +27,10 @@ import { run } from '@/lib/machine-engine';
 const BAND = { gentle: 'Gentle', moderate: 'Moderate', tough: 'Tough', sunday: 'Sunday Edition' };
 const runsOf = (n) => `${n} ${n === 1 ? 'run' : 'runs'}`;
 
-export function Board({ P, s, setS, active, done }) {
+export function Board({ P, s, setS, active, done, onStage }) {
   const host = useRef(null), ctl = useRef(null);
+  const [ans, setAns] = useState(null); // null | 'loading' | 'on'
+  const [note, setNote] = useState('');
   const sRef = useRef(s); sRef.current = s;
   useEffect(() => {
     if (!host.current) return undefined;
@@ -43,10 +45,32 @@ export function Board({ P, s, setS, active, done }) {
     return () => { c.destroy(); ctl.current = null; };
   }, [P]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (ctl.current) ctl.current.setState({ active, done }); }, [active, done, P]);
+  // Show the answer (owner, 2026-11-18), once the day is over: the stored
+  // machine comes from /api/daily-answer (the page strips it) and runs here.
+  const showAnswer = async () => {
+    if (!ctl.current) return;
+    setAns('loading'); setNote('');
+    try {
+      const r = await fetch(`/api/daily-answer?game=machine&num=${P.num}`);
+      const j = await r.json();
+      if (!j || !Array.isArray(j.sol)) throw new Error('no answer');
+      setAns('on');
+      ctl.current.playAnswer(j.sol);
+    } catch (e) { setAns(null); setNote('The answer could not be loaded. Try again in a moment.'); }
+  };
+  const mine = () => { if (ctl.current) ctl.current.showParts(sRef.current.parts || []); setAns(null); };
   return (
     <div style={{ width: '100%', maxWidth: 'min(900px, calc((100dvh - 330px) * 1.4))', alignSelf: 'center' }}>
       <style dangerouslySetInnerHTML={{ __html: MACHINE_CSS }} />
       <div ref={host} />
+      {done && !onStage ? (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, marginTop: 10 }}>
+          <button type="button" className="sd-tool" disabled={ans === 'loading'} onClick={ans === 'on' ? mine : showAnswer}>
+            {ans === 'on' ? 'Back to my machine' : ans === 'loading' ? 'Loading…' : 'Show the answer'}
+          </button>
+          {note ? <div style={{ font: "800 13px/1.5 'Manrope',system-ui,sans-serif", color: 'var(--pst-bad,#be123c)' }}>{note}</div> : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -90,7 +114,7 @@ export const GAME = {
       <>A red button opens whatever its wire runs to. Not every part in the tray is needed.</>,
     ],
     knack: 'Watch where the ball goes on its own first. Then fix one thing at a time.',
-    footer: 'A working machine ranks on runs, fewest first, then the clock. Giving up scores nothing.',
+    footer: 'A working machine ranks on runs, fewest first, then the clock. Giving up scores nothing. Once the day is over, Show the answer runs a machine that works.',
   }),
   pitch: (P) => `${P.goalText}. Most of the machine is built: drag a few parts into place and press Run.`,
   shareLine: (P, s, won, el) => `Machine #${P.num} · ${P.title} · ${won ? `${runsOf(s.runs || 0)} · ${el}` : 'not working yet'}`,

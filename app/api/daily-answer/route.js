@@ -1,4 +1,4 @@
-// GET /api/daily-answer?game=bot|peg&num=N: the stored answer for a board that
+// GET /api/daily-answer?game=bot|peg|crate|machine&num=N: the stored answer for a board that
 // is already live, for the Show the answer button (owner, 2026-11-18: "an
 // option to show the answer for these newly published puzzles"). The game
 // pages strip `sol` from the boards they send, so the answer is fetched only
@@ -7,8 +7,11 @@
 import { NextResponse } from 'next/server';
 import { PUZZLES as BOT } from '@/app/bot/puzzles';
 import { PUZZLES as PEG } from '@/app/peg/puzzles';
+import { PUZZLES as CRATE } from '@/app/crate/puzzles';
+import { PUZZLES as MACHINE } from '@/app/machine/puzzles';
 
-const BANKS = { bot: BOT, peg: PEG };
+// Crate and Machine joined 2026-11-18 (owner: "we need a show answer button for crate and machine").
+const BANKS = { bot: BOT, peg: PEG, crate: CRATE, machine: MACHINE };
 
 function etToday() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
