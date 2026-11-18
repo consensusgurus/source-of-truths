@@ -22,6 +22,12 @@
 //    land when dropped.
 //  - The two strands of a cord are held a rope's width apart at the widest, so
 //    each one can be followed through every turn.
+//  - MOTION (owner, 2026-11-18: "some of the movements seem off"). The chain
+//    steps on a fixed 60-a-second clock whatever the display's refresh rate; a
+//    slack rope hangs one way (down the board) instead of floating; a dropped
+//    rope eases the last of the way to straight (no snap); and a twist WINDS and
+//    UNWINDS one turn at a time at the end where the peg crossed, its strand
+//    sides read off the board's holes, never off a peg in the hand.
 // The rules (what crosses, what is solved) are lib/tangled-engine.js, never the
 // picture: crossing is the interleave test on the hole order.
 
@@ -30,6 +36,8 @@ import { holes, framePath, emptyHoles, applyMove, isSolved, cloneWraps, cordFram
 
 const SEG = 18;
 const M = 140, AMP = 13;
+// The rope in the hand: how much longer than its chord it runs, and its weight.
+const SLACK_HELD = 0.04, GRAV = 0.45, STEP_MS = 1000 / 60;
 
 function shade(hex, f) {
   const n = parseInt(hex.slice(1), 16);
@@ -80,14 +88,23 @@ function makeBoard(bgEl, svgEl, opts) {
   let drag = null, sel = null, finished = !opts.live, giving = false, loopOn = false, raf = 0, dead = false;
   let zorder = G.ropes.map((_, i) => i);
   let W = cloneWraps(opts.wraps || P0.wraps || {});
+  // THE VIEW. The board draws VR / VW, which are the committed ropes and wraps
+  // except while a carried peg hovers over a free hole: then they are the board
+  // as it WOULD be if the peg were dropped there, so a twist winds in (or out)
+  // under the player's hand instead of appearing on release.
+  let VR = G.ropes, VW = W;
   let CORD = {};
+  const ORD = [];
   const TG = [];
   let pegDefs = '';
 
   const R = G.ropes.map((rp, i) => {
     const a = pos[rp[0]], b = pos[rp[1]], pts = [];
     for (let k = 0; k <= SEG; k++) { const t = k / SEG, x = a.x + (b.x - a.x) * t, y = a.y + (b.y - a.y) * t; pts.push({ x, y, px: x, py: y }); }
-    return { ends: [{ x: a.x, y: a.y }, { x: b.x, y: b.y }], pts, slack: 0, peg: P0.pegs[i] };
+    // len0: the rope's length as the board was dealt. Ropes ARE elastic (a hop to
+    // the next hole and a run across the board are the same rope), so the stretch
+    // is drawn: see ropeLayer.
+    return { ends: [{ x: a.x, y: a.y }, { x: b.x, y: b.y }], pts, slack: 0, peg: P0.pegs[i], len0: Math.max(40, Math.hypot(b.x - a.x, b.y - a.y)) };
   });
 
   const DEFS = `<defs>
@@ -121,42 +138,112 @@ function makeBoard(bgEl, svgEl, opts) {
   function chords() {
     return R.map((rp) => { const a = rp.ends[0], b = rp.ends[1], L = Math.hypot(b.x - a.x, b.y - a.y) || 1; return { a, b, L, dx: (b.x - a.x) / L, dy: (b.y - a.y) / L }; });
   }
-  // Keep CORD in step with the wraps: a pair wound twice or more is a cord,
-  // eased in after a move and faded out once it unwinds below two turns.
+  // Which side of a cord's axis rope i sits on at side A, read off the HOLES the
+  // pegs are committed to (never a peg in the hand, so a cord does not flip
+  // over while one of its ropes is carried).
+  function cordSign(i, j, a) {
+    const iA = pos[VR[i][a[0]]], iB = pos[VR[i][1 - a[0]]], jA = pos[VR[j][a[1]]], jB = pos[VR[j][1 - a[1]]];
+    const F = cordFrame(iA, iB, jA, jB);
+    return ((iA.x - jA.x) * -F.d.y + (iA.y - jA.y) * F.d.x) >= 0 ? 1 : -1;
+  }
+  // The view just changed (oldW -> VW): a move, or a hover. For every cord it touched, note
+  // WHICH END the turn came on or off at: the chains alternate, so a chain that
+  // keeps its first crossing changed at side B (the cord stays anchored at A),
+  // and one that does not changed at side A (anchored at B). `n` then eases to
+  // the new turn count in step(), so the twist winds or unwinds at that end.
+  function noteMove(oldW) {
+    const keys = new Set([...Object.keys(oldW), ...Object.keys(VW)]);
+    for (const k of keys) {
+      const oc = oldW[k] ? oldW[k].c : [], nc = VW[k] ? VW[k].c : [];
+      const a = (VW[k] && VW[k].a) || (oldW[k] && oldW[k].a);
+      if (Math.max(oc.length, nc.length) < 2 || !a) continue;
+      let rec = CORD[k];
+      if (!rec) { if (nc.length < 2) continue; rec = CORD[k] = { amt: 0, n: Math.max(1, oc.length), anchor: 'A', cd: nc.slice() }; }
+      const pa = rec.anchor, ps = rec.s, pn = rec.n;
+      if (oc.length !== nc.length) {
+        rec.anchor = (oc.length && nc.length && oc[0] === nc[0]) ? 'A' : 'B';
+        rec.cd = (oc.length > nc.length ? oc : nc).slice();
+      }
+      rec.N = Math.max(1, nc.length); rec.a = a.slice();
+      // The strand side at the anchored end. A cord already on the board keeps
+      // the side it is DRAWN with there (so re-anchoring never moves a strand);
+      // a new one reads it off the holes.
+      const far = Math.cos(Math.PI * pn);
+      if (ps !== undefined && rec.anchor === pa) rec.s = ps;
+      else if (ps !== undefined && Math.abs(far) > 0.2) rec.s = ps * Math.sign(far);
+      else { const [i, j] = k.split('-').map(Number), sg = cordSign(i, j, rec.a); rec.s = rec.anchor === 'A' ? sg : sg * (rec.N % 2 ? -1 : 1); }
+    }
+  }
+  // Keep CORD in step with the wraps: a pair wound twice or more is a cord. Its
+  // drawn turn count `n` eases a turn at a time toward the real one; a cord that
+  // unwinds below two turns unwinds first and only then fades to plain rope.
   function easeCords(instant) {
     let moving = false;
-    for (const k in W) {
-      if (W[k].c.length < 2) continue;
-      let rec = CORD[k];
-      if (!rec) { rec = CORD[k] = { amt: instant ? 1 : 0 }; moving = true; }
-      rec.c = W[k].c.slice(); rec.a = W[k].a.slice();
-      if (rec.amt < 1) { rec.amt = Math.min(1, rec.amt + 0.08); moving = true; }
+    for (const k in VW) {
+      if (VW[k].c.length < 2 || CORD[k]) continue;
+      const [i, j] = k.split('-').map(Number), N = VW[k].c.length;
+      CORD[k] = { amt: instant ? 1 : 0, n: N, N, cd: VW[k].c.slice(), a: VW[k].a.slice(), anchor: 'A', s: cordSign(i, j, VW[k].a) };
+      moving = true;
     }
     for (const k in CORD) {
-      if (W[k] && W[k].c.length >= 2) continue;
-      const rec = CORD[k];
-      rec.amt = Math.max(0, rec.amt - 0.08); moving = true;
-      if (rec.amt <= 0) delete CORD[k];
+      const rec = CORD[k], live = !!(VW[k] && VW[k].c.length >= 2), gap = rec.N - rec.n;
+      // The cord's axis TURNS to follow its pegs, it never flips: when a carried
+      // peg takes one end's middle through the other's, the true axis reverses
+      // in one frame (and has no direction at all at the crossing point).
+      {
+        const [i, j] = k.split('-').map(Number);
+        const F = cordFrame(R[i].ends[rec.a[0]], R[i].ends[1 - rec.a[0]], R[j].ends[rec.a[1]], R[j].ends[1 - rec.a[1]]);
+        if (!rec.d || instant) rec.d = { x: F.d.x, y: F.d.y };
+        else if (F.len > 8) {
+          const ang = Math.atan2(rec.d.x * F.d.y - rec.d.y * F.d.x, rec.d.x * F.d.x + rec.d.y * F.d.y);
+          if (Math.abs(ang) > 0.004) {
+            const st = Math.max(-0.2, Math.min(0.2, ang)), c = Math.cos(st), sn = Math.sin(st);
+            rec.d = { x: rec.d.x * c - rec.d.y * sn, y: rec.d.x * sn + rec.d.y * c };
+            moving = true;
+          } else rec.d = { x: F.d.x, y: F.d.y };
+        }
+      }
+      if (Math.abs(gap) > 0.01) { rec.n += Math.sign(gap) * Math.min(0.075, Math.abs(gap)); moving = true; }
+      else if (rec.n !== rec.N) { rec.n = rec.N; if (live) rec.cd = VW[k].c.slice(); moving = true; }
+      else if (live && rec.cd.length !== VW[k].c.length) rec.cd = VW[k].c.slice();
+      if (live) { if (rec.amt < 1) { rec.amt = Math.min(1, rec.amt + 0.08); moving = true; } }
+      else if (!VW[k] || Math.abs(rec.N - rec.n) <= 0.01) { rec.amt = Math.max(0, rec.amt - 0.08); moving = true; if (rec.amt <= 0) delete CORD[k]; }
+      else moving = true;
     }
     return moving;
   }
+  function setView(ropes, wraps) { const old = VW; VR = ropes; VW = wraps; noteMove(old); }
+  // The free hole a carried peg would drop into (the same reach as the drop).
+  function dropHole(pt) {
+    let best = null, bd = 42;
+    for (const h of emptyHoles(G.ropes, G.H)) { const q = pos[h], dd = Math.hypot(q.x - pt.x, q.y - pt.y); if (dd < bd) { bd = dd; best = h; } }
+    return best;
+  }
+  // The rope on top at the point v (0 at side A, 1 at side B) of a cord: turns
+  // are counted from the anchored end, so a turn winding in or out at the other
+  // end never renumbers the ones that stay.
+  function turnTop(tw, v) {
+    const vp = tw.anchor === 'A' ? v : 1 - v, len = tw.c.length;
+    const m = Math.max(0, Math.min(len - 1, Math.floor(tw.N * vp)));
+    return tw.c[tw.anchor === 'A' ? m : len - 1 - m];
+  }
   // Each cord: a straight two-strand twist from its side A pegs' middle to its
   // side B pegs' middle (lib/tangled-engine.js cordFrame). s runs 0..1 from
-  // side A; the strands cross where cos(pi N s) is zero, exactly N times, and
-  // turn m (from side A) has rope c[m] on top. Always drawn, however cramped.
+  // side A; the strands cross where cos(pi n s') is zero (s' measured from the
+  // cord's anchored end, n its eased turn count), and turnTop() names the rope
+  // on top at each. Always drawn, however cramped.
   function cordList() {
     const out = [];
     for (const k in CORD) {
       const rec = CORD[k];
       if (rec.amt < 0.01) continue;
-      const [i, j] = k.split('-').map(Number), N = rec.c.length;
+      const [i, j] = k.split('-').map(Number), N = Math.max(1, rec.n);
       const iA = R[i].ends[rec.a[0]], iB = R[i].ends[1 - rec.a[0]], jA = R[j].ends[rec.a[1]], jB = R[j].ends[1 - rec.a[1]];
-      const F = cordFrame(iA, iB, jA, jB), n = { x: -F.d.y, y: F.d.x };
-      const sg = ((iA.x - jA.x) * n.x + (iA.y - jA.y) * n.y) >= 0 ? 1 : -1;
+      const F = cordFrame(iA, iB, jA, jB), d = rec.d || F.d, n = { x: -d.y, y: d.x };
       const half = Math.max(12 * N + 8, Math.min(100, F.room, 16 + 26 * N));
       // a cramped twist winds tighter rather than overrunning its pegs
       const amp = Math.min(AMP, Math.max(10.5, ((2 * half) / N) * 0.3));
-      out.push({ i, j, key: k, N, M: F.M, d: F.d, n, sg, Lc: 2 * half, amp, amt: rec.amt, c: rec.c, a: rec.a });
+      out.push({ i, j, key: k, N, M: F.M, d, n, sg: rec.s, anchor: rec.anchor, Lc: 2 * half, amp, amt: rec.amt, c: rec.cd, a: rec.a });
     }
     return out;
   }
@@ -177,57 +264,106 @@ function makeBoard(bgEl, svgEl, opts) {
         return { t, at, fwd: (t.i === r ? t.a[0] : t.a[1]) === 0 };
       })
       .sort((p, q) => p.at - q.at);
-    let pts = [{ x: E0.x, y: E0.y, tag: null }];
-    for (const it of items) {
-      const t = it.t, side = t.i === r ? t.sg : -t.sg, NS = 16 + 8 * t.N;
-      for (let q = 0; q <= NS; q++) {
-        const vv = q / NS, v = it.fwd ? vv : 1 - vv;
-        const off = side * t.amp * Math.cos(Math.PI * t.N * v);
-        const cx = t.M.x + t.d.x * (v - 0.5) * t.Lc + t.n.x * off, cy = t.M.y + t.d.y * (v - 0.5) * t.Lc + t.n.y * off;
-        // fading in or out: slide from the plain chord
-        const fc = Math.max(0, Math.min(1, it.at + (vv - 0.5) * (t.Lc / C[r].L)));
-        const sx = E0.x + (E1.x - E0.x) * fc, sy = E0.y + (E1.y - E0.y) * fc;
-        pts.push({ x: sx + (cx - sx) * t.amt, y: sy + (cy - sy) * t.amt, tag: { key: t.key, v } });
+    // The rope threaded through the cords in `its`, each at full strength:
+    // M+1 points evenly along it, their cord tags, and how much of the chain's
+    // sag each point takes (none inside a cord, tapering in beside one).
+    const build = (its) => {
+      let pts = [{ x: E0.x, y: E0.y, tag: null }];
+      for (const it of its) {
+        const t = it.t, side = t.i === r ? t.sg : -t.sg, NS = 16 + 8 * Math.ceil(t.N);
+        for (let q = 0; q <= NS; q++) {
+          const vv = q / NS, v = it.fwd ? vv : 1 - vv;
+          const off = side * t.amp * Math.cos(Math.PI * t.N * (t.anchor === 'A' ? v : 1 - v));
+          pts.push({ x: t.M.x + t.d.x * (v - 0.5) * t.Lc + t.n.x * off, y: t.M.y + t.d.y * (v - 0.5) * t.Lc + t.n.y * off, tag: { key: t.key, v } });
+        }
       }
-    }
-    pts.push({ x: E1.x, y: E1.y, tag: null });
-    if (items.length) {
-      // round the corners where a tail meets a cord (one Chaikin pass)
-      const sm = [pts[0]];
-      for (let k = 0; k < pts.length - 1; k++) {
-        const p = pts[k], q = pts[k + 1];
-        if (!!p.tag === !!q.tag && !(p.tag && q.tag && p.tag.key !== q.tag.key)) { if (k) sm.push(p); continue; }
-        if (k) sm.push({ x: p.x * 0.75 + q.x * 0.25, y: p.y * 0.75 + q.y * 0.25, tag: p.tag });
-        sm.push({ x: p.x * 0.25 + q.x * 0.75, y: p.y * 0.25 + q.y * 0.75, tag: q.tag });
+      pts.push({ x: E1.x, y: E1.y, tag: null });
+      if (its.length) {
+        // round the corners where a tail meets a cord (one Chaikin pass)
+        const sm = [pts[0]];
+        for (let k = 0; k < pts.length - 1; k++) {
+          const p = pts[k], q = pts[k + 1];
+          if (!!p.tag === !!q.tag && !(p.tag && q.tag && p.tag.key !== q.tag.key)) { if (k) sm.push(p); continue; }
+          if (k) sm.push({ x: p.x * 0.75 + q.x * 0.25, y: p.y * 0.75 + q.y * 0.25, tag: p.tag });
+          sm.push({ x: p.x * 0.25 + q.x * 0.75, y: p.y * 0.25 + q.y * 0.75, tag: q.tag });
+        }
+        sm.push(pts[pts.length - 1]);
+        pts = sm;
       }
-      sm.push(pts[pts.length - 1]);
-      pts = sm;
+      // resample to M+1 points evenly along the path
+      const cum = [0];
+      for (let k = 1; k < pts.length; k++) cum.push(cum[k - 1] + Math.hypot(pts[k].x - pts[k - 1].x, pts[k].y - pts[k - 1].y));
+      const Ltot = cum[cum.length - 1] || 1, out = [], tags = [];
+      let k = 1;
+      for (let q = 0; q <= M; q++) {
+        const u = (q / M) * Ltot;
+        while (k < pts.length - 1 && cum[k] < u) k++;
+        const a = pts[k - 1], b = pts[k], sl = (cum[k] - cum[k - 1]) || 1e-6, tt = Math.max(0, Math.min(1, (u - cum[k - 1]) / sl));
+        out.push({ x: a.x + (b.x - a.x) * tt, y: a.y + (b.y - a.y) * tt });
+        const ta = a.tag, tb = b.tag;
+        tags.push(ta && tb && ta.key === tb.key ? { key: ta.key, v: ta.v + (tb.v - ta.v) * tt } : (tt < 0.5 ? ta : tb));
+      }
+      let lastTag = -1e9;
+      const near = tags.map(() => 1e9);
+      tags.forEach((tg, q) => { if (tg) lastTag = q; near[q] = q - lastTag; });
+      lastTag = 1e9;
+      for (let q = M; q >= 0; q--) { if (tags[q]) lastTag = q; near[q] = Math.min(near[q], lastTag - q); }
+      return { out, tags, wd: near.map((d) => Math.min(1, d / 10)) };
+    };
+    // A CORD EASING IN OR OUT BLENDS WHOLE PATHS (owner, 2026-11-18). The rope
+    // with the cord and the rope without it are each built complete, then
+    // mixed by the cord's strength. Threading a faint cord's points straight
+    // into the path made a rope already in one cord double back in a single
+    // frame the moment it joined (or left) a second.
+    const compose = (its) => {
+      const all = build(its), fade = its.filter((it) => it.t.amt < 0.999);
+      if (!fade.length) return all;
+      const b0 = build(its.filter((it) => it.t.amt >= 0.999)), out = b0.out.map((p) => ({ x: p.x, y: p.y }));
+      let amax = 0;
+      for (const f of fade) {
+        const bk = fade.length === 1 ? all : build(its.filter((it) => it === f || it.t.amt >= 0.999));
+        const e = f.t.amt * f.t.amt * (3 - 2 * f.t.amt);
+        amax = Math.max(amax, e);
+        for (let q = 0; q <= M; q++) { out[q].x += (bk.out[q].x - b0.out[q].x) * e; out[q].y += (bk.out[q].y - b0.out[q].y) * e; }
+      }
+      return { out, tags: all.tags, wd: b0.wd.map((w, q) => w + (all.wd[q] - w) * amax) };
+    };
+    // THE ORDER A ROPE VISITS ITS CORDS IN IS HELD, NOT RE-SORTED EVERY FRAME.
+    // A rope in two cords used to be re-threaded the instant their middles
+    // swapped places along it (one cord follows a carried peg), a jump of up
+    // to 150px in a frame. The order now changes only once the cords are
+    // clearly past one another, and the rope cross-fades from the old
+    // threading to the new one (ORD[r].mix, advanced in step()).
+    const keyOf = (it) => it.t.key, atOf = {};
+    items.forEach((it) => { atOf[keyOf(it)] = it.at; });
+    const o = ORD[r] || (ORD[r] = { keys: items.map(keyOf), prev: null, mix: 1 });
+    const place = (keys) => {
+      const ks = keys.filter((k) => k in atOf);
+      for (const it of items) { const k = keyOf(it); if (ks.includes(k)) continue; let at = ks.findIndex((x) => atOf[x] > it.at); if (at < 0) at = ks.length; ks.splice(at, 0, k); }
+      return ks;
+    };
+    let cur = place(o.keys);
+    if (o.mix >= 1) {
+      let swap = false;
+      for (let x = 0; x < cur.length && !swap; x++) for (let y = x + 1; y < cur.length; y++) if (atOf[cur[x]] > atOf[cur[y]] + 0.05) { swap = true; break; }
+      if (swap) { o.prev = cur; cur = items.map(keyOf); o.mix = 0; }
     }
-    // resample to M+1 points evenly along the path
-    const cum = [0];
-    for (let k = 1; k < pts.length; k++) cum.push(cum[k - 1] + Math.hypot(pts[k].x - pts[k - 1].x, pts[k].y - pts[k - 1].y));
-    const Ltot = cum[cum.length - 1] || 1, out = [], tags = [];
-    let k = 1;
+    o.keys = cur;
+    const inOrder = (keys) => keys.map((k) => items.find((it) => keyOf(it) === k));
+    let res = compose(inOrder(cur));
+    if (o.mix < 1 && o.prev) {
+      o.prev = place(o.prev);
+      const was = compose(inOrder(o.prev)), e = o.mix * o.mix * (3 - 2 * o.mix);
+      res = { out: was.out.map((p, q) => ({ x: p.x + (res.out[q].x - p.x) * e, y: p.y + (res.out[q].y - p.y) * e })), wd: was.wd.map((w, q) => w + (res.wd[q] - w) * e), tags: e < 0.5 ? was.tags : res.tags };
+    }
+    const out = res.out === undefined ? [] : res.out.map((p) => ({ x: p.x, y: p.y })), wd = res.wd;
+    // the chain's sag and swing, on the tails only
     for (let q = 0; q <= M; q++) {
-      const u = (q / M) * Ltot;
-      while (k < pts.length - 1 && cum[k] < u) k++;
-      const a = pts[k - 1], b = pts[k], sl = (cum[k] - cum[k - 1]) || 1e-6, tt = Math.max(0, Math.min(1, (u - cum[k - 1]) / sl));
-      out.push({ x: a.x + (b.x - a.x) * tt, y: a.y + (b.y - a.y) * tt });
-      const ta = a.tag, tb = b.tag;
-      tags.push(ta && tb && ta.key === tb.key ? { key: ta.key, v: ta.v + (tb.v - ta.v) * tt } : (tt < 0.5 ? ta : tb));
+      const f = q / M, B = chainAt(r, f);
+      out[q].x += (B.x - (E0.x + (E1.x - E0.x) * f)) * wd[q];
+      out[q].y += (B.y - (E0.y + (E1.y - E0.y) * f)) * wd[q];
     }
-    // the chain's sag and swing, on the tails only (tapered off near a cord)
-    let lastTag = -1e9;
-    const near = tags.map(() => 1e9);
-    tags.forEach((tg, q) => { if (tg) lastTag = q; near[q] = q - lastTag; });
-    lastTag = 1e9;
-    for (let q = M; q >= 0; q--) { if (tags[q]) lastTag = q; near[q] = Math.min(near[q], lastTag - q); }
-    for (let q = 0; q <= M; q++) {
-      const f = q / M, B = chainAt(r, f), wd = Math.min(1, near[q] / 10);
-      out[q].x += (B.x - (E0.x + (E1.x - E0.x) * f)) * wd;
-      out[q].y += (B.y - (E0.y + (E1.y - E0.y) * f)) * wd;
-    }
-    TG[r] = tags;
+    TG[r] = res.tags;
     return out;
   }
   // Which rope is on top where ropes i < j meet at drawn point (seg a, t) of i.
@@ -244,9 +380,9 @@ function makeBoard(bgEl, svgEl, opts) {
         const nearEnd0 = q < 0;
         v = (nearEnd0 === (tw.a[0] === 0)) ? 0 : 0.999;
       }
-      return { o: tw.c[Math.max(0, Math.min(tw.N - 1, Math.floor(tw.N * v)))], tw };
+      return { o: turnTop(tw, v), tw };
     }
-    const w = W[key];
+    const w = VW[key];
     if (w && w.c.length) return { o: w.c[0], tw: null };
     if (held === i || held === j) return { o: held, tw: null };
     return { o: zorder.indexOf(i) > zorder.indexOf(j) ? i : j, tw: null };
@@ -260,7 +396,7 @@ function makeBoard(bgEl, svgEl, opts) {
     pts.push(at(A, s1));
     const d = 'M' + pts.map((p) => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join('L');
     let st = '', sc = '', gr = '', hi = '';
-    const W = 7.6, G0 = 7;
+    const wf = A.wf || 1, W = 7.6 * wf, G0 = 7 * (A.gf || 1);
     for (let u = Math.ceil(s0 / G0) * G0; u <= s1; u += G0) {
       const q = at(A, u), nx = -q.ty, ny = q.tx, sk = 3.6;
       st += `M${(q.x + nx * W + q.tx * sk).toFixed(1)} ${(q.y + ny * W + q.ty * sk).toFixed(1)}L${(q.x - nx * W - q.tx * sk).toFixed(1)} ${(q.y - ny * W - q.ty * sk).toFixed(1)}`;
@@ -272,14 +408,14 @@ function makeBoard(bgEl, svgEl, opts) {
     for (let i = 0; i < pts.length; i++) {
       const j = Math.min(i + 1, pts.length - 1), h = Math.max(i - 1, 0);
       let tx = pts[j].x - pts[h].x, ty = pts[j].y - pts[h].y; const l = Math.hypot(tx, ty) || 1; tx /= l; ty /= l;
-      hi += (i ? 'L' : 'M') + (pts[i].x + ty * 3.4).toFixed(1) + ' ' + (pts[i].y - tx * 3.4).toFixed(1);
+      hi += (i ? 'L' : 'M') + (pts[i].x + ty * 3.4 * wf).toFixed(1) + ' ' + (pts[i].y - tx * 3.4 * wf).toFixed(1);
     }
     const lj = 'stroke-linejoin="round"';
-    return `<g ${noShadow ? '' : `filter="url(#${pid}rs)"`}><path d="${d}" fill="none" stroke="#8f826b" stroke-width="19.5" stroke-linecap="${cap}" ${lj}/>`
-      + `<path d="${d}" fill="none" stroke="#cdc2ab" stroke-width="17.6" stroke-linecap="${cap}" ${lj}/></g>`
-      + `<path d="${d}" fill="none" stroke="#ddd3bf" stroke-width="12.5" stroke-linecap="${cap}" ${lj}/>`
-      + `<path d="${st}" fill="none" stroke="#e6dece" stroke-width="4.8" stroke-opacity=".7" stroke-linecap="round"/>`
-      + `<path d="${sc}" fill="none" stroke="#f2ece0" stroke-width="5" stroke-linecap="round"/>`
+    return `<g ${noShadow ? '' : `filter="url(#${pid}rs)"`}><path d="${d}" fill="none" stroke="#8f826b" stroke-width="${(19.5 * wf).toFixed(1)}" stroke-linecap="${cap}" ${lj}/>`
+      + `<path d="${d}" fill="none" stroke="#cdc2ab" stroke-width="${(17.6 * wf).toFixed(1)}" stroke-linecap="${cap}" ${lj}/></g>`
+      + `<path d="${d}" fill="none" stroke="#ddd3bf" stroke-width="${(12.5 * wf).toFixed(1)}" stroke-linecap="${cap}" ${lj}/>`
+      + `<path d="${st}" fill="none" stroke="#e6dece" stroke-width="${(4.8 * wf).toFixed(1)}" stroke-opacity=".7" stroke-linecap="round"/>`
+      + `<path d="${sc}" fill="none" stroke="#f2ece0" stroke-width="${(5 * wf).toFixed(1)}" stroke-linecap="round"/>`
       + `<path d="${sc}" fill="none" stroke="#fffdf8" stroke-width="1.4" stroke-opacity=".6" stroke-linecap="round" transform="translate(-.6,-.8)"/>`
       + `<path d="${gr}" fill="none" stroke="#a89b83" stroke-width="1" stroke-opacity=".6" stroke-linecap="round"/>`
       + `<path d="${hi}" fill="none" stroke="#fff" stroke-width="3" stroke-opacity=".3" stroke-linecap="${cap}" ${lj}/>`;
@@ -287,6 +423,9 @@ function makeBoard(bgEl, svgEl, opts) {
   function ropeLayer() {
     const C = chords(), T = cordList();
     const A = R.map((_, r) => arcInfo(shapedRope(r, C, T)));
+    // Stretch past the dealt length thins the rope and opens its lay out; let
+    // go shorter, it fattens and the lay closes up. Kept gentle: it is a cue.
+    A.forEach((Ai, r) => { const k = Math.max(0.4, Math.min(2.6, C[r].L / R[r].len0)); Ai.wf = Math.max(0.84, Math.min(1.1, Math.pow(k, -0.2))); Ai.gf = Math.max(0.8, Math.min(1.5, Math.pow(k, 0.45))); });
     const held = dragging() ? drag.r : -1, patches = [];
     const test = (i, j, ra, rb) => {
       const Pi = A[i].P, Pj = A[j].P;
@@ -404,6 +543,7 @@ function makeBoard(bgEl, svgEl, opts) {
   }
   function step() {
     let moving = easeCords(false);
+    for (const o of ORD) if (o && o.mix < 1) { o.mix = Math.min(1, o.mix + 0.09); moving = true; }
     R.forEach((rp, r) => {
       for (const e of [0, 1]) {
         const t = endTarget(r, e), E = rp.ends[e];
@@ -413,12 +553,13 @@ function makeBoard(bgEl, svgEl, opts) {
         if (Math.abs(dx) + Math.abs(dy) > 0.2) moving = true; else { E.x = t.x; E.y = t.y; }
       }
       const isDrag = dragging() && drag.r === r;
-      rp.slack += ((isDrag ? 0.10 : 0) - rp.slack) * (isDrag ? 0.2 : 0.08);
+      rp.slack += ((isDrag ? SLACK_HELD : 0) - rp.slack) * (isDrag ? 0.2 : 0.08);
       if (rp.slack > 0.002) moving = true;
       const P = rp.pts, a = rp.ends[0], b = rp.ends[1];
       for (let k = 1; k < SEG; k++) {
         const p = P[k], vx = (p.x - p.px) * 0.9, vy = (p.y - p.py) * 0.9;
-        p.px = p.x; p.py = p.y; p.x += vx; p.y += vy;
+        // a slack rope hangs down the board; a taut one has no weight to show
+        p.px = p.x; p.py = p.y; p.x += vx; p.y += vy + GRAV * Math.min(1, rp.slack / 0.02);
         if (Math.abs(vx) + Math.abs(vy) > 0.06) moving = true;
       }
       P[0].x = a.x; P[0].y = a.y; P[SEG].x = b.x; P[SEG].y = b.y;
@@ -433,28 +574,49 @@ function makeBoard(bgEl, svgEl, opts) {
         }
         P[0].x = a.x; P[0].y = a.y; P[SEG].x = b.x; P[SEG].y = b.y;
       }
+      // Once the slack is nearly gone, draw the chain in to its straight line
+      // and keep the loop alive until it is there: the rope settles, it never
+      // snaps (settleStraight then has nothing left to move).
+      if (!isDrag && rp.slack < 0.02) {
+        const w = 0.2 * (1 - rp.slack / 0.02);
+        for (let k = 1; k < SEG; k++) {
+          const p = P[k], t = k / SEG, sx = a.x + (b.x - a.x) * t, sy = a.y + (b.y - a.y) * t;
+          const mx = (sx - p.x) * w, my = (sy - p.y) * w;
+          p.x += mx; p.y += my; p.px += mx * 0.5; p.py += my * 0.5;
+          if (Math.abs(sx - p.x) + Math.abs(sy - p.y) > 0.25) moving = true;
+        }
+      }
     });
     return moving;
   }
   function settleStraight() {
     R.forEach((rp) => { const a = rp.ends[0], b = rp.ends[1]; rp.pts.forEach((p, k) => { const t = k / SEG; p.x = p.px = a.x + (b.x - a.x) * t; p.y = p.py = a.y + (b.y - a.y) * t; }); rp.slack = 0; });
   }
-  function tick() {
+  // ONE STEP PER 1/60 s, not per display frame: a 120 Hz phone used to run the
+  // whole board at double speed. A frame that owes no step draws nothing.
+  let lastT = 0, acc = 0;
+  function tick(ts) {
     if (dead) return;
-    const moving = step(); draw();
+    if (!lastT) { lastT = ts; acc = STEP_MS; } else { acc += Math.min(100, ts - lastT); lastT = ts; }
+    let moving = true, ran = 0;
+    while (acc >= STEP_MS * 0.72 && ran < 4) { moving = step(); acc -= STEP_MS; ran++; }
+    if (ran === 4) acc = 0;
+    if (!ran) { raf = requestAnimationFrame(tick); return; }
+    draw();
     if (moving || drag) raf = requestAnimationFrame(tick);
     else {
       loopOn = false; settleStraight(); draw();
       if (giving) { giving = false; finished = true; draw(); opts.onGaveUp && opts.onGaveUp(); }
     }
   }
-  function kick() { if (loopOn || dead) return; loopOn = true; raf = requestAnimationFrame(tick); }
+  function kick() { if (loopOn || dead) return; loopOn = true; lastT = 0; acc = 0; raf = requestAnimationFrame(tick); }
   function raise(r) { zorder.splice(zorder.indexOf(r), 1); zorder.push(r); }
   function moveEnd(r, e, h) {
     const nx = applyMove(G.ropes, W, r, e, h, pos);
     G.ropes = nx.ropes; W = nx.wraps;
+    setView(G.ropes, W);
     raise(r); sel = null;
-    R[r].slack = Math.max(R[r].slack, 0.06); kick();
+    R[r].slack = Math.max(R[r].slack, 0.03); kick();
     const solved = isSolved(G.ropes, W);
     if (solved) finished = true;
     opts.onMove && opts.onMove(G.ropes.map((x) => x.slice()), cloneWraps(W), solved);
@@ -480,21 +642,28 @@ function makeBoard(bgEl, svgEl, opts) {
   const onMove = (ev) => {
     if (!drag) return;
     drag.pt = svgPt(ev);
-    if (!drag.moved && Math.hypot(drag.pt.x - drag.start.x, drag.pt.y - drag.start.y) > 7) { drag.moved = true; sel = null; raise(drag.r); kick(); }
+    if (!drag.moved && Math.hypot(drag.pt.x - drag.start.x, drag.pt.y - drag.start.y) > 7) { drag.moved = true; drag.hover = null; sel = null; raise(drag.r); kick(); }
+    if (drag.moved) {
+      const h = dropHole(drag.pt);
+      if (h !== drag.hover) {
+        drag.hover = h;
+        if (h === null) setView(G.ropes, W);
+        else { const nx = applyMove(G.ropes, W, drag.r, drag.e, h, pos); setView(nx.ropes, nx.wraps); }
+      }
+    }
   };
   const onUp = () => {
     if (!drag) return;
     const d = drag; drag = null;
     if (d.moved) {
-      let best = null, bd = 42;
-      for (const h of emptyHoles(G.ropes, G.H)) { const q = pos[h], dd = Math.hypot(q.x - d.pt.x, q.y - d.pt.y); if (dd < bd) { bd = dd; best = h; } }
+      const best = dropHole(d.pt);
       if (best !== null) { moveEnd(d.r, d.e, best); return; }
-      kick();
+      setView(G.ropes, W); kick();
     } else {
       sel = (sel && sel.r === d.r && sel.e === d.e) ? null : { r: d.r, e: d.e }; draw();
     }
   };
-  const onCancel = () => { drag = null; kick(); };
+  const onCancel = () => { drag = null; setView(G.ropes, W); kick(); };
   svgEl.addEventListener('pointerdown', onDown);
   svgEl.addEventListener('pointermove', onMove);
   svgEl.addEventListener('pointerup', onUp);
@@ -510,7 +679,7 @@ function makeBoard(bgEl, svgEl, opts) {
       // render that asks for this, so `finished` is not a reason to refuse.
       if (giving) return;
       giving = true; sel = null; drag = null;
-      G.ropes = G.solved.map((p) => p.slice()); W = {};
+      G.ropes = G.solved.map((p) => p.slice()); W = {}; VR = G.ropes; VW = W;
       R.forEach((rp) => { rp.slack = 0.05; });
       draw(); kick();
     },

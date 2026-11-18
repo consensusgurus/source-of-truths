@@ -2397,6 +2397,35 @@ finish set Spatial puzzles. Third leg of the Space Cadet run.
   never while one is held (owner: tangles must not come apart just by moving pegs).
 - **Give up** (two taps) stops the clock, eases the ropes back to `solved` and posts 0. Replay is
   practice: unsaved, unposted.
+- **Motion** (owner, 2026-11-18: "some of the movements seem off"; all in `TangledBoard.jsx`, the rules
+  untouched). `tick()` runs `step()` on a FIXED 60-a-second clock (`STEP_MS`), never once per display
+  frame: a 120 Hz phone used to play the whole board at double speed. A held rope runs `SLACK_HELD` (4%)
+  long and has weight (`GRAV`, scaled off with the slack), so it always hangs down the board; it used to
+  float and freeze in an S. A dropped rope is drawn in to its straight line and the loop stays alive
+  until it is there, so `settleStraight()` has nothing left to snap (it used to jump about 7px). A twist
+  WINDS AND UNWINDS: `noteMove()` reads which end of the chain a move changed (a chain that keeps its
+  first crossing changed at side B), anchors the cord at the other end, and `easeCords()` eases the
+  drawn turn count `n` a turn at a time; a cord dropping below two turns unwinds first, then fades.
+  `turnTop()` counts turns from the anchored end. A cord's strand sides come from `cordSign()` off the
+  COMMITTED HOLES, never a peg in the hand: read live, the whole cord mirror-flipped mid-drag and the
+  new crossing showed at the wrong end. Checked headless (esbuild bundle, stub SVG, 720 scripted moves
+  at 60 and 120 Hz): same settle time at both rates, no frame over 0.3px at the stop, no cord flip
+  while a peg is held.
+- **Motion, second pass** (owner, same day: "fix all now"). (1) THE VIEW: the board draws `VR` / `VW`,
+  the committed ropes and wraps except while a carried peg hovers within drop reach (`dropHole()`, 42px)
+  of a free hole; then they are the board as it would be if dropped there (`setView()`), so the twist
+  winds in under the hand. `W` / `G.ropes` stay the truth; only `moveEnd()` commits. (2) `shapedRope()`
+  builds WHOLE paths and blends them: a cord easing in or out mixes the rope with it and the rope without
+  it (`compose()`), and the order a rope visits its cords in is HELD in `ORD[r]`, changing only once two
+  cords are clearly past each other and then cross-fading (`mix`). A rope in two cords used to re-thread
+  in one frame, up to 150px. (3) A cord's axis `rec.d` TURNS toward its pegs (0.2 rad a step) and never
+  flips; a cord that re-anchors keeps the strand side it is drawn with. (4) ROPES ARE ELASTIC AND SHOW
+  IT: `len0` is the dealt length, and past it the rope thins (`wf`, 0.84 to 1.1) and its lay opens out
+  (`gf`); it is a cue, kept gentle. Headless numbers after both passes: biggest one-frame move of a rope
+  not in the hand 23px while a peg is carried (was 153), 5.5px after a drop (was 162). Drawn crossings
+  against the wraps: unchanged for the first three moves off the dealt board, about 4% more pairs
+  disagree after six or more RANDOM moves (ropes in three and four cords), which is the price of never
+  re-threading in one frame.
 
 ## Paths (`/paths`): what shows after the round
 
