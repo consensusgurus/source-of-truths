@@ -80,11 +80,11 @@ export const GAME = {
   frac: (P, s) => (s.won ? 1 : 0),
   sundayLabel: () => 'Sunday Edition',
   gateTitle: (P) => `Today: ${P.goalText}`,
-  gateLine: (P) => `Most of the machine is built. Drag parts from the tray into place, press Run and watch it go. Not every part is needed. Every run counts, so look before you press.`,
+  gateLine: (P) => `Most of the machine is built. Drag parts from the tray into place (or tap a part, then tap the spot), press Run and watch it go. Not every part is needed. Every run counts, so look before you press.`,
   rules: () => ({
     lead: 'Finish the machine so it does the day\'s job.',
     steps: [
-      <><b>Drag</b> a part from the tray onto the board. Drag it again to move it. <b>Tap</b> it to flip it or put it back, or drag it off the board.</>,
+      <><b>Drag</b> a part from the tray onto the board, or <b>tap</b> it and then tap the spot where it goes. Drag a placed part to move it, or tap it and tap a new spot. Tap it to flip it or put it back, or drag it off the board.</>,
       <>Press <b>Run</b>. The balls have real weight and momentum: they arc off ledges, speed up down ramps, bounce off springs and bumpers, and knock each other along.</>,
       <>If it misses, the paths stay drawn so you can see what happened. <b>Reset</b>, move parts, and run again.</>,
       <>A red button opens whatever its wire runs to. Not every part in the tray is needed.</>,

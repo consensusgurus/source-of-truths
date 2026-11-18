@@ -2943,7 +2943,11 @@ Visual, skills Spatial and Planning, on `app/SimpleDaily.jsx`. Wired by `scripts
 
 - **The game.** A chain-reaction machine is mostly built. The player drags parts from a tray onto the board (free
   placement, 10px snap; drag to move, tap for Flip / Remove, drag off the board to put back; the ghost turns red
-  where it would overlap), presses Run, and the machine plays out. A miss leaves the ball paths drawn; Reset goes
+  where it would overlap), presses Run, and the machine plays out. TAP TO PLACE too (owner, 2026-11-17: "The drag
+  and drop also needs ability to click and then click again on spot you want"): tap a chip (it lights), tap the
+  board and the part lands centred on the tap; tap a placed part (it is now picked), tap an open spot and it moves
+  there. A part only just placed is selected for Flip / Remove but not picked, so a stray tap on open board just
+  lets it go rather than moving it. A miss leaves the ball paths drawn; Reset goes
   back to building with the parts where they were. Every Run counts (saved as `runs`, posted as `guesses_used`).
   Ranked runs, then the clock (the default first-attempt order; NOT in CLOCK_FIRST). Solved 10, give-up 0
   (SOLVE_ONLY). The save is `{ parts: [{ ti, px, py, dir }], runs, won }`; a stored win is re-run through the engine
