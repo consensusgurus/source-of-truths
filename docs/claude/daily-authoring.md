@@ -1144,3 +1144,36 @@ game and every other run, and puts it in the sitemap. The page then mounts
 reader's register, as Price Check does), emits `runBreadcrumbJsonLd('<id>')`, and gives its
 Game schema an image (its `/card` route is fine). A run whose page is deliberately noindex
 (the Trivia and Math Gauntlets, whose landing pages rank instead) goes in `RUN_LANDINGS`.
+
+## Bank runway and the Machine restock: two commands (owner, 2026-11-18)
+
+Owner: "What other puzzles have inventory issues coming up?", then for Machine: "Build out machine now ... Need to
+make this error proof and repeatable."
+
+- **What is running out:** `node scripts/bank-runway.mjs` lists every live daily's last banked date, soonest first
+  (`!!` within 7 days, `!` within 14). `--days 21` narrows the list; `--fail 7` exits 1 when anything ends within a
+  week, for use in a check. Retired games and the frozen Price Check tags (dealer, agent, curator) are skipped; a
+  game with no dated bank builds its board each day and never runs out. Run it at the start of any restock pass.
+- **Machine restocks itself, safely:** `node scripts/gen-machine-bank.mjs --through YYYY-MM-DD` appends one board per
+  missing date after the bank's last board. Do not hand-edit Machine boards for a restock; use this. Its guards:
+  - never touches an existing board, refuses any date not after today in New York, writes to a temp file, runs
+    `scripts/verify-machine.mjs` on the whole bank and puts the old file back if anything fails;
+  - repeatable: each date has a fixed seed sequence and the winning `seed` and generator version `gen` are stored
+    on the board, so the same version rebuilds the same board;
+  - every board runs in the real engine and meets every verify-machine rule (empty board misses, no single tray part
+    wins anywhere at 10px in any direction Flip can reach, a two-part machine wins, a spare part), plus FAIRNESS: a
+    stored machine still wins on at least 25% of single-part 10px nudges, so the answer is findable by eye. Fairness
+    is enforced by verify-machine for boards from 2026-11-20;
+  - BOARD SENSE (also in verify-machine): a goal that names a ball by kind ("Sink the basketball") is the only ball
+    of that kind on the board, and a Sunday carries the trapdoor chain plus at least four obstacles;
+  - a generated board must equal what its stored seed lays out (verify-machine re-lays every seeded board), so a
+    hand edit to a generated board fails the gate. To change a future board, rebuild it:
+    `--replace D1,D2` regenerates those dates in place (titles stay unique), and `--pin D=SEED` rebuilds a date
+    from a known seed instead of searching;
+  - band by weekday: Mon/Tue gentle (3 tray parts, fairness >= 0.5), Wed/Thu moderate (3-4, >= 0.35), Fri/Sat tough
+    (4), Sun the Sunday Edition (18 x 12, five or six tray parts);
+  - titles come from the board's features and never repeat in the bank; goal lines are written from the goal.
+  It takes a few minutes a board on two cores (`--jobs 2`), so a two-week batch is roughly an hour. Preview boards
+  with `--dry` before writing if the layouts need a look. If the generator ever changes how it lays boards out,
+  bump `GEN` in the script so stored seeds stay tied to the version that made them.
+- verify-machine also prints a warning when the Machine bank has under 10 days left.

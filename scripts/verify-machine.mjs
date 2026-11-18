@@ -15,6 +15,7 @@
 //   node scripts/verify-machine.mjs [--fast]   (--fast: 20px instead of 10px)
 import { PUZZLES } from '../app/machine/puzzles.js';
 import { run, makeState, pieceSegs, C } from '../lib/machine-engine.js';
+import { fairness, FAIR_MIN, sense, layout } from './gen-machine-bank.mjs';
 
 const STEP = process.argv.includes('--fast') ? 20 : 10;
 let fails = 0;
@@ -76,7 +77,7 @@ for (const P of PUZZLES) {
   const s0 = run(P, [], 1800, true);
   if (s0.won) bad(n, 'the empty board wins');
   const kinds = [];
-  for (const t of P.tray) { kinds.push({ ...t }); if (t.dir) kinds.push({ ...t, dir: t.dir === 'l' ? 'r' : 'l' }); }
+  for (const t of P.tray) for (const d of (t.dir ? [...new Set([t.dir, 'l', 'r'])] : [undefined])) kinds.push(d ? { ...t, dir: d } : { ...t }); // every way Flip can set it (an upward fan flips to l, then r)
   const seen = new Set(); let sims = 0;
   for (const k of kinds) {
     const sig = k.t + (k.dir || '');
@@ -95,8 +96,27 @@ for (const P of PUZZLES) {
       if (run(P, [p], 1800).won) { bad(n, `one part wins: ${sig} at ${px},${py}`); break; }
     }
   }
+  // FAIRNESS (boards from 2026-11-20, owner 2026-11-18: "error proof"): nudging any
+  // one part of the stored machine 10px in any direction still wins at least
+  // FAIR_MIN of the time, so the answer is findable by eye, not a pixel hunt.
+  if (P.live >= '2026-11-20') {
+    const why = sense(P, P.band); if (why) bad(n, why);
+    // a generated board must be exactly what its seed lays out: no hand edits behind the generator's back
+    if (P.seed !== undefined) {
+      const G = layout(P.seed, P.band); const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+      if (!G || !same(G.pieces, P.pieces) || !same(G.balls, P.balls) || !same(G.goal, P.goal) || !same(G.tray, P.tray) || G.w !== P.w || G.h !== P.h) bad(n, `does not match seed ${P.seed} (edited by hand, or the generator changed without a GEN bump)`);
+    }
+    const f = fairness(P, P.sol || []);
+    if (f < FAIR_MIN) bad(n, `stored machine is a pixel hunt: ${(f * 100).toFixed(0)}% of 10px nudges still win (need ${FAIR_MIN * 100}%)`);
+  }
   console.log(`  #${n} ${P.live} ${P.title}: stored machine wins, ${sims} single-part runs all miss`);
   prev = P;
+}
+{ // RUNWAY: say so loudly when the bank is about to run dry (restock: scripts/gen-machine-bank.mjs)
+  const lastLive = PUZZLES[PUZZLES.length - 1].live;
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
+  const left = Math.round((Date.parse(lastLive) - Date.parse(today)) / 864e5);
+  if (left < 10) console.log(`! the Machine bank ends ${lastLive} (${left} day(s) left): node scripts/gen-machine-bank.mjs --through <date>`);
 }
 console.log(fails ? `verify-machine: ${fails} failure(s)` : `verify-machine: ok (${PUZZLES.length} boards, ${((Date.now() - T0) / 1000).toFixed(0)}s, ${STEP}px)`);
 process.exit(fails ? 1 : 0);

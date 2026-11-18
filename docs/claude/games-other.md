@@ -2960,6 +2960,9 @@ Visual, skills Spatial and Planning, on `app/SimpleDaily.jsx`. Wired by `scripts
   board #1 frozen as the basketball drops for the hoop, with the real engine's ball paths, and a row of part chips
   (Ramp, Spring, Belt, Seesaw, Bumper). `public/og/tile/machine.png` is the board alone on the blueprint. Source:
   render the card HTML with a bundle of lib/machine-art.js + machine-ui.js + puzzles.js and local Manrope woffs.
+- **Restocking: never by hand.** `node scripts/gen-machine-bank.mjs --through YYYY-MM-DD` builds, checks and appends
+  boards (see daily-authoring.md, "Bank runway and the Machine restock"). Boards from 2026-11-20 carry `gen` and
+  `seed` and must pass the fairness rule in verify-machine.
 - **Spare parts.** Every board carries at least one tray part the solution does not use (the verifier insists), so
   "what is the glue pad for?" is answered by the tray hint: not every part is needed.
   Ranked runs, then the clock (the default first-attempt order; NOT in CLOCK_FIRST). Solved 10, give-up 0
