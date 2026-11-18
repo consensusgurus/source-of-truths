@@ -361,23 +361,31 @@ const Chef = () => (
   <g><path d="M170 48H192" className="s5" /><circle cx={146} cy={48} r={24} className="w" /><circle cx={146} cy={48} r={14} className="m" />
     <path d="M136 16q5-5 0-10M148 16q5-5 0-10M160 16q5-5 0-10" className="s2" /></g>
 );
-// two rooms from above joined by a doorway, the mopped stripes across the floor, and the mop where it stopped
+// a tiled floor from above: the mopped path wet across the tiles, the dry ones still to do, and the mop standing by its bucket
 const Mop = () => (
-  <g><rect x={110} y={8} width={76} height={68} rx={4} className="w" /><path d="M148 8V28M148 46V76" className="s3" />
-    <path d="M119 19H139M119 31H139M119 43H139M119 55H139M119 67H139M157 19H177" className="sm5" />
-    <rect x={152} y={56} width={28} height={9} rx={3} className="d" /><path d="M166 56L178 30" className="s3" /></g>
+  <g><Grid x={108} y={12} n={4} sz={15} fill={(i) => ([0, 1, 5, 9, 10, 11].includes(i) ? 'm' : 'w')} />
+    <path d="M115 19H130V49H160" className="sw" />
+    <path d="M178 10V58" className="s3" /><rect x={171} y={58} width={14} height={7} rx={2} className="d" /><path d="M173 65v6M178 65v6M183 65v6" className="s2" />
+    <path d="M187 50h13l-2 18h-9z" className="d" /><path d="M188 50q5.5 -7 11 0" className="s2" /></g>
 );
-// a lawn from above: the left of it mown in stripes, a tree in the way, a fence with a gate, and the mower
+// a lawn from above: mown stripes on the left, long grass on the right, a tree in the way, and the push mower with its handle
 const Mow = () => (
-  <g><rect x={110} y={8} width={76} height={68} rx={4} className="w" /><path d="M150 8V30M150 48V76" className="s3" />
-    <path d="M119 19H141M119 31H141M119 43H141M119 55H141M119 67H141" className="sm5" />
-    <circle cx={170} cy={26} r={11} className="m" /><rect x={160} y={56} width={20} height={14} rx={3} className="d" /><path d="M160 63H150" className="s3" /></g>
+  <g><rect x={110} y={8} width={76} height={68} rx={4} className="w" />
+    {[0, 1, 2].map((i) => <rect key={i} x={114 + i * 12} y={12} width={6} height={60} className="m" />)}
+    {[0, 1].map((i) => <path key={i} d={`M${172 + i * 7} 70l2 -6l2 6`} className="s2" />)}
+    <circle cx={171} cy={22} r={9} className="m" /><path d="M171 31V34" className="s3" />
+    <rect x={150} y={48} width={16} height={12} rx={3} className="d" /><circle cx={152} cy={64} r={3} className="w" /><circle cx={164} cy={64} r={3} className="w" />
+    <path d="M158 48L166 40H178" className="s3" /></g>
 );
-// a snowy crossroads from above: one street plowed dark, the other still white, a block of houses, and the truck
+// a snowy crossroads from above: one street plowed clear, the other still under snow, houses on the blocks, and the plow truck with its blade
 const Plow = () => (
-  <g><rect x={110} y={8} width={76} height={68} rx={4} className="w" /><path d="M110 42H186" className="s5" /><path d="M134 8V76" className="d6" />
-    <rect x={150} y={14} width={26} height={18} rx={2} className="m" /><rect x={150} y={52} width={26} height={18} rx={2} className="m" />
-    <rect x={128} y={20} width={12} height={16} rx={3} className="d" /><path d="M124 17H144" className="s3" /></g>
+  <g><rect x={110} y={8} width={76} height={68} rx={4} className="w" />
+    <rect x={131.5} y={8} width={5} height={68} className="m" />{[14, 25, 59, 70].map((y, i) => <path key={i} d={`M131 ${y - 2}l6 4M137 ${y - 2}l-6 4`} className="s2" />)}
+    <rect x={110} y={36} width={76} height={12} className="d" />
+    <path d="M144 26l9 -9l9 9v8h-18z" className="m" /><path d="M144 26l9 -9l9 9" className="s2" />
+    <path d="M144 60l9 -9l9 9v10h-18z" className="m" /><path d="M144 60l9 -9l9 9" className="s2" />
+    <rect x={166} y={20} width={12} height={14} rx={2} className="w" /><rect x={166} y={54} width={12} height={14} rx={2} className="w" />
+    <rect x={160} y={38} width={14} height={8} rx={2} className="w" /><path d="M179 35V49" className="s3" /></g>
 );
 const Connect = () => (
   <g><Grid x={112} y={6} n={4} sz={18} /><path d="M121 15H175V33M121 33V69H157" className="d6" />
