@@ -608,7 +608,7 @@ the HTML, nothing reused between loads, and a cold lambda having nothing to show
   figures, which a per-day table cannot supply, so the stored payload plus the memo does the
   job a rollup was meant to do. Revisit only if the row load itself becomes the cost.
 
-### Pulse and Cheat Watch run in SQL, not in memory (migration 65, 2026-11-18)
+### Pulse runs in SQL, not in memory (migration 65, 2026-11-18)
 
 Owner: "finish the build of the admin panel that doesn't soak up compute, memory resources".
 Snapshot v2 (below) stopped the crashes but every Pulse and Cheat Watch build still held all
@@ -621,15 +621,18 @@ Snapshot v2 (below) stopped the crashes but every Pulse and Cheat Watch build st
   ET day; finished days stored in stats_payloads `admin:playdaily:v1`, so a build asks for
   two days) and `admin_pulse_referrers()`. No result rows reach the function.
   `buildPulse` / `playHighs` are kept only as the reference the SQL matches.
-- **Cheat Watch** (`lib/admin-integrity.js`) reads 21 days of rows (8 columns, keyset from the
-  first row in range) instead of the whole table, and the all-time perfect-rate jump comes from
-  `admin_perfect_history()` for just the scored players.
-- **Still on the full cache:** the Analytics part (Daily tab, Plays chart, Players list) in
+- **Cheat Watch stays on the in-memory cache.** A bounded read (21 days) was 295k rows and
+  took two minutes to page in; an all-SQL version off a board-day rollup took 48-54s on the
+  micro instance (8s API timeout), and repeated test runs in the SQL Editor overloaded the
+  database on 2026-11-18. Do not time heavy queries against production in a loop: one run,
+  read the plan, then decide. Cheat Watch needs a cheaper design (e.g. a nightly job that
+  stores its result) before it leaves the cache.
+- **Still on the full cache:** Cheat Watch (above), the Analytics part (Daily tab, Plays chart, Players list) in
   `lib/admin-data.js`, the "Games detail" CSV in `app/api/admin/player-plays`, and the 09:20
   UTC stats-warm cron's warmAnalytics. They load only on those clicks. Converting them is the
   next pass if the desk still strains.
-- Migration 65 was applied and backfilled 2026-11-18 (67,518 day-player rows from 2026-06-11,
-  30,314 players). If the rollup is ever wiped, `select * from refresh_admin_play_rollup(1000);`
+- Migration 65 was applied and backfilled 2026-11-18 (day-player rows from 2026-06-11, ~30k players,
+  plus admin_play_hours, one row per UTC hour and player, for the rolling windows). If the rollup is ever wiped, `select * from refresh_admin_play_rollup(1000);`
   in the SQL Editor rebuilds it in one call.
 
 ### Admin Refresh was dying of memory: snapshot v2 (2026-11-18)
