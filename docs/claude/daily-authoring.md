@@ -445,6 +445,8 @@ archive and hub chips use the short form `Sun`.
 | Polka | a deal from the top of the measured difficulty distribution (from launch, 2026-08-24) |
 | Machine | a bigger board and more parts in the tray, against 14 x 10 and four parts on weekdays |
 | Crate | five crates in a bigger warehouse, against three on Monday and Tuesday and four the rest of the week |
+| Bot | P2 and P3 rows on a bigger board (up to 7x7, five to eight lamps); its par is the setter's best, proved only to seven commands |
+| Peg | 24 to 30 pegs, against 9 to 12 on Monday and Tuesday |
 
 **Every daily on the roster runs a Sunday Edition.** A new daily game should decide at launch
 whether it has one (see "Adding a BRAND NEW daily game" below).

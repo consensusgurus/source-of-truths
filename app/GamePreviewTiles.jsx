@@ -349,6 +349,15 @@ const Seated = () => (
 // a trunk seen from the side: three boxes in, one still to drop
 // a shelf with a ball rolling off it, a ramp below, a spring, and the hoop at the bottom
 // a warehouse: two crates, one already on its spot, a spot waiting, and the worker
+// Bot: a robot on a raised tile beside a lit lamp and a dark one
+const Bot = () => (
+  <g><rect x={104} y={56} width={36} height={22} rx={3} className="w" /><rect x={112} y={30} width={20} height={22} rx={6} className="m" /><circle cx={118} cy={40} r={2.5} className="d" /><circle cx={126} cy={40} r={2.5} className="d" />
+    <circle cx={160} cy={62} r={9} className="s3" /><circle cx={186} cy={62} r={9} className="s2" /></g>
+);
+// Peg: a few pegs on the arm of the cross board, one in the center
+const Peg = () => (
+  <g><circle cx={110} cy={56} r={9} className="m" /><circle cx={132} cy={56} r={9} className="m" /><circle cx={154} cy={56} r={6} className="w" /><circle cx={176} cy={56} r={9} className="m" /><circle cx={154} cy={34} r={9} className="m" /><circle cx={154} cy={78} r={6} className="w" /></g>
+);
 const Crate = () => (
   <g><rect x={108} y={30} width={28} height={28} rx={3} className="m" /><path d="M112 34l20 20M132 34l-20 20" className="s2" />
     <rect x={150} y={30} width={28} height={28} rx={3} className="w" /><circle cx={164} cy={78} r={8} className="s3" /><circle cx={122} cy={78} r={9} className="d" /></g>
@@ -793,7 +802,7 @@ export const TILE_BY_KEY = {
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
   suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
-  connect: Connect, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
+  connect: Connect, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, bot: Bot, peg: Peg, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,

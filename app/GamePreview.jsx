@@ -292,6 +292,15 @@ const Seated = () => (
 // Pack: four boxes fitted into one space, one of them the odd one out
 // Machine: a shelf with a ball rolling off it, a ramp turning the fall, a spring, and the hoop
 // Crate: two crates, one already on its spot, a spot waiting, and the worker
+// Bot: a robot on a raised tile beside a lit lamp and a dark one
+const Bot = () => (
+  <g><rect x={104} y={56} width={36} height={22} rx={3} className="w" /><rect x={112} y={30} width={20} height={22} rx={6} className="m" /><circle cx={118} cy={40} r={2.5} className="d" /><circle cx={126} cy={40} r={2.5} className="d" />
+    <circle cx={160} cy={62} r={9} className="s3" /><circle cx={186} cy={62} r={9} className="s2" /></g>
+);
+// Peg: a few pegs on the arm of the cross board, one in the center
+const Peg = () => (
+  <g><circle cx={110} cy={56} r={9} className="m" /><circle cx={132} cy={56} r={9} className="m" /><circle cx={154} cy={56} r={6} className="w" /><circle cx={176} cy={56} r={9} className="m" /><circle cx={154} cy={34} r={9} className="m" /><circle cx={154} cy={78} r={6} className="w" /></g>
+);
 const Crate = () => (
   <g><rect x={96} y={26} width={32} height={32} rx={3} className="m" /><path d="M100 30l24 24M124 30l-24 24" className="s2" />
     <rect x={146} y={26} width={32} height={32} rx={3} className="w" /><circle cx={162} cy={80} r={9} className="s3" /><circle cx={112} cy={80} r={10} className="d" /></g>
@@ -444,7 +453,7 @@ const BY_KEY = {
   // Logic
   venn: Venn, lamps: Lamps, plot: Plot, paths: Track, tangled: Tangle, chomp: Maze, hedge: Maze, topple: () => <Block />,
   roll: () => <Block die />, jig: Jig, saw: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,
-  connect: Dots, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
+  connect: Dots, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, bot: Bot, peg: Peg, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
   // End Game
   turn: Othello, four: Four, gift: Quarto, yose: Go, mate: () => <Chess target={4} />, check: () => <Chess target={11} />,
   chain: () => <Chess target={14} />, defend: () => <Chess target={21} />, swindle: () => <Chess target={7} />, queen: () => <Chess target={18} />,

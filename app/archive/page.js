@@ -148,6 +148,8 @@ import { PUZZLES as DASH_FULL } from '../dash/puzzles';
 import { PUZZLES as PACK_FULL } from '../pack/puzzles';
 import { PUZZLES as MACHINE_FULL } from '../machine/puzzles';
 import { PUZZLES as CRATE_FULL } from '../crate/puzzles';
+import { PUZZLES as PEG_FULL } from '../peg/puzzles';
+import { PUZZLES as BOT_FULL } from '../bot/puzzles';
 import { PUZZLES as FILL_FULL } from '../fill/puzzles';
 import { PUZZLES as PAIRS_FULL } from '../pairs/puzzles';
 import { PUZZLES as CELL_FULL } from '../cell/puzzles';
@@ -318,6 +320,8 @@ const DASH = DASH_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const PACK = PACK_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const MACHINE = MACHINE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CRATE = CRATE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const PEG = PEG_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const BOT = BOT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const FILL = FILL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const PAIRS = PAIRS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const CELL = CELL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -521,6 +525,8 @@ const GAMES = [
   { key: 'pack', name: 'Pack', path: '/pack', tag: 'Fit it all in the trunk', accent: '#a21caf', bg: '#fae8ff', border: 'rgba(162,28,175,0.35)', src: PACK },
   { key: 'machine', name: 'Machine', path: '/machine', tag: 'Combine simple machines into a solution', accent: '#b45309', bg: '#fef3c7', border: 'rgba(180,83,9,0.35)', src: MACHINE },
   { key: 'crate', name: 'Crate', path: '/crate', tag: 'Push every crate onto a spot', accent: '#a16207', bg: '#fef9c3', border: 'rgba(161,98,7,0.35)', src: CRATE },
+  { key: 'peg', name: 'Peg', path: '/peg', tag: 'The daily peg solitaire', accent: '#1d6b4f', bg: '#e6f2ec', border: 'rgba(29,107,79,0.35)', src: PEG },
+  { key: 'bot', name: 'Bot', path: '/bot', tag: 'Program the robot to light every lamp', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: BOT },
   { key: 'witness', name: 'Witness', path: '/witness', tag: 'What did you see?', accent: '#9f1239', bg: '#ffe4e6', border: 'rgba(159,18,57,0.35)', src: WITNESS },
   { key: 'defuse', name: 'Defuse', path: '/defuse', tag: 'Cut the wires in the safe order', accent: '#7c2d12', bg: '#ffedd5', border: 'rgba(124,45,18,0.35)', src: DEFUSE },
   { key: 'spot', name: 'Spot', path: '/spot', tag: 'Find the seven differences', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: SPOT },

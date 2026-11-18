@@ -210,6 +210,8 @@ const GAMES = [
   { key: 'pack', href: '/pack', name: 'Pack', tag: 'Fit it all in the trunk', img: '/games/btn-pack.png' },
   { key: 'machine', href: '/machine', name: 'Machine', tag: 'Combine simple machines into a solution', img: '/games/btn-machine.png' },
   { key: 'crate', href: '/crate', name: 'Crate', tag: 'Push every crate onto a spot', img: '/games/btn-crate.png' },
+  { key: 'peg', href: '/peg', name: 'Peg', tag: 'The daily peg solitaire', img: '/games/btn-peg.png' },
+  { key: 'bot', href: '/bot', name: 'Bot', tag: 'Program the robot to light every lamp', img: '/games/btn-bot.png' },
   { key: 'fill', href: '/fill', name: 'Fill', tag: 'Fit every word in the grid', img: '/games/btn-fill.png' },
   { key: 'pairs', href: '/pairs', name: 'Pairs', tag: 'Concentration with a real deck', img: '/games/btn-pairs.png' },
   { key: 'cell', href: '/cell', name: 'Cell', tag: 'The daily FreeCell', img: '/games/btn-cell.png' },
@@ -271,9 +273,9 @@ const CATEGORIES = [
   { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'filing', 'redact', 'dating', 'extra', 'carmen'] },
   // Logic lost its photo, observation and moving-piece puzzles to Visual, and
   // End Game and Cards merged into Table Games (owner, 2026-11-12).
-  { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'defuse', 'sudoclue', 'snug', 'connect', 'mop', 'mow', 'plow', 'chef', 'seated', 'bag', 'errands', 'dash', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'ergo', 'docket', 'plot'] },
+  { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'defuse', 'sudoclue', 'snug', 'connect', 'mop', 'mow', 'plow', 'chef', 'seated', 'bag', 'errands', 'dash', 'bot', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'ergo', 'docket', 'plot'] },
   { key: 'visual', label: 'Visual', keys: ['jig', 'saw', 'swap', 'slide', 'spin', 'spot', 'witness', 'focus', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'pack', 'machine', 'crate', 'paths', 'chomp'] },
-  { key: 'endgame', label: 'Table Games', keys: ['taire', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib', 'mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
+  { key: 'endgame', label: 'Table Games', keys: ['taire', 'peg', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib', 'mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
   { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'squash', 'simon', 'dario', 'sweep'] },
 ];
 

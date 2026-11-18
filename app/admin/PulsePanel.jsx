@@ -278,6 +278,10 @@ export default function PulsePanel({ part }) {
         <div style={{ fontFamily: SANS, fontSize: 12, color: C.faded }}>
           Rolling windows, each against the same span just before it; the second column sets the last 24 hours against the same 24 hours a week earlier. As of {built || 'just now'}
           {part.refreshing ? ' · refreshing…' : ''}
+          {/* A failed rebuild used to leave the old figures up with no word that the
+              refresh had failed (2026-11-18: hours-old figures after every Refresh). */}
+          {part.error ? ` · refresh failed (${part.error}), these are the last good figures` : ''}
+          {!part.refreshing && d.builtAt && Date.now() - Date.parse(d.builtAt) > 30 * 60 * 1000 ? ` · ${Math.round((Date.now() - Date.parse(d.builtAt)) / 60000) >= 120 ? `${Math.round((Date.now() - Date.parse(d.builtAt)) / 3600000)} hours` : `${Math.round((Date.now() - Date.parse(d.builtAt)) / 60000)} minutes`} old` : ''}
           {d.visitorsError ? ` · visitor figures held (${d.visitorsError})` : ''}
         </div>
         <button

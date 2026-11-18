@@ -608,6 +608,38 @@ the HTML, nothing reused between loads, and a cold lambda having nothing to show
   figures, which a per-day table cannot supply, so the stored payload plus the memo does the
   job a rollup was meant to do. Revisit only if the row load itself becomes the cost.
 
+### Admin Refresh was dying of memory: snapshot v2 (2026-11-18)
+
+Owner: "the admin panel refresh seems broken / lagged". Measured on the live desk: the first
+Pulse request answered in 0.9s with a copy built at 04:20 ET flagged `stale`, and every
+`mode=fresh` / `mode=force` rebuild (and Cheat Watch) returned Next's HTML 500 page after 7 to
+11s. Vercel's runtime log: **"instance was killed because it ran out of available memory"** on
+`/api/admin/data`. So Refresh could never replace the morning's figures, and the Pulse header
+said nothing about it (it showed "refreshing..." and then the old figures).
+
+Cause: quiz_results had passed **600,000 rows**, and a cold admin instance held, at once, the
+gunzipped snapshot Buffer, the whole snapshot as one JSON string, the parsed rows (18 columns,
+every repeated string a fresh copy), and on a stale snapshot one more full `JSON.stringify` plus
+its Buffer copy to write the new one. On a synthetic 600,000-row table that peaks well over a
+gigabyte.
+
+Fixed in `lib/results-snapshot-store.js`, shared by the admin cache and the quiz cache:
+- **v2 layout** `<name>.v2.ndjson.gz` + `<name>.v2.meta.json`: a header line, then one JSON
+  array of 2,000 rows a line. Written through a gzip stream a chunk at a time, read line by
+  line out of the gunzipped Buffer, so no whole-table string exists on either side. v1
+  (`<name>.json.gz`) is still READ as a fallback and never written; `dropStoredSnapshots`
+  removes both. A v2 file whose line count disagrees with its header is ignored.
+- **Interning**: every string value of 64 characters or fewer is shared across rows (also on
+  a v1 read). Synthetic 600,000 rows: held rows 684MB to 363MB of heap, and the cold read plus
+  rewrite peak about 600MB lower.
+- **Pulse** now says when a refresh failed and how old the figures are, and a forced refresh
+  re-reads visitors and page views (they were held up to ten minutes even on Refresh).
+
+Still owed if the table keeps growing: Pulse and Cheat Watch do not need 18 columns of every
+row. Build them from SQL aggregates (as /sitestats did in migration 59) or from a slim column
+snapshot, and the admin lambda stops holding the table at all. Raising the function memory in
+Vercel's project settings is the quick stopgap if the OOM comes back before that.
+
 ## The puzzle archive is `/archive`; `/daily` is gone (owner, 2026-10-09)
 
 The old `/daily` hub (navy cards, a leaderboard per row, one `daily-game` read per game, so about
