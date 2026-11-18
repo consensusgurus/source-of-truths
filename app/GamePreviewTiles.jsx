@@ -348,6 +348,11 @@ const Seated = () => (
 );
 // a trunk seen from the side: three boxes in, one still to drop
 // a shelf with a ball rolling off it, a ramp below, a spring, and the hoop at the bottom
+// a warehouse: two crates, one already on its spot, a spot waiting, and the worker
+const Crate = () => (
+  <g><rect x={108} y={30} width={28} height={28} rx={3} className="m" /><path d="M112 34l20 20M132 34l-20 20" className="s2" />
+    <rect x={150} y={30} width={28} height={28} rx={3} className="w" /><circle cx={164} cy={78} r={8} className="s3" /><circle cx={122} cy={78} r={9} className="d" /></g>
+);
 const Machine = () => (
   <g><path d="M108 24H146" className="s5" /><circle cx={138} cy={14} r={8} className="d" /><path d="M150 38L186 62" className="s5" />
     <rect x={112} y={56} width={22} height={6} rx={2} className="m" /><path d="M116 62l6 6l6-6l6 6" className="s2" /><path d="M170 70h20" className="s3" /><circle cx={180} cy={44} r={7} className="w" /></g>
@@ -788,7 +793,7 @@ export const TILE_BY_KEY = {
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
   suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
-  connect: Connect, mop: Mop, mow: Mow, plow: Plow, machine: Machine, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
+  connect: Connect, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,
