@@ -879,6 +879,8 @@ export default function LayoutCInner({ gameKey }) {
             {ixDoor('/build-a-run', 'Build a Run')}
             {ixHash('sty-quizzes', 'Quizzes')}
             {ixDoor('/archive', 'Puzzle Archive')}
+            {/* Jigsaw Puzzle Shelf, under the archive (owner, 2026-11-18). Keep in step with StageToday. */}
+            {ixDoor('/jig/shelf', 'Jigsaw Puzzle Shelf')}
             {ixHash('sty-board', 'Leaderboards + Stats')}
             <span className="lc-eecut" aria-hidden="true" />
             {ixHash('sty-iq', 'IQ Tests')}

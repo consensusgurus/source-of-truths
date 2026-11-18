@@ -10,7 +10,7 @@ split verbatim out of this file on 2026-10-29; nothing was dropped.
 | Working on | Read first |
 |---|---|
 | A list in `lib/data.js` (sources, Borda, ratings, links, descriptions, heroes, ledger, renames) | `docs/claude/lists.md` |
-| Rankings boards (/nflrankings etc.) | `CLAUDE-RANKINGS.md` |
+| Rankings boards (/nflrankings etc.): REMOVED from the site 2026-11-17 | `CLAUDE-RANKINGS.md` (history only) |
 | A quiz (`lib/quizzes.js`, `/quiz/[id]`, `/quizzes`) | `CLAUDE-QUIZZES.md` + `docs/claude/quizzes.md` |
 | Writing or extending ANY daily puzzle bank, Sunday Editions, or adding a new daily game | `docs/claude/daily-authoring.md` |
 | Daily scoring, leaderboards, points, attempts, best-N, End Game, hints, IQ | `docs/claude/scoring.md` |

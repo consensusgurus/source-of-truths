@@ -1,5 +1,11 @@
 # Sports Consensus Rankings — Working Instructions
 
+**RETIRED 2026-11-17 (owner): the Sports Rankings pages were removed from the site.** The routes
+(/collegefootballrankings, /nflrankings, /mlbrankings), their footer column, sitemap entries and
+the old-host exemption (`SOT_PATHS`, now `[]`) are gone; next.config.js 308s the three paths to
+`/`. `lib/gridiron*.js` and the verify scripts are left in place, unimported. Do not refresh or
+restore the boards unless the owner asks. The rest of this file is history.
+
 The framework behind **The Sports Ranking Source of Truth**: weekly consensus rankings for college
 football, the NFL and **MLB** (added 2026-09-04), built from results, betting markets and analytics
 models, and rebuilt automatically every week.

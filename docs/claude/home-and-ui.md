@@ -3,6 +3,13 @@
 > Split out of CLAUDE.md on 2026-10-29 to keep the auto-loaded file small. Rules here are verbatim and still binding.
 > Scope: Home page, slate, Loft, palette and registers (light/dark), contrast traps, game-page chrome, caps, endings and curtains, pop-ups, how-to-play sheet, touch input
 
+## The Jigsaw Puzzle Shelf is a row in Everything Else (owner, 2026-11-18)
+
+Every surface carries a "Jigsaw Puzzle Shelf" row linking `/jig/shelf`, right under Puzzle Archive
+in the Everything Else box: StageToday's desktop ixNav (`.sty-ixshelf`, sharing the archive's
+`.sty-ixar` placement classes), the phone hub's `.mph-list` (since 2026-11-18 a grid of twelve equal icon tiles, `.mph-list.mt`, two to a row, Runs a half tile with its count under the name, nothing full width), and LayoutCInner's `.lc-eebox` on game
+pages. Keep the three in step.
+
 ## Play counts never read zero: icon plus a dash (owner, 2026-11-17)
 
 The home's play counts load after the tiles, so every count flashed "0" first. Every `.ct.pc` count on

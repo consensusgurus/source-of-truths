@@ -58,14 +58,6 @@ export const FOOTER_COLS = [
     ],
   },
   {
-    head: 'Sports Rankings',
-    links: [
-      { label: 'College Football Consensus Rankings', href: '/collegefootballrankings' },
-      { label: 'NFL Consensus Rankings', href: '/nflrankings' },
-      { label: 'MLB Consensus Rankings', href: '/mlbrankings' },
-    ],
-  },
-  {
     head: 'Follow',
     links: [
       { label: 'Instagram', href: 'https://www.instagram.com/mindloftdaily/', external: true },

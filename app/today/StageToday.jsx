@@ -2902,6 +2902,8 @@ export default function StageToday() {
           reorders these with the order classes in the 900px block, unchanged. */}
       {/* The puzzle archive is a door: every past board, by game and day. */}
       <a className="sty-ixb sty-ixmv sty-ixar" href={withTq('/archive')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('archive', null)}<span>Puzzle Archive</span></a>
+      {/* THE JIGSAW PUZZLE SHELF, a door under the archive in Everything Else (owner, 2026-11-18). */}
+      <a className="sty-ixb sty-ixmv sty-ixar sty-ixshelf" href={withTq('/jig/shelf')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('shelf', null)}<span>Jigsaw Puzzle Shelf</span></a>
       {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
@@ -4978,23 +4980,23 @@ export default function StageToday() {
                   )}
                 </div>
                 <div className="mph-lab">Everything Else</div>
-                <div className="mph-list">
-                  <button type="button" onClick={() => mOpen(CIRC_ID)}>Runs<em>{circuits.filter(runFull).length} of {circuits.length}</em><span>&rarr;</span></button>
-                  {/* BUILD A RUN (owner, 2026-11-07: "I don't see the option to
-                      create a run on mobile"), right under Runs. */}
-                  <a href="/build-a-run">Build a Run<span>&rarr;</span></a>
-                  <button type="button" onClick={() => goPane(QUIZ_ID)}>Quizzes<span>&rarr;</span></button>
-                  <button type="button" onClick={() => goPane(BOARD_ID)}>Leaderboards + Stats<span>&rarr;</span></button>
-                  <a href={withTq('/archive')}>Puzzle Archive<span>&rarr;</span></a>
-                  <button type="button" onClick={() => goPane(COMM_ID)}>Most Appreciated<span>&rarr;</span></button>
-                  <button type="button" onClick={() => goPane(IQ_ID)}>IQ Tests<span>&rarr;</span></button>
-                  <button type="button" onClick={() => goPane(EXAM_ID)}>School Tests<span>&rarr;</span></button>
-                  <a href="/kids">Kids<span>&rarr;</span></a>
-                  <a href={withTq('/lists')}>Top 10 Lists<span>&rarr;</span></a>
-                  {/* ABOUT ME closes the phone's list too (owner, 2026-11-17: "About me
-                      needs to show up in this list, and same one on desktop"); the
-                      desktop index carries it as its last door. */}
-                  <a href={withTq('/about-me')}>About Me<span>&rarr;</span></a>
+                {/* EVERYTHING ELSE AS TILES (owner, 2026-11-18, option C of the phone
+                    mockup, "consolidate so don't have two large buttons"): twelve equal
+                    tiles, two to a row, each a line icon and its name. Runs is a half
+                    tile like the rest, its count under the name; nothing spans. */}
+                <div className="mph-list mt">
+                  <button type="button" onClick={() => mOpen(CIRC_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 4v16" /><path d="M5 5h11l-2 4 2 4H5" /></svg><b>Runs<em>{circuits.filter(runFull).length} of {circuits.length}</em></b></button>
+                  <a href="/build-a-run"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><b>Build a Run</b></a>
+                  <button type="button" onClick={() => goPane(QUIZ_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5" /><path d="M12 17h.01" /></svg><b>Quizzes</b></button>
+                  <button type="button" onClick={() => goPane(BOARD_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7" /></svg><b>Leaderboards + Stats</b></button>
+                  <a href={withTq('/archive')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="1" /><path d="M5 9v10h14V9M10 13h4" /></svg><b>Puzzle Archive</b></a>
+                  <a href={withTq('/jig/shelf')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 9h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v3H4z" /><path d="M4 4h16" /></svg><b>Jigsaw Puzzle Shelf</b></a>
+                  <button type="button" onClick={() => goPane(COMM_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" /></svg><b>Most Appreciated</b></button>
+                  <button type="button" onClick={() => goPane(IQ_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4h6M10 4v5l-5 9a1.5 1.5 0 0 0 1.3 2h11.4a1.5 1.5 0 0 0 1.3-2l-5-9V4" /></svg><b>IQ Tests</b></button>
+                  <button type="button" onClick={() => goPane(EXAM_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 6h16v13H4z" /><path d="M8 10h8M8 14h5" /></svg><b>School Tests</b></button>
+                  <a href="/kids"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /></svg><b>Kids</b></a>
+                  <a href={withTq('/lists')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" /><path d="M4 6h.01M4 12h.01M4 18h.01" /></svg><b>Top 10 Lists</b></a>
+                  <a href={withTq('/about-me')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7.5h.01" /></svg><b>About Me</b></a>
                 </div>
               </>
             ) : (() => {
@@ -8891,6 +8893,15 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-list > :first-child{border-top:0;}
   .sty-mph .mph-list > * > span{display:none;}
   .sty-mph .mph-list > * > em{font-style:normal;font-size:12px;font-weight:600;}
+  /* Everything Else as twelve tiles, two to a row (owner, 2026-11-18). */
+  .sty-mph .mph-list.mt{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;border:0;border-radius:0;overflow:visible;}
+  .sty-mph .mph-list.mt > *{display:flex;align-items:center;gap:10px;min-height:56px;box-sizing:border-box;padding:10px 12px;
+    border:1px solid var(--stg-ink);border-radius:12px;background:var(--stg-surf);color:var(--stg-ink);font-size:14px;font-weight:700;line-height:1.25;text-align:left;}
+  .sty-mph .mph-list.mt > :first-child{border-top:1px solid var(--stg-ink);}
+  .sty-mph .mph-list.mt > * > svg{flex:none;}
+  .sty-mph .mph-list.mt > * > b{display:flex;flex-direction:column;gap:1px;min-width:0;font-weight:700;}
+  .sty-mph .mph-list.mt > * > b > em{font-style:normal;font-size:12px;font-weight:600;}
+  .sty-mph .mph-list.mt > :active{background:color-mix(in srgb, var(--stg-ink) 8%, var(--stg-surf));}
   /* M2: Sort and View on one row, each a joined switch under its label. */
   .sty-mph .mph-ctl{position:relative;display:flex;gap:10px;margin-top:4px;}
   .sty-mph .mph-cg{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:4px;}

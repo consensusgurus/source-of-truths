@@ -101,6 +101,13 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // The consensus Sports Rankings pages were removed (owner, 2026-11-17).
+      { source: '/collegefootballrankings', destination: '/', permanent: true },
+      { source: '/collegefootballrankings/:path*', destination: '/', permanent: true },
+      { source: '/nflrankings', destination: '/', permanent: true },
+      { source: '/nflrankings/:path*', destination: '/', permanent: true },
+      { source: '/mlbrankings', destination: '/', permanent: true },
+      { source: '/mlbrankings/:path*', destination: '/', permanent: true },
       { source: '/circuits/gauntlet/run', destination: '/trivia', permanent: true },
       { source: '/circuits/math/run', destination: '/math', permanent: true },
       { source: '/circuits/english/run', destination: '/english', permanent: true },
