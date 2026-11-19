@@ -210,7 +210,7 @@ function valueMap(){if(valCv&&!valDirty)return valCv;valCv=valCv||mk(COLS,ROWS);
 function resize(){
   const r=$('stage').getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);
   view.cw=r.width;view.ch=r.height;cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);
-  const phone=window.innerWidth<=720;isPhone=phone;HANDN=phone?5:Math.max(6,Math.floor((window.innerWidth-28+8)/76));TSZ=phone?Math.floor((window.innerWidth-20-4*8)/5):68;TSZ=Math.min(TSZ,68);
+  const phone=window.innerWidth<=720;isPhone=phone;HANDN=2*(phone?5:Math.max(6,Math.floor((window.innerWidth-28+8)/76)));/* two rows (owner, 2026-11-19: "show more pieces ... Second row?") */TSZ=phone?Math.floor((window.innerWidth-20-4*8)/5):68;TSZ=Math.min(TSZ,68);
   view.min=Math.min(view.cw/W,view.ch/H)*.94;
 }
 function fit(){view.s=view.min;view.tx=(view.cw-W*view.s)/2;view.ty=(view.ch-H*view.s)/2;req();}
@@ -541,10 +541,9 @@ $('finClose').onclick=()=>$('fin').classList.remove('show');
 $('finLb').onclick=()=>{$('fin').classList.remove('show');standings();$('lbSheet').classList.add('show');};
 
 /* ---------- wiring ---------- */
-let coolUntil=0;
-function coolTick(){const b=$('dealBtn'),left=Math.ceil((coolUntil-Date.now())/1000);if(left>0){b.disabled=true;b.textContent='Refresh in '+left+'s';}else{b.disabled=!!(M&&M.done);b.textContent='Refresh';}}
-every(coolTick,250);
-function refreshSet(){if(M.done||Date.now()<coolUntil)return;coolUntil=Date.now()+10000;coolTick();dealAll();setMsg(M.hand.some(x=>x!==null)?'New set, from anywhere on the mural. Use the picture to find where each one goes.':'You have placed everything.');}
+/* No wait on Refresh (owner, 2026-11-19: "Remove the refresh limit"); the 10 second timer is gone. */
+function coolTick(){const b=$('dealBtn');b.disabled=!!(M&&M.done);b.textContent='Refresh';}
+function refreshSet(){if(M.done)return;dealAll();setMsg(M.hand.some(x=>x!==null)?'New set, from anywhere on the mural. Use the picture to find where each one goes.':'You have placed everything.');}
 $('dealBtn').onclick=refreshSet;
 $('helpBtn').onclick=()=>$('helpSheet').classList.add('show');
 $('lbBtn').onclick=()=>{standings();$('lbSheet').classList.add('show');};

@@ -3472,9 +3472,10 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
   120 seconds, so the crowd's pieces cost one function call per two minutes however many players
   are watching. New pieces glow gold, the header flashes the count, and the message line reports
   it. Nothing pops up mid game.
-- **The tray** fills the bottom and deals a random set from the WHOLE mural. Refresh deals a new
-  set on a 10 second timer. There is NO "pieces from the area on screen" option (owner: "that is
-  too much of a clue"); do not add one.
+- **The tray** is TWO rows at the bottom (ten pieces on a phone) and deals a random set from the
+  WHOLE mural. Refresh deals a new set with NO wait (owner, 2026-11-19: "Remove the refresh limit
+  and show more pieces"; the 10 second timer of the same morning is gone). There is NO "pieces from
+  the area on screen" option (owner: "that is too much of a clue"); do not add one.
 - **The picture panel** is movable and parks top right; its button cycles Larger, Hide, and a small
   Picture button. Tabs: Picture, Crowd, Value. Full screen (board and tray only) is the default on
   a phone and a button on a desktop.
