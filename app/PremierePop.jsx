@@ -386,7 +386,7 @@ function MuralLaunch({ onClose }) {
             <button className="prm-x" aria-label="Close" onClick={onClose}><X size={16} strokeWidth={2.8} /></button>
           </div>
           <h2 id="prm-t">Mural: One Jigsaw, Built By Everyone</h2>
-          <p className="prm-lede">A new kind of puzzle for Mind Loft. Every other daily here is solved alone. Mural is 10,000 pieces of one photograph, and everyone on the site builds the same one at the same time.</p>
+          <p className="prm-lede">A new kind of puzzle for Mind Loft. Every other daily here is solved alone. Mural is 4,000 pieces of one photograph, and everyone on the site builds the same one at the same time.</p>
           <MuralPicture />
           <div className="ml-leg"><span><b>Blank</b> nobody yet</span><span><b>Faded</b> the crowd has it</span><span><b>Bright</b> yours</span></div>
           <div className="prm-rows">

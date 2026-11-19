@@ -24,6 +24,7 @@ export async function GET() {
     by: b.by || null,
     lic: b.lic || null,
     placed: Number(b.placed) || 0,
+    total: Number(b.total) || 0,
     complete: !!b.completed_at,
   }));
   return NextResponse.json({ murals }, { headers: { 'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=300' } });

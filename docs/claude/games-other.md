@@ -3435,12 +3435,21 @@ it a "board game", not a card game.
   start repeats in the bank (mirrors included). About 7s.
 - **Show the answer**: as Bot, `/api/daily-answer?game=peg&num=N`.
 
-## Mural and MuralToo: the 10,000 piece jigsaws the whole site builds together (launched 2026-11-19)
+## Mural and MuralToo: the 4,000 piece jigsaws the whole site builds together (launched 2026-11-19)
 
 Owner, 2026-11-19, from the mockup at https://claude.ai/artifact/4yLz3PXuT1s2exrDxuUwDB. One real
-photograph cut 125 x 80, and everyone on the site places pieces of the SAME one. Each player works
+photograph cut 80 x 50, and everyone on the site places pieces of the SAME one. Each player works
 their own copy; the shared mural is the union of everyone's FIRST placements.
 
+- **4,000 PIECES, 80 x 50 (owner, 2026-11-19 afternoon: "Let's go to 4,000 now").** It launched that
+  morning at 10,000 (125 x 80). The largest photo the site loads is 3,840 px wide, so 10,000 pieces
+  left about 30 source pixels a piece and looked grainy on a phone ("I don't know if this works with
+  photos unless very detailed"); 80 across gives 48. `MURAL_COLS` / `MURAL_ROWS` are the size of a
+  NEW mural only: a board row carries its own `cols` and `rows`, the page reads those, and an older
+  mural on the shelf keeps its size. The mural open at the change was recut by `mural_resize()`
+  (migration 71), which keeps the old board and its placements under `<id>-was-10000`. The place
+  route refuses a page that sends a different total, so a tab opened before a size change stops.
+  To go back up in piece count, load larger originals as tiles first (not built).
 - **Two a day.** Mural runs noon to noon Eastern, MuralToo midnight to midnight, so one is always
   open. A mural's id is `<kind>-YYYY-MM-DD`, the Eastern date it opens (`lib/mural-shared.js`
   `muralWindow`, `currentMuralId`); it closes when the next of its kind opens, so a daylight-saving
@@ -3457,7 +3466,7 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
   piece from the 1280px thumbnail the first time a mural is asked for (`lib/mural.js`
   `ensureBoard`, jpeg-js). The picture rule is loose on purpose (owner: "given the scoring system,
   not need to apply as strict of picture rules ... ideally limit that somewhat"): a photo is passed
-  over when more than 20% of its pieces are flat or one flat block is over 250 pieces, and if none
+  over when more than 20% of its pieces are flat or one flat block is over 2.5% of the pieces, and if none
   of four candidates pass the least flat one is used.
 - **Grades:** corner 1, edge 2, detailed 3, busy 4, plain 6, flat color in a patch under 10 pieces
   8, a block of 10 to 49 = 10, a block of 50 or more = 12. **Value**, in this order: the grade; while

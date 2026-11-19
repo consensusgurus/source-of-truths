@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { muralPlayer } from '@/lib/mural';
-import { parseMuralId } from '@/lib/mural-shared';
+import { parseMuralId, MURAL_TOTAL } from '@/lib/mural-shared';
 
 // POST /api/mural/place { id, piece, anonId, email? }
 //
@@ -22,6 +22,11 @@ export async function POST(request) {
   const id = str(body && body.id, 40);
   const piece = Number(body && body.piece);
   if (!parseMuralId(id) || !Number.isInteger(piece) || piece < 0) return NextResponse.json({ error: 'Bad request' }, { status: 400, headers: NO_STORE });
+  // A page opened before the mural changed size (10,000 to 4,000 pieces on
+  // 2026-11-19) numbers its pieces differently, so its placements would land in
+  // the wrong spots. It sends no total, or the old one: answer as a closed
+  // mural, which makes that page stop and reload.
+  if (Number(body.total) !== MURAL_TOTAL) return NextResponse.json({ error: 'closed' }, { status: 409, headers: NO_STORE });
   const who = await muralPlayer(supabaseAdmin, { anonId: str(body.anonId, 64) || null, email: str(body.email) || null });
   if (!who) return NextResponse.json({ error: 'No player' }, { status: 400, headers: NO_STORE });
   const { data, error } = await supabaseAdmin.rpc('mural_place', {

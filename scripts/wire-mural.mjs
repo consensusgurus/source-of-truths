@@ -1,4 +1,4 @@
-// scripts/wire-mural.mjs: wires Mural and MuralToo (the 10,000 piece jigsaws the
+// scripts/wire-mural.mjs: wires Mural and MuralToo (the 4,000 piece jigsaws the
 // whole site builds together, Visual; owner 2026-11-19: "Put them in visual,
 // one of the two in Featured") into every registry in one pass, beside Jig and
 // Saw. Placement follows "Placing a new daily" in docs/claude/daily-authoring.md.
@@ -42,16 +42,16 @@ function afterLine(f, marker, lines) {
   wr(f, parts.join('\n')); applied++;
 }
 
-const HOW = (name, opens, span) => `One photograph cut into 10,000 pieces, and everyone on the site builds the same one. Your tray holds a random handful: drag a piece to its spot, or tap the piece and then the spot. Faded pieces are the ones the crowd has placed and bright ones are yours. Harder pieces pay more, a piece nobody has placed yet pays double, and the board updates itself every two minutes. There is no clock and no Give up. A new ${name} opens at ${opens} Eastern and runs ${span}; the points you earn count toward the day you earn them.`;
-const MURAL = { key: 'mural', name: 'Mural', tag: 'The giant jigsaw we all build', promo: 'the giant jigsaw we all build', tagLong: 'A 10,000 piece jigsaw the whole site builds together, noon to noon',
+const HOW = (name, opens, span) => `One photograph cut into 4,000 pieces, and everyone on the site builds the same one. Your tray holds a random handful: drag a piece to its spot, or tap the piece and then the spot. Faded pieces are the ones the crowd has placed and bright ones are yours. Harder pieces pay more, a piece nobody has placed yet pays double, and the board updates itself every two minutes. There is no clock and no Give up. A new ${name} opens at ${opens} Eastern and runs ${span}; the points you earn count toward the day you earn them.`;
+const MURAL = { key: 'mural', name: 'Mural', tag: 'The giant jigsaw we all build', promo: 'the giant jigsaw we all build', tagLong: 'A 4,000 piece jigsaw the whole site builds together, noon to noon',
   how: HOW('Mural', 'noon', 'for 24 hours'),
-  blurb: 'One photograph in 10,000 pieces, built by everyone on the site at once. Harder pieces and first placements pay more.',
-  short: 'A 10,000 piece jigsaw everyone builds together.',
+  blurb: 'One photograph in 4,000 pieces, built by everyone on the site at once. Harder pieces and first placements pay more.',
+  short: 'A 4,000 piece jigsaw everyone builds together.',
   color: '#0369a1', navy: '#7dd3fc', bg: '#e0f2fe', border: 'rgba(3,105,161,0.38)' };
-const TOO = { key: 'muraltoo', name: 'MuralToo', tag: 'The midnight giant jigsaw', promo: 'the midnight giant jigsaw', tagLong: 'A second 10,000 piece jigsaw built together, midnight to midnight',
+const TOO = { key: 'muraltoo', name: 'MuralToo', tag: 'The midnight giant jigsaw', promo: 'the midnight giant jigsaw', tagLong: 'A second 4,000 piece jigsaw built together, midnight to midnight',
   how: HOW('MuralToo', 'midnight', 'until the next midnight'),
-  blurb: 'The twin of Mural: a second photograph in 10,000 pieces, built by everyone, from midnight to midnight Eastern.',
-  short: 'The second 10,000 piece jigsaw, midnight to midnight.',
+  blurb: 'The twin of Mural: a second photograph in 4,000 pieces, built by everyone, from midnight to midnight Eastern.',
+  short: 'The second 4,000 piece jigsaw, midnight to midnight.',
   color: '#4338ca', navy: '#a5b4fc', bg: '#e0e7ff', border: 'rgba(67,56,202,0.38)' };
 
 // 1. registry rows (after Saw), launch day
@@ -114,10 +114,10 @@ sub('lib/finish-sets.js', `{ name: 'Jigsaws', cat: 'Visual', keys: ['jig', 'saw'
 
 // 10. the visual-puzzles page: nineteen become twenty-one
 const PC = 'lib/puzzle-categories.js';
-sub(PC, `description: 'Nineteen free daily visual and spatial puzzles: two jigsaws, three more photo puzzles,`, `description: 'Twenty-one free daily visual and spatial puzzles: two jigsaws, two 10,000 piece jigsaws everyone builds together, three more photo puzzles,`);
-sub(PC, `lede: 'Nineteen puzzles you solve with your eyes and a sense of space, one new board apiece every day. Five put a photograph back together,`, `lede: 'Twenty-one puzzles you solve with your eyes and a sense of space, one new board apiece every day. Seven put a photograph back together, two of them 10,000 piece murals the whole site builds at once,`);
+sub(PC, `description: 'Nineteen free daily visual and spatial puzzles: two jigsaws, three more photo puzzles,`, `description: 'Twenty-one free daily visual and spatial puzzles: two jigsaws, two 4,000 piece jigsaws everyone builds together, three more photo puzzles,`);
+sub(PC, `lede: 'Nineteen puzzles you solve with your eyes and a sense of space, one new board apiece every day. Five put a photograph back together,`, `lede: 'Twenty-one puzzles you solve with your eyes and a sense of space, one new board apiece every day. Seven put a photograph back together, two of them 4,000 piece murals the whole site builds at once,`);
 sub(PC, `keys: ['jig', 'saw', 'swap', 'slide', 'spin', 'spot',`, `keys: ['jig', 'saw', 'mural', 'muraltoo', 'swap', 'slide', 'spin', 'spot',`);
-sub(PC, `jig: 'Jigsaw puzzle', saw: 'Jigsaw puzzle (portrait)', swap: 'Photo tile swap', slide: 'Sliding tile puzzle', spin: 'Photo rotation puzzle',\n      spot:`, `jig: 'Jigsaw puzzle', saw: 'Jigsaw puzzle (portrait)', mural: 'Shared 10,000 piece jigsaw puzzle', muraltoo: 'Shared 10,000 piece jigsaw puzzle (midnight)', swap: 'Photo tile swap', slide: 'Sliding tile puzzle', spin: 'Photo rotation puzzle',\n      spot:`);
+sub(PC, `jig: 'Jigsaw puzzle', saw: 'Jigsaw puzzle (portrait)', swap: 'Photo tile swap', slide: 'Sliding tile puzzle', spin: 'Photo rotation puzzle',\n      spot:`, `jig: 'Jigsaw puzzle', saw: 'Jigsaw puzzle (portrait)', mural: 'Shared 4,000 piece jigsaw puzzle', muraltoo: 'Shared 4,000 piece jigsaw puzzle (midnight)', swap: 'Photo tile swap', slide: 'Sliding tile puzzle', spin: 'Photo rotation puzzle',\n      spot:`);
 
 // 11. share cards kept by a full re-bake; challenges on points
 sub('lib/og-stage-cards.js', `export const HAND_BAKED = new Set(['sudoclue', `, `export const HAND_BAKED = new Set(['mural', 'muraltoo', 'sudoclue', `);

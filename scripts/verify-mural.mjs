@@ -1,4 +1,4 @@
-// verify-mural: Mural and MuralToo, the 10,000 piece jigsaws the site builds
+// verify-mural: Mural and MuralToo, the 4,000 piece jigsaws the site builds
 // together. There is no authored board to check (the server picks and grades
 // each photo when it opens), so this checks everything a wrong edit could
 // silently break around it:

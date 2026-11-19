@@ -69,7 +69,7 @@ export function bootMural(root, cfg) {
       + '<div class="eb">' + K.name + ' \u00b7 ' + K.runs + '</div>'
       + '<h2>Opens At ' + K.opensAt + '</h2>'
       + '<p class="lead" id="waitLead"></p>'
-      + '<p class="rule">' + K.name + ' is a 10,000 piece jigsaw the whole site builds together, the twin of ' + other.name + '. A new one opens every day at ' + K.opensAt.toLowerCase().replace(' et', ' ET') + ' and runs for 24 hours.</p>'
+      + '<p class="rule">' + K.name + ' is a 4,000 piece jigsaw the whole site builds together, the twin of ' + other.name + '. A new one opens every day at ' + K.opensAt.toLowerCase().replace(' et', ' ET') + ' and runs for 24 hours.</p>'
       + (muralLaunched(other.key) ? '<a class="primary" style="display:inline-block;width:auto;margin-top:14px;text-decoration:none" href="' + other.route + '">Play ' + other.name + ' Now</a>' : '')
       + '<p class="rule" style="margin-top:18px"><a href="/" style="color:inherit">Back To Mind Loft</a></p>'
       + '</div>';
@@ -113,7 +113,7 @@ export function bootMural(root, cfg) {
       const q = `id=${id}&anonId=${encodeURIComponent(anon || '')}${email ? `&email=${encodeURIComponent(email)}` : ''}`;
       const [st, me] = await Promise.all([getJSON(`/api/mural/state?id=${id}`), getJSON(`/api/mural/me?${q}`)]);
       if (dead) return;
-      const wasDone = !!(st.j && (st.j.completed || (st.j.n || 0) >= MURAL_COLS * MURAL_ROWS));
+      const wasDone = !!(st.j && (st.j.completed || (st.j.n || 0) >= (b.j.cols || MURAL_COLS) * (b.j.rows || MURAL_ROWS)));
       if (solo || (cfg.solo === id && wasDone)) {
         let saved = null;
         try { saved = JSON.parse(localStorage.getItem('mural_solo_' + id) || 'null'); } catch (e) { saved = null; }
@@ -138,11 +138,11 @@ export function bootMural(root, cfg) {
   };
 
   function start(env) {
-const COLS=MURAL_COLS,ROWS=MURAL_ROWS,TOTAL=COLS*ROWS,UPDATE=120,GN=MURAL_GRADE_NAMES,GRADES=env.board.grades;
+const COLS=env.board.cols||MURAL_COLS,ROWS=env.board.rows||MURAL_ROWS,TOTAL=COLS*ROWS,UPDATE=120,GN=MURAL_GRADE_NAMES,GRADES=env.board.grades;
 const img=env.img,want=COLS/ROWS;
 let cw0=img.naturalWidth,ch0=Math.round(cw0/want);if(ch0>img.naturalHeight){ch0=img.naturalHeight;cw0=Math.round(ch0*want);}
 const cx0=Math.floor((img.naturalWidth-cw0)/2),cy0=Math.floor((img.naturalHeight-ch0)/2);
-const PS=Math.max(6,Math.min(30,Math.floor(cw0/COLS))),W=COLS*PS,H=ROWS*PS,MARG=PS*.27;
+const PS=Math.max(6,Math.min(64,Math.floor(cw0/COLS))),W=COLS*PS,H=ROWS*PS,MARG=PS*.27;
 function rng32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function mk(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
 function hashId(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
@@ -191,7 +191,7 @@ let STATE=env.state||{};
 // fix this piece clarity, looks awful"). A piece is only PS source pixels wide
 // (30 from the 3840 photo), so the closest zoom stops at 64 CSS px a piece;
 // it used to go to 110 and the phone loaded the half-size photo on top of that.
-const view={s:1,tx:0,ty:0,cw:0,ch:0,min:.1,max:64/PS};
+const view={s:1,tx:0,ty:0,cw:0,ch:0,min:.1,max:72/PS};
 let valDirty=true,isPhone=false,C={},sel=null,refTab='pic',pulses=[],needDraw=false,tick=UPDATE,HANDN=8,TSZ=68,finShown=false;
 function colors(){const cs=getComputedStyle(root);C={bd:cs.getPropertyValue('--bd').trim(),slot:cs.getPropertyValue('--slot').trim(),ink:cs.getPropertyValue('--ink').trim(),page:cs.getPropertyValue('--page').trim()};}
 const SOLO=!!env.solo;
@@ -278,7 +278,7 @@ function attempt(id,sx,sy,from){
 }
 function finish(){
   M.done=true;
-  $('dTitle').textContent='You placed all 10,000';
+  $('dTitle').textContent='You placed all '+TOTAL.toLocaleString();
   $('dLead').textContent='Every piece of '+K.name+' is on your board. Standings settle when it closes.';
   $('dPts').textContent=M.pts;$('dFirst').textContent=M.firsts;$('dMiss').textContent=M.mine.size;
   setTimeout(()=>$('doneSheet').classList.add('show'),700);
@@ -317,7 +317,7 @@ function saveSolo(){try{localStorage.setItem('mural_solo_'+env.id,JSON.stringify
 function send(id,val,tries){
   if(SOLO){setTimeout(saveSolo,0);return;}
   if(!tries)pending++;
-  fetch('/api/mural/place',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:env.id,piece:id,anonId:env.anon,email:env.email||undefined})})
+  fetch('/api/mural/place',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:env.id,piece:id,total:TOTAL,anonId:env.anon,email:env.email||undefined})})
     .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})))
     .then(o=>{
       if(dead)return;
