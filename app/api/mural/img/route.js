@@ -13,6 +13,9 @@ import { parseMuralId } from '@/lib/mural-shared';
 // buffered-response limit.
 
 export const dynamic = 'force-dynamic';
+// Without this Next keeps the Supabase reads in its data cache, and a board
+// read that came back empty once stays empty.
+export const fetchCache = 'force-no-store';
 export const maxDuration = 60;
 
 export async function GET(req) {

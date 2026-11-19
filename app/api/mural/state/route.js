@@ -10,6 +10,9 @@ import { parseMuralId } from '@/lib/mural-shared';
 // which is the refresh the board polls on. Nothing here is per player.
 
 export const dynamic = 'force-dynamic';
+// Without this Next keeps the Supabase reads in its data cache, and a board
+// read that came back empty once stays empty.
+export const fetchCache = 'force-no-store';
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
