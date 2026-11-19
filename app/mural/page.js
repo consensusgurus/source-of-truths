@@ -12,7 +12,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 
 export const metadata = {
   title: 'Free 4,000 Piece Online Jigsaw, Built Together: Mural | Mind Loft',
-  description: 'A free daily 4,000 piece online jigsaw puzzle that every player builds together. Harder pieces and first placements score more. New at noon ET.',
+  description: 'A free daily 4,000 piece online jigsaw puzzle that every player builds together. Harder pieces and first placements score more. Open until it is finished.',
   alternates: { canonical: '/mural' },
   openGraph: {
     images: [{ url: '/og/mural.png', width: 1200, height: 630, alt: 'Mural, a 4,000 piece online jigsaw puzzle from Mind Loft that everyone builds together' }],

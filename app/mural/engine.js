@@ -13,7 +13,7 @@
 // not counted. Nothing here pops up over the board mid game.
 
 import {
-  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, currentMuralId, gradeAt, pieceValue, muralLaunched, muralFirstOpens, parseMuralId, muralWindow,
+  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, gradeAt, pieceValue, muralLaunched, muralFirstOpens, parseMuralId, MURAL_MIN_MS,
 } from '@/lib/mural-shared';
 
 function getAnonId() {
@@ -69,7 +69,7 @@ export function bootMural(root, cfg) {
       + '<div class="eb">' + K.name + ' \u00b7 ' + K.runs + '</div>'
       + '<h2>Opens At ' + K.opensAt + '</h2>'
       + '<p class="lead" id="waitLead"></p>'
-      + '<p class="rule">' + K.name + ' is a 4,000 piece jigsaw the whole site builds together, the twin of ' + other.name + '. A new one opens every day at ' + K.opensAt.toLowerCase().replace(' et', ' ET') + ' and runs for 24 hours.</p>'
+      + '<p class="rule">' + K.name + ' is a 4,000 piece jigsaw the whole site builds together, the twin of ' + other.name + '. The first one opens at ' + K.opensAt.toLowerCase().replace(' et', ' ET') + '. Each one stays open until the whole site finishes it, at least 24 hours, and the next opens as soon as it is done.</p>'
       + (muralLaunched(other.key) ? '<a class="primary" style="display:inline-block;width:auto;margin-top:14px;text-decoration:none" href="' + other.route + '">Play ' + other.name + ' Now</a>' : '')
       + '<p class="rule" style="margin-top:18px"><a href="/" style="color:inherit">Back To Mind Loft</a></p>'
       + '</div>';
@@ -93,14 +93,22 @@ export function bootMural(root, cfg) {
       // A SHELF COPY (owner, 2026-11-19): ?solo=<id> opens a finished or closed
       // mural to build alone. Nothing is sent to the server and nothing scores;
       // the pieces placed are kept in this browser.
+      // RUN UNTIL FINISHED (2026-11-19): the server says which board is open now
+      // (?kind=); a shelf copy asks for its own board by id and is built alone
+      // once that board is finished or closed.
       const sp = parseMuralId(cfg.solo);
-      const solo = sp && sp.kind === K.key && muralWindow(cfg.solo).closes <= Date.now() ? cfg.solo : null;
+      let solo = null, b = null;
+      if (sp && sp.kind === K.key) {
+        const sb = await getJSON(`/api/mural/board?id=${cfg.solo}`);
+        if (dead) return;
+        if (sb.ok && sb.j && sb.j.grades && (sb.j.completed || sb.j.closes <= Date.now())) { solo = cfg.solo; b = sb; }
+      }
       if (!solo && !muralLaunched(K.key)) { waitScreen(); return; }
-      const id = solo || currentMuralId(K.key);
       bootMsg(`Opening ${K.name}.`);
-      const b = await getJSON(`/api/mural/board?id=${id}`);
+      if (!b) b = await getJSON(`/api/mural/board?kind=${K.key}`);
       if (dead) return;
       if (!b.ok || !b.j || !b.j.grades) { bootMsg(`${K.name} is not open yet. Check back in a minute.`); return; }
+      const id = b.j.id;
       const phone = window.innerWidth <= 720;
       // Phones take the full 3840 photo too (see SHARPNESS in start): half size
       // left 15 source pixels a piece. Only a device that reports little memory
@@ -565,18 +573,20 @@ function finNext(complete,closed){
     +'<p class="rule"><a href="/jig/shelf?tab=murals" style="color:inherit;font-weight:800">Build It Yourself On The Puzzle Shelf</a></p>';
   clearInterval(nextT);
   if(!closed){
-    const opens=env.board.closes;
+    /* The next one opens the moment this one is finished, or 24 hours after this one opened if that is later. */
+    const doneAt=Date.parse(STATE.completed||'')||Date.now(),opens=Math.max(env.board.opens+MURAL_MIN_MS,doneAt),live=opens>Date.now();
     const tickN=()=>{
-      const left=opens-Date.now();
-      if(left<=0){clearInterval(nextT);window.location.reload();return;}
+      const left=opens-Date.now(),e=$('finCount');
+      if(left<=0&&live){clearInterval(nextT);window.location.reload();return;}
+      if(left<=0){clearInterval(nextT);if(e)e.innerHTML='<a class="primary" style="display:inline-block;width:auto;text-decoration:none" href="'+K.route+'">Play The New '+K.name+'</a>';return;}
       const m=Math.ceil(left/60000),h=Math.floor(m/60);
-      const e=$('finCount');if(e)e.textContent='The next '+K.name+' opens in '+(h?h+(h===1?' hour':' hours')+' and ':'')+(m%60)+(m%60===1?' minute.':' minutes.');
+      if(e)e.textContent='The next '+K.name+' opens in '+(h?h+(h===1?' hour':' hours')+' and ':'')+(m%60)+(m%60===1?' minute.':' minutes.');
     };
     tickN();nextT=setInterval(tickN,15000);timers.push(nextT);
     $('finClose').textContent='Look At The Finished '+K.name;
   }
   if(muralLaunched(other.key)){
-    getJSON('/api/mural/state?id='+currentMuralId(other.key)).then(o=>{
+    getJSON('/api/mural/board?kind='+other.key).then(ob=>(ob.ok&&ob.j&&ob.j.id?getJSON('/api/mural/state?id='+ob.j.id):{ok:false})).then(o=>{
       if(dead||!o.ok||!o.j)return;
       const open=!o.j.completed&&(o.j.n||0)<(o.j.total||TOTAL);
       const e=$('finOther');

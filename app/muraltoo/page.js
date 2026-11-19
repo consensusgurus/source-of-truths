@@ -11,13 +11,13 @@ import { categoryCrumb } from '@/lib/game-seo';
 // for a reader without scripts.
 
 export const metadata = {
-  title: 'Free 4,000 Piece Shared Jigsaw at Midnight: MuralToo | Mind Loft',
-  description: 'A free daily 4,000 piece online jigsaw puzzle that every player builds together, from midnight to midnight ET. Harder pieces and firsts score more.',
+  title: 'Free 4,000 Piece Shared Jigsaw: MuralToo | Mind Loft',
+  description: 'A free daily 4,000 piece online jigsaw puzzle that every player builds together, open until it is finished. Harder pieces and firsts score more.',
   alternates: { canonical: '/muraltoo' },
   openGraph: {
     images: [{ url: '/og/muraltoo.png', width: 1200, height: 630, alt: 'MuralToo, a 4,000 piece online jigsaw puzzle from Mind Loft that everyone builds together' }],
     title: 'MuralToo: A Second 4,000 Piece Jigsaw Puzzle, Built Together',
-    description: 'A second giant jigsaw puzzle every day, built by everyone at once, from midnight to midnight Eastern.',
+    description: 'A second giant jigsaw puzzle every day, built by everyone at once, open until it is finished.',
     url: '/muraltoo',
     type: 'website',
     siteName: 'Mind Loft',
@@ -26,7 +26,7 @@ export const metadata = {
     images: ['/og/muraltoo.png'],
     card: 'summary_large_image',
     title: 'MuralToo: A Second 4,000 Piece Jigsaw Puzzle, Built Together',
-    description: 'A second giant jigsaw puzzle every day, built by everyone at once, from midnight to midnight Eastern.',
+    description: 'A second giant jigsaw puzzle every day, built by everyone at once, open until it is finished.',
   },
 };
 
@@ -34,9 +34,9 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'MuralToo',
-  alternateName: 'MuralToo: The Midnight Shared 4,000 Piece Jigsaw Puzzle',
+  alternateName: 'MuralToo: The Second Shared 4,000 Piece Jigsaw Puzzle',
   url: `${SITE_URL}/muraltoo`,
-  description: 'A free daily online jigsaw puzzle with 4,000 pieces that every player on the site builds together, the midnight twin of Mural. Each player gets a tray of pieces from one real photograph; placing a piece scores points, harder pieces score more, and a piece nobody has placed yet scores double. The shared picture updates every two minutes. A new MuralToo opens every day at midnight Eastern and runs until the next midnight. No clock, no signup.',
+  description: 'A free daily online jigsaw puzzle with 4,000 pieces that every player on the site builds together, the twin of Mural. Each player gets a tray of pieces from one real photograph; placing a piece scores points, harder pieces score more, and a piece nobody has placed yet scores double. The shared picture updates every two minutes. A new MuralToo opens every day at midnight Eastern and runs until the next midnight. No clock, no signup.',
   genre: ['Puzzle', 'Jigsaw puzzle', 'Multiplayer puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

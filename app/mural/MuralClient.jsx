@@ -11,8 +11,6 @@ import { MURAL_KINDS } from '@/lib/mural-shared';
 export default function MuralClient({ kind }) {
   const K = MURAL_KINDS[kind] || MURAL_KINDS.mural;
   const NAME = K.name;
-  const opens = kind === 'muraltoo' ? 'midnight Eastern' : 'noon Eastern';
-  const span = kind === 'muraltoo' ? 'until the next midnight' : 'for 24 hours';
   const other = kind === 'muraltoo' ? 'Mural' : 'MuralToo';
   const ref = useRef(null);
   useEffect(() => {
@@ -32,7 +30,7 @@ export default function MuralClient({ kind }) {
         <h2>About {NAME}</h2>
         <p>{NAME} is a free daily online jigsaw puzzle with 4,000 pieces, 80 across and 50 down, cut from one real photograph. Everyone on Mind Loft builds the same one at the same time. Your tray holds a random handful of pieces: drag one to its spot, or tap the piece and then the spot. A wrong drop costs nothing.</p>
         <p>Every piece you place scores points. Corners and edges are worth the least, detailed pieces more, and plain sky or water the most, because they are the hardest to place. A piece nobody on the site has placed yet is worth double, and its value creeps up the longer it goes unclaimed. The shared picture updates itself every two minutes, with no clock and no Give up.</p>
-        <p>A new {NAME} opens every day at {opens} and runs {span}. Its twin, {other}, runs on the opposite half of the day, so there is always a mural open. The points you earn count toward your Mind Loft total for the day you earn them.</p>
+        <p>Each {NAME} stays open until the whole site has placed every piece, for at least 24 hours, and the next one opens as soon as it is finished. Its twin, {other}, runs alongside it, so there is always a second mural to work on. The points you earn count toward your Mind Loft total for the day you earn them.</p>
       </section>
       <div ref={ref} className="mrl app" data-theme="light" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: MURAL_HTML }} />
     </>

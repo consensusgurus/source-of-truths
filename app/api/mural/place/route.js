@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { muralPlayer } from '@/lib/mural';
+import { muralPlayer, currentBoard } from '@/lib/mural';
 import { parseMuralId, MURAL_TOTAL } from '@/lib/mural-shared';
 
 // POST /api/mural/place { id, piece, anonId, email? }
@@ -29,9 +29,17 @@ export async function POST(request) {
   if (Number(body.total) !== MURAL_TOTAL) return NextResponse.json({ error: 'closed' }, { status: 409, headers: NO_STORE });
   const who = await muralPlayer(supabaseAdmin, { anonId: str(body.anonId, 64) || null, email: str(body.email) || null });
   if (!who) return NextResponse.json({ error: 'No player' }, { status: 400, headers: NO_STORE });
-  const { data, error } = await supabaseAdmin.rpc('mural_place', {
-    p_mural: id, p_piece: piece, p_player: who.player, p_user: who.userId, p_name: who.name,
-  });
+  const args = { p_mural: id, p_piece: piece, p_player: who.player, p_user: who.userId, p_name: who.name };
+  let { data, error } = await supabaseAdmin.rpc('mural_place', args);
+  // RUN UNTIL FINISHED (2026-11-19): a board made under the old noon-to-noon rule
+  // still carries its old close until someone loads the page. If that is what
+  // refused this placement, push the close out (currentBoard does) and try once more.
+  if (!error && data && data.error === 'closed') {
+    try {
+      const cur = await currentBoard(supabaseAdmin, parseMuralId(id).kind);
+      if (cur && cur.board && cur.board.id === id && !cur.board.completed_at) ({ data, error } = await supabaseAdmin.rpc('mural_place', args));
+    } catch (e) { console.error('mural extend on place', e); }
+  }
   if (error) { console.error('mural place', error); return NextResponse.json({ error: 'Try again in a moment.' }, { status: 503, headers: NO_STORE }); }
   if (data && data.error) return NextResponse.json({ error: data.error }, { status: data.error === 'closed' ? 409 : 400, headers: NO_STORE });
   // SITE POINTS (owner, 2026-11-19): the points count toward the Eastern day

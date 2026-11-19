@@ -234,7 +234,7 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
             {' '}<a href="/mural">Play Mural</a> or <a href="/muraltoo">MuralToo</a> while they are open.
           </p>
           {murals === null ? <p className="jsh-mnone">Loading the murals.</p> : !murals.length ? (
-            <p className="jsh-mnone">No mural has finished yet. The first one lands here when its last piece is placed or its 24 hours are up.</p>
+            <p className="jsh-mnone">No mural has finished yet. The first one lands here when its last piece is placed.</p>
           ) : (
             <div className="jsh-mgrid">
               {murals.map((m) => (
