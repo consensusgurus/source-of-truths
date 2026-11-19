@@ -287,8 +287,41 @@ function attempt(id,sx,sy,from){
     renderHand();ui();req();return true;
   }
   const ex=M.loose.find(l=>l.id===id);
-  if(ex){ex.x=sx;ex.y=sy;}else{M.loose.push({id,x:sx,y:sy});if(from!==null&&from!==undefined)M.hand[from]=null;}
-  sel=null;setMsg('Not there. It stays on the board until you move it home. No penalty.');renderHand();req();return false;
+  let lp=ex;if(ex){ex.x=sx;ex.y=sy;}else{lp={id,x:sx,y:sy,g:id};M.loose.push(lp);if(from!==null&&from!==undefined)M.hand[from]=null;}
+  const joined=snapJoin(lp.g);
+  sel=null;setMsg(joined?'Joined. Pieces that fit together stay together; move the group to its spot to score it.':'Not there. It stays on the board until you move it home. No penalty.');renderHand();req();return false;
+}
+/* PIECES CLICK TOGETHER OFF THE BOARD (owner, 2026-11-19: "can pieces click together without clicking
+   into correct spot on board? ... they shouldn't count for player until in correct spot"). A loose piece
+   dropped next to its true neighbour, in the right relative spot, joins it; the group then moves as one.
+   Nothing scores until the group lands on its home, and then every piece in it scores. Loose pieces live
+   in this browser only, as before. */
+const NB=[[1,0],[-1,0],[0,1],[0,-1]];
+function grp(g){return M.loose.filter(l=>l.g===g);}
+function snapJoin(g){
+  let joined=false,again=true;
+  while(again){again=false;
+    const mine=grp(g),t=tol();
+    outer:for(const m of mine){const c=m.id%COLS,rw=(m.id/COLS)|0;
+      for(const [dc,dr] of NB){const nc=c+dc,nr=rw+dr;if(nc<0||nc>=COLS||nr<0||nr>=ROWS)continue;const nid=nr*COLS+nc;
+        const n=M.loose.find(l=>l.id===nid&&l.g!==g);if(!n)continue;
+        const ex2=m.x+dc*PS,ey2=m.y+dr*PS;if(Math.hypot(n.x-ex2,n.y-ey2)>t)continue;
+        const ddx=n.x-ex2,ddy=n.y-ey2;for(const q of mine){q.x+=ddx;q.y+=ddy;q.g=n.g;}g=n.g;joined=true;again=true;break outer;}}
+  }
+  if(joined){const all=grp(g);M.loose=M.loose.filter(l=>l.g!==g).concat(all);}
+  return joined;
+}
+function dropGroup(l){
+  const hx=(l.id%COLS+.5)*PS,hy=(((l.id/COLS)|0)+.5)*PS,members=grp(l.g);
+  if(Math.hypot(l.x-hx,l.y-hy)<=tol()){
+    if(members.length===1){attempt(l.id,l.x,l.y,null);return;}
+    const p0=M.pts;let n=0;
+    for(const m of members){if(M.done)break;if(has(m.id)&&M.mine.has(m.id)){M.loose=M.loose.filter(x=>x!==m);continue;}attempt(m.id,(m.id%COLS+.5)*PS,(((m.id/COLS)|0)+.5)*PS,null);n++;}
+    if(n>1&&!M.done)setMsg('Placed '+n+' pieces. '+(M.pts-p0)+' points.');
+    return;
+  }
+  const joined=snapJoin(l.g);
+  setMsg(joined?'Joined. Move the group to its spot to score it.':(members.length>1?'Not there yet. The group stays together until you move it home.':'Not there. It stays on the board until you move it home. No penalty.'));req();
 }
 function finish(){
   M.done=true;
@@ -400,7 +433,7 @@ const ptrs=new Map();let gest=null;
 function looseAt(sx,sy){for(let i=M.loose.length-1;i>=0;i--){const l=M.loose[i];if(Math.abs(sx-l.x)<PS*.7&&Math.abs(sy-l.y)<PS*.7)return l;}return null;}
 cv.addEventListener('pointerdown',e=>{
   cv.setPointerCapture(e.pointerId);const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;ptrs.set(e.pointerId,{x,y});
-  if(ptrs.size===1){const s=toSrc(x,y),l=M.done?null:looseAt(s[0],s[1]);gest={x0:x,y0:y,tx:view.tx,ty:view.ty,moved:false,loose:l,ox:l?l.x-s[0]:0,oy:l?l.y-s[1]:0};}
+  if(ptrs.size===1){const s=toSrc(x,y),l=M.done?null:looseAt(s[0],s[1]);let mem=null;if(l){mem=grp(l.g).map(q=>({q,dx:q.x-l.x,dy:q.y-l.y}));M.loose=M.loose.filter(q=>q.g!==l.g).concat(mem.map(o=>o.q));}gest={x0:x,y0:y,tx:view.tx,ty:view.ty,moved:false,loose:l,mem,ox:l?l.x-s[0]:0,oy:l?l.y-s[1]:0};}
   else if(ptrs.size===2){const a=[...ptrs.values()];gest={pinch:true,d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),s:view.s};}
 });
 cv.addEventListener('pointermove',e=>{
@@ -411,13 +444,13 @@ cv.addEventListener('pointermove',e=>{
   if(!gest.moved&&Math.hypot(x-gest.x0,y-gest.y0)>6)gest.moved=true;
   if(!gest.moved)return;
   hot();
-  if(gest.loose){const s=toSrc(x,y);gest.loose.x=s[0]+gest.ox;gest.loose.y=s[1]+gest.oy;req();}
+  if(gest.loose){const s=toSrc(x,y),ax=s[0]+gest.ox,ay=s[1]+gest.oy;for(const o of gest.mem){o.q.x=ax+o.dx;o.q.y=ay+o.dy;}req();}
   else{cv.classList.add('pan');view.tx=gest.tx+x-gest.x0;view.ty=gest.ty+y-gest.y0;clampView();req();}
 });
 function up(e){
   if(!ptrs.has(e.pointerId))return;const p=ptrs.get(e.pointerId);ptrs.delete(e.pointerId);cv.classList.remove('pan');
   if(gest&&!gest.pinch&&ptrs.size===0){
-    if(gest.loose){if(gest.moved)attempt(gest.loose.id,gest.loose.x,gest.loose.y,null);}
+    if(gest.loose){if(gest.moved)dropGroup(gest.loose);}
     else if(!gest.moved&&sel!==null&&M.hand[sel]!==null){const s=toSrc(p.x,p.y);if(s[0]>=0&&s[0]<=W&&s[1]>=0&&s[1]<=H)attempt(M.hand[sel],s[0],s[1],sel);}
   }
   if(ptrs.size===0)gest=null;
