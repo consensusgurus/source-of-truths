@@ -838,6 +838,13 @@ three minutes. Only the idea's pitcher is notified, not other commenters. The mo
 comments and lists reported ones. Until 67 runs the board shows no comment controls and the notice route
 answers an empty list.
 
+**Edit and delete (owner, 2026-11-19: "Users should be able to edit comments if possible, and I need ability
+to delete posts and comments from admin").** A comment's author gets Edit (same text rules, marks it
+"Edited" via `edited_at`, migration 68) and Delete. With the admin cookie, Delete appears on every idea,
+comment and Post-Game Talk post; it removes the row for good (an idea takes its votes and comments, a post
+its cheers) and clears its reports. Hide / Restore stay for reversible moderation. Every Delete is two
+taps, Delete then Confirm Delete, never a browser dialog. Talk posts are not editable.
+
 **The doors in (the "Where To Link" spots):** the Community pill in the desktop cap (home and game
 pages, `app/community/CommunityLinks.jsx`, count shown only while people post, hidden under 900px);
 a Community row under Runs in Everything Else (home and game pages); Idea Board in place of Submit

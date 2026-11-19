@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { isAdmin } from '@/lib/admin-auth';
 import {
   guard, refuse, cleanDay, gameOf, puzzleOf, viewerOf, resultOf, postsOf, cheeredBy, feelOf,
-  addPost, cheerPost, setFeel, report, setHidden, publicPost, POST_MAX,
+  addPost, cheerPost, setFeel, report, setHidden, deleteItem, publicPost, POST_MAX,
 } from '@/lib/community';
 
 // /api/community/talk: one puzzle's Post-Game Talk (owner, 2026-11-18).
@@ -17,6 +17,7 @@ import {
 //        feel  { feel: 1|2|3 }     needs an account and a result
 //        report{ id }              needs an account
 //        hide  { id, hidden }      admin only
+//        delete{ id }              admin only: removes the post for good
 //        maker { body }            admin only: the pinned Maker post
 // Never cached: every answer depends on who is asking.
 
@@ -81,6 +82,11 @@ export async function POST(request) {
     if (action === 'hide') {
       if (!admin) refuse('Not allowed.', 403);
       await setHidden(supabaseAdmin, 'post', id, body.hidden !== false);
+      return { ok: true };
+    }
+    if (action === 'delete') {
+      if (!admin) refuse('Not allowed.', 403);
+      await deleteItem(supabaseAdmin, 'post', id);
       return { ok: true };
     }
     if (action === 'maker') {

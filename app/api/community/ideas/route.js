@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { isAdmin } from '@/lib/admin-auth';
 import {
   guard, refuse, viewerOf, ideasOf, votedBy, pitchIdea, voteIdea, setStage, report, setHidden, publicIdea,
-  commentsOf, addComment, markSeen, publicComment, IDEA_KINDS, IDEA_STAGES,
+  commentsOf, addComment, markSeen, publicComment, editComment, deleteOwnComment, deleteItem, IDEA_KINDS, IDEA_STAGES,
 } from '@/lib/community';
 
 // /api/community/ideas: the Idea Board (owner, 2026-11-18).
@@ -19,6 +19,9 @@ import {
 //        reportComment { id }                needs an account
 //        hideComment   { id, hidden }        admin only
 //        seen          { ids }               marks comments on YOUR ideas seen
+//        editComment   { id, body }          the author only (migration 68)
+//        deleteComment { id }                the author, or the admin
+//        delete        { id }                admin only: removes the idea for good
 // GET also returns each idea's comments (oldest first) and `commentsOn`, false
 // until migration 67 is applied.
 // Anyone can read the board; it is not a spoiler surface.
@@ -81,6 +84,15 @@ export async function POST(request) {
       await setHidden(supabaseAdmin, 'idea', id, body.hidden !== false);
       return { ok: true };
     }
+    if (action === 'delete') {
+      if (!admin) refuse('Not allowed.', 403);
+      await deleteItem(supabaseAdmin, 'idea', id);
+      return { ok: true };
+    }
+    if (action === 'deleteComment' && admin) {
+      await deleteItem(supabaseAdmin, 'comment', id);
+      return { ok: true };
+    }
     if (action === 'hideComment') {
       if (!admin) refuse('Not allowed.', 403);
       await setHidden(supabaseAdmin, 'comment', id, body.hidden !== false);
@@ -95,6 +107,14 @@ export async function POST(request) {
     if (action === 'comment') {
       const c = await addComment(supabaseAdmin, viewer.user, id, body.body);
       return { ok: true, comment: c ? publicComment(c, { mine: true }) : null };
+    }
+    if (action === 'editComment') {
+      const c = await editComment(supabaseAdmin, viewer.user.id, id, body.body);
+      return { ok: true, comment: publicComment(c, { mine: true }) };
+    }
+    if (action === 'deleteComment') {
+      await deleteOwnComment(supabaseAdmin, viewer.user.id, id);
+      return { ok: true };
     }
     if (action === 'reportComment') {
       const r = await report(supabaseAdmin, viewer.user.id, 'comment', id);

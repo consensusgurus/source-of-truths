@@ -26,6 +26,7 @@ export default function TalkPanel({ gameKey, gameName = '', day = null, compact 
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [nm, setNm] = useState('');
+  const [delAsk, setDelAsk] = useState(0);   // admin Delete tapped once, waiting for Confirm Delete
   const load = useCallback(() => {
     getTalk(gameKey, d0).then((d) => { setData(d); if (onCount && d && typeof d.talkers === 'number') onCount(d.talkers); });
   }, [gameKey, d0]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -55,6 +56,12 @@ export default function TalkPanel({ gameKey, gameName = '', day = null, compact 
   const shown = compact ? [...posts.filter((p) => p.maker), ...posts.filter((p) => !p.maker).slice(-3)] : posts;
   const feel = data.feel || { tally: { 1: 0, 2: 0, 3: 0 }, mine: null };
 
+  // Admin Delete takes two taps: Delete, then Confirm Delete (no browser dialog).
+  const del = async (id) => {
+    if (delAsk !== id) { setDelAsk(id); return; }
+    setDelAsk(0);
+    if (await act('delete', { id })) load();
+  };
   const act = async (action, extra) => {
     setErr('');
     const r = await talkAction(gameKey, d0, action, extra);
@@ -112,9 +119,10 @@ export default function TalkPanel({ gameKey, gameName = '', day = null, compact 
                       onClick={() => tap(() => act('cheer', { id: p.id, on: !p.cheered }))}>Cheer{p.cheers ? ` ${p.cheers}` : ''}</button>
                     {!p.mine ? <button type="button" onClick={() => tap(async () => { const r = await act('report', { id: p.id }); if (r) setErr('Thanks. The post was reported.'); return r; })}>Report</button> : null}
                     {data.admin ? <button type="button" onClick={async () => { if (await act('hide', { id: p.id, hidden: !p.hidden })) load(); }}>{p.hidden ? 'Restore' : 'Hide'}</button> : null}
+                    {data.admin ? <button type="button" onClick={() => del(p.id)}>{delAsk === p.id ? 'Confirm Delete' : 'Delete'}</button> : null}
                   </div>
                 ) : data.admin ? (
-                  <div className="tkp-acts"><button type="button" onClick={async () => { if (await act('hide', { id: p.id, hidden: !p.hidden })) load(); }}>{p.hidden ? 'Restore' : 'Hide'}</button></div>
+                  <div className="tkp-acts"><button type="button" onClick={async () => { if (await act('hide', { id: p.id, hidden: !p.hidden })) load(); }}>{p.hidden ? 'Restore' : 'Hide'}</button><button type="button" onClick={() => del(p.id)}>{delAsk === p.id ? 'Confirm Delete' : 'Delete'}</button></div>
                 ) : null}
               </div>
             </li>

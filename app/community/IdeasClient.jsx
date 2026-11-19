@@ -36,6 +36,8 @@ export default function IdeasClient({ pitch = null, game = null }) {
   const [openThreads, setOpenThreads] = useState(() => new Set());
   const [drafts, setDrafts] = useState({});
   const [posting, setPosting] = useState(0);
+  const [editing, setEditing] = useState({ id: 0, text: '' });   // your own comment being edited
+  const [delAsk, setDelAsk] = useState('');                      // 'idea-N' / 'c-N': Delete tapped once, waiting for Confirm
   const load = useCallback(() => { getIdeas({ sort }).then(setData); }, [sort]);
   useEffect(() => { setNm(readIdentity().username || suggestName()); }, []);
   useEffect(() => { load(); }, [load]);
@@ -107,6 +109,18 @@ export default function IdeasClient({ pitch = null, game = null }) {
     setPosting(0);
     if (r.error) { setMsg({ err: r.error, ok: '' }); return; }
     setDrafts((d) => ({ ...d, [i.id]: '' }));
+    load();
+  };
+  // Delete takes two taps (Delete, then Confirm Delete), never a browser dialog.
+  const askDel = (key, run) => { if (delAsk !== key) { setDelAsk(key); return; } setDelAsk(''); run(); };
+  const saveEdit = async () => {
+    const text = editing.text.trim();
+    if (!text || posting) return;
+    setPosting(-editing.id);
+    const r = await ideaAction('editComment', { id: editing.id, body: text });
+    setPosting(0);
+    if (r.error) { setMsg({ err: r.error, ok: '' }); return; }
+    setEditing({ id: 0, text: '' });
     load();
   };
   const adminAct = async (action, extra) => { const r = await ideaAction(action, extra); if (r.error) setMsg({ err: r.error, ok: '' }); else load(); };
@@ -210,6 +224,7 @@ export default function IdeasClient({ pitch = null, game = null }) {
                           {Object.entries(IDEA_STAGES).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
                         </select>
                         <button type="button" className="cm-btn" style={{ minHeight: 32, padding: '0 10px', fontSize: 12.5 }} onClick={() => adminAct('hide', { id: i.id, hidden: !i.hidden })}>{i.hidden ? 'Restore' : 'Hide'}</button>
+                        <button type="button" className="cm-btn" style={{ minHeight: 32, padding: '0 10px', fontSize: 12.5 }} onClick={() => askDel(`idea-${i.id}`, () => adminAct('delete', { id: i.id }))}>{delAsk === `idea-${i.id}` ? 'Confirm Delete' : 'Delete'}</button>
                       </>
                     ) : null}
                   </div>
@@ -221,12 +236,23 @@ export default function IdeasClient({ pitch = null, game = null }) {
                     <ul className="ib-list">
                       {i.comments.map((c) => (
                         <li key={c.id} className={'ib-c' + (c.fresh ? ' fresh' : '')} style={c.hidden ? { opacity: 0.55 } : undefined}>
-                          <div className="ib-meta"><b>{c.mine ? 'You' : c.name}</b><span>{ago(c.at)}{c.fresh ? ' · New' : ''}{c.hidden ? ` · Hidden (${c.reports} reports)` : ''}</span></div>
-                          <p>{c.body}</p>
-                          {!c.mine || data.admin ? (
+                          <div className="ib-meta"><b>{c.mine ? 'You' : c.name}</b><span>{ago(c.at)}{c.edited ? ' · Edited' : ''}{c.fresh ? ' · New' : ''}{c.hidden ? ` · Hidden (${c.reports} reports)` : ''}</span></div>
+                          {editing.id === c.id ? (
+                            <form className="ib-form" onSubmit={(e) => { e.preventDefault(); saveEdit(); }}>
+                              <textarea className="cm-in" rows={2} maxLength={500} value={editing.text} aria-label="Edit your comment" autoFocus
+                                onChange={(e) => { const v = e.target.value; setEditing((x) => ({ ...x, text: v })); }} />
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                <button type="submit" className="cm-btn dk" disabled={!editing.text.trim() || posting === -c.id}>{posting === -c.id ? 'Saving…' : 'Save'}</button>
+                                <button type="button" className="cm-btn" onClick={() => setEditing({ id: 0, text: '' })}>Cancel</button>
+                              </div>
+                            </form>
+                          ) : <p>{c.body}</p>}
+                          {editing.id !== c.id ? (
                             <div className="ib-acts">
+                              {c.mine ? <button type="button" onClick={() => { setDelAsk(''); setEditing({ id: c.id, text: c.body }); }}>Edit</button> : null}
                               {!c.mine ? <button type="button" onClick={async () => { const r = await ideaAction('reportComment', { id: c.id }); setMsg(r.error ? { err: r.error, ok: '' } : { err: '', ok: 'Thanks. The comment was reported.' }); }}>Report</button> : null}
                               {data.admin ? <button type="button" onClick={() => adminAct('hideComment', { id: c.id, hidden: !c.hidden })}>{c.hidden ? 'Restore' : 'Hide'}</button> : null}
+                              {c.mine || data.admin ? <button type="button" onClick={() => askDel(`c-${c.id}`, () => adminAct('deleteComment', { id: c.id }))}>{delAsk === `c-${c.id}` ? 'Confirm Delete' : 'Delete'}</button> : null}
                             </div>
                           ) : null}
                         </li>
