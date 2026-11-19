@@ -2483,6 +2483,16 @@ for the entry door and every other card (Space Cadet's included), and a browser 
 is left alone until its next visit, unstamped: one run card a visit. `?eagleeye=0` suppresses, `?eagleeye=1`
 previews without stamping.
 
+## The Loft Shop pop-up (owner, 2026-11-19)
+
+`app/ShopPop.jsx`, mounted in StageToday after EagleEyePop (home only), forked from it. "The Loft Shop Is Open"
+with one line on the merch, a full-width "Visit the Shop" to /community/shop, a Close link and the X. Shown ONCE
+per browser to RETURNING players only (owner: "make the pop-up for RETURNING players directing them to the new
+Mind Loft Merch Shop"): it requires `seenBeforeToday()` and leaves a first-day visitor unstamped, so the card is
+still owed on a later day. `sot_pop_shop` is stamped when it renders. Never while a puzzle is being played
+(`gameActive()`), it waits for the entry door and every other card, and it asks `claimPop('shop')` like every
+pop-up, so it is in the one-pop-up-a-visit budget. `?shop=0` suppresses, `?shop=1` previews without stamping.
+
 ## The Details card: board band, glyph and fact chips (owner, 2026-11-08)
 
 Option E from the Details card mockup. In the Details view every puzzle card carries:

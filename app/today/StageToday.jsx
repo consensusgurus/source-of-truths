@@ -74,6 +74,7 @@ import EntryDoor from '../EntryDoor';
 import PremierePop from '../PremierePop';
 import SpaceCadetPop from '../SpaceCadetPop';
 import EagleEyePop from '../EagleEyePop';
+import ShopPop from '../ShopPop';
 import GroupsPop from '../GroupsPop';
 // GROUP STANDINGS on the home (2026-09-17): the band, the Groups badge and the
 // member dots on the tiles all read one standing payload.
@@ -4561,6 +4562,8 @@ export default function StageToday() {
       <SpaceCadetPop />
       {/* EAGLE EYE: once per browser, everyone (new and returning), home only, never mid puzzle. See app/EagleEyePop.jsx. */}
       <EagleEyePop />
+      {/* LOFT SHOP: once per browser, returning players only, home only, never mid puzzle. See app/ShopPop.jsx. */}
+      <ShopPop />
       {/* The name form, opened by ?signup=1 or by either guest control below. */}
       <ChooseNamePop />
 
