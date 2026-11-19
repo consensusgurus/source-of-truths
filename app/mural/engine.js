@@ -287,7 +287,7 @@ function attempt(id,sx,sy,from){
   const hx=(id%COLS+.5)*PS,hy=(((id/COLS)|0)+.5)*PS;
   if(Math.hypot(sx-hx,sy-hy)<=tol()){
     const val=valueOf(id),first=val.first;send(id,val,0);M.mine.add(id);drawPiece(mctx,id);M.pts+=val.v;if(first)M.firsts++;valDirty=true;
-    M.loose=M.loose.filter(l=>l.id!==id);
+    M.loose=M.loose.filter(l=>l.id!==id);saveLoose();
     if(from!==null&&from!==undefined&&M.hand[from]===id)M.hand[from]=null;const hi=M.hand.indexOf(id);if(hi>=0)M.hand[hi]=null;if(M.hand.every(x=>x===null||x===undefined)&&M.mine.size<TOTAL)dealAll();
     pulses.push({id,t:performance.now()});sel=null;
     setMsg((first?'First on the mural. ':'Placed. ')+val.v+(val.v===1?' point':' points')+' ('+GN[val.g].toLowerCase()+').');
@@ -297,7 +297,7 @@ function attempt(id,sx,sy,from){
   const ex=M.loose.find(l=>l.id===id);
   let lp=ex;if(ex){ex.x=sx;ex.y=sy;}else{lp={id,x:sx,y:sy,g:id};M.loose.push(lp);if(from!==null&&from!==undefined)M.hand[from]=null;}
   const joined=snapJoin(lp.g);
-  sel=null;setMsg(joined?'Joined. Pieces that fit together stay together; move the group to its spot to score it.':'Not there. It stays on the board until you move it home. No penalty.');renderHand();req();return false;
+  saveLoose();sel=null;setMsg(joined?'Joined. Pieces that fit together stay together; move the group to its spot to score it.':'Not there. It stays on the board until you move it home. No penalty.');renderHand();req();return false;
 }
 /* PIECES CLICK TOGETHER OFF THE BOARD (owner, 2026-11-19: "can pieces click together without clicking
    into correct spot on board? ... they shouldn't count for player until in correct spot"). A loose piece
@@ -305,6 +305,9 @@ function attempt(id,sx,sy,from){
    Nothing scores until the group lands on its home, and then every piece in it scores. Loose pieces live
    in this browser only, as before. */
 const NB=[[1,0],[-1,0],[0,1],[0,-1]];
+/* LOOSE PIECES SURVIVE A REFRESH (owner, 2026-11-19). Kept in this browser, per mural. */
+function saveLoose(){try{localStorage.setItem('mural_loose_'+env.id,JSON.stringify(M.loose.map(l=>[l.id,Math.round(l.x),Math.round(l.y),l.g])));}catch(e){}}
+function loadLoose(){let a=null;try{a=JSON.parse(localStorage.getItem('mural_loose_'+env.id)||'null');}catch(e){a=null;}if(!Array.isArray(a))return;const seen=new Set();for(const q of a){if(!Array.isArray(q))continue;const[id,x,y,g]=q;if(!Number.isInteger(id)||id<0||id>=TOTAL||M.mine.has(id)||seen.has(id))continue;seen.add(id);M.loose.push({id,x:+x||0,y:+y||0,g:Number.isInteger(g)?g:id});}}
 function grp(g){return M.loose.filter(l=>l.g===g);}
 function snapJoin(g){
   let joined=false,again=true;
@@ -328,7 +331,7 @@ function dropGroup(l){
     if(n>1&&!M.done)setMsg('Placed '+n+' pieces. '+(M.pts-p0)+' points.');
     return;
   }
-  const joined=snapJoin(l.g);
+  const joined=snapJoin(l.g);saveLoose();
   setMsg(joined?'Joined. Move the group to its spot to score it.':(members.length>1?'Not there yet. The group stays together until you move it home.':'Not there. It stays on the board until you move it home. No penalty.'));req();
 }
 function finish(){
@@ -622,6 +625,7 @@ colors();resize();
 M.hours=hoursOpen();
 applyState(env.state).forEach(id=>drawPiece(cctx,id));
 applyMe(env.me);
+loadLoose();
 if(SOLO){for(const q of ['#lbBtn','#updBox']){const sg=root.querySelector(q);if(sg)sg.style.display='none';}}
 $('credit').textContent=creditLine();
 fit();if(isPhone){view.s=Math.min(view.max,37/PS);view.tx=view.cw/2-W*.5*view.s;view.ty=view.ch/2-H*.5*view.s;clampView();}
