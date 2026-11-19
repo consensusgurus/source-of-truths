@@ -19,6 +19,7 @@ import React from 'react';
 import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import { useStageHelp } from '@/lib/stage-help';
 import { useStageFootState } from '@/lib/stage-foot';
+import StageBoard from './StageBoard';
 
 export default function StageFoot({ clock = undefined, done = undefined, giveUp = null, onHelp = null, className = '', bg = null }) {
   const [clockShown, toggleClock] = useRevealPref(REVEAL.clock);
@@ -31,6 +32,7 @@ export default function StageFoot({ clock = undefined, done = undefined, giveUp 
   const give = giveUp && !ended ? giveUp : null;
   if (time == null && !help && !give && !ended) return null;
   return (
+    <>
     <div className={'sft' + (className ? ' ' + className : '')} style={bg ? { '--sft-bg': bg } : undefined}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       {time != null ? (
@@ -62,6 +64,9 @@ export default function StageFoot({ clock = undefined, done = undefined, giveUp 
         </button>
       ) : null}
     </div>
+    {/* Show leaderboard, phone only (owner, 2026-11-19); see StageBoard. */}
+    <StageBoard ended={ended} />
+    </>
   );
 }
 

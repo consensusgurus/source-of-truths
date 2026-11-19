@@ -286,6 +286,12 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
   const [armed, setArmed] = useState(0);       // digit-first: the "picked up" number (0 = none)
   const [canUndo, setCanUndo] = useState(false);
   const [noteMode, setNoteMode] = useState(false);
+  // ALL THE SETS (owner request, 2026-11-19: "make it possible to view all sums
+  // combinations"). setsOpen lifts the cap on the combo line so every set for
+  // the picked square's runs shows, ruled-out ones struck through; tableOpen is
+  // the full reference sheet, every total for every run length.
+  const [setsOpen, setSetsOpen] = useState(false);
+  const [tableOpen, setTableOpen] = useState(false);
   const [autoAdv, toggleAutoAdv] = useAutoAdvance(); // default on, player can turn it off
   const [showHelp, setShowHelp] = useState(false);
   const [gateRules, setGateRules] = useState(false);
@@ -835,9 +841,9 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
     // never a tint of the cell: a 9% ink mix came out within a few points of
     // the cell itself and the board read as one grey sheet (seen live 9/3).
     if (black) bg = STAGE ? 'var(--su-block, #05070d)' : '#e9edf3';
-    if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 14%, ' + XW + ')' : COLORS.accentSoft;
-    if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 22%, ' + XW + ')' : COLORS.accentTint;
-    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 30%, ' + XW + ')' : COLORS.accentPick;
+    if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 26%, ' + XW + ')' : COLORS.accentSoft;
+    if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 40%, ' + XW + ')' : COLORS.accentTint;
+    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 55%, ' + XW + ')' : COLORS.accentPick;
     return {
       background: bg,
       boxShadow: isSel ? `inset 0 0 0 3px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
@@ -916,12 +922,17 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
                         <span className="k">{ci.dir === 'a' ? 'Across' : 'Down'} {ci.total} in {ci.len}</span>
                         {ci.left === 0 ? <span className="k">{ci.need === 0 ? 'adds up' : 'does not add up'}</span> : null}
                         {ci.left > 0 && ci.left < ci.len ? <span className="k">{ci.need} left in {ci.left}</span> : null}
-                        {ci.left > 0 && live.slice(0, 5).map((x, i) => <span key={i} className="s">{x.rest.join(' ')}</span>)}
-                        {ci.left > 0 && live.length > 5 ? <span className="k">+{live.length - 5} more</span> : null}
+                        {ci.left > 0 && (setsOpen ? live : live.slice(0, 5)).map((x, i) => <span key={i} className="s">{x.rest.join(' ')}</span>)}
+                        {ci.left > 0 && !setsOpen && live.length > 5 ? <button type="button" className="m" onClick={() => setSetsOpen(true)}>+{live.length - 5} more</button> : null}
                         {ci.left > 0 && live.length === 0 ? <span className="k">no set fits what is placed</span> : null}
+                        {ci.left > 0 && setsOpen && ci.sets.filter((x) => !x.live).map((x, i) => <span key={'d' + i} className="s x">{x.rest.join(' ')}</span>)}
                       </div>
                     );
                   }) : <div><span className="k">Tap a square to see which digit sets fit its runs.</span></div>}
+                  <div className="sus-cft">
+                    {comboInfo.length ? <button type="button" className="m" onClick={() => setSetsOpen((v) => !v)} aria-pressed={setsOpen}>{setsOpen ? 'Fewer sets' : 'Every set'}</button> : null}
+                    <button type="button" className="m" onClick={() => setTableOpen(true)}>All combinations</button>
+                  </div>
                 </div>
               )}
             </>
@@ -990,8 +1001,8 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
           .su-segs span{flex:1;height:8px;border-radius:2px;background:var(--stg-line2);}
           .su-segs span.on{background:var(--stg-acc);}
           .su-panel{background:var(--stg-surf);border:1px solid var(--stg-line);border-radius:20px;padding:20px 20px 16px;display:flex;flex-direction:column;align-items:center;}
-          .su-grid{--su-block:#05070d;--su-block-ink:#e9edf4;--su-block-line:#3d4862;--su-clue-done:#6ee7b7;display:grid;aspect-ratio:1;width:min(453px,100%);box-sizing:border-box;border:2.5px solid var(--stg-ink);border-radius:6px;overflow:hidden;}
-          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .su-grid{--su-block:#1e2433;--su-block-ink:#ffffff;--su-block-line:#5a6680;--su-clue-done:#6ee7b7;}
+          .su-grid{--su-block:#05070d;--su-block-ink:#ffffff;--su-block-line:#7a88a6;--su-clue-done:#6ee7b7;display:grid;aspect-ratio:1;width:min(453px,100%);box-sizing:border-box;border:2.5px solid var(--stg-ink);border-radius:6px;overflow:hidden;}
+          html:not([data-stage-boot='dark']) .stage-page[data-stage-theme='light'] .su-grid{--su-block:#1e2433;--su-block-ink:#ffffff;--su-block-line:#9aa6bf;--su-clue-done:#6ee7b7;}
           .su-grid.big{width:min(560px,100%);}
           .su-cell{display:flex;align-items:center;justify-content:center;font-family:${SANS};box-sizing:border-box;cursor:pointer;position:relative;user-select:none;-webkit-tap-highlight-color:transparent;min-width:0;min-height:0;overflow:hidden;padding:0;margin:0;border:0;border-radius:0;color:var(--stg-acc-ink);}
           .su-cell:focus-visible{outline:3px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:-3px;}
@@ -999,25 +1010,29 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
           .su-grid.big .su-v{font-size:22px;}
           .su-user{color:var(--stg-acc-ink);}
           .su-notes{position:absolute;inset:4px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);}
-          .su-note{display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:11px;font-weight:700;line-height:1;color:var(--stg-ink2);}
+          .su-note{display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:11.5px;font-weight:800;line-height:1.15;color:var(--stg-ink);}
           .su-grid.big .su-notes{inset:2px;}
           .su-grid.big .su-note{font-size:8.5px;}
           .su-black{cursor:default;}
           .su-clue::after{content:'';position:absolute;inset:0;background:linear-gradient(to top right,transparent calc(50% - 1px),var(--su-block-line) 50%,transparent calc(50% + 1px));pointer-events:none;}
-          .su-a,.su-d{position:absolute;font-family:${SANS};font-size:15px;line-height:1;font-weight:800;color:var(--su-block-ink);z-index:1;}
+          .su-a,.su-d{position:absolute;font-family:${SANS};font-size:16px;line-height:1.1;font-weight:900;color:var(--su-block-ink);z-index:1;}
           .su-a{top:6px;right:7px;}
           .su-d{bottom:6px;left:7px;}
-          .su-grid.big .su-a,.su-grid.big .su-d{font-size:11px;}
+          .su-grid.big .su-a,.su-grid.big .su-d{font-size:12px;}
           .su-grid.big .su-a{top:3px;right:3px;}
           .su-grid.big .su-d{bottom:3px;left:3px;}
           .su-a.done,.su-d.done{color:var(--su-clue-done);}
-          .su-combo{width:100%;max-width:560px;margin-top:16px;box-sizing:border-box;border-radius:14px;background:var(--stg-ground);border:1px solid var(--stg-line);padding:10px 14px;font-family:${SANS};font-size:13px;color:var(--stg-mute);display:flex;flex-direction:column;gap:8px;min-height:44px;justify-content:center;}
+          .su-combo{width:100%;max-width:560px;margin-top:16px;box-sizing:border-box;border-radius:14px;background:var(--stg-ground);border:1px solid var(--stg-line);padding:10px 14px;font-family:${SANS};font-size:13px;color:var(--stg-ink);display:flex;flex-direction:column;gap:8px;min-height:44px;justify-content:center;}
           .su-combo-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
           .su-combo-lbl{min-width:132px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-acc-ink);white-space:nowrap;}
           .su-combo-left{min-width:92px;white-space:nowrap;font-size:13px;font-weight:700;color:var(--stg-ink);}
-          .su-combo-hint{font-weight:600;color:var(--stg-mute);}
+          .su-combo-hint{font-weight:700;color:var(--stg-ink);}
           .su-set{font-family:${SANS};font-size:14px;font-weight:800;letter-spacing:.08em;color:var(--stg-ink);padding:3px 10px;border-radius:7px;background:color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 18%, var(--stg-cell));white-space:nowrap;}
-          .su-set.x{color:var(--stg-mute);font-weight:700;letter-spacing:0;text-decoration:line-through;background:transparent;padding:3px 2px;}
+          .su-set.x{color:var(--stg-mute);font-weight:700;text-decoration:line-through;background:transparent;padding:3px 4px;}
+          .su-more{font-family:${SANS};font-size:12.5px;font-weight:800;color:var(--stg-ink);background:transparent;border:1px solid var(--stg-ink);border-radius:999px;padding:3px 11px;cursor:pointer;white-space:nowrap;line-height:1.35;}
+          .su-more:hover{background:var(--stg-surf2, ${COLORS.accentSoft});}
+          .su-more[aria-pressed='true']{background:var(--stg-ink);color:var(--stg-ground);}
+          .su-combo-ft{padding-top:8px;border-top:1px solid var(--stg-line);}
           .su-say{width:100%;max-width:560px;margin-top:14px;display:flex;flex-direction:column;gap:2px;}
           .su-say-a{font-size:15px;font-weight:700;color:var(--stg-ink);}
           .su-say-b{font-size:12px;font-weight:600;color:var(--stg-mute);}
@@ -1200,13 +1215,17 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
                     <span className="su-combo-lbl">{ci.total} {ci.dir === 'a' ? 'across' : 'down'} in {ci.len}</span>
                     {ci.left > 0 && ci.left < ci.len && <span className="su-combo-left">{ci.need} left in {ci.left}</span>}
                     {ci.left === 0 && <span className="su-combo-left">{ci.need === 0 ? 'adds up' : 'does not add up'}</span>}
-                    {ci.left > 0 && live.slice(0, 6).map((x, i) => <span key={`l${i}`} className="su-set">{x.rest.join(' ')}</span>)}
-                    {ci.left > 0 && live.length > 6 && <span className="su-set x">+{live.length - 6} more</span>}
-                    {ci.left > 0 && live.length === 0 && <span className="su-set x">no set fits what is placed</span>}
-                    {ci.left > 0 && dead.length > 0 && dead.length <= 2 && dead.map((x, i) => <span key={`d${i}`} className="su-set x">{x.rest.join(' ')}</span>)}
+                    {ci.left > 0 && (setsOpen ? live : live.slice(0, 6)).map((x, i) => <span key={`l${i}`} className="su-set">{x.rest.join(' ')}</span>)}
+                    {ci.left > 0 && !setsOpen && live.length > 6 && <button type="button" className="su-more" onClick={() => setSetsOpen(true)}>+{live.length - 6} more</button>}
+                    {ci.left > 0 && live.length === 0 && <span className="su-combo-hint">no set fits what is placed</span>}
+                    {ci.left > 0 && dead.length > 0 && (setsOpen || dead.length <= 2) && dead.map((x, i) => <span key={`d${i}`} className="su-set x">{x.rest.join(' ')}</span>)}
                   </div>
                 );
               }) : <div className="su-combo-row"><span className="su-combo-hint">Tap a square to see which digit sets fit its runs.</span></div>}
+              <div className="su-combo-row su-combo-ft">
+                {comboInfo.length ? <button type="button" className="su-more" onClick={() => setSetsOpen((v) => !v)} aria-pressed={setsOpen}>{setsOpen ? 'Fewer sets' : 'Every set'}</button> : null}
+                <button type="button" className="su-more" onClick={() => setTableOpen(true)}>All combinations</button>
+              </div>
             </div>
           )}
 
@@ -1475,10 +1494,84 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
         </p>
       </section>
 
+      {tableOpen && (
+        <SumsComboTable onClose={() => setTableOpen(false)}
+          runs={comboInfo.map((ci) => ({ dir: ci.dir, len: ci.len, total: ci.total }))} />
+      )}
       {!STAGE && <div style={{ position: 'relative', zIndex: 2, display: focusMode ? 'none' : 'block' }}><Footer /></div>}
     </div>
   );
 }
+
+// THE COMBINATIONS SHEET (owner request, 2026-11-19): every way to make every
+// total, one run length at a time. It opens on the picked square's run (its
+// length chosen and its total marked); a total that can only be made one way
+// is called out, since those are the footholds.
+function SumsComboTable({ onClose, runs }) {
+  const [len, setLen] = useState(runs[0]?.len || 2);
+  const marks = runs.filter((r) => r.len === len).map((r) => r.total);
+  const lo = (len * (len + 1)) / 2, hi = (len * (19 - len)) / 2;
+  const rows = [];
+  for (let t = lo; t <= hi; t++) rows.push({ t, sets: combosFor(len, t) });
+  const listRef = useRef(null);
+  useEffect(() => {
+    const el = listRef.current && listRef.current.querySelector('.sct-row.on');
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center' });
+  }, [len]);
+  useEffect(() => {
+    const k = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', k);
+    return () => window.removeEventListener('keydown', k);
+  }, [onClose]);
+  return (
+    <div className="sct-dim" onClick={onClose}>
+      <style dangerouslySetInnerHTML={{ __html: SCT_CSS }} />
+      <div className="sct" role="dialog" aria-label="All sum combinations" onClick={(e) => e.stopPropagation()}>
+        <div className="sct-hd">
+          <b>All combinations</b>
+          <button type="button" className="sct-x" onClick={onClose} aria-label="Close">&times;</button>
+        </div>
+        <div className="sct-sub">Squares in the run</div>
+        <div className="sct-seg" role="tablist">
+          {[2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+            <button key={n} type="button" role="tab" aria-selected={n === len} className={n === len ? 'on' : ''} onClick={() => setLen(n)}>{n}</button>
+          ))}
+        </div>
+        <div className="sct-list" ref={listRef}>
+          {rows.map(({ t, sets }) => (
+            <div key={t} className={'sct-row' + (marks.includes(t) ? ' on' : '')}>
+              <span className="sct-t">{t}</span>
+              <span className="sct-sets">
+                {sets.map((x, i) => <span key={i} className="sct-s">{x.join(' ')}</span>)}
+                {sets.length === 1 ? <em>one way</em> : null}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+const SCT_CSS = `
+.sct-dim{position:fixed;inset:0;z-index:130;background:rgba(8,12,20,.5);display:flex;align-items:center;justify-content:center;padding:16px;font-family:'Manrope',system-ui,sans-serif;}
+.sct{width:100%;max-width:520px;max-height:84vh;display:flex;flex-direction:column;border-radius:18px;overflow:hidden;background:var(--stg-raise, var(--stg-surf, #fff));color:var(--stg-ink, #14161c);border:1px solid var(--stg-ink, #14161c);box-sizing:border-box;}
+.sct-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 4px;}
+.sct-hd b{font-size:17px;font-weight:800;line-height:1.35;}
+.sct-x{width:36px;height:36px;border:0;background:transparent;color:inherit;font-size:26px;line-height:1;cursor:pointer;padding:0;}
+.sct-sub{padding:0 16px 6px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.4;}
+.sct-seg{display:flex;margin:0 16px 10px;border:1px solid var(--stg-ink, #14161c);border-radius:999px;overflow:hidden;}
+.sct-seg button{flex:1;min-width:0;height:36px;border:0;border-left:1px solid var(--stg-ink, #14161c);border-radius:0;margin:0;background:transparent;color:inherit;font:inherit;font-size:15px;font-weight:800;cursor:pointer;padding:0;touch-action:manipulation;}
+.sct-seg button:first-child{border-left:0;}
+.sct-seg button.on{background:var(--stg-ink, #14161c);color:var(--stg-ground, #fff);}
+.sct-list{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;border-top:1px solid var(--stg-line, rgba(0,0,0,.12));padding:4px 0 10px;}
+.sct-row{display:flex;align-items:flex-start;gap:12px;padding:8px 16px;}
+.sct-row + .sct-row{border-top:1px solid var(--stg-line, rgba(0,0,0,.08));}
+.sct-row.on{background:color-mix(in srgb, var(--stg-acc, #be185d) 24%, transparent);}
+.sct-t{flex:none;width:34px;font-size:17px;font-weight:900;line-height:1.5;font-variant-numeric:tabular-nums;}
+.sct-sets{flex:1;min-width:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.sct-s{font-size:14px;font-weight:800;letter-spacing:.06em;padding:2px 9px;border:1px solid var(--stg-ink, #14161c);border-radius:999px;line-height:1.4;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.sct-sets em{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1.4;}
+`;
 
 // The stage board (owner, 2026-10-30 mockup). Clue squares are solid ink with
 // the totals in the page colour; white squares are the page; the picked square
@@ -1490,23 +1583,27 @@ const SUS_CSS = `
 .sus-grid.big .sus-c{border-radius:5px;border-width:1.5px;font-size:clamp(12px, 3.8vw, 22px);}
 .pst .sus-c.blk{background:var(--pst-ink);color:var(--pst-bg);}
 .sus-c .dg{position:absolute;inset:0;width:100%;height:100%;}
-.sus-c .dg path{stroke:var(--pst-bg);stroke-width:1;opacity:.45;vector-effect:non-scaling-stroke;}
-.pst .sus-c .ac{position:absolute;top:2px;right:4px;font-size:clamp(9px, 3vw, 13px);color:var(--pst-bg);}
-.pst .sus-c .dn{position:absolute;bottom:2px;left:4px;font-size:clamp(9px, 3vw, 13px);color:var(--pst-bg);}
-.sus-grid.big .sus-c .ac,.sus-grid.big .sus-c .dn{font-size:clamp(7px, 2.1vw, 11px);top:1px;right:2px;}
+.sus-c .dg path{stroke:var(--pst-bg);stroke-width:1.25;opacity:.8;vector-effect:non-scaling-stroke;}
+.pst .sus-c .ac{position:absolute;top:2px;right:4px;font-size:clamp(10px, 3.4vw, 15px);font-weight:900;line-height:1.1;color:var(--pst-bg);}
+.pst .sus-c .dn{position:absolute;bottom:2px;left:4px;font-size:clamp(10px, 3.4vw, 15px);font-weight:900;line-height:1.1;color:var(--pst-bg);}
+.sus-grid.big .sus-c .ac,.sus-grid.big .sus-c .dn{font-size:clamp(8.5px, 2.5vw, 12px);top:1px;right:2px;}
 .sus-grid.big .sus-c .dn{top:auto;bottom:1px;left:2px;right:auto;}
-.sus-c small{font-size:clamp(8px, 2.4vw, 10px);font-weight:800;color:var(--pst-mute);letter-spacing:.04em;line-height:1.1;padding:0 2px;}
+.sus-c small{font-size:clamp(8.5px, 2.6vw, 11px);font-weight:800;color:var(--pst-ink);letter-spacing:.04em;line-height:1.1;padding:0 2px;}
 .pst .sus-c.run{background:var(--pst-pale);}
-.pst .sus-c.same{background:var(--pst-pale);}
+.pst .sus-c.same{background:var(--pst-pale);box-shadow:inset 0 0 0 2px var(--pst-ink);}
 .pst .sus-c.sel{background:var(--pst-acc);color:var(--pst-on-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);z-index:1;}
 .sus-combo{border-radius:14px;background:var(--pst-cell);padding:9px 12px;display:flex;flex-direction:column;gap:6px;}
 .sus-combo>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:800;}
-.sus-combo .k{color:var(--pst-mute);}
-.sus-combo .s{border:1px solid var(--pst-ink);border-radius:999px;padding:1px 9px;background:var(--pst-bg);}
+.sus-combo .k{color:var(--pst-ink);}
+.sus-combo .s{border:1px solid var(--pst-ink);border-radius:999px;padding:1px 9px;background:var(--pst-bg);line-height:1.4;}
+.sus-combo .s.x{border-color:transparent;background:transparent;color:var(--pst-mute);text-decoration:line-through;font-weight:700;}
+.sus-combo .m{font:inherit;font-size:12.5px;font-weight:800;color:var(--pst-ink);background:transparent;border:1px solid var(--pst-ink);border-radius:999px;padding:1px 10px;line-height:1.4;cursor:pointer;touch-action:manipulation;}
+.sus-combo .m[aria-pressed='true']{background:var(--pst-ink);color:var(--pst-bg);}
+.sus-combo .sus-cft{padding-top:6px;border-top:1px solid var(--pst-rule);}
 .sus-pad{display:grid;grid-template-columns:repeat(9, minmax(0, 1fr));gap:4px;}
 @media (min-width:900px) and (hover:hover) and (pointer:fine){.sus-pad{display:none !important;}}
 .pst .sus-dk{height:52px;border-radius:12px;border:1px solid var(--pst-ink);background:var(--pst-pale);font-size:22px;font-weight:800;padding:0;touch-action:manipulation;}
 .pst .sus-dk.on{background:var(--pst-acc);color:var(--pst-on-acc);}
-.pst .sus-dk.done{opacity:.3;background:transparent;}
+.pst .sus-dk.done{opacity:.45;background:transparent;}
 .pst .pst-tb.acc{background:var(--pst-acc);color:var(--pst-on-acc);}
 `;

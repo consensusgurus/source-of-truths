@@ -7946,7 +7946,19 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mfres li a em{font-style:normal;font-size:12px;font-weight:600;opacity:.75;line-height:1.35;}
   .sty-mfres li + li a{border-top:1px solid var(--stg-line, rgba(0,0,0,.08));}
   .sty-mfres .sty-lnone{padding:8px 14px 10px;font-size:13px;}
-  .sty-mfres .sty-findq{border-top:1px solid var(--stg-line, rgba(0,0,0,.08));margin-top:4px;padding:0 14px;}
+  .sty-mfres .sty-findq{border-top:1px solid var(--stg-line, rgba(0,0,0,.08));margin-top:4px;padding:0;}
+  /* QUIZ HITS IN THE PHONE SEARCH SHEET (owner, 2026-11-19 screenshot): the
+     heading reads like the Puzzles one, the list is plain rows in the sheet (no
+     box inside the box), and the topic label is text. The puzzle rows' 26px
+     colour square (.sty-mfres li a i) was landing on the quiz label's <i> and
+     clipping it ("MOVIES" in a tiny box). */
+  .sty-mfres .sty-findq .sty-plab{padding:10px 14px 4px;margin:0;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8;line-height:1.4;color:var(--stg-ink);}
+  .sty-mfres .sty-findq .sty-qres{max-height:none;overflow:visible;border:0;border-radius:0;background:transparent;}
+  .sty-mfres .sty-qres li + li{border-top:1px solid var(--stg-line, rgba(0,0,0,.08));}
+  .sty-mfres .sty-qres li + li a{border-top:0;}
+  .sty-mfres .sty-qres a{min-height:52px;padding:6px 14px;font-size:15px;box-sizing:border-box;}
+  .sty-mfres .sty-qres li a span.t{display:block;font-weight:800;line-height:1.3;}
+  .sty-mfres .sty-qres li a i{width:auto;height:auto;border:0;border-radius:0;background:none;font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-mute, currentColor);opacity:.85;white-space:nowrap;line-height:1.4;}
   .sty-mtb.pane .sty-mfbtn{flex:none;width:40px;height:40px;}
 }
 @media (max-width:900px){
