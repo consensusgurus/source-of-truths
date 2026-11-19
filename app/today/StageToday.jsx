@@ -1477,6 +1477,7 @@ export default function StageToday() {
   const [tailOpen, setTailOpen] = useState(false);
   // The cap's own box.
   const capRef = useRef(null);
+  const qzRef = useRef(null);
   const [nearFoot, setNearFoot] = useState(false);
   useEffect(() => {
     const el = footRef.current;
@@ -1488,6 +1489,8 @@ export default function StageToday() {
       if (entries.some((e) => e.isIntersecting)) { setNearFoot(true); io.disconnect(); }
     }, { rootMargin: '600px 0px' });
     io.observe(el);
+    // The phone Quizzes strip shows the quiz total, so coming near it loads the topics too.
+    if (qzRef.current) io.observe(qzRef.current);
     return () => io.disconnect();
   }, []);
   // ── ARRIVING ON A SECTION BY HASH ───────────────────────────────────────
@@ -4978,7 +4981,7 @@ export default function StageToday() {
                     then Everything Else. THE QUIZZES STRIP leads (owner, 2026-11-18: "Add a third strip
                     called quizzes, but make it first, and label it with total number of quizzes"). The
                     total arrives with the quiz topics; until then the strip reads without a number. */}
-                <a className="sty-mdraw sty-mqz" href={withTq('/quizzes')}>
+                <a ref={qzRef} className="sty-mdraw sty-mqz" href={withTq('/quizzes')}>
                   <span>{quizTotal ? <><b>{quizTotal.toLocaleString('en-US')} Quizzes</b> across {topicList.length} topics</> : <><b>Quizzes</b> Timed, on every topic</>}</span>
                   <u>See All Quizzes</u>
                 </a>
