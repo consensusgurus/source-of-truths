@@ -814,6 +814,21 @@ links are refused. Rate limits: 30 posts and 5 ideas per player per day. **Moder
 with the admin cookie the community pages show Hide / Restore on posts and ideas, a stage picker on
 ideas, and the Talk box writes a pinned Maker post when the admin has not played that puzzle.
 
+**Comments on ideas (owner, 2026-11-19: "Need a way to comment on here. And when your thread receives a
+comment, you get a pop-up notice, but more subtle than the new game notices, shown at bottom of screen with
+an x to exit").** Migration 67 adds `community_idea_comments` (500 characters, 40 a player a day, same text
+screen and no links, reports target `comment`, three hide it). Each idea card has a Comment button that opens
+its thread under the card; `#idea-N` opens and scrolls to it. `owner_seen` on the row is the notice: the
+pitcher's own comments are born seen; the Idea Board marks a pitcher's threads seen when it loads them.
+`app/community/CommentNotice.jsx` (mounted in layout) is the bottom bar: "<name> commented on your idea
+"<title>"", See It and an x, no scrim. Both See It and x mark it seen on the server (so it does not follow
+the player to another device). It is NOT in the one-pop-up-a-visit budget (it is a reply, not a pitch) but
+keeps the rest: never while `gameActive()`, on a puzzle page only after the finish card and 10 quiet
+seconds, never over another dialog, never on the Idea Board itself, polled on page arrival and at most every
+three minutes. Only the idea's pitcher is notified, not other commenters. The morning digest counts new
+comments and lists reported ones. Until 67 runs the board shows no comment controls and the notice route
+answers an empty list.
+
 **The doors in (the "Where To Link" spots):** the Community pill in the desktop cap (home and game
 pages, `app/community/CommunityLinks.jsx`, count shown only while people post, hidden under 900px);
 a Community row under Runs in Everything Else (home and game pages); Idea Board in place of Submit

@@ -10,6 +10,7 @@ import DailyStartPing from './DailyStartPing';
 import DailySaveSync from './DailySaveSync';
 import TrophyPop from './TrophyPop';
 import ThanksPop from './ThanksPop';
+import CommentNotice from './community/CommentNotice';
 import EmailTicketPop from './EmailTicketPop';
 import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
 import ChunkReload from './ChunkReload';
@@ -221,6 +222,11 @@ export default function RootLayout({ children }) {
             with no email on file. Never while a puzzle is being played, never
             over another dialog, hidden 3 days on dismissal. app/EmailTicketPop.jsx. */}
         <EmailTicketPop />
+        {/* Owner-approved (2026-11-19): a quiet bar at the bottom of the screen
+            when someone comments on your Idea Board idea, with an x. No scrim,
+            not in the one-pop-up-a-visit budget, never mid game.
+            app/community/CommentNotice.jsx. */}
+        <CommentNotice />
         {/* Reloads once when a hashed chunk from a superseded deployment fails to
             load. See app/ChunkReload.jsx and app/error.js (2026-09-23). */}
         <ChunkReload />

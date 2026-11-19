@@ -3,7 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { isAdmin } from '@/lib/admin-auth';
 import {
   guard, refuse, viewerOf, ideasOf, votedBy, pitchIdea, voteIdea, setStage, report, setHidden, publicIdea,
-  IDEA_KINDS, IDEA_STAGES,
+  commentsOf, addComment, markSeen, publicComment, IDEA_KINDS, IDEA_STAGES,
 } from '@/lib/community';
 
 // /api/community/ideas: the Idea Board (owner, 2026-11-18).
@@ -15,6 +15,12 @@ import {
 //        report{ id }                        needs an account
 //        stage { id, stage }                 admin only
 //        hide  { id, hidden }                admin only
+//        comment       { id, body }          needs an account (migration 67)
+//        reportComment { id }                needs an account
+//        hideComment   { id, hidden }        admin only
+//        seen          { ids }               marks comments on YOUR ideas seen
+// GET also returns each idea's comments (oldest first) and `commentsOn`, false
+// until migration 67 is applied.
 // Anyone can read the board; it is not a spoiler surface.
 
 export const dynamic = 'force-dynamic';
@@ -40,8 +46,17 @@ export async function GET(request) {
     for (const i of all) if (!i.hidden) { counts.all += 1; counts[i.stage] = (counts[i.stage] || 0) + 1; }
     const shown = all.filter((i) => (!stage || i.stage === stage) && (!kind || i.kind === kind));
     const voted = await votedBy(supabaseAdmin, uid, shown.map((i) => i.id));
+    const cm = await commentsOf(supabaseAdmin, shown.map((i) => i.id), { includeHidden: admin });
     return {
-      ideas: shown.map((i) => publicIdea(i, { voted: voted.has(i.id), mine: !!uid && i.user_id === uid })),
+      ideas: shown.map((i) => {
+        const mine = !!uid && i.user_id === uid;
+        const list = cm ? (cm.get(i.id) || []) : [];
+        return {
+          ...publicIdea(i, { voted: voted.has(i.id), mine }),
+          comments: list.map((c) => publicComment(c, { mine: !!uid && c.user_id === uid, fresh: mine && !c.owner_seen && c.user_id !== uid })),
+        };
+      }),
+      commentsOn: !!cm,
       username: viewer.user ? viewer.user.username : null, admin, counts,
       kinds: IDEA_KINDS, stages: IDEA_STAGES,
     };
@@ -66,8 +81,25 @@ export async function POST(request) {
       await setHidden(supabaseAdmin, 'idea', id, body.hidden !== false);
       return { ok: true };
     }
+    if (action === 'hideComment') {
+      if (!admin) refuse('Not allowed.', 403);
+      await setHidden(supabaseAdmin, 'comment', id, body.hidden !== false);
+      return { ok: true };
+    }
     const viewer = await viewerOf(supabaseAdmin, { anonId: str(body.anonId, 64) || null, email: str(body.email) || null });
+    if (action === 'seen') {
+      if (viewer.user) await markSeen(supabaseAdmin, viewer.user.id, Array.isArray(body.ids) ? body.ids : []);
+      return { ok: true };
+    }
     if (!viewer.user) refuse('Pick a name first.', 401, 'no_account');
+    if (action === 'comment') {
+      const c = await addComment(supabaseAdmin, viewer.user, id, body.body);
+      return { ok: true, comment: c ? publicComment(c, { mine: true }) : null };
+    }
+    if (action === 'reportComment') {
+      const r = await report(supabaseAdmin, viewer.user.id, 'comment', id);
+      return { ok: true, ...r };
+    }
     if (action === 'pitch') {
       const idea = await pitchIdea(supabaseAdmin, viewer.user, { kind: str(body.kind, 20), title: body.title, body: body.body, gameKey: str(body.game, 40) });
       return { ok: true, idea: idea ? publicIdea(idea, { voted: true, mine: true }) : null };

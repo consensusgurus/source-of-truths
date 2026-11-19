@@ -68,12 +68,25 @@ export async function GET(request) {
       .select('id,game_key,username,body,reports,hidden').in('id', postIds)) : [];
     const repIdeas = ideaIds.length ? ok(await supabaseAdmin.from('community_ideas')
       .select('id,title,username,reports,hidden').in('id', ideaIds)) : [];
+    // Comments on ideas (migration 67): reported ones, and how many came in.
+    // A missing table reads as none, so the digest still goes out before 67 runs.
+    const cmtIds = [...new Set(reps.filter((r) => r.target === 'comment').map((r) => r.target_id))];
+    let repComments = [];
+    let newComments = 0;
+    try {
+      const c1 = await supabaseAdmin.from('community_idea_comments').select('id', { count: 'exact', head: true }).gte('created_at', since);
+      if (!c1.error) newComments = c1.count || 0;
+      if (cmtIds.length) {
+        const c2 = await supabaseAdmin.from('community_idea_comments').select('id,idea_id,username,body,reports,hidden').in('id', cmtIds);
+        if (!c2.error) repComments = c2.data || [];
+      }
+    } catch (e) { /* comments not set up yet */ }
     const top = ok(await supabaseAdmin.from('community_ideas')
       .select('id,title,kind,votes,stage').eq('hidden', false).eq('stage', 'open')
       .order('votes', { ascending: false }).order('created_at', { ascending: true }).limit(5));
 
     const players = new Set(posts.filter((p) => !p.maker).map((p) => p.user_id || p.username)).size;
-    if (!ideas.length && !posts.length && !reps.length) {
+    if (!ideas.length && !posts.length && !reps.length && !newComments) {
       return NextResponse.json({ ok: true, sent: false, reason: 'quiet day' });
     }
 
@@ -93,6 +106,8 @@ export async function GET(request) {
       + `</li>`).join('')}</ul>` : '<p style="margin:0">None.</p>';
     if (ideas.length) html += `<p style="margin:0">${a('/community/ideas', 'Review them on the Idea Board')} (log in to admin first to move stages or hide).</p>`;
 
+    if (newComments) html += `<p style="margin:8px 0 0">${plural(newComments, 'new comment', 'new comments')} on ideas.</p>`;
+
     html += h2('Post-Game Talk');
     html += posts.length
       ? `<p style="margin:0 0 6px">${plural(posts.length, 'post', 'posts')} from ${plural(players, 'player', 'players')}.</p>`
@@ -100,12 +115,13 @@ export async function GET(request) {
         + (games.length > 10 ? `<p style="margin:0">and ${games.length - 10} more puzzles.</p>` : '')
       : '<p style="margin:0">No posts.</p>';
 
-    html += h2(`Reported (${repPosts.length + repIdeas.length})`);
-    if (repPosts.length || repIdeas.length) {
+    html += h2(`Reported (${repPosts.length + repIdeas.length + repComments.length})`);
+    if (repPosts.length || repIdeas.length || repComments.length) {
       const tag = (x) => `${plural(x.reports, 'report', 'reports')}${x.hidden ? ', <strong style="color:#b42318">HIDDEN</strong>' : ''}`;
       html += `<ul style="margin:0 0 6px 18px;padding:0">`
         + repPosts.map((p) => `<li style="margin:0 0 8px">Post in ${a(`/community/talk/${encodeURIComponent(p.game_key)}`, esc(gameName(p.game_key)))} by ${esc(p.username)} (${tag(p)}):<br>“${esc(clip(p.body, 300))}”</li>`).join('')
         + repIdeas.map((i) => `<li style="margin:0 0 8px">Idea “${esc(i.title)}” by ${esc(i.username)} (${tag(i)})</li>`).join('')
+        + repComments.map((c) => `<li style="margin:0 0 8px">${a(`/community/ideas#idea-${c.idea_id}`, 'Comment on an idea')} by ${esc(c.username)} (${tag(c)}):<br>“${esc(clip(c.body, 300))}”</li>`).join('')
         + `</ul><p style="margin:0">Items hide themselves at ${HIDE_AT_REPORTS} reports. Restore or keep them hidden from the page while logged in to admin.</p>`;
     } else html += '<p style="margin:0">Nothing reported.</p>';
 
@@ -115,7 +131,7 @@ export async function GET(request) {
     }
 
     const dateStr = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric' });
-    const bits = [ideas.length ? plural(ideas.length, 'idea', 'ideas') : '', posts.length ? plural(posts.length, 'post', 'posts') : '', reps.length ? plural(repPosts.length + repIdeas.length, 'report', 'reports') : ''].filter(Boolean);
+    const bits = [ideas.length ? plural(ideas.length, 'idea', 'ideas') : '', posts.length ? plural(posts.length, 'post', 'posts') : '', newComments ? plural(newComments, 'comment', 'comments') : '', reps.length ? plural(repPosts.length + repIdeas.length + repComments.length, 'report', 'reports') : ''].filter(Boolean);
     const subject = `Mind Loft Community, ${dateStr}: ${bits.join(', ')}`;
     const body = `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.45;color:#1a1611">`
       + `<p style="margin:0 0 4px">The last 24 hours on the ${a('/community', 'Mind Loft community')}.</p>${html}</div>`;

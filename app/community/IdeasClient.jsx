@@ -8,6 +8,12 @@
 //
 // ?pitch=puzzle|variation|fix&game=<key> opens the form with that type (the
 // endings' "Suggest A <Game> Idea" lands here as a Variation of that game).
+//
+// COMMENTS (owner, 2026-11-19: "Need a way to comment on here"): every idea has
+// a Comment button that opens its thread under the card. The thread opens by
+// itself for #idea-N links (the bottom notice, app/community/CommentNotice.jsx)
+// and on your own ideas with comments you have not seen; loading the board
+// marks those seen, so the notice does not come back.
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import CommunityShell from './CommunityShell';
@@ -27,9 +33,32 @@ export default function IdeasClient({ pitch = null, game = null }) {
   const [nm, setNm] = useState('');
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState({ err: '', ok: '' });
+  const [openThreads, setOpenThreads] = useState(() => new Set());
+  const [drafts, setDrafts] = useState({});
+  const [posting, setPosting] = useState(0);
   const load = useCallback(() => { getIdeas({ sort }).then(setData); }, [sort]);
   useEffect(() => { setNm(readIdentity().username || suggestName()); }, []);
   useEffect(() => { load(); }, [load]);
+
+  // Open the linked thread (#idea-N) and your own threads with unseen
+  // comments, then mark those seen.
+  useEffect(() => {
+    if (!data || !data.ideas) return;
+    let hashId = 0;
+    try { const m = /^#idea-(\d+)$/.exec(window.location.hash || ''); if (m) hashId = Number(m[1]); } catch (e) { /* none */ }
+    const fresh = data.ideas.filter((i) => i.mine && (i.comments || []).some((c) => c.fresh)).map((i) => i.id);
+    if (hashId || fresh.length) {
+      setOpenThreads((prev) => { const n = new Set(prev); if (hashId) n.add(hashId); fresh.forEach((id) => n.add(id)); return n; });
+    }
+    if (hashId) {
+      setTimeout(() => { try { const el = document.getElementById(`idea-${hashId}`); if (el) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) { /* ignore */ } }, 60);
+    }
+    if (fresh.length) {
+      ideaAction('seen', { ids: fresh }).then(() => {
+        try { window.dispatchEvent(new CustomEvent('sot:idea-comments-seen', { detail: { ids: fresh } })); } catch (e) { /* ignore */ }
+      });
+    }
+  }, [data]);
   const games = useMemo(() => [...DAILY_GAMES].sort((a, b) => a.name.localeCompare(b.name)), []);
   const gameName = (k) => { const g = DAILY_GAMES.find((x) => x.key === k); return g ? g.name : ''; };
 
@@ -64,9 +93,27 @@ export default function IdeasClient({ pitch = null, game = null }) {
     setMsg({ err: '', ok: 'Pitched. Your idea is open for votes.' });
     load();
   };
+  const toggleThread = (id) => setOpenThreads((prev) => { const n = new Set(prev); if (n.has(id)) n.delete(id); else n.add(id); return n; });
+  const sendComment = async (i) => {
+    const text = (drafts[i.id] || '').trim();
+    if (!text || posting) return;
+    setMsg({ err: '', ok: '' });
+    setPosting(i.id);
+    if (needName) {
+      const a = await ensureAccount(nm);
+      if (a.error) { setMsg({ err: a.error, ok: '' }); setPosting(0); return; }
+    }
+    const r = await ideaAction('comment', { id: i.id, body: text });
+    setPosting(0);
+    if (r.error) { setMsg({ err: r.error, ok: '' }); return; }
+    setDrafts((d) => ({ ...d, [i.id]: '' }));
+    load();
+  };
   const adminAct = async (action, extra) => { const r = await ideaAction(action, extra); if (r.error) setMsg({ err: r.error, ok: '' }); else load(); };
 
   return (
+    <>
+    <style>{IB_CSS}</style>
     <CommunityShell tab="ideas" title="Idea Board"
       sub="Pitch a new puzzle, a twist on one you play, or a fix for the site. Vote for the ones you want. When we build an idea, the person who pitched it gets Pitched By credit on the puzzle."
       aside={<button type="button" className="cm-btn pri" onClick={() => setForm((f) => ({ ...f, open: !f.open }))}>{form.open ? 'Close' : 'Pitch An Idea'}</button>}>
@@ -150,6 +197,12 @@ export default function IdeasClient({ pitch = null, game = null }) {
                   {i.body ? <p className="cm-mut" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{i.body}</p> : null}
                   <span className="cm-mut" style={{ fontSize: 12.5 }}>Pitched by {i.mine ? 'you' : i.name} &middot; {ago(i.at)}{i.hidden ? ` · Hidden (${i.reports} reports)` : ''}</span>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    {data.commentsOn ? (
+                      <button type="button" className={'cm-btn' + (openThreads.has(i.id) ? ' pri' : '')} aria-expanded={openThreads.has(i.id)} aria-controls={`idea-${i.id}-thread`}
+                        style={{ minHeight: 32, padding: '0 10px', fontSize: 12.5 }} onClick={() => toggleThread(i.id)}>
+                        {openThreads.has(i.id) ? 'Hide Comments' : (i.comments || []).length ? `${i.comments.length} ${i.comments.length === 1 ? 'Comment' : 'Comments'}` : 'Comment'}
+                      </button>
+                    ) : null}
                     {!i.mine ? <button type="button" className="cm-btn" style={{ minHeight: 32, padding: '0 10px', fontSize: 12.5 }} onClick={async () => { const r = await ideaAction('report', { id: i.id }); setMsg(r.error ? { err: r.error, ok: '' } : { err: '', ok: 'Thanks. The idea was reported.' }); }}>Report</button> : null}
                     {data.admin ? (
                       <>
@@ -162,10 +215,56 @@ export default function IdeasClient({ pitch = null, game = null }) {
                   </div>
                 </div>
               </div>
+              {data.commentsOn && openThreads.has(i.id) ? (
+                <div id={`idea-${i.id}-thread`} className="ib-thread">
+                  {(i.comments || []).length ? (
+                    <ul className="ib-list">
+                      {i.comments.map((c) => (
+                        <li key={c.id} className={'ib-c' + (c.fresh ? ' fresh' : '')} style={c.hidden ? { opacity: 0.55 } : undefined}>
+                          <div className="ib-meta"><b>{c.mine ? 'You' : c.name}</b><span>{ago(c.at)}{c.fresh ? ' · New' : ''}{c.hidden ? ` · Hidden (${c.reports} reports)` : ''}</span></div>
+                          <p>{c.body}</p>
+                          {!c.mine || data.admin ? (
+                            <div className="ib-acts">
+                              {!c.mine ? <button type="button" onClick={async () => { const r = await ideaAction('reportComment', { id: c.id }); setMsg(r.error ? { err: r.error, ok: '' } : { err: '', ok: 'Thanks. The comment was reported.' }); }}>Report</button> : null}
+                              {data.admin ? <button type="button" onClick={() => adminAct('hideComment', { id: c.id, hidden: !c.hidden })}>{c.hidden ? 'Restore' : 'Hide'}</button> : null}
+                            </div>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : <p className="cm-mut" style={{ fontSize: 13 }}>No comments yet. Start the conversation.</p>}
+                  <form className="ib-form" onSubmit={(e) => { e.preventDefault(); sendComment(i); }}>
+                    <textarea className="cm-in" rows={2} maxLength={500} value={drafts[i.id] || ''} aria-label={`Comment on ${i.title}`}
+                      placeholder={i.mine ? 'Reply to the comments on your idea' : 'Add a comment'}
+                      onChange={(e) => { const v = e.target.value; setDrafts((d) => ({ ...d, [i.id]: v })); }} />
+                    <button type="submit" className="cm-btn dk" disabled={!(drafts[i.id] || '').trim() || posting === i.id}>{posting === i.id ? 'Posting…' : 'Post Comment'}</button>
+                  </form>
+                  {needName ? <span className="cm-mut" style={{ fontSize: 12 }}>Posting as {nm || 'a new name'}</span> : null}
+                </div>
+              ) : null}
             </article>
           ))}
         </div>
       ) : <div className="cm-card"><div className="cm-cb"><p className="cm-mut">{all.length ? 'No ideas match those filters.' : 'No ideas yet. Be the first to pitch one.'}</p></div></div>}
     </CommunityShell>
+    </>
   );
 }
+
+const IB_CSS = `
+.ib-thread{border-top:1px solid var(--stg-ink);padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;background:var(--stg-surf2);}
+.ib-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+.ib-c{padding:10px 0;display:flex;flex-direction:column;gap:4px;}
+.ib-c + .ib-c{border-top:1px solid var(--stg-ink);}
+.ib-c.fresh{box-shadow:inset 3px 0 0 var(--stg-ink);padding-left:12px;}
+.ib-meta{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:13px;line-height:1.4;}
+.ib-meta b{font-weight:800;}
+.ib-meta span{color:var(--stg-ink2);font-weight:600;font-size:12.5px;}
+.ib-c p{margin:0;font-size:14.5px;font-weight:600;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--stg-ink);}
+.ib-acts{display:flex;gap:12px;}
+.ib-acts button{border:0;background:none;padding:2px 0;font:inherit;font-size:12px;font-weight:800;color:var(--stg-ink2);cursor:pointer;line-height:1.4;}
+.ib-acts button:hover{color:var(--stg-ink);text-decoration:underline;}
+.ib-form{display:flex;gap:10px;align-items:flex-end;}
+.ib-form textarea{flex:1;background:var(--stg-raise);}
+@media (max-width:640px){ .ib-form{flex-direction:column;align-items:stretch;} .ib-thread{padding:12px 14px 14px;} }
+`;
