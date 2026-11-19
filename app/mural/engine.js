@@ -216,18 +216,21 @@ function resize(){
 }
 function fit(){view.s=view.min;view.tx=(view.cw-W*view.s)/2;view.ty=(view.ch-H*view.s)/2;req();}
 function clampView(){view.tx=Math.min(view.cw*.5,Math.max(view.cw*.5-W*view.s,view.tx));view.ty=Math.min(view.ch*.5,Math.max(view.ch*.5-H*view.s,view.ty));}
-function zoomAt(px,py,f){const ns=Math.min(view.max,Math.max(view.min,view.s*f));view.tx=px-(px-view.tx)*ns/view.s;view.ty=py-(py-view.ty)*ns/view.s;view.s=ns;clampView();req();}
+function zoomAt(px,py,f){hot();const ns=Math.min(view.max,Math.max(view.min,view.s*f));view.tx=px-(px-view.tx)*ns/view.s;view.ty=py-(py-view.ty)*ns/view.s;view.s=ns;clampView();req();}
 function req(){if(!needDraw){needDraw=true;requestAnimationFrame(draw);}}
+/* While the board is moving (pan, zoom, dragging a loose piece) frames draw with cheap scaling and no
+   shadows, then one full-quality frame follows once it settles (owner, 2026-11-19: dragging was laggy). */
+let hotUntil=0,hotT=0;function hot(){hotUntil=performance.now()+140;clearTimeout(hotT);hotT=setTimeout(req,170);}
 function draw(){
   needDraw=false;const dpr=cv.width/view.cw;
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=C.bd;ctx.fillRect(0,0,view.cw,view.ch);
   ctx.save();ctx.translate(view.tx,view.ty);ctx.scale(view.s,view.s);
-  ctx.fillStyle=C.slot;ctx.fillRect(0,0,W,H);ctx.imageSmoothingQuality='high';
+  ctx.fillStyle=C.slot;ctx.fillRect(0,0,W,H);const moving=performance.now()<hotUntil;ctx.imageSmoothingQuality=moving?'low':'high';
   /* crowd pieces at full colour (owner, 2026-11-19: faded pieces made the picture impossible to match) */ctx.drawImage(crowdL,0,0);ctx.drawImage(mineL,0,0);
   const now=performance.now();pulses=pulses.filter(p=>now-p.t<(p.nw?4000:700));
   for(const p of pulses){const c=p.id%COLS,r=(p.id/COLS)|0;if(p.nw){const a=1-(now-p.t)/4000;ctx.globalAlpha=a*.75;ctx.fillStyle='#f2c230';ctx.fillRect(c*PS,r*PS,PS,PS);continue;}const a=1-(now-p.t)/700,g=(1-a)*PS*.9;ctx.strokeStyle=C.ink;ctx.globalAlpha=a;ctx.lineWidth=3/view.s;ctx.strokeRect(c*PS-g,r*PS-g,PS+2*g,PS+2*g);}
   ctx.globalAlpha=1;
-  for(const l of M.loose){ctx.save();ctx.translate(l.x-(l.id%COLS+.5)*PS,l.y-(((l.id/COLS)|0)+.5)*PS);ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=6;drawPiece(ctx,l.id,'rgba(0,0,0,.6)');ctx.restore();}
+  for(const l of M.loose){ctx.save();ctx.translate(l.x-(l.id%COLS+.5)*PS,l.y-(((l.id/COLS)|0)+.5)*PS);if(!moving){ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=6;}drawPiece(ctx,l.id,'rgba(0,0,0,.6)');ctx.restore();}
   ctx.restore();
   ctx.strokeStyle=C.ink;ctx.lineWidth=1;ctx.strokeRect(Math.round(view.tx)+.5,Math.round(view.ty)+.5,Math.round(W*view.s),Math.round(H*view.s));
   drawRef();
@@ -267,7 +270,10 @@ function ui(){
   $('meta').textContent='Open '+M.hours+(M.hours===1?' hour':' hours')+' \u00b7 '+Math.round(done/TOTAL*100)+'% placed';
   coolTick();
 }
-function tol(){return Math.max(PS*.8,26/view.s);}
+/* SNAP DISTANCE (owner, 2026-11-19: it accepted pieces far too easily, worst zoomed out). A third of a
+   piece when zoomed in, and never more than half a piece however far out you are; it used to be
+   26 screen px, which zoomed out covered more than a whole piece. */
+function tol(){return Math.max(PS*.34,Math.min(PS*.5,14/view.s));}
 function attempt(id,sx,sy,from){
   if(M.done)return;
   const hx=(id%COLS+.5)*PS,hy=(((id/COLS)|0)+.5)*PS;
@@ -404,6 +410,7 @@ cv.addEventListener('pointermove',e=>{
   if(gest.pinch)return;
   if(!gest.moved&&Math.hypot(x-gest.x0,y-gest.y0)>6)gest.moved=true;
   if(!gest.moved)return;
+  hot();
   if(gest.loose){const s=toSrc(x,y);gest.loose.x=s[0]+gest.ox;gest.loose.y=s[1]+gest.oy;req();}
   else{cv.classList.add('pan');view.tx=gest.tx+x-gest.x0;view.ty=gest.ty+y-gest.y0;clampView();req();}
 });
@@ -425,11 +432,11 @@ hand.addEventListener('pointerdown',e=>{const b=e.target.closest('.piece');if(!b
 hand.addEventListener('pointermove',e=>{
   if(!td)return;
   if(!td.drag&&Math.hypot(e.clientX-td.x0,e.clientY-td.y0)>8){td.drag=true;const g=Math.max(46,(PS+2*MARG)*view.s);td.g=pieceCanvas(td.id,g);td.g.className='ghost';td.gs=g;root.appendChild(td.g);td.b.classList.add('out');}
-  if(td.drag){td.cx=e.clientX;td.cy=e.clientY-(td.touch?td.gs*.75:0);td.g.style.left=(td.cx-td.gs/2)+'px';td.g.style.top=(td.cy-td.gs/2)+'px';}
+  if(td.drag){td.cx=e.clientX;td.cy=e.clientY-(td.touch?td.gs*.75:0);if(!td.raf){const t=td;t.raf=requestAnimationFrame(()=>{t.raf=0;if(t.g)t.g.style.transform='translate3d('+(t.cx-t.gs/2)+'px,'+(t.cy-t.gs/2)+'px,0)';});}}
 });
 function tup(e){
   if(!td)return;const t=td;td=null;
-  if(t.drag){t.g.remove();t.b.classList.remove('out');const r=cv.getBoundingClientRect();
+  if(t.drag){if(t.raf)cancelAnimationFrame(t.raf);t.g.remove();t.b.classList.remove('out');const r=cv.getBoundingClientRect();
     if(t.cx>=r.left&&t.cx<=r.right&&t.cy>=r.top&&t.cy<=r.bottom){const s=toSrc(t.cx-r.left,t.cy-r.top);if(s[0]>=0&&s[0]<=W&&s[1]>=0&&s[1]<=H){attempt(t.id,s[0],s[1],t.k);return;}}
     renderHand();
   }else{sel=sel===t.k?null:t.k;renderHand();if(sel!==null)setMsg(explainVal(t.id));}
