@@ -255,7 +255,7 @@ function renderHand(){
   const h=$('hand');h.innerHTML='';h.style.setProperty('--hc',HCOLS);h.style.setProperty('--ts',TSZ+'px');
   for(let k=0;k<HANDN;k++){
     const id=M.hand[k],b=document.createElement('button');b.className='piece'+(id===null||id===undefined?' empty':'')+(sel===k?' sel':'');b.dataset.k=k;b.style.width=b.style.height=TSZ+'px';
-    if(id!==null&&id!==undefined&&!M.done){b.appendChild(pieceCanvas(id,TSZ-10));const o=valueOf(id),t=document.createElement('span');t.className='x2'+(o.first?'':' v1');t.textContent=(o.first?'1st ':'')+o.v;b.appendChild(t);b.setAttribute('aria-label','Piece worth '+o.v+(o.first?', first placement':''));}
+    if(id!==null&&id!==undefined&&!M.done){b.appendChild(pieceCanvas(id,TSZ-10));const o=valueOf(id);/* no value badge on tray pieces (owner, 2026-11-19: it covered the piece) */b.setAttribute('aria-label','Piece worth '+o.v+(o.first?', first placement':''));}
     else b.disabled=true;
     h.appendChild(b);
   }
