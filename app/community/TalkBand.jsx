@@ -1,6 +1,6 @@
 'use client';
 // THE POST-GAME TALK BAND (owner, 2026-11-18). On the endings: one line, "Talk About Today's
-// <Game>", and the two plain doors, See The Discussion and Suggest A <Game> Idea.
+// <Game>", and the two plain doors, See The Discussion and Suggest An Idea (shortened from Suggest A <Game> Idea, owner 2026-11-18).
 //
 // Where it sits: on the ending's first screen it goes BELOW the three big plays
 // (owner: "one row lower below the next up tiles"), and on the Full Results
@@ -23,7 +23,7 @@ export default function TalkBand({ gameKey, gameName, where = 'first', phone = f
       </div>
       <div className="tkb-bt">
         <a className="tkb-go" href={talkHref(gameKey)}>See The Discussion</a>
-        <a className="tkb-alt" href={suggestHref(gameKey)}>Suggest A {name} Idea</a>
+        <a className="tkb-alt" href={suggestHref(gameKey)}>Suggest An Idea</a>
       </div>
     </div>
   );
