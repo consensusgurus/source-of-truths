@@ -1,43 +1,25 @@
 'use client';
-// THE POST-GAME TALK BAND (owner, 2026-11-18). One row on the endings that says
-// how many players are talking about the puzzle just played and offers the two
-// plain doors: See The Discussion and Suggest A <Game> Idea.
+// THE POST-GAME TALK BAND (owner, 2026-11-18). On the endings: one line, "Talk About Today's
+// <Game>", and the two plain doors, See The Discussion and Suggest A <Game> Idea.
 //
 // Where it sits: on the ending's first screen it goes BELOW the three big plays
 // (owner: "one row lower below the next up tiles"), and on the Full Results
 // page below Up next, desktop and phone alike.
 //
-// It only ever reads the public summary (counts, never post text), so it is
-// spoiler safe, and it costs one cached request shared with every other band
-// on the page. It paints at once with "Talk about today's <Game>" and fills the
-// count in when it lands, so it never moves the buttons around it.
-import React, { useEffect, useState } from 'react';
-import { fetchSummary, talkHref, suggestHref } from './communityClient';
+// JUST THE LINE AND THE BUTTONS (owner, 2026-11-18: "How about just the text above and the
+// buttons?"). No Post-Game Talk eyebrow, no player count, no finishers-only note; the
+// discussion page itself says who can read it. With no count it makes no request at all.
+import React from 'react';
+import { talkHref, suggestHref } from './communityClient';
 
 export default function TalkBand({ gameKey, gameName, where = 'first', phone = false }) {
-  const [n, setN] = useState(null);
-  useEffect(() => {
-    if (!gameKey) return undefined;
-    let dead = false;
-    fetchSummary(gameKey).then((d) => {
-      if (dead || !d || d.available === false) return;
-      setN(d.game ? d.game.players || 0 : 0);
-    });
-    return () => { dead = true; };
-  }, [gameKey]);
   if (!gameKey) return null;
   const name = gameName || 'this puzzle';
-  const title = n && n > 0
-    ? `${n} ${n === 1 ? 'Player Is' : 'Players Are'} Talking About Today’s ${name}`
-    : `Talk About Today’s ${name}`;
-  const sub = n && n > 0 ? 'Only players who finished can read it, so no spoilers.' : 'Be the first to post. Only players who finished can read it.';
   return (
     <div className={'tkb tkb-' + where + (phone ? ' tkb-ph' : '')}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="tkb-tx">
-        <small>Post-Game Talk</small>
-        <b>{title}</b>
-        <span>{sub}</span>
+        <b>{`Talk About Today\u2019s ${name}`}</b>
       </div>
       <div className="tkb-bt">
         <a className="tkb-go" href={talkHref(gameKey)}>See The Discussion</a>

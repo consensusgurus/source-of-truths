@@ -814,4 +814,5 @@ footer (`FOOTER_COLS`). On the endings, `app/community/TalkBand.jsx` sits **belo
 on the first screen (owner: "one row lower below the next up tiles") and below Up next on the Full
 Results page, desktop and phone, and the results board gets a fourth tab, Talk, running
 `app/community/TalkPanel.jsx` compact. The bands and the tab show for TODAY's puzzle only
-(`curISO` set), never on an archived day.
+(`curISO` set), never on an archived day. The band is just one line, "Talk About Today's <Game>", and the two buttons (owner,
+2026-11-18): no eyebrow, no player count, no finishers-only note, and no request.
