@@ -30,7 +30,6 @@ import { X, Smartphone, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import ReportIssue from '../ReportIssue';
@@ -325,7 +324,6 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
   const gRef = useRef(g);
 
@@ -1268,7 +1266,6 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
           <DailyGamesGrid replay={!playing ? resetGame : null}
             self="shoe"
             maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
             light
             boardSlot={<DailyBoardPanel self="shoe" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
@@ -1324,7 +1321,6 @@ export default function ShoeClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
         <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="shoe" name="Shoe">

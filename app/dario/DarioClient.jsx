@@ -24,7 +24,6 @@ import { createPortal } from 'react-dom';
 import { X, Pause, Play, RotateCcw, Maximize2, Volume2, VolumeX, Zap } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -224,7 +223,6 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => { if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`); }, []);
   const viewedRef = useRef(false);
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
 
   const commit = useCallback((next) => {
     gRef.current = next;
@@ -712,7 +710,6 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
       )}
 
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '18px 14px 40px', position: 'relative', zIndex: 2 }}>
-        <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
         {!LOFT && (
           <DailyMasthead slug="dario" num={PUZZLE.num} dateLabel={PUZZLE.dateLabel} accent={COLORS.accent} helpTop={13} marginBottom={16} onHelp={() => setShowHelp(true)} />
@@ -788,7 +785,6 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
             <DailyGamesGrid
               self="dario"
               maxWidth={620}
-              challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
               share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
               light
               divider

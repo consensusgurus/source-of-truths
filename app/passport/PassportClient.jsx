@@ -25,7 +25,6 @@ import { holdRootPaint } from '@/lib/root-paint';
 import { useSearchParams } from 'next/navigation';
 import { X } from 'lucide-react';
 import DailyRules from '../DailyRules';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
@@ -1139,7 +1138,6 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
   const noticeRef = useRef(null);
   const inputRef = useRef(null);
@@ -1861,7 +1859,6 @@ export default function PassportClient({ puzzles = [], day = null, forceNum = nu
       <MoreRunsPop self="passport" ready={nudgeReady} delay={10000} fireOnLeave />
       {/* More geography for a runs-only player, after the finale (owner, 2026-10-12). See GauntletMorePop. */}
       <GauntletMorePop circuitId="passport" ready={hydrated && done && !finale} />
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
         <HelpSheet onClose={() => setShowHelp(false)} self="passport" name="Passport">

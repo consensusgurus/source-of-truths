@@ -26,7 +26,6 @@ import { useSearchParams } from 'next/navigation';
 import { X, Lightbulb, Smartphone } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -254,7 +253,6 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
   const phoneStage = usePhoneStage();
   // The desktop rail beside the board (app/SlateStage.jsx, owner 2026-11-02).
   const egDesk = useEgDesk();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const replyTimer = useRef(null);
@@ -1108,7 +1106,6 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
           )}
           {!LOFT && (
           <DailyGamesGrid replay={!playing ? resetGame : null} self="check" maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light
             boardSlot={<DailyBoardPanel self="check" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
             divider />
@@ -1157,7 +1154,6 @@ export default function CheckClient({ puzzles = [], forceNum = null }) {
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{toast}</div>

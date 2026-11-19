@@ -1102,7 +1102,6 @@ export default function ArcosClient({ puzzles = [], forceNum = null }) {
         {!focusMode && !LOFT && (<DailyGamesGrid replay={ended ? resetGame : null}
           self="arcos"
           maxWidth={640}
-          challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
           share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
           light
           boardSlot={<DailyBoardPanel self="arcos" quizId={PUZZLE.quizId} maxWidth={640} streak={{ current: myStats.cur, best: myStats.max }} />}

@@ -14,28 +14,9 @@ export const fetchCache = 'force-no-store';
 const EDGE = { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=180' };
 
 
-// Completed-duel win tally per anon, for the duel trophies. One extra query,
-// paid only on profile views (this route), never on the per-game /me calls.
-async function duelWins() {
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('quiz_duels')
-      .select('challenger_anon, opponent_anon, winner')
-      .eq('status', 'complete')
-      .limit(10000);
-    if (error || !data) return null;
-    const wins = new Map();
-    for (const d of data) {
-      const anon = d.winner === 'challenger' ? d.challenger_anon : d.winner === 'opponent' ? d.opponent_anon : null;
-      if (anon) wins.set(anon, (wins.get(anon) || 0) + 1);
-    }
-    return wins;
-  } catch (e) { return null; }
-}
-
 // GET /api/quiz/player?key=u:123 | a:<anon>   (or ?username=Name)
 // Any player's full XP profile, same shape as /api/quiz/me, PLUS the trophy
-// case (all groups including duels). Lets the UI link a player name to their
+// case. Lets the UI link a player name to their
 // stat detail and powers /player/<name>. Anonymous guests are addressable by
 // a:<anon>.
 export async function GET(request) {
@@ -57,9 +38,8 @@ export async function GET(request) {
     }
     const profile = buildProfile(players, myKey);
     if (profile.found) {
-      const duelWinsByAnon = await duelWins();
-      const res = computeTrophies(data || [], players, { duelWinsByAnon });
-      profile.trophies = buildTrophyList(res, myKey, { includeDuels: duelWinsByAnon != null });
+      const res = computeTrophies(data || [], players);
+      profile.trophies = buildTrophyList(res, myKey);
     }
     return NextResponse.json(profile, { headers: profile && profile.found ? EDGE : undefined });
   } catch (e) {

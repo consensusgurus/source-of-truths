@@ -54,7 +54,6 @@ import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Smartphone, Delete, Pencil } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -393,7 +392,6 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
   // split-screen tablet gets it too, and it follows a rotation live.
   const [narrowUi, setNarrowUi] = useState(false);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   // Latches the auto-win so the effect below fires exactly once per puzzle.
@@ -1467,7 +1465,6 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
           <DailyGamesGrid replay={!playing ? resetGame : null}
             self="cipher"
             maxWidth={640}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
             light
             boardSlot={<DailyBoardPanel self="cipher" quizId={PUZZLE.quizId} maxWidth={640} streak={{ current: myStats.cur, best: myStats.max }} />}
@@ -1531,7 +1528,6 @@ export default function CipherClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>

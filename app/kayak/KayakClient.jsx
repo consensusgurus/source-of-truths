@@ -23,7 +23,6 @@ import { useAutoAdvance } from '@/lib/sudoku-auto-advance';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import ReportIssue from '../ReportIssue';
@@ -271,7 +270,6 @@ export default function KayakClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const undoRef = useRef([]);
@@ -1162,7 +1160,6 @@ export default function KayakClient({ puzzles = [], forceNum = null }) {
           <DailyGamesGrid replay={!playing ? resetGame : null}
             self="kayak"
             maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
             light
             boardSlot={<DailyBoardPanel self="kayak" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
@@ -1221,7 +1218,6 @@ export default function KayakClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>

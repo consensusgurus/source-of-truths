@@ -22,7 +22,6 @@ import { useSearchParams } from 'next/navigation';
 import { X, Lightbulb, Eye, RotateCcw, Smartphone } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -285,7 +284,6 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
   const [stageLook] = useStageLook();
   const tnsRef = useRef(null);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const replyTimer = useRef(null);
@@ -1275,7 +1273,6 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
               replay={!playing ? resetGame : null}
               self="turn"
               maxWidth={620}
-              challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
               share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
               light
               boardSlot={<DailyBoardPanel self="turn" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
@@ -1326,7 +1323,6 @@ export default function TurnClient({ puzzles = [], forceNum = null }) {
           quizId={PUZZLE.quizId}
         />
       )}
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', transform: 'translateX(-50%)', bottom: 26, zIndex: 60, background: STAGE ? 'var(--stg-ink)' : COLORS.ink, color: STAGE ? 'var(--stg-ground)' : T.white, fontFamily: SANS, fontSize: 13.5, fontWeight: 700, padding: '10px 16px', borderRadius: 9, boxShadow: '0 6px 18px rgba(0,0,0,0.28)' }}>{toast}</div>

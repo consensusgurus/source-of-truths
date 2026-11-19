@@ -30,7 +30,6 @@ import { X, Lightbulb, Eye, Smartphone, RotateCcw } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -318,7 +317,6 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
     return () => { try { ro && ro.disconnect(); } catch (e) {} };
   }, [feltEl]);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
 
@@ -1366,7 +1364,6 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
           )}
           {!LOFT && (
           <DailyGamesGrid replay={!playing ? resetGame : null} self="cell" maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light
             boardSlot={<DailyBoardPanel self="cell" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
             divider />
@@ -1414,7 +1411,6 @@ export default function CellClient({ puzzles = [], forceNum = null }) {
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{toast}</div>

@@ -19,7 +19,6 @@ import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Smartphone, Table2, Lightbulb, Eraser } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -216,7 +215,6 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
   const [standalone, setStandalone] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const pressTimer = useRef(null);
@@ -1111,7 +1109,7 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
             </div>
           )}
           {!LOFT && (
-          <DailyGamesGrid replay={!playing ? resetGame : null} self="stands" maxWidth={640} challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`} share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light boardSlot={<DailyBoardPanel self="stands" quizId={PUZZLE.quizId} maxWidth={640} streak={{ current: myStats.cur, best: myStats.max }} />} divider />
+          <DailyGamesGrid replay={!playing ? resetGame : null} self="stands" maxWidth={640} share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light boardSlot={<DailyBoardPanel self="stands" quizId={PUZZLE.quizId} maxWidth={640} streak={{ current: myStats.cur, best: myStats.max }} />} divider />
           )}
           {!focusMode && mobileUi && !standalone && (
             <button onClick={a2hsClick} style={{ marginTop: 10, width: '100%', fontFamily: SANS, fontSize: 13.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 800, height: 54, borderRadius: 10, border: 'none', background: `var(--stg-acc, ${COLORS.accent})`, color: `var(--stg-onramp, ${THEME.white})`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 9, whiteSpace: 'nowrap' }}>
@@ -1150,7 +1148,6 @@ export default function StandsClient({ puzzles = [], forceNum = null }) {
           subline={<>Stands #{PUZZLE.num} &middot; {resultText} &middot; {g.rejected} rejected &middot; {elapsed}</>}
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'} onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
       {/* Stands left the Judged run on 2026-10-11 (Ergo took its seat), so it
           no longer offers that run. */}
       {toast && (

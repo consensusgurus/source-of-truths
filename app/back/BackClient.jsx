@@ -21,7 +21,6 @@ import { X, Smartphone, Zap } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -224,7 +223,6 @@ export default function BackClient({ puzzles = [], problemsByNum = {}, forceNum 
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
   const qStartRef = useRef(null);
   const lockRef = useRef(false);
@@ -837,7 +835,6 @@ export default function BackClient({ puzzles = [], problemsByNum = {}, forceNum 
           )}
           {!LOFT && (
           <DailyGamesGrid replay={!playing ? resetGame : null} self="back" maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light
             boardSlot={<DailyBoardPanel self="back" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
             divider />
@@ -886,7 +883,6 @@ export default function BackClient({ puzzles = [], problemsByNum = {}, forceNum 
           onClose={() => setEndClosed(true)} />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {/* THE MATH GAUNTLET DOOR (owner, 2026-10-09): the first time a player
           ever opens this game on its own page, the whole Math Gauntlet is

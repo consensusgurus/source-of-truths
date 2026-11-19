@@ -31,7 +31,6 @@ import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
 import DailyChrome from '../DailyChrome';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import DailyBoardPanel from '../quiz/[id]/DailyBoardPanel';
 import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from '../quiz/[id]/useAbandonFlush';
@@ -221,7 +220,6 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
   const [mobileUi, setMobileUi] = useState(false);
   const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const inputRef = useRef(null);
@@ -901,7 +899,7 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
               </div>
             )}
             {!LOFT && (
-            <DailyGamesGrid replay={!playing ? resetGame : null} self="warmer" maxWidth={620} challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`} share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light boardSlot={<DailyBoardPanel self="warmer" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />} divider />
+            <DailyGamesGrid replay={!playing ? resetGame : null} self="warmer" maxWidth={620} share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light boardSlot={<DailyBoardPanel self="warmer" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />} divider />
             )}
             {!focusMode && mobileUi && !standalone && (
               <button onClick={a2hsClick} style={{ marginTop: 10, width: '100%', fontFamily: SANS, fontSize: 13.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 800, height: 54, borderRadius: 10, border: 'none', background: `var(--stg-acc, ${COLORS.accent})`, color: `var(--stg-onramp, ${T.white})`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 9 }}>
@@ -943,7 +941,6 @@ export default function WarmerClient({ active, puzzles = [], forceNum = null }) 
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && (
         <div className="wm-toast" style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>{toast}</div>

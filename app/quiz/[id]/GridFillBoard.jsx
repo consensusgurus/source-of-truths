@@ -527,7 +527,6 @@ export default function GridFillBoard({ quizId, mobile = false }) {
             {chip('play', 'Play')}
             {phase !== 'playing' && chip('stats', 'Leaderboard')}
             {chip('join', 'Sign-up', <Trophy size={12} strokeWidth={2.5} />)}
-            {phase !== 'playing' && (<a href={`/duel/new?quiz=${encodeURIComponent(quizId)}`} style={{ flex: '1 0 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: `var(--stg-raise,${COLORS.ink})`, color: `var(--stg-ink,${T.white})`, borderRadius: 10, padding: '9px 14px', whiteSpace: 'nowrap', fontFamily: MONO, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700, textDecoration: 'none' }}><Swords size={12} strokeWidth={2.5} /> Challenge Someone</a>)}
             <button
               onClick={() => { setQSent(false); setQOpen(true); }}
               style={{ flex: '1 0 auto', justifyContent: 'center', background: 'transparent', color: FADED, border: 'none', borderRadius: 7, padding: '9px 14px', whiteSpace: 'nowrap', fontFamily: SANS, fontSize: 13, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
@@ -749,9 +748,6 @@ export default function GridFillBoard({ quizId, mobile = false }) {
                 <button onClick={downloadResultImage} style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700, padding: '10px 20px', borderRadius: 10, border: `1.5px solid var(--stg-line2,${COLORS.ink})`, background: `var(--stg-surf,${COLORS.cream})`, color: INK, cursor: 'pointer' }}>Download image</button>
               )}
             </div>
-            <a href={`/duel/new?quiz=${encodeURIComponent(quizId)}`} style={{ fontFamily: MONO, fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '0 28px', lineHeight: '46px', border: 'none', borderRadius: 10, background: `var(--stg-raise,${COLORS.ink})`, color: `var(--stg-ink,${T.white})`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
-              <Swords size={14} strokeWidth={2.5} /> Challenge Someone
-            </a>
             <div style={{ fontFamily: MONO, fontSize: 12, color: FADED, marginTop: 16, wordBreak: 'break-all' }}>{shareUrl}</div>
           </div>
         )}

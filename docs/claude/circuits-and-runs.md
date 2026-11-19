@@ -977,3 +977,13 @@ spotlight, then the lit answer grows to the whole screen as a FINAL recap (`reca
 out", and a thin bar counting `FINAL_MS` (3.2s, `RunClient.jsx`). It lets go by itself into the run ending;
 a tap anywhere lets go sooner. Still no "See your run" button (owner, 2026-11-10). The 2.3s timer beside
 `VERDICT_MS` is now only a backstop, lengthened to cover the hold.
+
+## Duels are retired; Challenges is the only head-to-head (owner, 2026-11-19)
+
+The old Duel feature (`/duel/*`, `/api/duel/*`, `useDuelContext` / `DuelBanner` on every
+daily, the Duels section and ladder in the Stat Hub, the duel inbox pop-up on /quizzes,
+the home rail Challenge-your-rival card, the "Challenge Someone" buttons on catalog quizzes,
+and the two duel trophies) was removed. Challenges (`/vs`, `/challenges`, `lib/challenge.js`)
+replaced it. `/duel` and `/duel/*` redirect to `/challenges` in next.config.js. The
+`quiz_duels` tables were left in Supabase untouched (history), and the admin rename/merge
+routes still keep names on those rows in sync. Do not re-add duel entry points.

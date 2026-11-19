@@ -29,7 +29,6 @@ import { X, Smartphone, ArrowUp, ArrowDown, ExternalLink } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyChrome from '../DailyChrome';
 import { isMobileDevice } from '@/lib/is-mobile';
@@ -265,7 +264,6 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
   const noticeRef = useRef(null);
   const inputRef = useRef(null);
@@ -1093,7 +1091,6 @@ export default function PriceGame({ game = 'pricer', puzzles = [], dayByNum = {}
         </div>
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {/* THE PRICE CHECK DOOR (owner, 2026-10-01): anyone who opens one of
           the five on its own page is offered the run first, on the gate,

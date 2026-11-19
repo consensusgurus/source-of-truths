@@ -28,7 +28,6 @@ import { HelpCircle, X, Smartphone, Lightbulb, Scale, Eraser } from 'lucide-reac
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -270,7 +269,6 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
   const [armGiveUp, setArmGiveUp] = useState(0);
   const phoneStage = usePhoneStage();
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
 
@@ -1055,7 +1053,6 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
           <DailyGamesGrid replay={!playing ? resetGame : null}
             self="sworn"
             maxWidth={640}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
             light
             boardSlot={<DailyBoardPanel self="sworn" quizId={PUZZLE.quizId} maxWidth={640} streak={{ current: myStats.cur, best: myStats.max }} />}
@@ -1118,7 +1115,6 @@ export default function SwornClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
       {/* THE JUDGED DOOR (owner, 2026-10-09): the first time a player ever
           opens Sworn on its own page, the whole Judged run is offered, once per
           case. Never inside the run itself. See app/circuits/RunDoorPop.jsx. */}

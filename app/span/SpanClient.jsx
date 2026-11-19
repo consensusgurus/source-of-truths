@@ -33,7 +33,6 @@ import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
 import DailyGamesPromo from '../DailyGamesPromo';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -394,7 +393,6 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
   // Inside the Passport run (app/passport/PassportRunClient.jsx), owner 2026-10-14.
   const EMBED = useRunEmbed();
   useRunHelp(EMBED, () => setShowHelp(true));
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   const inputRef = useRef(null);
@@ -1428,7 +1426,6 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
           <DailyGamesGrid replay={!playing ? resetGame : null}
             self="span"
             maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
             light
             boardSlot={<DailyBoardPanel self="span" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
@@ -1492,7 +1489,6 @@ export default function SpanClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {toast && !LEG && (
         <div className="sp-toast" style={{ position: 'fixed', left: '50%', bottom: 26, transform: 'translateX(-50%)', background: COLORS.ink, color: T.white, fontFamily: SANS, fontWeight: 800, fontSize: 13.5, padding: '10px 18px', borderRadius: 9, zIndex: 60, boxShadow: '0 6px 18px rgba(20,22,28,0.25)', maxWidth: '86vw', textAlign: 'center' }}>

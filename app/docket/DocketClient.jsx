@@ -40,7 +40,6 @@ import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Check, Minus, ChevronDown, ChevronUp, Scale, Pencil, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
 import DailyChrome from '../DailyChrome';
@@ -355,7 +354,6 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
   // Bumped by a replay so the sketch (keyed on it) starts clean.
   const [sketchGen, setSketchGen] = useState(0);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
 
   const playing = g.status === 'playing';
@@ -1068,7 +1066,6 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
               self="docket"
               maxWidth={640}
               replay={!playing ? resetGame : null}
-              challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
               share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
               light
               divider
@@ -1094,7 +1091,6 @@ export default function DocketClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
       {/* THE JUDGED DOOR (owner, 2026-10-09): the first time a player ever
           opens Docket on its own page, the whole Judged run is offered, once per
           case. Never inside the run itself. See app/circuits/RunDoorPop.jsx. */}

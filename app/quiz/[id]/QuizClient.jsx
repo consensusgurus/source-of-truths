@@ -27,7 +27,6 @@ import { isQuizStage, quizAccVars, quizTint } from '@/lib/quiz-stage';
 import { useStageTheme } from '@/lib/stage-theme';
 import { isMobileDevice } from '@/lib/is-mobile';
 import useAbandonFlush from './useAbandonFlush';
-import useDuelContext, { DuelBanner } from './useDuelContext';
 import QuizIdleActions from './QuizIdleActions';
 import { quizIntro } from '@/lib/quiz-intro';
 import { LB_POPS, LB_FILTERS, pickLb, lbEmptyNote, registerRank } from '@/lib/quiz-lb';
@@ -463,42 +462,38 @@ export default function QuizClient({ quizId }) {
 
   const isMobileVP = useIsMobile();
   const mobile = isMobileVP;
-  // Duel context: if this quiz was opened from a duel (?duel=<token>),
-  // auto-submit the player's score when they finish and show a return bar.
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(quizId, searchParams);
-  const duelBanner = <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />;
   if (quiz.format === 'timed-mcq') {
-    return (<>{duelBanner}<TimedMcqBoard quizId={quizId} mobile={mobile} /></>);
+    return (<TimedMcqBoard quizId={quizId} mobile={mobile} />);
   }
   if (quiz.format === 'logic-grid') {
-    return (<>{duelBanner}<LogicGridBoard quizId={quizId} mobile={mobile} /></>);
+    return (<LogicGridBoard quizId={quizId} mobile={mobile} />);
   }
   if (quiz.format === 'grid-fill') {
-    return (<>{duelBanner}<GridFillBoard quizId={quizId} mobile={mobile} /></>);
+    return (<GridFillBoard quizId={quizId} mobile={mobile} />);
   }
   if (quiz.format === 'place-map') {
-    return (<>{duelBanner}<MapPlaceBoard quizId={quizId} mobile={mobile} /></>);
+    return (<MapPlaceBoard quizId={quizId} mobile={mobile} />);
   }
   if (quiz.format === 'geo-aerial') {
-    return (<>{duelBanner}<GeoAerialBoard quizId={quizId} mobile={mobile} /></>);
+    return (<GeoAerialBoard quizId={quizId} mobile={mobile} />);
   }
   if (quiz.format === 'globe') {
-    return (<>{duelBanner}<GlobePlaceBoard quizId={quizId} mobile={mobile} /></>);
+    return (<GlobePlaceBoard quizId={quizId} mobile={mobile} />);
   }
   if (quiz.format === 'survive-state') {
-    return (<>{duelBanner}<SurviveStateBoard quizId={quizId} mobile={mobile} /></>);
+    return (<SurviveStateBoard quizId={quizId} mobile={mobile} />);
   }
   if (quiz.format === 'logic-game') {
-    return (<>{duelBanner}<LogicGameBoard quizId={quizId} mobile={mobile} /></>);
+    return (<LogicGameBoard quizId={quizId} mobile={mobile} />);
   }
   if (quiz.format === 'higher-lower') {
-    return (<>{duelBanner}<HigherLowerBoard quizId={quizId} mobile={mobile} /></>);
+    return (<HigherLowerBoard quizId={quizId} mobile={mobile} />);
   }
   if (quiz.format === 'closer') {
-    return (<>{duelBanner}<CloserBoard quizId={quizId} mobile={mobile} /></>);
+    return (<CloserBoard quizId={quizId} mobile={mobile} />);
   }
   if (quiz.format === 'connections') {
-    return (<>{duelBanner}<ConnectionsBoard quizId={quizId} mobile={mobile} /></>);
+    return (<ConnectionsBoard quizId={quizId} mobile={mobile} />);
   }
   const answers = quiz.answers;
   const matched = quiz.format === 'matched';
@@ -1672,7 +1667,6 @@ export default function QuizClient({ quizId }) {
       data-stage-theme={QSTAGE ? stageTheme : undefined}
       style={{ ...(QSTAGE ? quizAccVars(quiz) : null), minHeight: '100vh', position: 'relative', overflowX: 'clip', background: QSTAGE ? 'var(--stg-ground)' : COLORS.cream, color: QSTAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink }}>
       <QuizCelebration kind={celebration} onDone={() => setCelebration(null)} />
-      {duelBanner}
       <style dangerouslySetInnerHTML={{ __html: `input:focus::placeholder{color:transparent}` }} />
       {!QSTAGE && (LOFT ? <DailyChrome loft /> : <QuizNavHeader />)}
       {/* THE CAP SWAP, and this is the whole trick. StageChrome takes
@@ -1851,7 +1845,6 @@ export default function QuizClient({ quizId }) {
                     share() uses the ref-stamped shareUrl, so a new player who opens
                     this link and finishes a game credits whoever shared it. */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 9 }}>
-                  <a href={`/duel/new?quiz=${encodeURIComponent(quiz.id)}`} style={{ ...stackBtn, flex: '1 1 190px', width: 'auto', background: `var(--stg-surf2,${COLORS.ink})`, color: `var(--stg-ink,${T.white})`, borderRadius: 10 }}><Swords size={15} strokeWidth={2.5} /> Challenge Someone</a>
                   <button onClick={() => { if (!notifyShareCredit(`${resultMsg}\n${shareUrl}`)) share(); }} style={{ ...stackBtn, flex: '1 1 190px', width: 'auto', background: `var(--stg-surf2,${COLORS.ink})`, color: `var(--stg-ink,${T.white})`, borderRadius: 10 }}><Share2 size={15} strokeWidth={2.5} /> {copied ? 'Link copied' : 'Share Quiz (for credit)'}</button>
                 </div>
               </div>
@@ -2348,7 +2341,6 @@ export default function QuizClient({ quizId }) {
               ))}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-              <a href={`/duel/new?quiz=${encodeURIComponent(quiz.id)}`} style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700, padding: '10px 20px', borderRadius: 10, border: 'none', background: `var(--stg-surf2,${COLORS.ink})`, color: `var(--stg-ink,${T.white})`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}><Swords size={14} strokeWidth={2.5} /> Challenge Someone</a>
               <button onClick={copyResult} style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700, padding: '10px 20px', borderRadius: 10, border: `1.5px solid var(--stg-line,${COLORS.ink})`, background: `var(--stg-surf,${COLORS.cream})`, color: INK, cursor: 'pointer' }}>Copy result</button>
               <button onClick={downloadPromoImage} style={{ fontFamily: MONO, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700, padding: '10px 20px', borderRadius: 10, border: `1.5px solid var(--stg-line,${COLORS.ink})`, background: `var(--stg-surf,${COLORS.cream})`, color: INK, cursor: 'pointer' }}>Save quiz image</button>
               {ended && (

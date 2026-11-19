@@ -34,7 +34,6 @@ import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Lightbulb, Flag, RotateCcw } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
 import DailyChrome from '../DailyChrome';
@@ -179,7 +178,6 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
   const [copied, setCopied] = useState(false);
   const press = useRef(null);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
 
   const playing = g.status === 'playing';
@@ -1131,7 +1129,6 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
               self="strata"
               maxWidth={640}
               replay={!playing ? resetGame : null}
-              challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
               share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
               light
               divider
@@ -1157,7 +1154,6 @@ export default function StrataClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
         <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="strata" name="Strata">

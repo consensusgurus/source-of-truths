@@ -29,7 +29,6 @@ import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Pause, Play, RotateCcw } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -234,7 +233,6 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
   const palRef = useRef(null);
   const viewedRef = useRef(false);
   const tickCount = useRef(0);
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
 
   const commit = useCallback((next) => {
     gRef.current = next;
@@ -803,7 +801,6 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
       )}
 
       <div style={{ maxWidth: 780, margin: '0 auto', padding: '18px 18px 40px', position: 'relative', zIndex: 2 }}>
-        <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
         {!LOFT && (
           <DailyMasthead
@@ -916,7 +913,6 @@ export default function SnakeClient({ puzzles = [], forceNum = null }) {
             <DailyGamesGrid
               self="snake"
               maxWidth={620}
-              challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
               share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
               light
               divider

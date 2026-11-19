@@ -29,7 +29,6 @@ import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Smartphone, Search, Eraser, Undo2 } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -326,7 +325,6 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
     return () => window.removeEventListener('resize', reset);
   }, []);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
   // Undo history: snapshots of the marks grid ONLY, kept in memory and never
@@ -1209,7 +1207,6 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
           <DailyGamesGrid replay={!playing ? resetGame : null}
             self="alibi"
             maxWidth={640}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
             light
             boardSlot={<DailyBoardPanel self="alibi" quizId={PUZZLE.quizId} maxWidth={640} streak={{ current: myStats.cur, best: myStats.max }} />}
@@ -1272,7 +1269,6 @@ export default function AlibiClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
       {/* THE JUDGED DOOR: Alibi is back in Judged from 2026-10-18 (owner). The
           first time a player ever opens Alibi on its own page, the whole run is
           offered, once per case. Never inside the run itself. */}

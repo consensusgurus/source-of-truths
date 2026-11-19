@@ -22,7 +22,6 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { HelpCircle, RotateCcw, X, Eraser, Smartphone, SearchCheck, Delete, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -259,7 +258,6 @@ export default function GlyphClient({ puzzles, forceNum }) {
   const [showA2hsHelp, setShowA2hsHelp] = useState(false);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
-  const { token: duelToken, info: duelInfo, submitted: duelSubmitted } = useDuelContext(PUZZLE.quizId);
 
   const assign = g.assign;
   const checks = g.checks;
@@ -1131,7 +1129,6 @@ export default function GlyphClient({ puzzles, forceNum }) {
           <DailyGamesGrid replay={!playing ? resetGame : null}
             self="glyph"
             maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
             light
             boardSlot={<DailyBoardPanel self="glyph" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
@@ -1191,7 +1188,6 @@ export default function GlyphClient({ puzzles, forceNum }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
       <RunDoorPop id="crossed" game="glyph" ready={hydrated && preStart && PUZZLE.num === pickPuzzle(puzzles, null).num && !EMBED} self="Glyph" />
 
       {toast && (

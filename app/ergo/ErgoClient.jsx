@@ -26,7 +26,6 @@ import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Check, RotateCcw, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
 import DailyChrome from '../DailyChrome';
@@ -150,7 +149,6 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
   // The stage folds the filed statements away until asked (the mockup).
   const [showFiled, setShowFiled] = useState(false);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
 
   const playing = g.status === 'playing';
@@ -677,7 +675,6 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
             <div id="stf-stats-slot" />
             {!LOFT && (
               <DailyGamesGrid self="ergo" maxWidth={640} replay={!playing ? resetGame : null}
-                challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
                 share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light divider
                 boardSlot={<DailyBoardPanel self="ergo" quizId={PUZZLE.quizId} maxWidth={640} streak={{ current: myStats.cur, best: myStats.max }} />}
               />
@@ -693,7 +690,6 @@ export default function ErgoClient({ puzzles = [], forceNum = null }) {
           onShare={copyShare} shareLabel={copied ? 'Copied' : 'Share Result'} onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
       <RunDoorPop id="judged" game="ergo" ready={hydrated && preStart && isTodays && !EMBED} self="Ergo" />
 
       {showHelp && (

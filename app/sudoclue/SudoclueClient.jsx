@@ -24,7 +24,6 @@ import { createPortal } from 'react-dom';
 import { Smartphone } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -364,7 +363,6 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
   const searchParams = useSearchParams();
   const use3d = !flat3d && searchParams.get('flat') !== '1';
   ITEM_PICS = use3d ? itemPics : null;
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
 
@@ -1466,7 +1464,6 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           )}
           {!LOFT && (
           <DailyGamesGrid replay={!playing ? resetGame : null} self={KEY} maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light
             boardSlot={<DailyBoardPanel self={KEY} quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
             divider />
@@ -1511,7 +1508,6 @@ export default function SudoclueClient({ puzzles = [], forceNum = null }) {
           onReplay={resetGame} onClose={() => setEndClosed(true)} />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {finale && !playing && (() => {
         const sol = solution();

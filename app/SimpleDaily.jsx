@@ -17,7 +17,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Smartphone } from 'lucide-react';
-import useDuelContext, { DuelBanner } from './quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from './quiz/[id]/JoinLeaderboardForm';
 import useEndHold, { HOLD_SHORT } from './useEndHold';
 import { isMobileDevice } from '@/lib/is-mobile';
@@ -133,7 +132,6 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
   }, []);
   const a2hsClick = () => { const e = installEvt; if (e) { setInstallEvt(null); e.prompt(); } else { setShowA2hsHelp(true); } };
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
 
   // ── stats (the local record, topped up from the server) ──────────────────
@@ -470,7 +468,6 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
           </div>
         )}
       </div>
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
         <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self={KEY} name={NAME}>

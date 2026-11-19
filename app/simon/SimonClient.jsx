@@ -27,7 +27,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Smartphone } from 'lucide-react';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyRules from '../DailyRules';
 import ReportIssue from '../ReportIssue';
@@ -219,7 +218,6 @@ export default function SimonClient({ puzzles = [], forceNum = null }) {
   const inputStart = useRef(0);
   const replayOnShow = useRef(false);
   const viewedRef = useRef(false);
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
 
   const commit = useCallback((next) => {
     gRef.current = next;
@@ -675,7 +673,6 @@ export default function SimonClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
       </div>
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
         <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="simon" name="Simon">

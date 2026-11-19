@@ -23,7 +23,6 @@ import Footer from '../Footer';
 import DailyGamesPromo from '../DailyGamesPromo';
 import DailyChrome from '../DailyChrome';
 import DailyRules from '../DailyRules';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import ReportIssue from '../ReportIssue';
@@ -599,7 +598,6 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
   const animSeq = useRef(0);
   const animTimer = useRef(null);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const wordSetRef = useRef(null);
   const coveredLenRef = useRef(null);
@@ -2016,7 +2014,6 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
           <DailyGamesGrid replay={!playing ? resetGame : null}
           self="crux"
           maxWidth={640}
-          challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
           share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
           light
           boardSlot={<DailyBoardPanel self="crux" quizId={PUZZLE.quizId} maxWidth={640} streak={{ current: myStats.cur, best: myStats.max }} />}
@@ -2084,7 +2081,6 @@ export default function CruxClient({ puzzles = [], forceNum = null, loft = false
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {/* toast */}
       {toast && (

@@ -16,7 +16,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Smartphone } from 'lucide-react';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyRules from '../DailyRules';
 import ReportIssue from '../ReportIssue';
@@ -165,7 +164,6 @@ export default function TangledClient({ puzzles = [], forceNum = null }) {
   const [shareCta, setShareCta] = useState('Share');
   useEffect(() => { if (contestIsLive()) setShareCta(`Share for ${CONTEST.prizeLabel}*`); }, []);
   const viewedRef = useRef(false);
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
 
   const commit = useCallback((next) => {
     gRef.current = next;
@@ -540,7 +538,6 @@ export default function TangledClient({ puzzles = [], forceNum = null }) {
           </div>
         )}
       </div>
-      {!EMBED && <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />}
       <RunDoorPop id="spacecadet" game="tangled" ready={hydrated && preStart && isTodays && !EMBED} self="Tangled" />
 
       {showHelp && (

@@ -17,7 +17,6 @@ import { X, Smartphone, Trophy } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import RunDoorPop from '../circuits/RunDoorPop';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
@@ -214,7 +213,6 @@ export default function SpellClient({ puzzles = [], questionsByNum = {}, forceNu
   const [mobileUi, setMobileUi] = useState(false);
   const [showChrome, setShowChrome] = useState(false);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
   const qStartRef = useRef(null);
   const lockRef = useRef(false);
@@ -819,7 +817,6 @@ export default function SpellClient({ puzzles = [], questionsByNum = {}, forceNu
           )}
           {!LOFT && (
           <DailyGamesGrid replay={!playing ? resetGame : null} self="spell" maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light
             boardSlot={<DailyBoardPanel self="spell" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
             divider />
@@ -868,7 +865,6 @@ export default function SpellClient({ puzzles = [], questionsByNum = {}, forceNu
           onClose={() => setEndClosed(true)} />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
       {/* THE ENGLISH GAUNTLET DOOR: a player who opens one of the five
           English quizzes on its own page is offered the whole run first, on
           the gate. See app/circuits/RunDoorPop.jsx. */}

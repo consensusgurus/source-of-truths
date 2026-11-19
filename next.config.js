@@ -102,6 +102,9 @@ const nextConfig = {
   async redirects() {
     return [
       // The consensus Sports Rankings pages were removed (owner, 2026-11-17).
+      // Duels were retired 2026-11-19 (Challenges replaced them): old duel links land on Challenges.
+      { source: '/duel', destination: '/challenges', permanent: true },
+      { source: '/duel/:path*', destination: '/challenges', permanent: true },
       { source: '/collegefootballrankings', destination: '/', permanent: true },
       { source: '/collegefootballrankings/:path*', destination: '/', permanent: true },
       { source: '/nflrankings', destination: '/', permanent: true },

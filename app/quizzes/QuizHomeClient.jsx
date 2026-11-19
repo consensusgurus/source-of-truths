@@ -7,7 +7,6 @@ import QuizCommandHeader, { jumpToQuizzes } from './QuizCommandHeader';
 import StageToday from '../today/StageToday';
 import ContestNote from '../ContestNote';
 import QrPosterForm from '../QrPosterForm';
-import DuelTile from './DuelTile';
 import CommunityTile from './CommunityTile';
 import FeaturedFlipTile from './FeaturedFlipTile';
 import {
@@ -666,7 +665,6 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
     try { setStageHome(new URLSearchParams(window.location.search).get('stage') !== '0'); } catch (e) { setStageHome(true); }
   }, []);
   const [feedbackMode, setFeedbackMode] = useState(null); // null | 'issue' | 'manager' (the tool row's first two buttons)
-  const [duels, setDuels] = useState([]); // last few completed duels, for the header ticker
   const [dailyLead, setDailyLead] = useState(null); // daily-board leader for the header ticker
   const [dailyBoard, setDailyBoard] = useState(null); // full daily-combined payload (passed to DailyStrip's leaderboard)
   const [statsOpen, setStatsOpen] = useState(false);
@@ -876,9 +874,6 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
     fetch('/api/quiz/today').then((r) => r.json()).then((d) => {
       if (d) setTodayData({ byCorrect: Array.isArray(d.leaders) ? d.leaders : [], byQuizzes: Array.isArray(d.quizLeaders) ? d.quizLeaders : [] });
     }).catch(() => {});
-    fetch('/api/duel/latest').then((r) => r.json()).then((d) => {
-      if (d) setDuels(Array.isArray(d.duels) ? d.duels : (d.duel ? [d.duel] : []));
-    }).catch(() => {});
   }, []);
 
   // Read today's daily-challenge run-state from localStorage (drives the box's
@@ -927,41 +922,6 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
     }).catch(() => {});
   }, []);
 
-  const [duelNotif, setDuelNotif] = useState({ challenges: [], results: [], yourTurn: [] });
-  const [duelSeen, setDuelSeen] = useState({});
-  const [duelLater, setDuelLater] = useState({});
-  const [duelMuted, setDuelMuted] = useState({});
-  const [duelMuteAll, setDuelMuteAll] = useState(false);
-  function loadDuelNotif() {
-    const anon = getAnonId();
-    if (!anon) return;
-    const em = getIdentity();
-    const emq = em && em.email ? `&email=${encodeURIComponent(em.email)}` : '';
-    fetch(`/api/duel/notifications?anonId=${encodeURIComponent(anon)}${emq}`).then((r) => r.json()).then((d) => { if (d) setDuelNotif({ challenges: d.challenges || [], results: d.results || [], yourTurn: d.yourTurn || [] }); }).catch(() => {});
-  }
-  useEffect(() => {
-    try { setDuelSeen(JSON.parse(localStorage.getItem('sot_duel_seen') || '{}') || {}); } catch {}
-    try { setDuelLater(JSON.parse(localStorage.getItem('sot_duel_later') || '{}') || {}); } catch {}
-    try { setDuelMuted(JSON.parse(localStorage.getItem('sot_duel_muted') || '{}') || {}); } catch {}
-    try { setDuelMuteAll(localStorage.getItem('sot_duel_mute_all') === '1'); } catch {}
-    loadDuelNotif();
-    // 45s -> 120s and skip hidden tabs (egress fix 2026-07-12); the
-    // visibilitychange refresh catches up as soon as the tab returns.
-    const _dnPoll = setInterval(() => {
-      if (typeof document === 'undefined' || document.visibilityState === 'visible') loadDuelNotif();
-    }, 120000);
-    const _dnVis = () => { if (document.visibilityState === 'visible') loadDuelNotif(); };
-    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', _dnVis);
-    return () => {
-      clearInterval(_dnPoll);
-      if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', _dnVis);
-    };
-  }, []);
-  async function duelDecline(token) { const idn = getIdentity(); const nm = (idn && idn.username) || 'Player'; try { await fetch('/api/duel/decline', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, anonId: getAnonId(), name: nm, email: (idn && idn.email) || undefined }) }); } catch {} loadDuelNotif(); }
-  function duelDismissServer(token, kind) { try { const anon = getAnonId(); if (!anon) return; const idn = getIdentity(); fetch('/api/duel/dismiss', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, kind, anonId: anon, email: (idn && idn.email) || undefined }) }).catch(() => {}); } catch {} }
-  function duelSeenAdd(token) { duelDismissServer(token, 'seen'); setDuelSeen((s) => { const n = { ...s, [token]: 1 }; try { localStorage.setItem('sot_duel_seen', JSON.stringify(n)); } catch {} return n; }); }
-  function duelLaterAdd(token) { duelDismissServer(token, 'later'); setDuelLater((s) => { const n = { ...s, [token]: 1 }; try { localStorage.setItem('sot_duel_later', JSON.stringify(n)); } catch {} return n; }); }
-  function duelMuteAdd(anon, name, token) { if (!anon) { duelLaterAdd(token); return; } setDuelMuted((m) => { const n = { ...m, [anon]: name || 'Player' }; try { localStorage.setItem('sot_duel_muted', JSON.stringify(n)); } catch {} return n; }); duelLaterAdd(token); }
 
   // Current player's stats (overall — used for the player bar + pinned "You").
   useEffect(() => {
@@ -1219,17 +1179,6 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
         { text: ` leads Today's Challenge${dailyCat ? ` (${dailyCat})` : ''}` },
       ] });
     }
-    const duelRows = (duels || []).slice(0, 4).map((d) => {
-      const tie = d.winner === 'tie';
-      const chWon = d.winner === 'challenger';
-      const w = (tie || chWon) ? d.challenger_name : d.opponent_name;
-      const l = (tie || chWon) ? d.opponent_name : d.challenger_name;
-      const ws = (tie || chWon) ? d.challenger_score : d.opponent_score;
-      const ls = (tie || chWon) ? d.opponent_score : d.challenger_score;
-      return { type: 'duel', href: '/quizzes/hub?tab=duels', segs: tie
-        ? [{ text: w || 'Player', strong: true }, { text: ' and ' }, { text: l || 'Player', strong: true }, { text: ` tied a Duel ${ws} to ${ls}` }]
-        : [{ text: w || 'Player', strong: true }, { text: ' beat ' }, { text: l || 'Player', strong: true }, { text: ` in a Duel ${ws} to ${ls}` }] };
-    });
     const fresh = (newest || []).slice(0, 2).map((q) => ({ type: 'new', href: `/quiz/${q.id}`, segs: [
       { text: 'New quiz: ' }, { text: q.title, strong: true },
     ] }));
@@ -1277,7 +1226,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
         { text: ` has played ${p.daysPlayed} days` },
         ...(p.accuracy != null ? [{ text: ` · ${p.accuracy}% accuracy`, dim: true }] : []),
       ] }));
-    const pools = [playRows, [...top, ...champs], duelRows, achRows, [...leads, ...stat], streakRows, fresh];
+    const pools = [playRows, [...top, ...champs], achRows, [...leads, ...stat], streakRows, fresh];
     const out = [];
     for (let i = 0; out.length < 28; i += 1) {
       const before = out.length;
@@ -1285,7 +1234,7 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
       if (out.length === before) break;
     }
     return out;
-  }, [recent, titleById, todayCorrectRows, dailyRows, dailyCat, duels, newest, playsToday, dailyLead, xpBoard, catBoards]);
+  }, [recent, titleById, todayCorrectRows, dailyRows, dailyCat, newest, playsToday, dailyLead, xpBoard, catBoards]);
   // Business News hub quizzes (market-moving recaps, earnings, sector updates),
   // newest first — shown inside the Business News promo tile.
   const businessNewsRows = useMemo(() => catalog.slice()
@@ -2087,65 +2036,6 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
            so the page's own top padding goes and the section carries no gap
            above it (owner, 2026-08-03). */
         @media(max-width:900px){.qzf-w{padding-top:0 !important;}.qzh .dhx{padding-top:0 !important;}.qzh .dhx-center{margin-top:0 !important;}}` }} />
-
-        {(() => {
-          if (duelMuteAll) return null;
-          const myA = getAnonId();
-          const q = [];
-          (duelNotif.yourTurn || []).forEach((c) => { if (duelLater[c.token]) return; q.push({ kind: 'yourturn', ...c }); });
-          (duelNotif.challenges || []).forEach((c) => { if (duelLater[c.token]) return; if (c.challenger_anon && duelMuted[c.challenger_anon]) return; q.push({ kind: 'challenge', ...c }); });
-          (duelNotif.results || []).forEach((r) => { if (duelSeen[r.token]) return; const iAmCh = r.mine ? r.mine === 'challenger' : r.challenger_anon === myA; if (r.status === 'declined' && !iAmCh) return; q.push({ kind: 'result', iAmCh, ...r }); });
-          if (!q.length) return null;
-          const it = q[0];
-          // resolveTitle, not titleById: a duel can be on a daily puzzle, whose
-          // dated id is not in the static catalog and would print raw.
-          const qTitle = (resolveTitle(it.quiz_id) || it.quiz_id);
-          const more = q.length > 1 ? q.length - 1 : 0;
-          let outcome = '';
-          if (it.kind === 'result') {
-            if (it.status === 'declined') outcome = `${it.opponent_name || 'Your opponent'} turned down your duel`;
-            else if (it.winner === 'tie') outcome = 'It was a tie!';
-            else { const iWon = (it.iAmCh && it.winner === 'challenger') || (!it.iAmCh && it.winner === 'opponent'); outcome = iWon ? 'You won your duel!' : 'You lost your duel'; }
-          }
-          const txtBtn = { background: 'transparent', border: 'none', fontFamily: FONT, fontWeight: 800, fontSize: 13, cursor: 'pointer' };
-          return (
-            <div style={{ position: 'fixed', right: 18, bottom: 18, zIndex: 90, width: 352, maxWidth: 'calc(100vw - 28px)', background: T.white, borderRadius: 16, border: `2px solid ${C.accent}`, boxShadow: '0 16px 44px rgba(20,22,28,0.22)', overflow: 'hidden', fontFamily: FONT }}>
-              <div style={{ background: C.accent, color: T.white, padding: '11px 15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.08em', display: 'inline-flex', alignItems: 'center', gap: 7 }}><Swords size={16} /> {it.kind === 'challenge' ? 'DUEL CHALLENGE' : it.kind === 'yourturn' ? 'YOUR MOVE' : 'DUEL RESULT'}</span>
-                <button onClick={() => (it.kind === 'challenge' || it.kind === 'yourturn') ? duelLaterAdd(it.token) : duelSeenAdd(it.token)} aria-label="Dismiss" style={{ border: 'none', background: 'transparent', color: T.white, cursor: 'pointer', fontSize: 18, lineHeight: 1, opacity: 0.85 }}>×</button>
-              </div>
-              <div style={{ padding: '16px 16px 15px' }}>
-                {(it.kind === 'challenge' || it.kind === 'yourturn') ? (
-                  <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ width: 36, height: 36, borderRadius: '50%', background: C.accsoft, color: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13 }}>{((it.kind === 'yourturn' ? it.opponent_name : it.challenger_name) || 'P').slice(0, 2).toUpperCase()}</span>
-                      <span style={{ fontSize: 12, fontWeight: 800, color: C.soft }}>VS</span>
-                      <span style={{ width: 36, height: 36, borderRadius: '50%', background: '#faedd0', color: '#a9781a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12 }}>YOU</span>
-                      {it.device && it.device !== 'any' && <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 800, color: T.white, background: C.ink, borderRadius: 999, padding: '3px 9px', textTransform: 'uppercase' }}>{it.device === 'mobile' ? 'Mobile Only' : 'Desktop Only'}</span>}
-                    </div>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: C.ink, margin: '13px 0 3px' }}>{it.kind === 'yourturn' ? `${it.opponent_name || 'Your opponent'} played, your move` : `${it.challenger_name || 'Someone'} Challenged You`}</div>
-                    <div style={{ fontSize: 13, color: C.muted, marginBottom: 14 }}>{qTitle}{more ? ` · +${more} More` : ''}</div>
-                    <a href={`/duel/${it.token}`} style={{ display: 'block', textAlign: 'center', background: C.accent, color: T.white, padding: '12px', borderRadius: 10, fontWeight: 800, fontSize: 15, textDecoration: 'none' }}>Play Now →</a>
-                    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 16, marginTop: 11 }}>
-                      {it.kind === 'challenge' && <button onClick={() => duelDecline(it.token)} style={{ ...txtBtn, color: T.danger }}>Turn Down</button>}
-                      <button onClick={() => duelLaterAdd(it.token)} style={{ ...txtBtn, color: C.soft }}>Maybe Later</button>
-                      {it.kind === 'challenge' && <button onClick={() => duelMuteAdd(it.challenger_anon, it.challenger_name, it.token)} style={{ ...txtBtn, color: C.soft }}>Mute User</button>}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: C.ink, marginBottom: 3 }}>{outcome}</div>
-                    <div style={{ fontSize: 13, color: C.muted, marginBottom: 14 }}>{qTitle}{more ? ` · +${more} More` : ''}</div>
-                    <a href={`/duel/${it.token}`} style={{ display: 'block', textAlign: 'center', background: C.accent, color: T.white, padding: '11px', borderRadius: 10, fontWeight: 800, fontSize: 14, textDecoration: 'none' }}>See Duel →</a>
-                    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 11 }}>
-                      <button onClick={() => duelSeenAdd(it.token)} style={{ ...txtBtn, color: C.soft }}>Dismiss</button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          );
-        })()}
 
         {signupOpen && <SignupModal onClose={() => setSignupOpen(false)} />}
 

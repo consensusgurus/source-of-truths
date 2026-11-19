@@ -896,7 +896,6 @@ export default function ScourClient({ puzzles = [], forceNum = null }) {
         {!focusMode && !LOFT && (<DailyGamesGrid replay={ended ? resetGame : null}
           self="scour"
           maxWidth={640}
-          challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
           share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
           light
           boardSlot={<DailyBoardPanel self="scour" quizId={PUZZLE.quizId} maxWidth={640} streak={{ current: myStats.cur, best: myStats.max }} />}

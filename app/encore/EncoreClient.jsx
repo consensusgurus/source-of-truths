@@ -25,7 +25,6 @@ import { HelpCircle, X, Lightbulb, Eye, Smartphone, Delete, Check, ArrowLeftRigh
 import Grain from '../Grain';
 import Footer from '../Footer';
 import DailyGamesPromo from '../DailyGamesPromo';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -268,7 +267,6 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
   const [mobileUi, setMobileUi] = useState(false);
   const [, setTick] = useState(0); // 1s re-render while the clock runs
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const toastTimer = useRef(null);
   const viewedRef = useRef(false);
 
@@ -1143,7 +1141,6 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
           <DailyGamesGrid replay={!playing ? resetGame : null}
             self="encore"
             maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
             light
             boardSlot={<DailyBoardPanel self="encore" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
@@ -1207,7 +1204,6 @@ export default function EncoreClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
       <RunDoorPop id="crossed" game="encore" ready={hydrated && preStart && isTodays && !EMBED} self="Encore" />
 
       {toast && (

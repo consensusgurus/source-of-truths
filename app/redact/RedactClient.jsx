@@ -35,7 +35,6 @@ import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
 import DailyChrome from '../DailyChrome';
@@ -219,7 +218,6 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
   const [copied, setCopied] = useState(false);
   const [mobileUi, setMobileUi] = useState(false);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
   const inputRef = useRef(null);
 
@@ -900,7 +898,6 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
               self="redact"
               maxWidth={640}
               replay={!playing ? resetGame : null}
-              challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
               share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
               light
               divider
@@ -926,7 +923,6 @@ export default function RedactClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {confirmGiveUp && (
         <div onClick={() => setConfirmGiveUp(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>

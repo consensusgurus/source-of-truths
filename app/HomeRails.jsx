@@ -524,9 +524,6 @@ export default function HomeRails({
   const streak = (day && typeof day.streak === 'number') ? day.streak : 0;
   const playedToday = !!(day && day.playedToday);
   const rival = (dailyBoard && dailyBoard.rival) || null;
-  const duelHref = (rival && rival.anon)
-    ? `/duel/new?opponent=${encodeURIComponent(rival.anon)}&oppName=${encodeURIComponent(rival.username || 'Player')}`
-    : '/duel/new';
   // The distance, never the direction: `behind` already carries that, and a
   // dead heat reads as one rather than as "0 points ahead".
   const gapLine = rival
@@ -1183,13 +1180,6 @@ export default function HomeRails({
                 <span className="hrb-qt">{qotd.title}</span>
               </a>
             ) : null}
-            <Link href={rival ? duelHref : '/duel/new'} className="hrb-duel">
-              <span className="hrb-dtx">
-                <span className="hrb-de">{rival ? (rival.behind ? 'Ranked one behind you' : 'Ranked one ahead of you') : 'Head to head'}</span>
-                <span className="hrb-dn">{rival ? rival.username : 'Start a duel'}</span>
-              </span>
-              <span className="hrb-dgo">Challenge your rival</span>
-            </Link>
           </div>
         </section>
       </>
@@ -1426,51 +1416,6 @@ export default function HomeRails({
               the tile measures. daily-status still returns streakGame and
               streakGameDays; they want a surface with room for a caption. */}
         </div>
-      </section>
-
-      {/* CHALLENGE (owner, 2026-08-14). Prefilled with the player immediately
-          AHEAD of you on today's combined daily board, or immediately behind
-          when you are already first, because a duel is only worth offering
-          against someone you are actually racing.
-
-          The rival comes off /api/quiz/daily-combined rather than being picked
-          out of `dailyRows` here: that board is the top 10, so a reader sitting
-          outside it has no neighbour anywhere in the payload the rail holds.
-          The link hands the composer an opponent already chosen, keyed on their
-          browser anon, which is the only handle /duel/new accepts.
-
-          With no rival (signed out, or nobody else on the board yet) the card
-          becomes the open composer. That fallback is load-bearing now that
-          Featured is gone: this is the only duel entry left on the home page. */}
-      <section className="hr-panel hr-tile">
-        <div className="hr-ph">
-          <span className="hr-pi"><SwordsIcon /></span>
-          <h2>Challenge</h2>
-          <span className="hr-chip">HEAD TO HEAD</span>
-        </div>
-        {rival ? (
-          <Link href={duelHref} className="hr-fcard t0">
-            <span className="hr-fctxt">
-              <span className="hr-fceye">{rival.behind ? 'Right behind you' : 'Next one ahead'}</span>
-              <span className="hr-fcnm">{rival.username}</span>
-              <span className="hr-fcsub">
-                {rival.rank ? `#${rival.rank} today` : 'On the board today'}
-                {gapLine ? <span className="hr-fcdot">&middot;</span> : null}
-                {gapLine || null}
-              </span>
-            </span>
-            <span className="hr-fcgo">Duel</span>
-          </Link>
-        ) : (
-          <Link href="/duel/new" className="hr-fcard t0">
-            <span className="hr-fctxt">
-              <span className="hr-fceye">Head to head</span>
-              <span className="hr-fcnm">Start a duel</span>
-              <span className="hr-fcsub">Pick anyone and a quiz, one round each</span>
-            </span>
-            <span className="hr-fcgo">Open</span>
-          </Link>
-        )}
       </section>
     </>
   );

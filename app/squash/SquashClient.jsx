@@ -30,7 +30,6 @@ import { useSearchParams } from 'next/navigation';
 import { X, RotateCcw } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -362,7 +361,6 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
   const probeRef = useRef(null);
   const palRef = useRef(null);
   const viewedRef = useRef(false);
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
 
   // ---- the display: where every piece is drawn, tweened between frames -----
   const dispRef = useRef(new Map());      // id -> { x, y, f, sp, s }
@@ -1174,7 +1172,6 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
       )}
 
       <div style={{ maxWidth: 780, margin: '0 auto', padding: '18px 18px 40px', position: 'relative', zIndex: 2 }}>
-        <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
         {!LOFT && (
           <DailyMasthead
@@ -1285,7 +1282,6 @@ export default function SquashClient({ puzzles = [], forceNum = null }) {
             <DailyGamesGrid
               self="squash"
               maxWidth={620}
-              challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
               share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
               light
               divider

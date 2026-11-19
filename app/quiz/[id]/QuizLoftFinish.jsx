@@ -169,12 +169,6 @@ export default function QuizLoftFinish({
           onClick: onShare,
         },
         { tone: 'replay', label: 'Play again', onClick: onReplay },
-        {
-          tone: 'another',
-          label: 'Challenge someone',
-          sub: 'Send this quiz head to head',
-          href: `/duel/new?quiz=${encodeURIComponent(quiz.id)}`,
-        },
         !identity && {
           tone: 'main',
           label: 'Post to the leaderboard',

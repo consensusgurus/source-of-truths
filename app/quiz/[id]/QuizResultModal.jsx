@@ -51,7 +51,6 @@ export default function QuizResultModal({
   onReport,
   onClose, onPlaySimilar, onLeaderboard,
 }) {
-  const duelHref = quiz && quiz.id ? `/duel/new?quiz=${encodeURIComponent(quiz.id)}` : null;
   const regRank = (!identity && onRegister && board) ? registerRank(board.leaderboard, score, lastElapsed) : null;
   // One shared builder with the inline QuizClient end screen, so the rail is
   // identical on every board AND obeys the Business-News exclusion (a dated news
@@ -93,7 +92,6 @@ export default function QuizResultModal({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
         {onPlayAgain ? <button onClick={onPlayAgain} style={{ ...stackBtn, background: T.cta, color: T.ctaInk }}><RotateCcw size={15} strokeWidth={2.5} /> Play again</button> : null}
         <UpNextCard quiz={quiz} />
-        {duelHref ? <a href={duelHref} style={{ ...stackBtn, background: `var(--stg-raise,${C.ink})`, color: `var(--stg-ink,${T.white})` }}><Swords size={15} strokeWidth={2.5} /> Challenge a friend</a> : null}
       </div>
 
       {similar.length > 0 ? (

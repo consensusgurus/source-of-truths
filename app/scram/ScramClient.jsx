@@ -778,7 +778,6 @@ export default function ScramClient({ puzzles = [], forceNum = null }) {
         {!focusMode && !LOFT && (<DailyGamesGrid replay={ended ? resetGame : null}
           self="scram"
           maxWidth={640}
-          challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
           share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
           light
           boardSlot={<DailyBoardPanel self="scram" quizId={PUZZLE.quizId} maxWidth={640} streak={{ current: myStats.cur, best: myStats.max }} />}

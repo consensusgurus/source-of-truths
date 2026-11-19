@@ -25,7 +25,6 @@ import { X, Smartphone, HelpCircle } from 'lucide-react';
 import Grain from '../Grain';
 import DailyRules from '../DailyRules';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -226,7 +225,6 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
     return () => clearTimeout(t);
   }, [stArm]);
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
   const noticeRef = useRef(null);
 
@@ -959,7 +957,6 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           )}
           {!LOFT && (
           <DailyGamesGrid replay={!playing ? resetGame : null} self="slot" maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }} light
             boardSlot={<DailyBoardPanel self="slot" quizId={PUZZLE.quizId} maxWidth={620} streak={{ current: myStats.cur, best: myStats.max }} />}
             divider />
@@ -1006,7 +1003,6 @@ export default function SlotClient({ puzzles = [], dayByNum = {}, forceNum = nul
           onClose={() => setEndClosed(true)} />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
         <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="slot" name="Slot">

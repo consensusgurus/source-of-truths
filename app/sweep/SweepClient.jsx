@@ -24,7 +24,6 @@ import { useSearchParams } from 'next/navigation';
 import { X, RotateCcw, Flag, Pickaxe } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import JoinLeaderboardForm from '../quiz/[id]/JoinLeaderboardForm';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
@@ -214,7 +213,6 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
   const viewRef = useRef(null);
   const pressRef = useRef({ t: 0, x: 0, y: 0, touch: false, flaggedAt: 0, timer: null });
   const viewedRef = useRef(false);
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
 
   // Sets are the working copy; the arrays in state are what gets saved.
   const openSet = useMemo(() => new Set(g.open), [g.open]);
@@ -920,7 +918,6 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
       )}
 
       <div style={{ maxWidth: 780, margin: '0 auto', padding: '18px 18px 40px', position: 'relative', zIndex: 2 }}>
-        <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
         {!LOFT && (
         <DailyMasthead
@@ -1044,7 +1041,6 @@ export default function SweepClient({ puzzles = [], forceNum = null }) {
           <DailyGamesGrid
             self="sweep"
             maxWidth={620}
-            challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
             share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
             light
             divider

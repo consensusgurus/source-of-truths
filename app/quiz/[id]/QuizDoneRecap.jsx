@@ -67,12 +67,6 @@ export default function QuizDoneRecap({ score, total, hideScore = false, rows = 
               <button onClick={onPlaySimilar} style={btn(C.forest, T.white)}><Shuffle size={13} strokeWidth={2.5} /> Play Similar</button>
             )
           ) : null}
-          {quiz && quiz.id ? (
-            <a href={`/duel/new?quiz=${encodeURIComponent(quiz.id)}`} style={{ ...btn(C.ink, C.cream), textDecoration: 'none', borderRadius: 10 }}><Swords size={13} strokeWidth={2.5} /> Challenge Someone</a>
-          ) : null}
-        </div>
-        <div style={{ textAlign: 'center', marginTop: 10 }}>
-          <a href="/quizzes/hub?tab=duels" style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, color: `var(--stg-mute,${C.faded})`, textDecoration: 'underline', textUnderlineOffset: 3 }}>Duel Leaderboard</a>
         </div>
       </div>
 

@@ -33,7 +33,6 @@ import { useSearchParams } from 'next/navigation';
 import { HelpCircle, X, Check, Minus, Flag } from 'lucide-react';
 import Grain from '../Grain';
 import Footer from '../Footer';
-import useDuelContext, { DuelBanner } from '../quiz/[id]/useDuelContext';
 import DailyGamesGrid from '../DailyGamesGrid';
 import DailyEndCard from '../DailyEndCard';
 import DailyChrome from '../DailyChrome';
@@ -244,7 +243,6 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
   // Logic's wrong mark stays ORANGE on the stage (owner brief, 2026-10-31).
   const LBAD = isDarkLook(stageLook) ? '#fb923c' : '#c2410c';
   const searchParams = useSearchParams();
-  const { duelToken, duelInfo, duelSubmitted } = useDuelContext(PUZZLE.quizId, searchParams);
   const viewedRef = useRef(false);
 
   const playing = g.status === 'playing';
@@ -882,7 +880,6 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
               self="suffice"
               maxWidth={640}
               replay={!playing ? resetGame : null}
-              challengeHref={`/duel/new?quiz=${encodeURIComponent(PUZZLE.quizId)}`}
               share={{ label: copied ? 'Copied' : 'Share', onClick: copyShare }}
               light
               divider
@@ -908,7 +905,6 @@ export default function SufficeClient({ puzzles = [], forceNum = null }) {
         />
       )}
 
-      <DuelBanner token={duelToken} info={duelInfo} submitted={duelSubmitted} />
 
       {showHelp && (
         <HelpSheet onClose={() => { setShowHelp(false); try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {} }} self="suffice" name="Suffice">
