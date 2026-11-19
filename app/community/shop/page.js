@@ -1,13 +1,11 @@
 import ShopClient from '../ShopClient';
 
-// The shelf is Fourthwall's: this page reads the published products from the Storefront API once
-// an hour and hands the client only what a card needs. The token is Fourthwall's public storefront
-// token (read only). It is read from FOURTHWALL_STOREFRONT_TOKEN in the Vercel environment, because
-// GitHub push protection refuses a commit that carries it. Without it the page shows its fallback card.
+// The shelf is Fourthwall's: this page reads the published products from the storefront's own public
+// collection feeds (/collections/<slug>.json, no token, 20 a page, later pages at /collections/<slug>/<n>.json)
+// once an hour and hands the client only what a card needs.
 export const revalidate = 3600;
 
-const API = 'https://storefront-api.fourthwall.com/v1';
-const TOKEN = process.env.FOURTHWALL_STOREFRONT_TOKEN || '';
+const SHOP = 'https://mindloft-shop.fourthwall.com';
 
 export const metadata = {
   title: 'Loft Shop | Mind Loft',
@@ -17,11 +15,19 @@ export const metadata = {
 };
 
 async function collection(slug) {
-  if (!TOKEN) throw new Error('storefront token missing');
-  const res = await fetch(`${API}/collections/${slug}/products?storefront_token=${TOKEN}&size=100`, { next: { revalidate: 3600 } });
-  if (!res.ok) throw new Error(`storefront ${slug} ${res.status}`);
-  const json = await res.json();
-  return Array.isArray(json.results) ? json.results : [];
+  const out = [];
+  const seen = new Set();
+  for (let page = 1; page <= 8; page++) {
+    const url = page === 1 ? `${SHOP}/collections/${slug}.json` : `${SHOP}/collections/${slug}/${page}.json`;
+    const res = await fetch(url, { next: { revalidate: 3600 } });
+    if (!res.ok) { if (page === 1) throw new Error(`storefront ${slug} ${res.status}`); break; }
+    const json = await res.json();
+    const rows = Array.isArray(json.products) ? json.products : [];
+    let fresh = 0;
+    for (const p of rows) { if (p && p.handle && !seen.has(p.handle)) { seen.add(p.handle); out.push(p); fresh++; } }
+    if (rows.length < 20 || fresh === 0) break;
+  }
+  return out;
 }
 
 function kindOf(name) {
@@ -35,25 +41,25 @@ function kindOf(name) {
 async function loadProducts() {
   try {
     const [all, witty] = await Promise.all([collection('all'), collection('witty-ish').catch(() => null)]);
-    const wittySlugs = witty ? new Set(witty.map((p) => p.slug)) : null;
+    const wittySlugs = witty ? new Set(witty.map((p) => p.handle)) : null;
     return all
-      .filter((p) => p && p.slug && p.name && (!p.state || p.state.type === 'AVAILABLE'))
+      .filter((p) => p && p.handle && p.title && p.available !== false)
       .map((p) => {
         const variants = Array.isArray(p.variants) ? p.variants : [];
-        const prices = variants.map((v) => v && v.unitPrice && v.unitPrice.value).filter((v) => typeof v === 'number');
-        const colors = [...new Set(variants.map((v) => v && v.attributes && v.attributes.color && v.attributes.color.name).filter(Boolean))];
-        const image = Array.isArray(p.images) && p.images[0] ? (p.images[0].transformedUrl || p.images[0].url) : null;
-        const isWitty = wittySlugs ? wittySlugs.has(p.slug) : !p.name.startsWith('Mind Loft') || p.name.includes(' QR ');
+        const prices = variants.map((v) => v && v.price && v.price.cents).filter((v) => typeof v === 'number').map((c) => c / 100);
+        if (!prices.length && p.price && Number.isFinite(Number(p.price))) prices.push(Number(p.price));
+        const colors = [...new Set(variants.map((v) => (v && typeof v.title === 'string' && v.title.includes(',') ? v.title.split(',')[0].trim() : '')).filter(Boolean))];
+        const isWitty = wittySlugs ? wittySlugs.has(p.handle) : !p.title.startsWith('Mind Loft') || p.title.includes(' QR ');
         return {
-          slug: p.slug,
-          name: p.name,
-          image,
+          slug: p.handle,
+          name: p.title,
+          image: typeof p.image === 'string' ? p.image : null,
           min: prices.length ? Math.min(...prices) : 0,
           max: prices.length ? Math.max(...prices) : 0,
           colors: colors.length,
           color: colors[0] || '',
           line: isWitty ? 'witty' : 'brand',
-          kind: kindOf(p.name),
+          kind: kindOf(p.title),
         };
       });
   } catch (e) {

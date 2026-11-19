@@ -782,9 +782,10 @@ Hub stays as is). One-row GroupsShell cap and one segmented tab row on every pag
   public ones. Starting and joining stay on `/groups`. No group league yet.
 - **Loft Shop** `/community/shop`: OPEN (owner, 2026-11-19). The products live in the Fourthwall shop
   (`mindloft-shop.fourthwall.com`, made to order, no stock). `app/community/shop/page.js` reads the
-  published products from Fourthwall's Storefront API once an hour (`revalidate = 3600`, public
-  read-only storefront token read from the `FOURTHWALL_STOREFRONT_TOKEN` env var in Vercel, never committed: GitHub push
-  protection refuses it, and without the var the page shows its fallback card) and passes each card's name, photo, price range and colour count to
+  published products from the storefront's own public collection feeds once an hour (`revalidate = 3600`;
+  `https://mindloft-shop.fourthwall.com/collections/<slug>.json`, no token, 20 a page, later pages at
+  `/collections/<slug>/<n>.json`; the Storefront API token was dropped 2026-11-19 because GitHub push protection
+  refuses a commit that carries it) and passes each card's name, photo, price range and colour count to
   `ShopClient.jsx`. A product added or changed in Fourthwall appears here on its own within the hour.
   No tabs: two flat `.cm-seg` filters, All / Brand / Witty-ish (Witty-ish is the Fourthwall
   collection `witty-ish`, everything else is Brand) and All / Shirts / Hoodies / Hats / Mugs (read
