@@ -55,7 +55,7 @@ export default function TalkGameClient({ gameKey, day: day0 = null }) {
           <section className="cm-card">
             <div className="cm-ch"><b>House Rules</b></div>
             <div className="cm-cb">
-              <p className="cm-mut">Talk about the puzzle, how you cracked it and what tripped you up. Be kind, keep it about the game, and no links.</p>
+              <p className="cm-mut">Talk about the puzzle, how you cracked it, and what tripped you up. Be kind, keep it about the game, and no links.</p>
               <p className="cm-mut">Three reports hide a post until we take a look.</p>
             </div>
           </section>

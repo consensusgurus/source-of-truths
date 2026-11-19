@@ -35,7 +35,7 @@ export function CommunityBand() {
     <a className="cm-mband" href="/community">
       <style dangerouslySetInnerHTML={{ __html: PILL_CSS }} />
       {n ? <span className="d" aria-hidden="true" /> : null}
-      <span className="t"><b>Community</b>{n ? <> {n} talking now</> : <> Talk, ideas and clubs</>}</span>
+      <span className="t"><b>Community</b>{n ? <> {n} talking now</> : <> Talk, ideas, and groups</>}</span>
       <u>See The Community</u>
     </a>
   );

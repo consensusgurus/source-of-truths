@@ -96,7 +96,7 @@ export default function CommonsClient() {
           <div className="cm-g2">
             <Link className="cm-card" href="/community/shop" style={{ textDecoration: 'none', color: 'var(--stg-ink)' }}>
               <div className="cm-ch" style={{ background: 'var(--cm-peach)' }}><b>Loft Shop</b><span>Coming Soon</span></div>
-              <div className="cm-cb"><p className="cm-mut">Tees, mugs and stickers for people who do puzzles before coffee.</p></div>
+              <div className="cm-cb"><p className="cm-mut">Tees, mugs, and stickers for people who do puzzles before coffee.</p></div>
             </Link>
             <Link className="cm-card" href="/community/peers" style={{ textDecoration: 'none', color: 'var(--stg-ink)' }}>
               <div className="cm-ch" style={{ background: 'var(--cm-violet)' }}><b>Puzzle Peers</b><span>Coming Soon</span></div>

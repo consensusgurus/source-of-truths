@@ -18,13 +18,13 @@ const I = {
 };
 const ITEMS = [
   { k: 'tee', name: 'The Mind Loft Tee', blurb: 'The house M on the chest. A new slogan every month, picked by vote on the Idea Board.', tone: 'var(--cm-sky)' },
-  { k: 'tee', name: 'Category Tees', blurb: 'One for each shelf: Sudoku, Words, Logic, Trivia and the rest, in their own colours.', tone: 'var(--cm-teal)' },
+  { k: 'tee', name: 'Category Tees', blurb: 'One for each shelf: Sudoku, Words, Logic, Trivia, and the rest, in their own colours.', tone: 'var(--cm-teal)' },
   { k: 'mug', name: 'The Morning Mug', blurb: 'For people who solve before they talk.', tone: 'var(--cm-peach)' },
   { k: 'sticker', name: 'Glyph Sticker Pack', blurb: 'Every daily’s glyph as a sticker. Laptop, water bottle, rival’s forehead.', tone: 'var(--cm-lime)' },
   { k: 'book', name: 'The Paper Puzzle Book', blurb: 'A year of favourite boards in print, for flights and power cuts.', tone: 'var(--cm-violet)' },
   { k: 'poster', name: 'Your Stats Poster', blurb: 'Your own year on Mind Loft, drawn as a print.', tone: 'var(--cm-rose)' },
   { k: 'jersey', name: 'Club Jerseys', blurb: 'Your club’s name and colours, for the group chat that takes it too seriously.', tone: 'var(--cm-green)' },
-  { k: 'tote', name: 'The Loft Tote', blurb: 'Carries a puzzle book, a mug and your pride.', tone: 'var(--cm-indigo)' },
+  { k: 'tote', name: 'The Loft Tote', blurb: 'Carries a puzzle book, a mug, and your pride.', tone: 'var(--cm-indigo)' },
 ];
 
 export default function ShopClient() {

@@ -4974,7 +4974,14 @@ export default function StageToday() {
                   );
                 })()}
                 </div>
-                {/* BELOW THE ROWS: the gold ticket bar, the ranks, then Everything Else. */}
+                {/* BELOW THE ROWS: the quizzes strip, the gold ticket bar, the community band, the ranks,
+                    then Everything Else. THE QUIZZES STRIP leads (owner, 2026-11-18: "Add a third strip
+                    called quizzes, but make it first, and label it with total number of quizzes"). The
+                    total arrives with the quiz topics; until then the strip reads without a number. */}
+                <a className="sty-mdraw sty-mqz" href={withTq('/quizzes')}>
+                  <span>{quizTotal ? <><b>{quizTotal.toLocaleString('en-US')} Quizzes</b> across {topicList.length} topics</> : <><b>Quizzes</b> Timed, on every topic</>}</span>
+                  <u>See All Quizzes</u>
+                </a>
                 {mDraw ? (
                   <a className="sty-mdraw" href="/quizzes/community#drawing-earn">
                     <span>{(() => { const n = who && mTix.count != null ? Number(mTix.count) || 0 : 0; return <><b>{who && mTix.count == null ? '\u2013' : formatTickets(n)} {n === 1 ? 'Ticket' : 'Tickets'}</b> for the {DRAWING.prizeLabel} Drawing</>; })()}</span>
@@ -8030,6 +8037,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-tailbtn.snug{margin-top:-30px;}
   /* The drawing under the ranks: the Tickets cell's soft gold, not a loud blue. */
   .sty-mph .sty-mdraw{background:#fde7ad;color:#08222e;margin-top:6px;}
+  .sty-mph .sty-mdraw.sty-mqz{background:#d9ccfb;}
   /* A small gap above the ranks and the drawing, and the ranks a touch larger
      now the progress bar no longer sits beside them (owner, 2026-10-25). */
   .sty-mph .sty-mst{margin-top:6px;}
@@ -8151,6 +8159,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det .mph-g:not(.done) .sty-gband{margin-bottom:10px;}
   .sty-mph .mph-gg.det .mph-g:not(.done) .mcs{background:color-mix(in srgb, var(--mc) 45%, #fff);}
   .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
+  .stage-page:not([data-stage-theme=light]) .sty-mph .sty-mdraw.sty-mqz{background:color-mix(in srgb, #c4b5fd 22%, transparent);}
   /* Moved out of the top block, these still need its tokens. */
   .sty-mph{--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
 

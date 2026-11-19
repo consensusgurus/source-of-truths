@@ -59,6 +59,7 @@ convention is added or revised, so future sessions inherit the latest version au
 Site-facing copy — blurbs, titles, categories, and any prose shown on a list page — follows these rules:
 
 - **Never use the em dash (—) in site copy.** Not in blurbs, not in titles, not anywhere a reader sees. Replace it with a comma, colon, or period. A colon fits when the second part labels or summarizes the first (`Tonkotsu, shio, tsukemen: the Tokyo ramen counters most worth the queue`); a comma fits a trailing modifier (`ranked on sound and craft, not value`); a period fits two independent clauses (`A sense of place raised to an art. Rosewood Hong Kong was named the world's best hotel for 2025.`). Hyphens (`-`) in compound words are fine.
+- **Use the Oxford comma in site copy** (owner, 2026-11-18): `Talk, ideas, and groups`, not `Talk, ideas and groups`.
 - **Chain-city composite lists use parentheticals like every other list.** Chain item names are `address (neighborhood)` (e.g. `129 W 48th St (Midtown)`), NOT em-dash separators. The composite score is NOT part of the name (see the chain section below). So the em-dash ban applies to chain names too.
 
 ### The "Top N" header label must match the actual item count, never hardcode "Top Ten"

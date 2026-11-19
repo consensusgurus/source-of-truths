@@ -89,7 +89,7 @@ export default function PeersClient() {
           <section className="cm-card">
             <div className="cm-ch" style={{ background: 'var(--cm-violet)' }}><b>Coming Soon</b></div>
             <div className="cm-cb">
-              <p className="cm-mut">A hand-picked list of puzzle makers and sites, by kind: words and dailies, trivia, logic and sudoku, maps and chess.</p>
+              <p className="cm-mut">A hand-picked list of puzzle makers and sites, by kind: words, trivia, logic, sudoku, maps, and chess.</p>
               <p className="cm-mut">Sites sent in through this form are the first we look at.</p>
             </div>
           </section>
