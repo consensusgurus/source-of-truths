@@ -3512,6 +3512,12 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
   their own contribution, a link to the Puzzle Shelf, and EITHER a button for the other mural (if
   that one is open and unfinished) OR a countdown to the next one of this kind; the page loads the
   new mural itself when the countdown ends.
+- **At a refresh, a piece someone else placed leaves the player's hand too (owner, 2026-11-19: "i
+  pulled out a piece just as the refresh happened ... those pieces placed should disappear no
+  matter what").** The refresh already swapped such pieces out of the tray and off the board's
+  loose pieces, but a tray piece in mid drag kept its old id and could still be dropped. The poll
+  now ends that drag (drag image removed, slot refilled) and lets go of a loose group being carried
+  if any piece in it was placed; the drop also checks the slot still holds the piece it picked up.
 - **The header's figures (owner, 2026-11-19: "dont need to show 'firsts', instead also give total
   places along with %. and that number will have the '+5' or whatever on every refresh").** Points,
   Placed (the player's own pieces), Site Total with its percent of the mural, and To Update. What

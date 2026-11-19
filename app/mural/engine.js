@@ -446,6 +446,13 @@ async function poll(){
       if(fresh.length){
         /* Until this refresh a tray piece someone else placed could still be placed for partial points
            (owner, 2026-11-19); once the refresh shows it on the board it is swapped for an open piece. */
+        /* A PIECE IN THE HAND AT THE REFRESH GOES TOO (owner, 2026-11-19: "i pulled out a piece just as the
+           refresh happened, and it seems to be one that someone just placed. when the refresh happens,
+           those pieces placed should disappear no matter what"). A tray piece being dragged kept its old
+           id and could still be dropped; so could a loose piece being carried across the board. Both
+           are let go of here, and the tray slot is refilled below like any other. */
+        if(td&&M.crowd.has(td.id)){const t=td;td=null;if(t.raf)cancelAnimationFrame(t.raf);if(t.g)t.g.remove();if(t.b)t.b.classList.remove('out');}
+        if(gest&&gest.loose&&gest.mem&&gest.mem.some(o=>M.crowd.has(o.q.id)))gest=null;
         let lost=0;const pool=allOpen();
         for(let k=0;k<M.hand.length;k++){const x=M.hand[k];if(x!==null&&x!==undefined&&M.crowd.has(x)){lost++;if(sel===k)sel=null;if(pool.length){const j=Math.floor(Math.random()*pool.length);M.hand[k]=pool[j];pool[j]=pool[pool.length-1];pool.pop();}else M.hand[k]=null;}}
         const lb=M.loose.length;M.loose=M.loose.filter(l=>!M.crowd.has(l.id));if(M.loose.length!==lb)saveLoose();
@@ -523,7 +530,7 @@ window.addEventListener('pointermove',e=>{
 function tup(e){
   if(!td)return;const t=td;td=null;
   if(t.drag){if(t.raf)cancelAnimationFrame(t.raf);t.g.remove();t.b.classList.remove('out');const r=cv.getBoundingClientRect();
-    if(t.cx>=r.left&&t.cx<=r.right&&t.cy>=r.top&&t.cy<=r.bottom){const s=toSrc(t.cx-r.left,t.cy-r.top);if(s[0]>=0&&s[0]<=W&&s[1]>=0&&s[1]<=H){attempt(t.id,s[0],s[1],t.k);return;}}
+    if(t.cx>=r.left&&t.cx<=r.right&&t.cy>=r.top&&t.cy<=r.bottom){const s=toSrc(t.cx-r.left,t.cy-r.top);if(s[0]>=0&&s[0]<=W&&s[1]>=0&&s[1]<=H&&M.hand[t.k]===t.id){attempt(t.id,s[0],s[1],t.k);return;}}
     renderHand();
   }else{sel=sel===t.k?null:t.k;renderHand();if(sel!==null)setMsg(explainVal(t.id));}
 }
