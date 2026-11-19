@@ -780,7 +780,9 @@ Hub stays as is). One-row GroupsShell cap and one segmented tab row on every pag
 - **Groups** `/community/groups` (first called Clubs; owner, 2026-11-18 "Clubs need to be Groups",
   `/community/clubs` now redirects): groups (lib/groups.js): yours with today's place, and the
   public ones. Starting and joining stay on `/groups`. No group league yet.
-- **Loft Shop** `/community/shop`: OPEN (owner, 2026-11-19). The products live in the Fourthwall shop
+- **Loft Shop** `/community/shop`: OPEN (owner, 2026-11-19). Page views post as `loft-shop`
+  (`PageViewBeacon`, row `Loft Shop` in `TRACKED_PAGES`; owner, 2026-11-19), once per browser session.
+  Clicks out to Fourthwall and the pop-up's button are NOT counted. The products live in the Fourthwall shop
   (`mindloft-shop.fourthwall.com`, made to order, no stock). `app/community/shop/page.js` reads the
   published products from the storefront's own public collection feeds once an hour (`revalidate = 3600`;
   `https://mindloft-shop.fourthwall.com/collections/<slug>.json`, no token, 20 a page, later pages at

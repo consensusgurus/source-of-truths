@@ -1,4 +1,5 @@
 import ShopClient from '../ShopClient';
+import PageViewBeacon from '../../PageViewBeacon';
 
 // The shelf is Fourthwall's: this page reads the published products from the storefront's own public
 // collection feeds (/collections/<slug>.json, no token, 20 a page, later pages at /collections/<slug>/<n>.json)
@@ -78,5 +79,10 @@ async function loadProducts() {
 
 export default async function Page() {
   const products = await loadProducts();
-  return <ShopClient products={products} />;
+  return (
+    <>
+      <ShopClient products={products} />
+      <PageViewBeacon id="loft-shop" />
+    </>
+  );
 }
