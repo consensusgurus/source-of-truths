@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { MURAL_CSS, MURAL_HTML } from './markup';
 import { bootMural } from './engine';
+import { MEMORIAL_CSS } from './memorial';
 import { MURAL_KINDS } from '@/lib/mural-shared';
 
 // Mural and MuralToo share this client; `kind` picks which one. React mounts
@@ -16,13 +17,15 @@ export default function MuralClient({ kind }) {
   useEffect(() => {
     if (!ref.current) return undefined;
     // ?solo=<mural id> is the Puzzle Shelf's link to a finished mural.
-    let solo = null;
-    try { solo = new URLSearchParams(window.location.search).get('solo'); } catch (e) { solo = null; }
-    return bootMural(ref.current, { kind, solo });
+    // ?p=<day number> is the Puzzle Archive's link to a past day. Either one opens
+    // a finished mural on its wall (memorial.js) before the player replays it.
+    let solo = null, p = null;
+    try { const sp = new URLSearchParams(window.location.search); solo = sp.get('solo'); p = sp.get('p'); } catch (e) { solo = null; p = null; }
+    return bootMural(ref.current, { kind, solo, p });
   }, [kind]);
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: MURAL_CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: MURAL_CSS + MEMORIAL_CSS }} />
       {/* Crawlable prose, BEFORE the board: the board's markup is raw HTML, and a
           sibling after it failed hydration (2026-11-19). The board below is a fixed full-screen layer drawn over it, so a
           player never sees this; a search engine and a reader without scripts do. */}

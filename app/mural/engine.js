@@ -13,8 +13,10 @@
 // not counted. Nothing here pops up over the board mid game.
 
 import {
-  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, gradeAt, pieceValue, muralLaunched, muralFirstOpens, parseMuralId, MURAL_MIN_MS,
+  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, gradeAt, pieceValue, muralLaunched, muralFirstOpens, parseMuralId, MURAL_MIN_MS, muralDateLabel,
 } from '@/lib/mural-shared';
+import { openMemorial } from './memorial';
+import { holdThemeColor } from '@/lib/theme-color-hold';
 
 function getAnonId() {
   if (typeof window === 'undefined') return null;
@@ -103,6 +105,16 @@ export function bootMural(root, cfg) {
         if (dead) return;
         if (sb.ok && sb.j && sb.j.grades && (sb.j.completed || sb.j.closes <= Date.now())) { solo = cfg.solo; b = sb; }
       }
+      // FROM THE ARCHIVE (owner, 2026-11-19): /mural?p=<day number> is a past site
+      // day. The mural that was open that day, once finished, opens on its wall
+      // like a shelf copy does. A day whose mural is still open plays as usual.
+      const pn = parseInt(cfg.p, 10);
+      if (!solo && pn >= 1 && pn < 20000) {
+        const day = new Date(Date.parse(K.first + 'T12:00:00Z') + (pn - 1) * 86400000).toISOString().slice(0, 10);
+        const db = await getJSON(`/api/mural/board?kind=${K.key}&day=${day}`);
+        if (dead) return;
+        if (db.ok && db.j && db.j.grades && (db.j.completed || db.j.closes <= Date.now())) { solo = db.j.id; b = db; }
+      }
       if (!solo && !muralLaunched(K.key)) { waitScreen(); return; }
       bootMsg(`Opening ${K.name}.`);
       if (!b) b = await getJSON(`/api/mural/board?kind=${K.key}`);
@@ -125,7 +137,11 @@ export function bootMural(root, cfg) {
       if (solo || (cfg.solo === id && wasDone)) {
         let saved = null;
         try { saved = JSON.parse(localStorage.getItem('mural_solo_' + id) || 'null'); } catch (e) { saved = null; }
-        start({ id, board: b.j, img, state: {}, me: { pieces: (saved && saved.pieces) || [], points: 0, firsts: 0 }, anon, email, q, solo: true, crowd: st.j || {} });
+        // The wall comes first on a return visit, so its data is fetched before the board starts.
+        let wall = null;
+        try { const w = await getJSON(`/api/mural/wall?id=${id}`); if (w.ok && w.j && Array.isArray(w.j.order)) wall = w.j; } catch (e) { wall = null; }
+        if (dead) return;
+        start({ id, board: b.j, img, state: {}, me: { pieces: (saved && saved.pieces) || [], points: 0, firsts: 0 }, anon, email, q, solo: true, crowd: st.j || {}, crowdMe: me.j || {}, wall });
         return;
       }
       start({ id, board: b.j, img, state: st.j || {}, me: me.j || {}, anon, email, q });
@@ -287,9 +303,11 @@ function renderHand(){
 }
 function setMsg(t){$('msg').textContent=t;}
 function ui(){
-  $('sPts').textContent=M.pts;$('menuBtn').textContent='Menu \u00b7 '+M.pts+' pts';$('sLeft').textContent=M.mine.size;$('sFirst').textContent=M.firsts;
-  const done=M.crowd.size+[...M.mine].filter(i=>!M.crowd.has(i)).length;
-  $('meta').textContent='Open '+M.hours+(M.hours===1?' hour':' hours')+' \u00b7 '+Math.round(done/TOTAL*100)+'% placed';
+  $('sPts').textContent=M.pts;$('menuBtn').textContent='Menu \u00b7 '+M.pts+' pts';$('sLeft').textContent=M.mine.size;
+  /* THE SITE'S TOTAL, NOT FIRSTS (owner, 2026-11-19: "dont need to show 'firsts', instead also give total places along with %. and that number will have the '+5' or whatever on every refresh"). */
+  const done=M.crowd.size+[...M.mine].filter(i=>!M.crowd.has(i)).length,pc=done/TOTAL*100;
+  $('sAll').textContent=done.toLocaleString();$('sAllLab').textContent='Site Total \u00b7 '+(pc>0&&pc<10?pc.toFixed(1):Math.round(pc))+'%';
+  $('meta').textContent='Open '+M.hours+(M.hours===1?' hour':' hours');
   coolTick();
 }
 /* SNAP DISTANCE (owner, 2026-11-19: it accepted pieces far too easily, worst zoomed out). A third of a
@@ -411,7 +429,8 @@ function send(id,val,tries){
     .catch(()=>{if(dead)return;if(tries<3)setTimeout(()=>send(id,val,tries+1),1500*(tries+1));else{pending--;setMsg('That piece did not save. Check your connection.');}});
 }
 let flashUntil=0,lastPoll=Date.now(),polling=false;
-function flashUpdate(n){flashUntil=Date.now()+5000;$('updBox').classList.add('flash');$('sUpd').textContent='+'+n;$('updLab').textContent=n===1?'New piece':'New pieces';}
+/* What the last refresh brought sits beside the site total until the next one. */
+function flashUpdate(n){$('sNew').textContent=n>0?'+'+n.toLocaleString():'';}
 async function poll(){
   if(polling||dead||SOLO)return;polling=true;
   try{
@@ -423,6 +442,7 @@ async function poll(){
     if(st.ok){
       const add=applyState(st.j),t0=performance.now(),fresh=add.filter(id=>!M.mine.has(id));
       add.forEach(id=>drawPiece(cctx,id));fresh.forEach(id=>pulses.push({id,t:t0,nw:true}));
+      if(!fresh.length)flashUpdate(0);
       if(fresh.length){
         /* Until this refresh a tray piece someone else placed could still be placed for partial points
            (owner, 2026-11-19); once the refresh shows it on the board it is swapped for an open piece. */
@@ -441,7 +461,7 @@ async function poll(){
 function checkEnd(){
   if(finShown)return;
   const complete=SOLO?M.mine.size>=TOTAL:(!!STATE.completed||(STATE.n||0)>=TOTAL),closed=!SOLO&&Date.now()>=env.board.closes;
-  if(complete||closed){M.done=true;renderHand();ui();finShown=true;setTimeout(()=>showFinish(complete,closed),900);}
+  if(complete||closed){M.done=true;renderHand();ui();finShown=true;coolTick();setTimeout(()=>showFinish(complete,closed),900);}
 }
 every(()=>{
   tick--;
@@ -524,26 +544,16 @@ function refDragStart(e){const st=$('stage').getBoundingClientRect(),r=refEl.get
 function refDragMove(e){if(!rdrag)return;if(!rdrag.moved&&Math.hypot(e.clientX-rdrag.x0,e.clientY-rdrag.y0)<6)return;rdrag.moved=true;const st=$('stage').getBoundingClientRect();refEl.style.left=(e.clientX-st.left-rdrag.ox)+'px';refEl.style.top=(e.clientY-st.top-rdrag.oy)+'px';clampRef();}
 function refDragEnd(){const d=rdrag;rdrag=null;refEl.classList.remove('moving');if(d&&d.pill&&!d.moved)setRef(0);}
 [$('refGrip'),$('refCap'),$('refShow')].forEach(el=>{el.addEventListener('pointerdown',refDragStart);el.addEventListener('pointermove',refDragMove);el.addEventListener('pointerup',refDragEnd);el.addEventListener('pointercancel',refDragEnd);});
-/* ---------- the finish ---------- */
-function packBubbles(items,BW,BH){
-  const total=items.reduce((a,b)=>a+b.p,0),k=Math.sqrt(.5*BW*BH/(Math.PI*total));
-  items.forEach(o=>{o.r=Math.max(7,k*Math.sqrt(o.p));});
-  items.sort((a,b)=>b.r-a.r);const done=[];
-  for(const o of items){
-    let ok=false;
-    for(let t=0;t<6000&&!ok;t++){
-      const a=t*.31,d=t*.42,x=BW/2+Math.cos(a)*d*(BW/BH),y=BH/2+Math.sin(a)*d;
-      if(x-o.r<4||x+o.r>BW-4||y-o.r<4||y+o.r>BH-4)continue;
-      ok=true;for(const q of done){const dx=q.x-x,dy=q.y-y,m=q.r+o.r+3;if(dx*dx+dy*dy<m*m){ok=false;break;}}
-      if(ok){o.x=x;o.y=y;}
-    }
-    if(ok)done.push(o);
-  }
-  return done;
-}
+/* ---------- the finish: THE WALL (memorial.js) ----------
+   Owner, 2026-11-19: the closing screen is a full pastel screen like the
+   gauntlet endings, it is kept for good, and a player who comes back through
+   the archive or the Puzzle Shelf sees it FIRST, before Replay. So there are
+   three ways in: 'live' (the open mural was just finished, or is closed),
+   'visit' (a finished mural opened from the shelf or the archive) and
+   'rebuilt' (a shelf copy the player has now finished alone). */
 function confetti(){
   const c=$('confetti'),x=c.getContext('2d'),dpr=Math.min(2,window.devicePixelRatio||1);c.width=innerWidth*dpr;c.height=innerHeight*dpr;x.setTransform(dpr,0,0,dpr,0,0);
-  const cols=['#e2574c','#f2a23a','#ffd23f','#3fa37a','#2f7fbf','#8a5ad1','#e86a92'],P=[];
+  const cols=['#7dd3fc','#6ee7b7','#fbbf24','#fb7185','#a5b4fc','#bef264','#fb923c','#c084fc','#ffffff'],P=[];
   for(let i=0;i<170;i++)P.push({x:Math.random()*innerWidth,y:-20-Math.random()*innerHeight*.6,vx:(Math.random()-.5)*2.4,vy:2+Math.random()*3.5,w:6+Math.random()*7,h:4+Math.random()*5,a:Math.random()*6.3,va:(Math.random()-.5)*.3,c:cols[i%cols.length]});
   const t0=performance.now();
   (function step(){const t=performance.now()-t0;x.clearRect(0,0,innerWidth,innerHeight);if(t>5200||!$('fin').classList.contains('show'))return;
@@ -551,51 +561,64 @@ function confetti(){
     for(const p of P){p.x+=p.vx+Math.sin((t+p.a*200)/300)*.6;p.y+=p.vy;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore();}
     requestAnimationFrame(step);})();
 }
-function showFinish(complete,closed){
-  const phone=window.innerWidth<=720,BW=phone?360:748,BH=phone?470:440,fills=['pb','accent','pl','pp','pr','gold'];
-  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const items=(STATE.contrib||[]).filter(o=>o.firsts>0).map((o,i)=>({n:o.name,p:o.firsts,f:fills[i%fills.length],me:!!(M.name&&o.name===M.name)}));
-  const g=STATE.guests||{players:0,firsts:0};
-  if(g.firsts>0)items.push({n:'Guests',p:g.firsts,f:'chip',sub:g.players+(g.players===1?' guest':' guests')});
-  items.forEach(o=>{if(o.me)o.f='gold';});
-  const placed=items.length?packBubbles(items,BW,BH):[];
-  $('bubbles').setAttribute('viewBox','0 0 '+BW+' '+BH);
-  $('bubbles').innerHTML=placed.map((o,i)=>{
-    const fs=Math.max(10,Math.min(20,o.r*.3)),max=Math.floor(o.r*2/(fs*.6)),nm=o.me?'You':o.n,name=esc(nm.length>max?nm.slice(0,Math.max(1,max-1))+'.':nm);
-    let t='';
-    if(o.r>=24)t='<text x="'+o.x.toFixed(1)+'" y="'+(o.y-1).toFixed(1)+'" font-size="'+fs.toFixed(1)+'">'+name+'</text><text class="ct" x="'+o.x.toFixed(1)+'" y="'+(o.y+fs*1.05).toFixed(1)+'" font-size="'+(fs*.78).toFixed(1)+'">'+o.p.toLocaleString()+(o.sub&&o.r>=58?' · '+o.sub:'')+'</text>';
-    else if(o.r>=13)t='<text class="'+(o.me?'':'ct')+'" x="'+o.x.toFixed(1)+'" y="'+(o.y+3.5).toFixed(1)+'" font-size="10">'+(o.me?'You':o.p)+'</text>';
-    return '<g class="'+(o.me?'me':'')+'" style="animation-delay:'+(350+i*45)+'ms"><circle cx="'+o.x.toFixed(1)+'" cy="'+o.y.toFixed(1)+'" r="'+o.r.toFixed(1)+'" style="fill:var(--'+o.f+')"><title>'+esc(o.n)+': '+o.p.toLocaleString()+' pieces</title></circle>'+t+'</g>';
-  }).join('');
-  const pc=$('finPic');pc.width=Math.min(1500,W);pc.height=Math.round(pc.width*H/W);
-  const px=pc.getContext('2d');
-  if(complete)px.drawImage(src,0,0,pc.width,pc.height);else{px.fillStyle=C.slot;px.fillRect(0,0,pc.width,pc.height);px.drawImage(crowdL,0,0,pc.width,pc.height);px.drawImage(mineL,0,0,pc.width,pc.height);}
-  const n=STATE.n||0,players=STATE.players||0,hrs=STATE.completed?Math.max(0,Math.floor((Date.parse(STATE.completed)-env.board.opens)/3600000)):hoursOpen();
-  $('finEb').textContent=K.name+' · '+K.runs;
-  $('finTitle').textContent=K.name+(complete?' Complete':' Closed');
-  $('finLead').textContent=(complete?TOTAL.toLocaleString()+' pieces, placed by ':n.toLocaleString()+' of '+TOTAL.toLocaleString()+' pieces placed, by ')+players.toLocaleString()+(players===1?' player':' players')+' and '+(g.players||0).toLocaleString()+((g.players||0)===1?' guest':' guests')+'.'+(complete&&!closed?' Finished '+hrs+(hrs===1?' hour':' hours')+' after it opened.':'');
-  $('fFirst').textContent=M.firsts.toLocaleString();$('fShare').textContent=(M.firsts/TOTAL*100).toFixed(M.firsts/TOTAL<.1?1:0)+'%';$('fPts').textContent=M.pts.toLocaleString();$('fRank').textContent=M.mine.size&&M.rank?M.rank:'–';
-  $('finCredit').textContent=creditLine();
-  if(closed){$('finClose').textContent='Play The New '+K.name;$('finClose').onclick=()=>window.location.reload();}
-  if(SOLO){$('finTitle').textContent=K.name+' Complete';$('finLead').textContent='All '+TOTAL.toLocaleString()+' pieces, placed by you alone.';}
-  else finNext(complete,closed);
-  $('fin').classList.add('show');$('fin').scrollTop=0;if(complete)confetti();
+let memo=null,wallData=env.wall||null,wallAsked=!!env.wall;
+function barsHold(color){
+  /* The phone's browser bars take the wall's colour while it is up (see GauntletScreens useStageChrome). */
+  const rel=holdThemeColor(color),html=document.documentElement,body=document.body,ph=html.style.backgroundColor,pb=body.style.backgroundColor;
+  html.style.backgroundColor=color;body.style.backgroundColor=color;
+  const bands=['top','bottom'].map(side=>{const n=document.createElement('div');n.setAttribute('data-mural-edge','');n.style.cssText='position:fixed;left:0;right:0;'+side+':0;height:12px;z-index:899;pointer-events:none;background:'+color;body.appendChild(n);return n;});
+  let off=false;const undo=()=>{if(off)return;off=true;rel();html.style.backgroundColor=ph;body.style.backgroundColor=pb;bands.forEach(n=>n.remove());};
+  cleanups.push(undo);return undo;
 }
-/* WHAT COMES AFTER (owner, 2026-11-19): a finished mural is closed. Say so, say
-   what this player gave it, point at the Puzzle Shelf where it can be built
-   alone, and either offer the other mural (if it is open and unfinished) or
-   count down to the next one of this kind, which the page then loads itself. */
+function closeWall(){if(memo){memo.close();memo=null;}}
+function openWall(mode,o){
+  o=o||{};
+  const complete=o.complete!==undefined?o.complete:true,closed=!!o.closed,live=mode==='live';
+  const crowd=live?STATE:(env.crowd||{}),cm=env.crowdMe||{};
+  const me=live?{name:M.name,firsts:M.firsts,pts:M.pts,rank:M.mine.size?M.rank:null,pieces:M.mine}:{name:cm.name||null,firsts:cm.firsts||0,pts:cm.points||0,rank:cm.rank||null,pieces:Array.isArray(cm.pieces)?cm.pieces:[]};
+  const done=env.board.completed||Date.parse(crowd.completed||'')||0;
+  const hrs=done?Math.max(0,(done-env.board.opens)/3600000):Math.max(0,(Math.min(Date.now(),env.board.closes)-env.board.opens)/3600000);
+  const fullPic=mode==='live'?complete:!!(done||(crowd.n||0)>=TOTAL);
+  const shelf={label:'Puzzle Shelf',href:'/jig/shelf?tab=murals'};
+  let primary=null,alts=[],top=[shelf],note='',next=null;
+  if(mode==='visit'){
+    const had=M.mine.size;
+    primary={label:had>=TOTAL?'See Your Finished Copy':had?'Continue Your Replay':'Replay This '+K.name,sub:'Build it yourself. No points, no clock, and your pieces are kept on this device.',onClick:closeWall};
+    top=[shelf,{label:had&&had<TOTAL?'Continue':'Replay',onClick:closeWall}];
+    alts=[{label:'Play Today’s '+K.name,href:K.route},shelf];
+  }else if(mode==='rebuilt'){
+    note='You have now rebuilt all '+TOTAL.toLocaleString()+' pieces on your own.';
+    primary={label:'Play Today’s '+K.name,href:K.route};
+    alts=[{label:'See Your Finished Copy',onClick:closeWall},shelf];
+  }else{
+    if(closed)primary={label:'Play The New '+K.name,onClick:()=>window.location.reload()};
+    alts=[{label:complete?'See The Finished '+K.name:'See The '+K.name,onClick:closeWall},{label:'Standings',onClick:()=>{closeWall();standings();$('lbSheet').classList.add('show');}},{label:'Build It Yourself',href:K.route+'?solo='+env.id}];
+    top=[shelf,{label:'Standings',onClick:()=>{closeWall();standings();$('lbSheet').classList.add('show');}}];
+    next=el=>finNext(el,complete,closed);
+  }
+  closeWall();
+  memo=openMemorial($('fin'),{
+    name:K.name,eyebrow:K.name+' · '+muralDateLabel(env.id)+(fullPic?' · Finished':' · Closed'),
+    cols:COLS,rows:ROWS,src,wall:wallData,state:crowd,me,complete:fullPic,hoursOpen:hrs,
+    dark:theme==='dark',animate:o.animate!==false,credit:creditLine(),homeHref:'/',
+    top,primary,alts,note,next,bars:barsHold,
+  });
+  if(o.confetti)confetti();
+}
+function showFinish(complete,closed){
+  const go=()=>{if(dead)return;if(SOLO)openWall('rebuilt',{complete:true});else openWall('live',{complete,closed,confetti:complete});};
+  if(wallAsked&&wallData){go();return;}
+  /* Who placed what, in order, for the build and the blocks. Without it the wall still opens, from the standings snapshot. */
+  wallAsked=true;
+  getJSON('/api/mural/wall?id='+env.id).then(w=>{if(w.ok&&w.j&&Array.isArray(w.j.order))wallData=w.j;}).catch(()=>{}).then(go);
+}
+/* WHAT COMES AFTER (owner, 2026-11-19): a finished mural is closed. Either offer
+   the other mural (if it is open and unfinished) or count down to the next one
+   of this kind, which the page then loads itself. */
 let nextT=null;
-function finNext(complete,closed){
-  let box=$('finNext');
-  if(!box){box=document.createElement('div');box.id='finNext';$('finLead').insertAdjacentElement('afterend',box);}
-  const other=K.key==='mural'?MURAL_KINDS.muraltoo:MURAL_KINDS.mural;
-  const mine=M.firsts?' You placed '+M.firsts.toLocaleString()+(M.firsts===1?' piece':' pieces')+' first and scored '+M.pts.toLocaleString()+(M.pts===1?' point.':' points.'):(M.mine.size?' You placed '+M.mine.size.toLocaleString()+(M.mine.size===1?' piece.':' pieces.'):'');
-  const note=complete?'This '+K.name+' is finished, so it is closed. Every piece is on the wall.'+mine:'This '+K.name+' has closed.'+mine;
-  box.innerHTML='<p class="rule" style="margin-top:4px">'+note+'</p>'
-    +'<p class="rule" id="finCount" style="font-weight:800;color:var(--ink)"></p>'
-    +'<div id="finOther"></div>'
-    +'<p class="rule"><a href="/jig/shelf?tab=murals" style="color:inherit;font-weight:800">Build It Yourself On The Puzzle Shelf</a></p>';
+function finNext(box,complete,closed){
+  if(!box)return;
+  box.innerHTML='<p id="finCount"></p><div id="finOther"></div>';
   clearInterval(nextT);
   if(!closed){
     /* The next one opens the moment this one is finished, or 24 hours after this one opened if that is later. */
@@ -603,33 +626,31 @@ function finNext(complete,closed){
     const tickN=()=>{
       const left=opens-Date.now(),e=$('finCount');
       if(left<=0&&live){clearInterval(nextT);window.location.reload();return;}
-      if(left<=0){clearInterval(nextT);if(e)e.innerHTML='<a class="primary" style="display:inline-block;width:auto;text-decoration:none" href="'+K.route+'">Play The New '+K.name+'</a>';return;}
+      if(left<=0){clearInterval(nextT);if(e)e.innerHTML='<a class="mwGo" href="'+K.route+'">Play The New '+K.name+'</a>';return;}
       const m=Math.ceil(left/60000),h=Math.floor(m/60);
       if(e)e.textContent='The next '+K.name+' opens in '+(h?h+(h===1?' hour':' hours')+' and ':'')+(m%60)+(m%60===1?' minute.':' minutes.');
     };
     tickN();nextT=setInterval(tickN,15000);timers.push(nextT);
-    $('finClose').textContent='Look At The Finished '+K.name;
   }
+  const other=K.key==='mural'?MURAL_KINDS.muraltoo:MURAL_KINDS.mural;
   if(muralLaunched(other.key)){
     getJSON('/api/mural/board?kind='+other.key).then(ob=>(ob.ok&&ob.j&&ob.j.id?getJSON('/api/mural/state?id='+ob.j.id):{ok:false})).then(o=>{
       if(dead||!o.ok||!o.j)return;
       const open=!o.j.completed&&(o.j.n||0)<(o.j.total||TOTAL);
       const e=$('finOther');
-      if(e&&open)e.innerHTML='<a class="primary" style="display:inline-block;width:auto;text-decoration:none" href="'+other.route+'">Play '+other.name+' Now</a>';
+      if(e&&open)e.innerHTML='<a class="mwGo" href="'+other.route+'">Play '+other.name+' Now</a>';
     }).catch(()=>{});
   }
 }
 function creditLine(){const p=env.board.photo||{};return p.name?'Photo: '+p.name+(p.by?', by '+p.by:'')+(p.lic?' ('+p.lic+')':'')+', Wikimedia Commons.':'';}
-$('finClose').onclick=()=>$('fin').classList.remove('show');
-$('finLb').onclick=()=>{$('fin').classList.remove('show');standings();$('lbSheet').classList.add('show');};
 
 /* ---------- wiring ---------- */
 /* No wait on Refresh (owner, 2026-11-19: "Remove the refresh limit"); the 10 second timer is gone. */
-function coolTick(){const b=$('dealBtn');b.disabled=!!(M&&M.done);b.textContent='Refresh';}
-function refreshSet(){if(M.done)return;dealAll();setMsg(M.hand.some(x=>x!==null)?'New set, from anywhere on the mural. Use the picture to find where each one goes.':'You have placed everything.');}
+function coolTick(){const b=$('dealBtn'),w=!!(M&&M.done&&finShown);b.disabled=!!(M&&M.done)&&!w;b.textContent=w?'The Wall':'Refresh';}
+function refreshSet(){if(M.done){if(finShown)showFinish(SOLO||!!STATE.completed||(STATE.n||0)>=TOTAL,!SOLO&&Date.now()>=env.board.closes);return;}dealAll();setMsg(M.hand.some(x=>x!==null)?'New set, from anywhere on the mural. Use the picture to find where each one goes.':'You have placed everything.');}
 $('dealBtn').onclick=refreshSet;
 $('helpBtn').onclick=()=>$('helpSheet').classList.add('show');
-$('lbBtn').onclick=()=>{standings();$('lbSheet').classList.add('show');};
+$('lbBtn').onclick=()=>{if(SOLO){openWall('visit',{animate:false});return;}standings();$('lbSheet').classList.add('show');};
 $('dOther').onclick=()=>{window.location.href=K.key==='mural'?'/muraltoo':'/mural';};
 $('themeBtn').onclick=()=>{theme=theme==='dark'?'light':'dark';root.setAttribute('data-theme',theme);$('themeBtn').textContent=theme==='dark'?'Light':'Dark';colors();valDirty=true;req();};
 $('themeBtn').textContent=theme==='dark'?'Light':'Dark';
@@ -648,7 +669,7 @@ M.hours=hoursOpen();
 applyState(env.state).forEach(id=>drawPiece(cctx,id));
 applyMe(env.me);
 loadLoose();
-if(SOLO){for(const q of ['#lbBtn','#updBox']){const sg=root.querySelector(q);if(sg)sg.style.display='none';}}
+if(SOLO){for(const q of ['#updBox','#allBox']){const ub=root.querySelector(q);if(ub)ub.style.display='none';}$('lbBtn').textContent='The Wall';}
 $('credit').textContent=creditLine();
 fit();if(isPhone){view.s=Math.min(view.max,37/PS);view.tx=view.cw/2-W*.5*view.s;view.ty=view.ch/2-H*.5*view.s;clampView();}
 dealAll();
@@ -656,6 +677,8 @@ setMsg(SOLO?'Shelf copy: build it alone, at your own pace. Nothing here scores, 
 ui();draw();
 ro=new ResizeObserver(()=>{const r=$('stage').getBoundingClientRect();if(Math.abs(r.width-view.cw)<1&&Math.abs(r.height-view.ch)<1)return;const wasFit=view.s<=view.min*1.001,hn=HANDN,ts=TSZ;resize();if(HANDN!==hn||TSZ!==ts)fitHand();if(wasFit)fit();else clampView();clampRef();req();});
 ro.observe($('stage'));
+/* A RETURN VISIT (shelf or archive) opens on the wall, before Replay. A copy already rebuilt does not fire the finish again. */
+if(SOLO){if(M.mine.size>=TOTAL){finShown=true;M.done=true;renderHand();ui();coolTick();}openWall('visit');}
 checkEnd();
   }
 }

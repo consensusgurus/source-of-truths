@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { ensureBoard, currentBoard, publicBoard } from '@/lib/mural';
+import { ensureBoard, currentBoard, boardOnDay, publicBoard } from '@/lib/mural';
 import { parseMuralId, MURAL_KINDS } from '@/lib/mural-shared';
 
 // GET /api/mural/board?id=<kind>-<YYYY-MM-DD>
@@ -26,13 +26,17 @@ export async function GET(request) {
   const byKind = !!MURAL_KINDS[kind];
   if (!byKind && !parseMuralId(id)) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   let out;
-  try { out = byKind ? await currentBoard(supabaseAdmin, kind) : await ensureBoard(supabaseAdmin, id); }
+  // ?kind=&day=YYYY-MM-DD is the board that was open on that Eastern day (the
+  // Puzzle Archive's link to a past day).
+  const day = String(searchParams.get('day') || '');
+  const byDay = byKind && !!day;
+  try { out = byDay ? await boardOnDay(supabaseAdmin, kind, day) : byKind ? await currentBoard(supabaseAdmin, kind) : await ensureBoard(supabaseAdmin, id); }
   catch (e) { console.error('mural board', e); return NextResponse.json({ error: 'Try again in a moment.' }, { status: 503, headers: { 'Cache-Control': 'no-store' } }); }
   if (!out.board) {
     return NextResponse.json({ error: 'Not open', available: !out.unavailable, why: out.why || undefined }, { status: 404, headers: { 'Cache-Control': out.why ? 'no-store' : 'public, s-maxage=30' } });
   }
   const fin = !!out.board.completed_at;
-  const cache = byKind ? 'public, max-age=20, s-maxage=30' : (fin ? 'public, max-age=300, s-maxage=86400' : 'public, max-age=30, s-maxage=60');
+  const cache = byDay ? 'public, max-age=60, s-maxage=300' : byKind ? 'public, max-age=20, s-maxage=30' : (fin ? 'public, max-age=300, s-maxage=86400' : 'public, max-age=30, s-maxage=60');
   const body = publicBoard(out.board);
   if (out.nextAt) body.nextAt = out.nextAt;
   return NextResponse.json(body, { headers: { 'Cache-Control': cache } });

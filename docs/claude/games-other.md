@@ -3512,6 +3512,47 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
   their own contribution, a link to the Puzzle Shelf, and EITHER a button for the other mural (if
   that one is open and unfinished) OR a countdown to the next one of this kind; the page loads the
   new mural itself when the countdown ends.
+- **The header's figures (owner, 2026-11-19: "dont need to show 'firsts', instead also give total
+  places along with %. and that number will have the '+5' or whatever on every refresh").** Points,
+  Placed (the player's own pieces), Site Total with its percent of the mural, and To Update. What
+  the last refresh brought (`+5`) sits in a chip beside Site Total until the next refresh
+  (`flashUpdate`, `#sNew`); a refresh that brings nothing clears it. Firsts are not shown in the
+  header (the Standings sheet and the wall still carry them). A shelf copy hides Site Total.
+- **The closing screen is THE WALL (`app/mural/memorial.js`, owner 2026-11-19: "should look
+  something like the pastel full screens that we see for gauntlet animations and pages. and this
+  will be immortalized. if a player returns to the puzzle via archive or shelf, they will see this
+  first before clicking replay").** One full screen on Visual's soft pastel with the one dark ink
+  (dark look: the near-black stage ground), the browser bars painted to match. A band sweep, then
+  the picture builds itself in the order the site placed it, every piece in its player's colour,
+  and turns into the photo. Beside it, Who Built It: a treemap, one block a player sized by FIRST
+  placements, guests in one block, players past the top 120 in one block, the reader's own block
+  outlined and named You. Tap a block and the wall shows only that player's pieces. Picture / Who
+  Placed What is a two-part toggle, Watch It Build replays the build, and a tap on the wall skips
+  it. Below: Your Part (firsts, share of the wall, points, place, Show My Pieces), Top Points
+  (six, from the state snapshot's `top`) and the buttons. The headline counts builders (members
+  plus guests); percentages are of the whole wall, never of the placed pieces.
+  - **Three ways in** (`openWall(mode)` in `engine.js`): `live` (the open mural was just finished
+    or has closed: countdown or the other mural, See The Finished Mural, Standings, Build It
+    Yourself), `visit` (a finished mural opened from the shelf `?solo=<id>` or the archive
+    `?p=<day>`: it opens on the wall FIRST, with Replay in the header and as the primary button;
+    Replay closes the wall onto the shelf copy) and `rebuilt` (a shelf copy the player has now
+    finished alone). In a shelf copy the header's Standings pill reads The Wall and reopens it;
+    on a finished live mural the tray's Refresh button does the same.
+  - **Data: `GET /api/mural/wall?id=`** reads the first-placement rows themselves (paged by 1,000,
+    no migration) and answers `who` (members, most firsts first), `guests`, `order` (piece ids,
+    oldest first) and `own` (0 = guest, else 1 + index in `who`). No player id leaves the server;
+    the page finds the reader's own block by matching their pieces from `/api/mural/me`. A
+    finished mural's answer is held at the edge for a month; the rows are never deleted, which is
+    what "immortalized" rests on, so never purge `mural_places` for a finished board. If the route
+    fails the wall still opens from the state snapshot (blocks and picture, no build, no
+    per-player pieces).
+  - **The archive's `?p=<n>`** is a site day, and a mural runs until finished, so
+    `/api/mural/board?kind=&day=YYYY-MM-DD` (`boardOnDay`) answers the newest board of the kind
+    that had opened by the end of that Eastern day. Finished: it opens on its wall. Still open: the
+    page plays as usual.
+  - The harness used to check it by eye: serve `memorial.js` with a fake `wall` and a canvas photo
+    (the site build cannot run in the sandbox). Check 1440x820, 1280x720, a 390 wide phone, dark,
+    an unfinished wall, one member, and `wall: null`.
 - **The Puzzle Shelf's Murals tab** (`/jig/shelf?tab=murals`, `/api/mural/shelf`) lists every mural
   that is complete or closed. A box opens `/<kind>?solo=<id>`: a shelf copy built alone, with no
   points, nothing sent to the server, and the placed pieces kept in the browser
@@ -3525,7 +3566,7 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
 - **Every `/api/mural` route sets `fetchCache = 'force-no-store'`.** Without it Next kept an empty
   Supabase read in its data cache and the launch answered "not open" with the boards already saved.
 - **Files:** `app/mural/` (page, MuralClient, engine.js, markup.js, puzzles.js),
-  `app/muraltoo/`, `app/api/mural/{board,img,state,me,place}`, `lib/mural.js`,
+  `app/mural/memorial.js` (the wall), `app/muraltoo/`, `app/api/mural/{board,img,state,me,place,wall}`, `lib/mural.js`,
   `lib/mural-shared.js`, migrations 69 and 70. The engine is a plain DOM and canvas program that
   React mounts once (`bootMural`); its CSS is scoped under `.mrl`.
 - **Checker** `scripts/verify-mural.mjs`: day lists, schedule across both clock changes, launch
