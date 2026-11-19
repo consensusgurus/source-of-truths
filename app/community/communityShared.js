@@ -2,7 +2,7 @@
 // a client file can take it without pulling in the server data layer.
 export const FEEL_NAMES = { 1: 'Gentle', 2: 'Moderate', 3: 'Tough' };
 export const IDEA_KINDS = { puzzle: 'New Puzzle', variation: 'Variation', fix: 'Site Fix' };
-export const IDEA_STAGES = { open: 'Open For Votes', review: 'Under Review', workshop: 'In The Workshop', built: 'Built' };
+export const IDEA_STAGES = { open: 'Open For Votes', review: 'Under Review', workshop: 'Building', built: 'Built' };
 // The site pastels (light) and their dark-register washes, for avatars and chips.
 export const PASTELS = ['#bfe6fb', '#a6f4e7', '#a2efc5', '#c4f09e', '#fdc394', '#fbaee7', '#d9c6f9', '#c5cdfd'];
 export function pastelOf(key) {

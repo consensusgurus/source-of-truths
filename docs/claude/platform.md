@@ -774,8 +774,8 @@ Hub stays as is). One-row GroupsShell cap and one segmented tab row on every pag
   post time ("#8 of 20"). Gentle / Moderate / Tough poll, cheers, Report (three reports hide a
   post), closes at midnight Eastern and stays readable. The discussion page is noindex.
 - **Idea Board** `/community/ideas?pitch=puzzle|variation|fix&game=<key>`: New Puzzle, Variation,
-  Site Fix; one vote per idea (the pitcher's counts); stages Open For Votes, Under Review, In The
-  Workshop, Built. It replaced "Submit or List a Puzzle" in Everything Else; that form still exists
+  Site Fix; one vote per idea (the pitcher's counts); stages Open For Votes, Under Review, Building
+  (first In The Workshop, too long for a phone toggle; owner, 2026-11-18), Built. It replaced "Submit or List a Puzzle" in Everything Else; that form still exists
   at `/submit-a-puzzle` and the Idea Board links to it.
 - **Groups** `/community/groups` (first called Clubs; owner, 2026-11-18 "Clubs need to be Groups",
   `/community/clubs` now redirects): groups (lib/groups.js): yours with today's place, and the

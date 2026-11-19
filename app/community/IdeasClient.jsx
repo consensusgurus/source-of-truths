@@ -2,7 +2,7 @@
 // THE IDEA BOARD, /community/ideas (owner, 2026-11-18: "make it the idea board,
 // pitching ideas"). Pitch a New Puzzle, a Variation of one you play, or a Site
 // Fix. One vote per idea. Stages: Open For Votes, Under Review, In The
-// Workshop, Built. It took the place of "Submit or List a Puzzle" in the index;
+// Workshop (renamed Building, owner 2026-11-18), Built. It took the place of "Submit or List a Puzzle" in the index;
 // that form still exists for makers sending a finished puzzle or a site, and
 // this page links to it.
 //
