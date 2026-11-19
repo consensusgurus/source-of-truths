@@ -78,7 +78,8 @@ export const COMMUNITY_CSS = `
 .cm-rw + .cm-rw{border-top:1px solid var(--stg-ink);}
 a.cm-rw:hover{background:var(--stg-surf2);}
 .cm-rw .gr{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px;}
-.cm-rw .gr b{font-weight:800;line-height:1.3;}
+.cm-rw .gr b{font-weight:800;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cm-rw .cm-chip{flex:none;}
 .cm-rw .gr small{font-size:12.5px;font-weight:600;color:var(--stg-ink2);line-height:1.35;}
 .cm-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid var(--stg-ink);border-radius:999px;font-size:12px;font-weight:800;
   background:var(--stg-raise);color:var(--stg-ink);white-space:nowrap;line-height:1.35;}
@@ -134,6 +135,8 @@ textarea.cm-in{resize:vertical;line-height:1.45;}
      toggle (owner, 2026-11-18). The segments share the width and wrap their words instead. */
   .cm-seg{overflow:hidden;max-width:100%;}
   .cm-seg button{flex:1 1 0;min-width:0;white-space:normal;text-align:center;line-height:1.2;padding:5px 6px;font-size:12.5px;}
+  .cm-seg button{flex-direction:column;gap:1px;}
+  .cm-seg button i{font-size:11.5px;}
   .cm-hero h1{font-size:28px;}
   .cm-hero p{font-size:15px;}
 }
