@@ -102,7 +102,10 @@ export function bootMural(root, cfg) {
       if (dead) return;
       if (!b.ok || !b.j || !b.j.grades) { bootMsg(`${K.name} is not open yet. Check back in a minute.`); return; }
       const phone = window.innerWidth <= 720;
-      const big = !phone && !((navigator.deviceMemory || 8) <= 4);
+      // Phones take the full 3840 photo too (see SHARPNESS in start): half size
+      // left 15 source pixels a piece. Only a device that reports little memory
+      // starts smaller, and a failed load falls back a size.
+      const big = !((navigator.deviceMemory || 8) <= 4);
       let img;
       try { img = await loadImg(id, big ? 3840 : 1920); }
       catch (e) { img = await loadImg(id, big ? 1920 : 960); }
@@ -184,7 +187,11 @@ sctx.drawImage(img,cx0,cy0,cw0,ch0,0,0,W,H);
 const cv=$('cv'),ctx=cv.getContext('2d'),refCv=$('refCv');refCv.height=Math.round(refCv.width*H/W);const rctx=refCv.getContext('2d');
 const M={crowd:new Set(),mine:new Set(),pts:0,firsts:0,hours:0,hand:[],loose:[],done:false,rank:null,name:null};
 let STATE=env.state||{};
-const view={s:1,tx:0,ty:0,cw:0,ch:0,min:.1,max:110/PS};
+// SHARPNESS (owner, 2026-11-19, a phone screenshot of a smeared piece: "have to
+// fix this piece clarity, looks awful"). A piece is only PS source pixels wide
+// (30 from the 3840 photo), so the closest zoom stops at 64 CSS px a piece;
+// it used to go to 110 and the phone loaded the half-size photo on top of that.
+const view={s:1,tx:0,ty:0,cw:0,ch:0,min:.1,max:64/PS};
 let valDirty=true,isPhone=false,C={},sel=null,refTab='pic',pulses=[],needDraw=false,tick=UPDATE,HANDN=8,TSZ=68,finShown=false;
 function colors(){const cs=getComputedStyle(root);C={bd:cs.getPropertyValue('--bd').trim(),slot:cs.getPropertyValue('--slot').trim(),ink:cs.getPropertyValue('--ink').trim(),page:cs.getPropertyValue('--page').trim()};}
 const SOLO=!!env.solo;

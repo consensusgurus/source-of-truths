@@ -265,6 +265,7 @@ export default function PremierePop() {
   }
 
   if (!games) return null;
+  if (games.length === 1 && games[0] === 'mural') return <MuralLaunch onClose={() => setGames(null)} />;
   const rows = games.map((k) => DAILY_GAME_MAP[k]).filter(Boolean);
   const many = rows.length > 1;
   const cat = rows[0].cat || 'Trivia';
@@ -326,6 +327,97 @@ export default function PremierePop() {
     </div>
   );
 }
+
+// THE MURAL LAUNCH CARD (owner, 2026-11-19, from the mockup at
+// https://claude.ai/artifact/WXXofv9BdxsvLLjwkc5tS7: "Do the new game pop-up for
+// mural - note that this is a new concept"). Mural is not another solo daily,
+// so its card says what is different instead of the usual one-row card: a
+// small mural with the Blank / Faded / Bright legend, four reasons, one button.
+// On a phone the reasons keep their titles and drop the second line so the card
+// fits one screen. MuralToo has no card of its own.
+const ML_GAPS = [[3, 0], [4, 0], [9, 0], [15, 1], [16, 1], [6, 2], [7, 2], [12, 3], [13, 3], [2, 4], [18, 4], [8, 5], [9, 5], [10, 5], [14, 6], [4, 7], [5, 7], [17, 7], [11, 8], [1, 9], [2, 9], [15, 9], [7, 10], [8, 10], [19, 10], [12, 11]];
+const ML_MINE = [[5, 3], [6, 3], [10, 6], [11, 6], [11, 7]];
+const ML_WHY = [
+  ['crowd', 'We All Build The Same One', 'Every other daily is yours alone. Here the crowd\u2019s pieces fade in on your board every two minutes.'],
+  ['clock', 'No Clock, No Give Up', 'It is open for 24 hours. Place five pieces or five hundred, and come back whenever you like.'],
+  ['bars', 'Hard Pieces Pay More', 'Plain sky beats a corner, and a piece nobody has placed yet pays double.'],
+  ['two', 'Two A Day', 'Mural opens at noon ET. MuralToo, its twin, opens at midnight.'],
+];
+const ML_ICON = {
+  crowd: <><circle cx="8" cy="9" r="3" /><circle cx="17" cy="10" r="2.5" /><path d="M2.5 20c.6-3.4 2.8-5 5.5-5s4.9 1.6 5.5 5M14.5 15.2c.8-.3 1.6-.4 2.5-.4 2.3 0 4 1.3 4.5 4.2" /></>,
+  clock: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2M4.5 4.5l15 15" /></>,
+  bars: <path d="M4 18h4v-5H4zM10 18h4V9h-4zM16 18h4V5h-4z" />,
+  two: <><circle cx="7.5" cy="12" r="3.5" /><path d="M7.5 5v1.5M7.5 17.5V19M1 12h1.5M12.5 12H14" /><path d="M21 14.5A5 5 0 0 1 16 8.5a5 5 0 1 0 5 6z" /></>,
+};
+function MuralPicture() {
+  const pic = (
+    <>
+      <rect width="400" height="180" fill="#8fd0f5" /><circle cx="300" cy="46" r="20" fill="#f7c948" />
+      <path d="M0 120 Q90 60 190 112 T400 96 V180 H0Z" fill="#7d8fc4" /><path d="M0 138 Q110 96 230 132 T400 124 V180 H0Z" fill="#5fae5a" />
+      <path d="M0 160 Q140 128 260 156 T400 150 V180 H0Z" fill="#3f8f52" /><path d="M150 180 Q170 150 196 128" stroke="#4aa3e0" strokeWidth="7" fill="none" />
+    </>
+  );
+  return (
+    <svg className="ml-pic" viewBox="0 0 400 180" role="img" aria-label="A wide landscape photo cut into a grid of small pieces. Most are faded, a few are bright, and some are still blank.">
+      <defs><clipPath id="ml-mine">{ML_MINE.map(([x, y]) => <rect key={x + '-' + y} x={x * 20} y={y * 15} width="20" height="15" />)}</clipPath></defs>
+      <rect className="ml-gap" width="400" height="180" />
+      <g opacity="0.45">{pic}</g>
+      {ML_GAPS.map(([x, y]) => <rect key={x + '-' + y} className="ml-gap" x={x * 20} y={y * 15} width="20" height="15" />)}
+      <g clipPath="url(#ml-mine)">{pic}</g>
+      <g className="ml-grid">
+        {Array.from({ length: 19 }, (_, i) => <path key={'v' + i} d={`M${(i + 1) * 20} 0V180`} />)}
+        {Array.from({ length: 11 }, (_, i) => <path key={'h' + i} d={`M0 ${(i + 1) * 15}H400`} />)}
+      </g>
+    </svg>
+  );
+}
+function MuralLaunch({ onClose }) {
+  const acc = categoryColor('Visual');
+  const vars = { '--prm-acc': acc, '--prm-on': RAMP_INK, '--prm-tint': `color-mix(in srgb, ${acc} 18%, transparent)` };
+  const since = PREMIERES.find((p) => p.key === 'mural');
+  const when = since && since.from === etToday() ? 'New today' : 'New this week';
+  return (
+    <div className="prm-scrim" {...scrimClose(onClose)}>
+      <style dangerouslySetInnerHTML={{ __html: CSS + MURAL_LAUNCH_CSS }} />
+      <div className="prm" role="dialog" aria-labelledby="prm-t" style={vars} onClick={(e) => e.stopPropagation()}>
+        <div className="prm-in">
+          <div className="prm-top">
+            <div className="prm-eye"><i /><span>{when} · A new kind of puzzle</span></div>
+            <button className="prm-x" aria-label="Close" onClick={onClose}><X size={16} strokeWidth={2.8} /></button>
+          </div>
+          <h2 id="prm-t">Mural: One Jigsaw, Built By Everyone</h2>
+          <p className="prm-lede">A new kind of puzzle for Mind Loft. Every other daily here is solved alone. Mural is 10,000 pieces of one photograph, and everyone on the site builds the same one at the same time.</p>
+          <MuralPicture />
+          <div className="ml-leg"><span><b>Blank</b> nobody yet</span><span><b>Faded</b> the crowd has it</span><span><b>Bright</b> yours</span></div>
+          <div className="prm-rows">
+            {ML_WHY.map(([k, t, s]) => (
+              <div className="prm-row ml-row" key={k}>
+                <div className="prm-gl"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{ML_ICON[k]}</svg></div>
+                <div className="prm-t"><b>{t}</b><span>{s}</span></div>
+              </div>
+            ))}
+          </div>
+          <a className="prm-go" href="/mural" onClick={onClose}>Play Mural</a>
+          <div className="prm-foot">Every piece you place scores, and your Mural points count toward your total for the day.</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+const MURAL_LAUNCH_CSS = `
+.ml-pic{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--stg-ink,#08222e);box-sizing:border-box;}
+.ml-gap{fill:var(--stg-ground,#ffffff);}
+.ml-grid{stroke:var(--stg-ink,#08222e);stroke-width:.5;opacity:.35;fill:none;}
+.ml-leg{display:flex;flex-wrap:wrap;gap:6px 14px;margin:8px 0 14px;font-size:12px;font-weight:700;}
+.ml-leg span{opacity:.8;}
+.ml-leg b{font-weight:800;}
+.ml-row{grid-template-columns:44px 1fr;}
+.ml-row .prm-t span{line-height:1.4;margin-top:2px;}
+@media (max-width:420px){
+  .ml-row{grid-template-columns:40px 1fr;}
+  .ml-row .prm-t span{display:none;}
+}
+`;
 
 // THE SUDOKU LAUNCH CARD (owner, 2026-11-08). One card for the whole drop:
 // two sample boards (a 6x6 Kayak and a 9x9 color board), the 6x6 list, then the

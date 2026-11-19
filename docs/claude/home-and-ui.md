@@ -2981,3 +2981,26 @@ See "Mural and MuralToo" in `games-other.md`. `featFor` in `app/today/StageToday
 keeps it there after it has been played, and never fills the row with the other one. Both sit in
 Visual like any other daily.
 
+## A segmented toggle's inner edges are STRAIGHT (owner, 2026-11-19: "this mistake keeps happening")
+
+Owner, on Mural's zoom control on an iPhone, where the middle "Fit" had rounded corners inside the
+pill: "Middle should always be straight line flush with next area." In any joined control (a pill
+of two or more segments: zoom, view switches, tab pills), ONLY the outer ends of the pill are
+round. Every segment's own corners are square, so a middle segment meets its neighbors on straight
+lines and an end segment is round on its outer side only.
+
+The cause each time is the same: the pill gets `border-radius` and `overflow:hidden`, and the
+segments are `<button>`s left with the browser's own look, which on iOS Safari includes rounded
+corners. So EVERY segment of a joined control carries, explicitly:
+`-webkit-appearance:none; appearance:none; border-radius:0; margin:0;`
+and the divider is a 1px border on the segment, never a gap. Check a new joined control on an
+iPhone, or in Safari, before calling it done; Chrome on a desktop does not show the fault.
+
+## The Mural launch card (owner, 2026-11-19)
+
+`MuralLaunch` in `app/PremierePop.jsx`, shown when the day's premiere card is Mural (it is in
+`PREMIERES` with `front: true`, so it follows Machine's). It replaces the usual one-row card because
+Mural is a new kind of puzzle: a small mural with the Blank / Faded / Bright legend, four reasons it
+is different, and one Play Mural button. On a phone the reasons keep only their titles. MuralToo
+has no card. Preview with `?premiere=1`.
+
