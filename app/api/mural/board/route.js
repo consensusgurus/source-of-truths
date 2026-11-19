@@ -33,5 +33,7 @@ export async function GET(request) {
   }
   const fin = !!out.board.completed_at;
   const cache = byKind ? 'public, max-age=20, s-maxage=30' : (fin ? 'public, max-age=300, s-maxage=86400' : 'public, max-age=30, s-maxage=60');
-  return NextResponse.json(publicBoard(out.board), { headers: { 'Cache-Control': cache } });
+  const body = publicBoard(out.board);
+  if (out.nextAt) body.nextAt = out.nextAt;
+  return NextResponse.json(body, { headers: { 'Cache-Control': cache } });
 }

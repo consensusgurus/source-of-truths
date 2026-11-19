@@ -233,7 +233,7 @@ function draw(){
   needDraw=false;const dpr=cv.width/view.cw;
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=C.bd;ctx.fillRect(0,0,view.cw,view.ch);
   ctx.save();ctx.translate(view.tx,view.ty);ctx.scale(view.s,view.s);
-  ctx.fillStyle=C.slot;ctx.fillRect(0,0,W,H);const moving=performance.now()<hotUntil;ctx.imageSmoothingQuality=moving?'low':'high';
+  ctx.fillStyle=C.slot;ctx.fillRect(0,0,W,H);const moving=performance.now()<hotUntil||pulses.length>0;ctx.imageSmoothingQuality=moving?'low':'high';
   /* crowd pieces at full colour (owner, 2026-11-19: faded pieces made the picture impossible to match) */ctx.drawImage(crowdL,0,0);ctx.drawImage(mineL,0,0);
   const now=performance.now();pulses=pulses.filter(p=>now-p.t<(p.nw?4000:700));
   for(const p of pulses){const c=p.id%COLS,r=(p.id/COLS)|0;if(p.nw){const a=1-(now-p.t)/4000;ctx.globalAlpha=a*.75;ctx.fillStyle='#f2c230';ctx.fillRect(c*PS,r*PS,PS,PS);continue;}const a=1-(now-p.t)/700,g=(1-a)*PS*.9;ctx.strokeStyle=C.ink;ctx.globalAlpha=a;ctx.lineWidth=3/view.s;ctx.strokeRect(c*PS-g,r*PS-g,PS+2*g,PS+2*g);}
@@ -262,11 +262,17 @@ function fitHand(){if(M.hand.length>HANDN){M.hand.length=HANDN;if(sel!==null&&se
 function rowsUi(){root.querySelectorAll('.rows [data-rows]').forEach(b=>{const on=+b.dataset.rows===TRAYR;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});}
 function allOpen(){const busy=new Set(M.loose.map(l=>l.id)),out=[];for(let id=0;id<TOTAL;id++)if(!M.mine.has(id)&&!busy.has(id))out.push(id);return out;}
 function dealAll(){M.hand=[];const pool=allOpen();for(let k=0;k<HANDN;k++){if(!pool.length){M.hand.push(null);continue;}const j=Math.floor(Math.random()*pool.length);M.hand.push(pool[j]);pool[j]=pool[pool.length-1];pool.pop();}sel=null;renderHand();}
+/* THE TRAY REDRAW WAS THE LAG (owner, 2026-11-19: "the click into place is still very laggy").
+   Every placement rebuilt every tray piece from the full photo, up to 75 clipped draws of a
+   3840 px image. Piece images are now cached by id and size and reused, so a redraw only moves
+   them. */
+const PCACHE=new Map();
+function trayCanvas(id,size){const k=id+'|'+size;let c=PCACHE.get(k);if(!c){c=pieceCanvas(id,size);if(PCACHE.size>400)PCACHE.clear();PCACHE.set(k,c);}return c;}
 function renderHand(){
   const h=$('hand');h.innerHTML='';h.style.setProperty('--hc',HCOLS);h.style.setProperty('--ts',TSZ+'px');
   for(let k=0;k<HANDN;k++){
     const id=M.hand[k],b=document.createElement('button');b.className='piece'+(id===null||id===undefined?' empty':'')+(sel===k?' sel':'');b.dataset.k=k;b.style.width=b.style.height=TSZ+'px';
-    if(id!==null&&id!==undefined&&!M.done){b.appendChild(pieceCanvas(id,TSZ-10));const o=valueOf(id);/* no value badge on tray pieces (owner, 2026-11-19: it covered the piece) */b.setAttribute('aria-label','Piece worth '+o.v+(o.first?', first placement':''));}
+    if(id!==null&&id!==undefined&&!M.done){b.appendChild(trayCanvas(id,TSZ-10));const o=valueOf(id);/* no value badge on tray pieces (owner, 2026-11-19: it covered the piece) */b.setAttribute('aria-label','Piece worth '+o.v+(o.first?', first placement':''));}
     else b.disabled=true;
     h.appendChild(b);
   }
@@ -577,7 +583,7 @@ function finNext(complete,closed){
   clearInterval(nextT);
   if(!closed){
     /* The next one opens the moment this one is finished, or 24 hours after this one opened if that is later. */
-    const doneAt=Date.parse(STATE.completed||'')||Date.now(),opens=Math.max(env.board.opens+MURAL_MIN_MS,doneAt),live=opens>Date.now();
+    const doneAt=Date.parse(STATE.completed||'')||Date.now(),opens=env.board.nextAt?Math.max(env.board.nextAt,doneAt):Math.max(env.board.opens+MURAL_MIN_MS,doneAt),live=opens>Date.now();
     const tickN=()=>{
       const left=opens-Date.now(),e=$('finCount');
       if(left<=0&&live){clearInterval(nextT);window.location.reload();return;}
