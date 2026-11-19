@@ -57,6 +57,9 @@ import { EndNext, EndDay, StandChips, buildStops } from './EndNext';
 import { pageAge, BEAT_FRESH } from '@/lib/finish-beat';
 import { typicalSeconds } from '@/lib/game-medians';
 import EndFirst, { groupStandingOf } from './EndFirst';
+import TalkBand from './community/TalkBand';
+import TalkPanel from './community/TalkPanel';
+import { fetchSummary } from './community/communityClient';
 
 // RUNS, NOT THEIR PARTS (owner, 2026-10-26: "don't send users to individual
 // run components. show runs in place of those"). A game that is one question
@@ -270,6 +273,17 @@ export default function StageStick({
   // select the all-time leaderboard; its data must not load unless the player
   // selects it"). Nothing is asked for until All time is pressed, and then once.
   const [scope, setScope] = useState('today');
+  // POST-GAME TALK (owner, 2026-11-18): the Talk tab and the bands appear for
+  // today's puzzle only (an archived day's discussion is closed), and the tab's
+  // count fills in once its panel has loaded.
+  const [talkN, setTalkN] = useState(null);
+  const talkKey = sheet && sheet.gameKey && curISO ? sheet.gameKey : null;
+  useEffect(() => {
+    if (!talkKey) return undefined;
+    let dead = false;
+    fetchSummary(talkKey).then((d) => { if (!dead && d && d.game && typeof d.game.players === 'number') setTalkN((p) => (p == null ? d.game.players : p)); });
+    return () => { dead = true; };
+  }, [talkKey]);
   // How many board rows fit the card on a desktop (never fewer than five).
   const [fitN, setFitN] = useState(5);
   const [rowH, setRowH] = useState(38);
@@ -619,6 +633,7 @@ export default function StageStick({
   const chalSub = chal ? (chal.msg || [chal.lead, tickets || 'No spoilers'].filter(Boolean).join(' · ')) : '';
 
   const s = sheet || {};
+  const talkOn = !!(s.gameKey && curISO && DAILY_GAME_MAP[s.gameKey]);
   // The board's heading, with the quiet Today / All time switch beside it.
   // A quiz board is already all-time, so it carries no switch.
   const boardHead = (label) => (
@@ -631,6 +646,8 @@ export default function StageStick({
             <button key={r.id} type="button" role="tab" aria-selected={scope === r.id} className={scope === r.id ? 'on' : ''} onClick={() => setScope(r.id)}>{r.name}</button>
           )) : null}
           <button type="button" role="tab" aria-selected={scope === 'all'} className={scope === 'all' ? 'on' : ''} onClick={() => setScope('all')}>All time</button>
+          {/* POST-GAME TALK, a fourth tab, only after finishing (owner, 2026-11-18, spot 4). */}
+          {talkOn ? <button type="button" role="tab" aria-selected={scope === 'talk'} className={scope === 'talk' ? 'on' : ''} onClick={() => setScope('talk')}>Talk{talkN ? ` ${talkN}` : ''}</button> : null}
         </div>
       ) : null}
     </div>
@@ -1023,6 +1040,7 @@ export default function StageStick({
       onBack={back} backLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show board'}
       archiveHref={archiveHref} archiveLabel={archiveLabel}
       shelfHref={s.gameKey === 'jig' ? '/jig/shelf' : s.gameKey === 'saw' ? '/jig/shelf?g=saw' : null}
+      talk={talkOn ? { gameKey: s.gameKey, gameName: s.gameName } : null}
     />
   );
   // A pick's `after` is a rank on the board it came from: All today, or the
@@ -1098,7 +1116,12 @@ export default function StageStick({
   const rankCard = (s.rows && s.rows.length) || s.gameKey ? (
         <section className={'sst-card sst-rk ' + on(4)}>
           <div className="sst-rkb">
-            {(scope === 'cat' || scope === 'day') && standRows && standRows.find((r) => r.id === scope) ? (() => {
+            {scope === 'talk' && talkOn ? (
+              <>
+                {boardHead(`Post-Game Talk${talkN ? ` \u00b7 ${talkN} ${talkN === 1 ? 'player' : 'players'}` : ''}`)}
+                <TalkPanel gameKey={s.gameKey} gameName={s.gameName} compact onCount={setTalkN} />
+              </>
+            ) : (scope === 'cat' || scope === 'day') && standRows && standRows.find((r) => r.id === scope) ? (() => {
               const sr = standRows.find((r) => r.id === scope);
               return (
                 <>
@@ -1348,6 +1371,8 @@ export default function StageStick({
     <section className={'sst-card sst-nc sst-nx ' + on(3)}>
       <div className="sst-ncm">
         <EndNext stops={stops} picks={firstPicksList} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} />
+        {/* POST-GAME TALK, below Up next (owner, 2026-11-18). */}
+        {talkOn ? <TalkBand gameKey={s.gameKey} gameName={s.gameName} where="sheet" /> : null}
         {rankCard}
         {pnNode(true)}
       </div>
@@ -1409,7 +1434,12 @@ export default function StageStick({
           onShowBoard={back} showBoardLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show Board'}
           retry={retry} homeHref={allHref || '/'}
           standRows={standRows} beatRows={beatRows} standGo={standGo} noCount={noCount}
-          passNode={(stops.length || firstPicksList.length) ? (armed) => <EndNext phone stops={stops} picks={firstPicksList} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} /> : passNode}
+          passNode={(stops.length || firstPicksList.length) ? (armed) => (
+            <>
+              <EndNext phone stops={stops} picks={firstPicksList} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} />
+              {talkOn ? <TalkBand gameKey={s.gameKey} gameName={s.gameName} where="sheet" phone /> : null}
+            </>
+          ) : passNode}
           playNode={stops.length ? <EndDay dayRow={dayRow} stops={stops} grp={grp} /> : playNode}
           {...replayProps}
         />

@@ -41,11 +41,24 @@ export const FOOTER_COLS = [
       // The trivia IQ tests. /iq is linked from nowhere else, so this is its crawl path.
       { label: 'Trivia IQ Tests', href: '/iq' },
       { label: 'Stat Hub', href: '/quizzes/hub' },
-      { label: 'Community Leaderboard', href: '/quizzes/community' },
       { label: 'Request a Quiz', href: '/request' },
       // The kids track. Nothing inside /kids links back out except its own
       // footer line, so this is the one path a grown-up uses to find it.
       { label: 'Mind Loft Kids', href: '/kids' },
+    ],
+  },
+  // THE COMMUNITY COLUMN (owner, 2026-11-18, "Where To Link" spot 6): it
+  // replaced the single Community Leaderboard link above.
+  {
+    head: 'Community',
+    links: [
+      { label: 'The Commons', href: '/community' },
+      { label: 'Post-Game Talk', href: '/community/talk' },
+      { label: 'Idea Board', href: '/community/ideas' },
+      { label: 'Clubs', href: '/community/clubs' },
+      { label: 'Loft Shop', href: '/community/shop' },
+      { label: 'Puzzle Friends', href: '/community/friends' },
+      { label: 'Community Leaderboard', href: '/quizzes/community' },
     ],
   },
   {

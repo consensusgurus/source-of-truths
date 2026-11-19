@@ -26,6 +26,7 @@
 
 import { useState } from 'react';
 import GameGlyph from './GameGlyph';
+import TalkBand from './community/TalkBand';
 
 // The reader's place among their group on this game, or null: the same read
 // the phone's result bar makes (app/StageRoll.jsx).
@@ -86,6 +87,7 @@ export default function EndFirst({
   sim = null, run = null, gear = null, retry = null,
   chal = null, onFull, allHref = '/#all', homeHref = '/',
   replay = null, onBack = null, backLabel = 'Show board', archiveHref = null, archiveLabel = 'Past puzzles', shelfHref = null,
+  talk = null,
 }) {
   const [open, setOpen] = useState(false);
   const canOpen = !!(board && board.rows && board.rows.length);
@@ -155,6 +157,9 @@ export default function EndFirst({
             {bigs.map(([tone, p]) => <Big key={tone} p={p} tone={tone} />)}
           </div>
         ) : null}
+        {/* POST-GAME TALK, one row BELOW the three big plays (owner, 2026-11-18:
+            "one row lower below the next up tiles"). Today's puzzle only. */}
+        {talk && talk.gameKey ? <TalkBand gameKey={talk.gameKey} gameName={talk.gameName} where="first" phone={phone} /> : null}
         <div className="ef-sm" style={{ '--ef-n': (chal ? 1 : 0) + 1 }}>
           {chal ? <button type="button" className="ef-sb" onClick={chal.onClick}>{chal.label}</button> : null}
           <button type="button" className="ef-sb" onClick={onFull}>Full Results Page</button>

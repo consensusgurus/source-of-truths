@@ -756,3 +756,50 @@ and days with 3+ results on one daily. Composite 0-100 risk, plain-English flags
 Served as `/api/admin/data?part=integrity` (5 minute memo), drawn by `app/admin/IntegrityPanel.jsx`.
 A queue, not a verdict: nothing acts on it. Hiding a player stays a manual line in
 `lib/hidden-players.js` (see scoring.md).
+
+## The community: /community (owner, 2026-11-18)
+
+Owner: "Implement. Leave store as coming soon for actual products." Built from the 2026-11-18
+"Community Page Ideas" canvas (boards A to F; the optional My Stats board G was NOT built, the Stat
+Hub stays as is). One-row GroupsShell cap and one segmented tab row on every page
+(`app/community/CommunityShell.jsx`):
+
+- **The Commons** `/community`: players today (`/api/quiz/pulse`), talking today, open discussions,
+  ideas in play, today's busiest discussions, top ideas, your clubs, the drawing and the community
+  leaderboard (still at `/quizzes/community`), and teasers for the shop and Puzzle Friends.
+- **Post-Game Talk** `/community/talk`, `/community/talk/<game>?date=M-D-YY`: one discussion per
+  daily per day. **A player reads or posts only once they have a result on that puzzle** (any
+  quiz_results row under their keys: a finish, a fail and a give-up all count), checked in
+  `lib/community.js resultOf` with the board's own `scoreGame`. Posts carry the poster's rank at
+  post time ("#8 of 20"). Gentle / Moderate / Tough poll, cheers, Report (three reports hide a
+  post), closes at midnight Eastern and stays readable. The discussion page is noindex.
+- **Idea Board** `/community/ideas?pitch=puzzle|variation|fix&game=<key>`: New Puzzle, Variation,
+  Site Fix; one vote per idea (the pitcher's counts); stages Open For Votes, Under Review, In The
+  Workshop, Built. It replaced "Submit or List a Puzzle" in Everything Else; that form still exists
+  at `/submit-a-puzzle` and the Idea Board links to it.
+- **Clubs** `/community/clubs`: groups (lib/groups.js) by another name: yours with today's place,
+  and the public ones. Starting and joining stay on `/groups`. No club league yet.
+- **Loft Shop** `/community/shop`: COMING SOON. Products shown, nothing sold, no prices, no vendor.
+- **Puzzle Friends** `/community/friends`: COMING SOON (owner, 2026-11-18), plus a form to list
+  your site or request one. It posts to `/api/complaints` with listId `community/friends` and a
+  `[Puzzle Friends]` title, so it lands in admin Feedback like the other reach-out forms.
+
+**Data (migration 66):** `community_posts`, `community_post_cheers`, `community_feel`,
+`community_ideas`, `community_idea_votes`, `community_reports`. RLS on, no policies, service role
+only. Every route tolerates the tables being absent and the pages say "being set up". Routes:
+`/api/community/summary` (public, s-maxage 30, counts only, never post text), `/api/community/talk`,
+`/api/community/ideas` (both private no-store). Text goes through `lib/name-filter` word by word and
+links are refused. Rate limits: 30 posts and 5 ideas per player per day. **Moderation is inline:**
+with the admin cookie the community pages show Hide / Restore on posts and ideas, a stage picker on
+ideas, and the Talk box writes a pinned Maker post when the admin has not played that puzzle.
+
+**The doors in (the "Where To Link" spots):** the Community pill in the desktop cap (home and game
+pages, `app/community/CommunityLinks.jsx`, count shown only while people post, hidden under 900px);
+a Community row under Runs in Everything Else (home and game pages); Idea Board in place of Submit
+or List a Puzzle; on the phone home a Community band above the rank row and Community and Idea Board
+tiles first in Everything Else; My Club and Community in the name menu; a Community column in the
+footer (`FOOTER_COLS`). On the endings, `app/community/TalkBand.jsx` sits **below the three big plays**
+on the first screen (owner: "one row lower below the next up tiles") and below Up next on the Full
+Results page, desktop and phone, and the results board gets a fourth tab, Talk, running
+`app/community/TalkPanel.jsx` compact. The bands and the tab show for TODAY's puzzle only
+(`curISO` set), never on an archived day.

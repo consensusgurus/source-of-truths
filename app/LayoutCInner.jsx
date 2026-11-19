@@ -45,6 +45,7 @@ import { useRevealPref, REVEAL } from '@/lib/reveal-pref';
 import { sharedGet } from './sharedGet';
 import { meRequest } from './quizMeClient';
 import useMyGames from './useMyGames';
+import { CommunityPill } from './community/CommunityLinks';
 
 const MIN_W = 1100;
 const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Visual', 'Sudoku', 'Trivia', 'Geography', 'Table Games', 'Arcade', 'Crowd Psychology'];
@@ -791,6 +792,8 @@ export default function LayoutCInner({ gameKey }) {
             </div>
           </div>
           <div className="sty-rt">
+            {/* THE COMMUNITY PILL, as on the home cap (owner, 2026-11-18). */}
+            <CommunityPill className="lc-cpill" />
             <div className="sty-figs">
               {!who ? <a className="sty-keep" href="/?signup=1">Keep stats, play with friends</a> : null}
               {who ? <a className="sty-who" href={'/player/' + encodeURIComponent(who)} title="Your stats and profile"><b>{who}</b><i>player</i></a> : null}
@@ -878,6 +881,8 @@ export default function LayoutCInner({ gameKey }) {
           <div className="lc-eeh">Everything Else</div>
           <div className="lc-eebox">
             {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
+            {/* The community, under Runs, as on the home (owner, 2026-11-18). */}
+            {ixDoor('/community', 'Community')}
             {ixDoor('/build-a-run', 'Build a Run')}
             {ixHash('sty-quizzes', 'Quizzes')}
             {ixDoor('/archive', 'Puzzle Archive')}
@@ -891,7 +896,8 @@ export default function LayoutCInner({ gameKey }) {
             {ixDoor('/lists', 'Top 10 Lists')}
             <span className="lc-eecut" aria-hidden="true" />
             {ixHash('sty-comm', 'Most Appreciated')}
-            {ixDoor('/submit-a-puzzle', 'Submit or List a Puzzle')}
+            {/* The Idea Board takes Submit or List a Puzzle's place (owner, 2026-11-18). */}
+            {ixDoor('/community/ideas', 'Idea Board')}
             {ixDoor('/sponsor-a-day', 'Sponsor a Day')}
             {ixDoor('/about-me', 'About Me')}
           </div>

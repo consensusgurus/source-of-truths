@@ -86,6 +86,7 @@ import HomeInvite from '../groups/HomeInvite';
 // home. This is the form they open. See app/ChooseNamePop.jsx.
 import ChooseNamePop, { openChooseName } from '../ChooseNamePop';
 import NameMenu from '../NameMenu';
+import { CommunityPill, CommunityBand } from '../community/CommunityLinks';
 import { ChallengeBack, ChallengeRail, CapTickets } from '../ChallengeBack';
 import { useMyTickets } from '../TicketDoor';
 import { DRAWING, drawingIsLive, formatTickets } from '@/lib/drawing';
@@ -507,6 +508,8 @@ const IX_GLYPHS = {
   archive: <><rect x="3.5" y="5" width="17" height="15.5" rx="2" /><path d="M3.5 10h17M8 3v4M16 3v4M7.5 14h2M11 14h2M14.5 14h2M7.5 17h2M11 17h2" /></>,
   lists: <><path d="M10 6h10M10 12h10M10 18h10" /><path d="M4 5.5l1.5-1v4M4 11h2.5l-2.5 2.5h2.5M4 16.5h2.5l-1.3 1.3a1.2 1.2 0 1 1-1.2 1.5" /></>,
   submit: <><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M12 8v8M8 12h8" /></>,
+  community: <><path d="M4 5h16v11H9l-5 4z" /><path d="M8 9.5h8M8 12.5h5" /></>,
+  idea: <><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></>,
   sponsor: <path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 9.7l5.4-.8z" />,
   about: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" /></>,
   'sty-board': <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" />,
@@ -2894,6 +2897,8 @@ export default function StageToday() {
       <span className="sty-ixsep sty-ixee" aria-hidden="true" />
       {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)', 'sty-ixe1')}
       {/* BUILD A RUN SITS RIGHT UNDER RUNS (owner, 2026-11-07). A door, not a pane. */}
+      {/* THE COMMUNITY, right under Runs (owner, 2026-11-18, "Where To Link" spot 3). A door. */}
+      <a className="sty-ixb sty-ixbr" href="/community" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('community', null)}<span>Community</span></a>
       <a className="sty-ixb sty-ixbr" href="/build-a-run" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('buildrun', null)}<span>Build a Run</span></a>
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)', 'sty-ixq')}
       {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
@@ -2916,7 +2921,9 @@ export default function StageToday() {
       {/* REACH-OUT DOORS (owner, 2026-11-08): two short forms that come to us,
           last in the index. Each is a door to its own page. */}
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
-      <a className="sty-ixb sty-ixmv sty-ixm5" href={withTq('/submit-a-puzzle')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('submit', null)}<span><span className="sty-ixl">Submit or List a Puzzle</span><span className="sty-ixs">Submit a Puzzle</span></span></a>
+      {/* THE IDEA BOARD takes Submit or List a Puzzle's place (owner, 2026-11-18); that
+          form is still reached from the Idea Board and Puzzle Friends. */}
+      <a className="sty-ixb sty-ixmv sty-ixm5" href="/community/ideas" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('idea', null)}<span>Idea Board</span></a>
       <a className="sty-ixb sty-ixmv sty-ixm5" href={withTq('/sponsor-a-day')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('sponsor', null)}<span>Sponsor a Day</span></a>
       <a className="sty-ixb sty-ixmv sty-ixm6 sty-ixend" href={withTq('/about-me')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('about', null)}<span>About Me</span></a>
       <button type="button" className={'sty-ixre' + (reorder ? ' on' : '')} aria-pressed={reorder}
@@ -4596,6 +4603,8 @@ export default function StageToday() {
           ) : ix && paneOn === QUIZ_ID ? quizCapTools : null}
         </div>
         <div className="sty-rt">
+        {/* THE COMMUNITY PILL (owner, 2026-11-18, spot 2): beside the figures, a live count while people post. */}
+        <CommunityPill className="sty-cpill" />
         <div className="sty-figs">
           {/* NO NAME, NO FIGURES: a guest gets the one control that would fill
               the row. Copy is the owner's (2026-10-07). */}
@@ -4965,6 +4974,8 @@ export default function StageToday() {
                 ) : null}
                 {/* UNDER THE TILES (owner, 2026-10-25): the ranks, then the drawing
                     with the reader's tickets in it. The progress bar is retired. */}
+                {/* THE COMMUNITY BAND, above the ranks (owner, 2026-11-18, phone spot 2). */}
+                <CommunityBand />
                 <div className={'sty-mst' + (who ? '' : ' guest')}>
                   <a href="#sty-board" onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
                     <b>{who && stats.dayRank ? '#' + stats.dayRank : '\u2013'}</b><i>Today</i>
@@ -4985,6 +4996,9 @@ export default function StageToday() {
                     tiles, two to a row, each a line icon and its name. Runs is a half
                     tile like the rest, its count under the name; nothing spans. */}
                 <div className="mph-list mt">
+                  {/* COMMUNITY AND THE IDEA BOARD lead the tiles (owner, 2026-11-18, phone spot 3). */}
+                  <a href="/community"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" /><path d="M8 9.5h8M8 12.5h5" /></svg><b>Community</b></a>
+                  <a href="/community/ideas"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></svg><b>Idea Board</b></a>
                   <button type="button" onClick={() => mOpen(CIRC_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 4v16" /><path d="M5 5h11l-2 4 2 4H5" /></svg><b>Runs<em>{circuits.filter(runFull).length} of {circuits.length}</em></b></button>
                   <a href="/build-a-run"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><b>Build a Run</b></a>
                   <button type="button" onClick={() => goPane(QUIZ_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5" /><path d="M12 17h.01" /></svg><b>Quizzes</b></button>
