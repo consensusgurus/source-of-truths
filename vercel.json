@@ -29,6 +29,10 @@
       "schedule": "0 12,13 * * *"
     },
     {
+      "path": "/api/cron/community-digest",
+      "schedule": "5 13 * * *"
+    },
+    {
       "path": "/api/cron/stats-warm",
       "schedule": "20 9 * * *"
     },
