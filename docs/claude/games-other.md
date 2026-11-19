@@ -3531,6 +3531,12 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
   it. Below: Your Part (firsts, share of the wall, points, place, Show My Pieces), Top Points
   (six, from the state snapshot's `top`) and the buttons. The headline counts builders (members
   plus guests); percentages are of the whole wall, never of the placed pieces.
+  - **The hover card (owner, 2026-11-19: "you can't see the user names. maybe putting cursor over
+    gives full details for the given square").** A mouse over a block, or over a piece on the wall,
+    shows a dark card with the whole name, pieces placed first, share of the wall, and place by
+    pieces (`.mwTip`, `tipFor`). A piece owned by someone folded into the "more players" block
+    still names that player. Mouse only: touch has no hover, and a tap already names the player
+    under the wall. The blocks carry no native `title`, so there is never a second tooltip.
   - **Three ways in** (`openWall(mode)` in `engine.js`): `live` (the open mural was just finished
     or has closed: countdown or the other mural, See The Finished Mural, Standings, Build It
     Yourself), `visit` (a finished mural opened from the shelf `?solo=<id>` or the archive

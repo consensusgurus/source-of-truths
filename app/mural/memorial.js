@@ -65,6 +65,10 @@ export const MEMORIAL_CSS = `
 .mrl .mwTile.me{border-width:3px}
 .mrl .mwTile i{position:absolute;left:0;top:0;right:0;display:block;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:800;line-height:1.3;letter-spacing:-.01em}
 .mrl .mwTile em{position:absolute;left:0;right:0;display:block;font-style:normal;white-space:nowrap;overflow:hidden;font-weight:700;line-height:1.3;font-variant-numeric:tabular-nums}
+.mrl .mwTip{position:fixed;z-index:9;left:0;top:0;max-width:300px;pointer-events:none;border:1px solid var(--mw-ink);border-radius:12px;background:var(--mw-ink);color:var(--mw-bg);padding:9px 13px 10px;font:600 13px/1.45 'Manrope',sans-serif;opacity:0;transition:opacity .12s}
+.mrl .mwTip.on{opacity:1}
+.mrl .mwTip b{display:block;font:800 17px/1.3 'Manrope',sans-serif;letter-spacing:-.01em;overflow-wrap:anywhere}
+.mrl .mwTip span{display:block;font-variant-numeric:tabular-nums}
 .mrl .mwTree.dim .mwTile{opacity:.32}
 .mrl .mwTree.dim .mwTile.hl{opacity:1}
 .mrl .mwFoot{flex:none;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.9fr) minmax(0,1.1fr);gap:16px;align-items:stretch}
@@ -209,6 +213,7 @@ export function openMemorial(fin, d) {
 
   // The blocks: the top members, the rest as one block, the guests as one block.
   const members = who.map((o, i) => ({ ...o, idx: [i] })).slice(1).filter((o) => o.f > 0);
+  members.forEach((o, i) => { o.rank = i + 1; });
   let tiles = members.slice(0, MAX_TILES);
   const rest = members.slice(MAX_TILES);
   if (meIdx > 0 && !tiles.some((t) => t.idx[0] === meIdx)) {
@@ -287,7 +292,7 @@ export function openMemorial(fin, d) {
     + (wall ? '<div class="mwSeg" id="mwSeg" role="group" aria-label="What the wall shows"><button type="button" data-m="pic" class="on">Picture</button><button type="button" data-m="own">Who Placed What</button></div><button type="button" class="mwTxt" id="mwReplay">Watch It Build</button>' : '')
     + '</div></div>'
     + '<div class="mwCol mwTreeCol rise"><div class="mwTree' + (animate ? ' pre' : '') + '" id="mwTree" role="group" aria-label="Who built it"></div>'
-    + '<div class="mwRow"><div class="mwCap"><b>Who Built It.</b> One block a player, sized by the pieces they placed first.' + (wall ? ' Tap a block to see that player&rsquo;s pieces.' : '') + '</div></div></div>'
+    + '<div class="mwRow"><div class="mwCap"><b>Who Built It.</b> One block a player, sized by pieces placed first.' + (wall ? ' Point at a block or a piece for the name. Tap a block for their pieces.' : '') + '</div></div></div>'
     + '</div>'
     + '<div class="mwFoot rise">'
     + '<div class="mwCard"><h4>Your Part<span class="sp"></span>' + (wall && myFirsts.length ? '<button type="button" class="mwTxt" id="mwMine">Show My Pieces</button>' : '') + '</h4>' + you + '</div>'
@@ -432,7 +437,7 @@ export function openMemorial(fin, d) {
       const pct = t.f / total * 100;
       const ct = num(t.f) + (w > 110 ? ' · ' + pct.toFixed(pct < 10 ? 1 : 0) + '%' : '') + (t.sub && w > 190 ? ' · ' + t.sub : '');
       const title = (t.me ? 'You, ' + t.n : t.n) + ': ' + num(t.f) + plural(t.f, ' piece', ' pieces') + ', ' + pct.toFixed(1) + '% of the wall';
-      return '<button type="button" class="mwTile' + (t.me ? ' me' : '') + (Math.min(w, h) < 14 ? ' sm' : '') + '" data-t="' + i + '" title="' + esc(title) + '" aria-label="' + esc(title) + '" style="left:' + r.x.toFixed(1) + 'px;top:' + r.y.toFixed(1) + 'px;width:' + w.toFixed(1) + 'px;height:' + h.toFixed(1) + 'px;background:' + t.fill + ';transition-delay:' + Math.min(900, i * 22) + 'ms">'
+      return '<button type="button" class="mwTile' + (t.me ? ' me' : '') + (Math.min(w, h) < 14 ? ' sm' : '') + '" data-t="' + i + '" aria-label=""' + esc(title) + '" style="left:' + r.x.toFixed(1) + 'px;top:' + r.y.toFixed(1) + 'px;width:' + w.toFixed(1) + 'px;height:' + h.toFixed(1) + 'px;background:' + t.fill + ';transition-delay:' + Math.min(900, i * 22) + 'ms">'
         + (showName ? '<i style="font-size:' + fs.toFixed(1) + 'px;padding:' + (pad - 3) + 'px ' + pad + 'px 0">' + esc(nm) + '</i>' : '')
         + (showCt ? '<em style="font-size:' + fs2.toFixed(1) + 'px;top:' + (pad - 3 + fs * 1.3).toFixed(1) + 'px;padding:0 ' + pad + 'px">' + esc(ct) + '</em>' : '')
         + '</button>';
@@ -467,6 +472,61 @@ export function openMemorial(fin, d) {
     caption(); paint();
     if (el.classList.contains('stack')) q('#mwWall').scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
   });
+
+  /* ---------- the hover card (owner, 2026-11-19: "you can't see the user names. maybe putting
+     cursor over gives full details for the given square") ----------
+     A mouse over a block, or over a piece on the wall, shows who it is in full: the whole name,
+     their pieces, their share and their place. Touch has no hover; a tap already names the player
+     under the wall. */
+  const tip = document.createElement('div');
+  tip.className = 'mwTip'; tip.setAttribute('aria-hidden', 'true');
+  el.appendChild(tip);
+  const share1 = (f) => { const p = total ? f / total * 100 : 0; return p.toFixed(p < 10 ? 1 : 0) + '% of the wall'; };
+  function tipFor(t) {
+    if (!t) return '';
+    const pcs = num(t.f) + plural(t.f, ' piece', ' pieces') + ' placed first';
+    if (t.guest) return '<b>Guests</b><span>' + esc(t.sub || '') + ' together</span><span>' + pcs + ' \u00b7 ' + share1(t.f) + '</span>';
+    if (t.bucket) return '<b>' + esc(t.n) + '</b><span>' + pcs + ' \u00b7 ' + share1(t.f) + '</span><span>Each placed fewer than the players shown.</span>';
+    return '<b>' + esc(t.n) + (t.me ? ' (You)' : '') + '</b><span>' + pcs + ' \u00b7 ' + share1(t.f) + '</span>'
+      + (t.rank ? '<span>#' + num(t.rank) + ' of ' + num(members.length) + plural(members.length, ' player', ' players') + ' by pieces</span>' : '');
+  }
+  const tileOf = new Map();
+  for (const t of tiles) for (const i of t.idx) tileOf.set(i, t);
+  let tipKey = null;
+  function showTip(key, html, e) {
+    if (!html) { hideTip(); return; }
+    if (key !== tipKey) { tip.innerHTML = html; tipKey = key; }
+    tip.classList.add('on');
+    const w = tip.offsetWidth, h = tip.offsetHeight, vw = window.innerWidth, vh = window.innerHeight;
+    let x = e.clientX + 16, y = e.clientY + 18;
+    if (x + w > vw - 8) x = Math.max(8, e.clientX - w - 12);
+    if (y + h > vh - 8) y = Math.max(8, e.clientY - h - 12);
+    tip.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y) + 'px)';
+  }
+  function hideTip() { tip.classList.remove('on'); tipKey = null; }
+  tree.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const b = e.target.closest('.mwTile');
+    const t = b && tree._lay && tree._lay[+b.dataset.t] ? tree._lay[+b.dataset.t].o : null;
+    if (t) showTip('t' + b.dataset.t, tipFor(t), e); else hideTip();
+  });
+  tree.addEventListener('pointerleave', hideTip);
+  const wallEl = q('#mwWall');
+  wallEl.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse' || !wall || building) { hideTip(); return; }
+    const r = cv.getBoundingClientRect();
+    const c = Math.floor((e.clientX - r.left) / r.width * cols), rw = Math.floor((e.clientY - r.top) / r.height * rows);
+    if (c < 0 || rw < 0 || c >= cols || rw >= rows) { hideTip(); return; }
+    const o = ownerOf[rw * cols + c];
+    if (o < 0) { showTip('none', '<b>Not placed</b><span>Nobody placed this piece before it closed.</span>', e); return; }
+    const t = tileOf.get(o);
+    if (!t) { hideTip(); return; }
+    // A player folded into the "more players" block is still named on their own piece.
+    const one = t.bucket ? { n: who[o].n, f: who[o].f, rank: (members.find((m) => m.idx[0] === o) || {}).rank } : t;
+    if (t.guest) { showTip('w0', '<span>This piece was placed by</span><b>A Guest</b><span>' + esc(t.sub || 'Guests') + ' placed ' + num(t.f) + plural(t.f, ' piece', ' pieces') + ' together \u00b7 ' + share1(t.f) + '</span>', e); return; }
+    showTip('w' + o, '<span>This piece was placed by</span>' + tipFor(one), e);
+  });
+  wallEl.addEventListener('pointerleave', hideTip);
 
   /* ---------- fitting the screen ---------- */
   const main = q('.mwMain'), wallBox = q('#mwWall'), treeCol = q('.mwTreeCol'), wallCol = q('.mwWallCol');
