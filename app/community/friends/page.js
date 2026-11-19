@@ -1,12 +1,6 @@
-import FriendsClient from '../FriendsClient';
+import { permanentRedirect } from 'next/navigation';
 
-export const metadata = {
-  title: 'Puzzle Friends | Mind Loft',
-  description: 'Other puzzle makers and sites we like, coming soon. Send us a site to list, or request one.',
-  alternates: { canonical: '/community/friends' },
-  openGraph: { title: 'Puzzle Friends · Mind Loft', description: 'Other puzzle makers and sites we like, coming soon. Send us a site to list, or request one.', url: '/community/friends', type: 'website', siteName: 'Mind Loft' },
-};
-
+// Puzzle Friends was renamed Puzzle Peers (owner, 2026-11-18).
 export default function Page() {
-  return <FriendsClient />;
+  permanentRedirect('/community/peers');
 }

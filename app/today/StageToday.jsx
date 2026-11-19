@@ -509,6 +509,10 @@ const IX_GLYPHS = {
   lists: <><path d="M10 6h10M10 12h10M10 18h10" /><path d="M4 5.5l1.5-1v4M4 11h2.5l-2.5 2.5h2.5M4 16.5h2.5l-1.3 1.3a1.2 1.2 0 1 1-1.2 1.5" /></>,
   submit: <><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M12 8v8M8 12h8" /></>,
   community: <><path d="M4 5h16v11H9l-5 4z" /><path d="M8 9.5h8M8 12.5h5" /></>,
+  talk: <><path d="M4 5h11v8H8l-4 3z" /><path d="M10 15v1h6l4 3V9h-3" /></>,
+  groups: <><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6" /><path d="M15 14.2c.6-.1 1.3-.2 2-.2 2.8 0 4 2 4 5" /></>,
+  shop: <><path d="M5 8h14l-1 12H6z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></>,
+  peers: <><path d="M9 12l2 2 4-4" /><path d="M7 4h10l3 4-8 12L4 8z" /></>,
   idea: <><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></>,
   sponsor: <path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 9.7l5.4-.8z" />,
   about: <><circle cx="12" cy="8" r="3.5" /><path d="M5 20c.8-3.6 3.6-5.5 7-5.5s6.2 1.9 7 5.5" /></>,
@@ -2899,6 +2903,11 @@ export default function StageToday() {
       {/* BUILD A RUN SITS RIGHT UNDER RUNS (owner, 2026-11-07). A door, not a pane. */}
       {/* THE COMMUNITY, right under Runs (owner, 2026-11-18, "Where To Link" spot 3). A door. */}
       <a className="sty-ixb sty-ixbr" href="/community" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('community', null)}<span>Community</span></a>
+      {/* The rest of the community, each a door (owner, 2026-11-18: "Add more buttons to home for chat, shop, puzzle peers"). */}
+      <a className="sty-ixb sty-ixbr" href="/community/talk" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('talk', null)}<span>Post-Game Talk</span></a>
+      <a className="sty-ixb sty-ixbr" href="/community/groups" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('groups', null)}<span>Groups</span></a>
+      <a className="sty-ixb sty-ixbr" href="/community/shop" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('shop', null)}<span>Loft Shop</span></a>
+      <a className="sty-ixb sty-ixbr" href="/community/peers" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('peers', null)}<span>Puzzle Peers</span></a>
       <a className="sty-ixb sty-ixbr" href="/build-a-run" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('buildrun', null)}<span>Build a Run</span></a>
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)', 'sty-ixq')}
       {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
@@ -2922,7 +2931,7 @@ export default function StageToday() {
           last in the index. Each is a door to its own page. */}
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
       {/* THE IDEA BOARD takes Submit or List a Puzzle's place (owner, 2026-11-18); that
-          form is still reached from the Idea Board and Puzzle Friends. */}
+          form is still reached from the Idea Board and Puzzle Peers. */}
       <a className="sty-ixb sty-ixmv sty-ixm5" href="/community/ideas" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('idea', null)}<span>Idea Board</span></a>
       <a className="sty-ixb sty-ixmv sty-ixm5" href={withTq('/sponsor-a-day')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('sponsor', null)}<span>Sponsor a Day</span></a>
       <a className="sty-ixb sty-ixmv sty-ixm6 sty-ixend" href={withTq('/about-me')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('about', null)}<span>About Me</span></a>
@@ -4996,9 +5005,14 @@ export default function StageToday() {
                     tiles, two to a row, each a line icon and its name. Runs is a half
                     tile like the rest, its count under the name; nothing spans. */}
                 <div className="mph-list mt">
-                  {/* COMMUNITY AND THE IDEA BOARD lead the tiles (owner, 2026-11-18, phone spot 3). */}
+                  {/* THE COMMUNITY'S SIX TILES lead (owner, 2026-11-18): Community, Post-Game Talk,
+                      Idea Board, Groups, Loft Shop, Puzzle Peers. Eighteen tiles, an even count. */}
                   <a href="/community"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z" /><path d="M8 9.5h8M8 12.5h5" /></svg><b>Community</b></a>
+                  <a href="/community/talk"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5h11v8H8l-4 3z" /><path d="M10 15v1h6l4 3V9h-3" /></svg><b>Post-Game Talk</b></a>
                   <a href="/community/ideas"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z" /></svg><b>Idea Board</b></a>
+                  <a href="/community/groups"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6" /><path d="M15 14.2c.6-.1 1.3-.2 2-.2 2.8 0 4 2 4 5" /></svg><b>Groups</b></a>
+                  <a href="/community/shop"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg><b>Loft Shop</b></a>
+                  <a href="/community/peers"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4" /><path d="M7 4h10l3 4-8 12L4 8z" /></svg><b>Puzzle Peers</b></a>
                   <button type="button" onClick={() => mOpen(CIRC_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 4v16" /><path d="M5 5h11l-2 4 2 4H5" /></svg><b>Runs<em>{circuits.filter(runFull).length} of {circuits.length}</em></b></button>
                   <a href="/build-a-run"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><b>Build a Run</b></a>
                   <button type="button" onClick={() => goPane(QUIZ_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5" /><path d="M12 17h.01" /></svg><b>Quizzes</b></button>

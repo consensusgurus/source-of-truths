@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import CommunityShell from './CommunityShell';
 import TalkPanel from './TalkPanel';
-import GameGlyph from '../GameGlyph';
+import GlyphTile from './GlyphTile';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { todaySuffix, suggestHref } from './communityClient';
 
@@ -43,10 +43,10 @@ export default function TalkGameClient({ gameKey, day: day0 = null }) {
           <Link className="cm-btn pri" href={suggestHref(gameKey)}>Suggest A {g.name} Idea</Link>
         </div>
       )}>
-      <div className="cm-g2" style={{ gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)' }}>
+      <div className="cm-g21">
         <section className="cm-card">
           <div className="cm-ch">
-            <b style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span className="cm-glyph" style={{ width: 32, height: 32, background: 'var(--cm-teal)' }}><GameGlyph gameKey={gameKey} size={18} /></span>{g.name} Discussion</b>
+            <b style={{ display: 'flex', alignItems: 'center', gap: 10 }}><GlyphTile gameKey={gameKey} size={32} glyph={18} />{g.name} Discussion</b>
             <Link href={isToday ? g.href : `${g.href}`}>Play {g.name}</Link>
           </div>
           <div className="cm-cb"><TalkPanel gameKey={gameKey} gameName={g.name} day={day} playHref={g.href} onCount={setN} /></div>

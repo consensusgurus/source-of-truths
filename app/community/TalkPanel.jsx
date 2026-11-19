@@ -161,8 +161,8 @@ const CSS = `
 .tkp-lock span{font-size:14px;font-weight:600;line-height:1.45;opacity:.85;}
 .tkp-feel{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .tkp-feel > span{font-size:13.5px;font-weight:800;}
-.tkp-seg{display:flex;border:1px solid var(--tk-ink);border-radius:999px;overflow:hidden;background:var(--tk-raise);}
-.tkp-seg button{border:0;border-left:1px solid var(--tk-ink);background:transparent;color:var(--tk-ink);font:inherit;font-size:13px;font-weight:800;
+.tkp-seg{display:flex;border:1px solid var(--tk-ink);border-radius:10px;overflow:hidden;background:var(--tk-raise);}
+.tkp-seg button{border:0;border-radius:0;margin:0;border-left:1px solid var(--tk-ink);background:transparent;color:var(--tk-ink);font:inherit;font-size:13px;font-weight:800;
   min-height:36px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
 .tkp-seg button:first-child{border-left:0;}
 .tkp-seg button i{font-style:normal;font-weight:600;opacity:.75;}

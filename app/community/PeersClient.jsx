@@ -1,18 +1,18 @@
 'use client';
-// PUZZLE FRIENDS, /community/friends (owner, 2026-11-18: "That should be coming
+// PUZZLE PEERS, /community/peers (first called Puzzle Friends; owner, 2026-11-18: "That should be coming
 // soon and also a submit / request form"). The list of other puzzle makers is
 // not published yet. What works today is the form: a maker sends their site
 // to be listed, or a player requests a site they love. It posts to
 // /api/complaints like the other reach-out forms (app/reach/ReachForm.jsx), so
 // each entry lands in the admin Feedback tab under Notices with a reply link,
-// tagged [Puzzle Friends].
+// tagged [Puzzle Peers].
 import React, { useState } from 'react';
 import Link from 'next/link';
 import CommunityShell from './CommunityShell';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function FriendsClient() {
+export default function PeersClient() {
   const [mode, setMode] = useState('list');
   const [f, setF] = useState({ name: '', email: '', site: '', link: '', note: '', hp: '' });
   const [state, setState] = useState('idle');
@@ -34,8 +34,8 @@ export default function FriendsClient() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          listId: 'community/friends',
-          listTitle: `[Puzzle Friends] ${mode === 'list' ? 'List' : 'Request'}: ${f.site.trim()}`.slice(0, 200),
+          listId: 'community/peers',
+          listTitle: `[Puzzle Peers] ${mode === 'list' ? 'List' : 'Request'}: ${f.site.trim()}`.slice(0, 200),
           message: lines.filter(Boolean).join('\n').slice(0, 1000),
           name: f.name.trim(),
           email: f.email.trim(),
@@ -46,10 +46,10 @@ export default function FriendsClient() {
   };
 
   return (
-    <CommunityShell tab="friends" title="Puzzle Friends"
+    <CommunityShell tab="peers" title="Puzzle Peers"
       sub="Other puzzle makers and sites we like, gathered in one place. The list is coming soon. Make puzzles, or know a site that belongs here? Send it in."
       aside={<span className="cm-chip dk" style={{ fontSize: 13, padding: '6px 14px' }}>Coming Soon</span>}>
-      <div className="cm-g2" style={{ gridTemplateColumns: 'minmax(0,3fr) minmax(0,2fr)' }}>
+      <div className="cm-g32">
         <section className="cm-card">
           <div className="cm-ch"><b>{mode === 'list' ? 'List My Site' : 'Request A Site'}</b><span>We reply by email</span></div>
           {state === 'done' ? (
@@ -84,7 +84,8 @@ export default function FriendsClient() {
             </form>
           )}
         </section>
-        <div className="cm-col">
+        {/* On a phone the Coming Soon note leads, then the form (owner, 2026-11-18). */}
+        <div className="cm-col cm-first">
           <section className="cm-card">
             <div className="cm-ch" style={{ background: 'var(--cm-violet)' }}><b>Coming Soon</b></div>
             <div className="cm-cb">

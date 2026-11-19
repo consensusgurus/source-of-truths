@@ -5,7 +5,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import CommunityShell from './CommunityShell';
-import GameGlyph from '../GameGlyph';
+import GlyphTile from './GlyphTile';
 import { fetchSummary, talkHref } from './communityClient';
 import { useDoneToday } from './useDoneToday';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
@@ -26,7 +26,7 @@ export default function TalkIndexClient() {
   const rest = rows.filter((r) => !r.t && !r.mine);
   const row = (r) => (
     <Link key={r.key} className="cm-rw" href={r.mine ? talkHref(r.key) : r.g.href}>
-      <span className="cm-glyph" style={{ background: r.mine ? 'var(--cm-teal)' : 'var(--stg-raise)' }}><GameGlyph gameKey={r.key} size={20} /></span>
+      <GlyphTile gameKey={r.key} />
       <span className="gr"><b>{r.g.name}</b><small>{r.t ? `${r.t.players} ${r.t.players === 1 ? 'player' : 'players'} talking · ${r.t.posts} ${r.t.posts === 1 ? 'post' : 'posts'}` : r.g.tag || r.g.cat}</small></span>
       <span className={'cm-chip' + (r.mine ? ' dk' : '')}>{r.mine ? 'See The Discussion' : `Play ${r.g.name}`}</span>
     </Link>

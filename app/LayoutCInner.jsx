@@ -883,6 +883,10 @@ export default function LayoutCInner({ gameKey }) {
             {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
             {/* The community, under Runs, as on the home (owner, 2026-11-18). */}
             {ixDoor('/community', 'Community')}
+            {ixDoor('/community/talk', 'Post-Game Talk')}
+            {ixDoor('/community/groups', 'Groups')}
+            {ixDoor('/community/shop', 'Loft Shop')}
+            {ixDoor('/community/peers', 'Puzzle Peers')}
             {ixDoor('/build-a-run', 'Build a Run')}
             {ixHash('sty-quizzes', 'Quizzes')}
             {ixDoor('/archive', 'Puzzle Archive')}

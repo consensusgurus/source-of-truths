@@ -3,7 +3,7 @@
 // desktop chip and the phone pill) opens a small drop-down instead of going
 // straight to the profile:
 //   Stats     the player's profile, where the name used to go on its own
-//   My Club   /community/clubs; Community /community (owner, 2026-11-18)
+//   My Groups /community/groups; Community /community (owner, 2026-11-18)
 //   Log out   asks once ("Log out of <name> on this device?"), then signs the
 //             browser out and reloads as a guest. See lib/sign-out.js for what
 //             logging out clears and why the browser gets a fresh id.
@@ -104,8 +104,8 @@ export default function NameMenu({ name, href, className, children, title }) {
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M5 19V11M12 19V5M19 19v-6" /></svg>
                 </a>
                 {/* MY CLUB AND COMMUNITY (owner, 2026-11-18, spot 5): between Stats and Log out. */}
-                <a role="menuitem" className="nmm-r" href="/community/clubs">
-                  My Club
+                <a role="menuitem" className="nmm-r" href="/community/groups">
+                  My Groups
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M12 3l8 4v6c0 4-3 7-8 8-5-1-8-4-8-8V7z" /></svg>
                 </a>
                 <a role="menuitem" className="nmm-r" href="/community">
