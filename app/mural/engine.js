@@ -314,7 +314,7 @@ function attempt(id,sx,sy,from){
 const NB=[[1,0],[-1,0],[0,1],[0,-1]];
 /* LOOSE PIECES SURVIVE A REFRESH (owner, 2026-11-19). Kept in this browser, per mural. */
 function saveLoose(){try{localStorage.setItem('mural_loose_'+env.id,JSON.stringify(M.loose.map(l=>[l.id,Math.round(l.x),Math.round(l.y),l.g])));}catch(e){}}
-function loadLoose(){let a=null;try{a=JSON.parse(localStorage.getItem('mural_loose_'+env.id)||'null');}catch(e){a=null;}if(!Array.isArray(a))return;const seen=new Set();for(const q of a){if(!Array.isArray(q))continue;const[id,x,y,g]=q;if(!Number.isInteger(id)||id<0||id>=TOTAL||M.mine.has(id)||seen.has(id))continue;seen.add(id);M.loose.push({id,x:+x||0,y:+y||0,g:Number.isInteger(g)?g:id});}}
+function loadLoose(){let a=null;try{a=JSON.parse(localStorage.getItem('mural_loose_'+env.id)||'null');}catch(e){a=null;}if(!Array.isArray(a))return;const seen=new Set();for(const q of a){if(!Array.isArray(q))continue;const[id,x,y,g]=q;if(!Number.isInteger(id)||id<0||id>=TOTAL||M.mine.has(id)||M.crowd.has(id)||seen.has(id))continue;seen.add(id);M.loose.push({id,x:+x||0,y:+y||0,g:Number.isInteger(g)?g:id});}}
 function grp(g){return M.loose.filter(l=>l.g===g);}
 function snapJoin(g){
   let joined=false,again=true;
@@ -417,9 +417,13 @@ async function poll(){
       const add=applyState(st.j),t0=performance.now(),fresh=add.filter(id=>!M.mine.has(id));
       add.forEach(id=>drawPiece(cctx,id));fresh.forEach(id=>pulses.push({id,t:t0,nw:true}));
       if(fresh.length){
-        /* A tray piece someone else just placed stays in the tray (owner, 2026-11-19): it still scores, without the first double. */
-        const lost=had.filter(x=>M.crowd.has(x)).length;valDirty=true;flashUpdate(fresh.length);
-        setMsg(K.name+' updated: '+fresh.length+(fresh.length===1?' new piece':' new pieces')+' from the crowd.'+(lost?' '+lost+' in your tray '+(lost>1?'were':'was')+' placed by someone else and now '+(lost>1?'score':'scores')+' without the first double.':''));
+        /* Until this refresh a tray piece someone else placed could still be placed for partial points
+           (owner, 2026-11-19); once the refresh shows it on the board it is swapped for an open piece. */
+        let lost=0;const pool=allOpen();
+        for(let k=0;k<M.hand.length;k++){const x=M.hand[k];if(x!==null&&x!==undefined&&M.crowd.has(x)){lost++;if(sel===k)sel=null;if(pool.length){const j=Math.floor(Math.random()*pool.length);M.hand[k]=pool[j];pool[j]=pool[pool.length-1];pool.pop();}else M.hand[k]=null;}}
+        const lb=M.loose.length;M.loose=M.loose.filter(l=>!M.crowd.has(l.id));if(M.loose.length!==lb)saveLoose();
+        valDirty=true;flashUpdate(fresh.length);
+        setMsg(K.name+' updated: '+fresh.length+(fresh.length===1?' new piece':' new pieces')+' from the crowd.'+(lost?' '+lost+' in your tray '+(lost>1?'were':'was')+' placed by someone else, so '+(lost>1?'they were':'it was')+' swapped for '+(lost>1?'new ones.':'a new one.'):''));
       }
     }
     renderHand();ui();req();
