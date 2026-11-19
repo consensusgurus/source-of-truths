@@ -21,7 +21,7 @@ export async function GET(request) {
   try { out = await ensureBoard(supabaseAdmin, id); }
   catch (e) { console.error('mural board', e); return NextResponse.json({ error: 'Try again in a moment.' }, { status: 503, headers: { 'Cache-Control': 'no-store' } }); }
   if (!out.board) {
-    return NextResponse.json({ error: 'Not open', available: !out.unavailable }, { status: 404, headers: { 'Cache-Control': 'public, s-maxage=30' } });
+    return NextResponse.json({ error: 'Not open', available: !out.unavailable, why: out.why || undefined }, { status: 404, headers: { 'Cache-Control': out.why ? 'no-store' : 'public, s-maxage=30' } });
   }
   return NextResponse.json(publicBoard(out.board), { headers: { 'Cache-Control': 'public, max-age=300, s-maxage=86400' } });
 }
