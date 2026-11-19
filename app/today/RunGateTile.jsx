@@ -74,6 +74,10 @@ function RunEmblem({ id }) {
 // A name past this many characters drops a size so it still fits beside the
 // drawing ("Enter the Dojo: In Color").
 const LONG_NAME = 17;
+// A name just past the full size steps down a little instead (owner,
+// 2026-11-19: "Science Gauntlet" read "Science Gauntl..." on the run shelf).
+// Trivia Gauntlet, at 15, is the longest that fits at full size.
+const MID_NAME = 15;
 
 // THE WHITE CARD (owner, 2026-11-16, mockup B2 "with the emblems"): the tile is
 // white like a puzzle card, the name and headline sit beside the run's drawing,
@@ -98,7 +102,7 @@ export default function RunGateTile({ c, href, cat, lead, plays, fin, rank, done
       <span className="rgt-body">
         <span className="rgt-hd">
           <span className="rgt-tx">
-            <b className={'rgt-name' + (String(c.name).length > LONG_NAME ? ' long' : '')}>{c.name}</b>
+            <b className={'rgt-name' + (String(c.name).length > LONG_NAME ? ' long' : String(c.name).length > MID_NAME ? ' mid' : '')}>{c.name}</b>
             <span className="rgt-hl">{head(W)}</span>
           </span>
           <RunEmblem id={c.id} />
@@ -199,6 +203,7 @@ export const RGT_CSS = `
 /* The clip box is grown by .2em and the margin hands it back, so the g in
    Gauntlet and Judged keeps its tail and every line below stays level. */
 .rgt-name{font-size:23px;font-weight:900;line-height:28px;letter-spacing:-.02em;margin:0 0 calc(1px - .2em);padding-bottom:.2em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rgt-name.mid{font-size:19.5px;}
 .rgt-name.long{font-size:17.5px;}
 .rgt-hl{font-size:13px;font-weight:600;color:#3b4757;line-height:1.3;padding-bottom:.2em;margin-bottom:calc(12px - .2em);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 /* MORE RUNS' LINEUP CARRIES A NAME AND A COUNT PER BAND, so a band is as wide

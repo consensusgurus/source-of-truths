@@ -74,8 +74,10 @@ import RunBackLink from '../../RunBackLink';
 import McCard from '../../McCard';
 import { MC_IDS } from '@/lib/multiple-choice';
 import GauntletStage, { MISS_MS, REVEAL_DELAY } from '../../../GauntletStage';
-// How long the last miss of a run holds its answer full screen before the ending.
-const FINAL_MS = 3200;
+// How long the last miss of a run holds its spotlight past the usual
+// REVEAL_DELAY before the ending (owner, 2026-11-19: the same reveal as every
+// other miss, not cut short).
+const FINAL_MS = 3800;
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover } from '../../../GauntletScreens';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -594,13 +596,13 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
 
   // THE LAST MISS ENDS ON THE ANSWER (owner, 2026-11-15, replacing the
   // 2026-11-10 cut straight to the ending: the last round "doesn't show you the
-  // answer like the other misses"). The spotlight, then the answer grows to the
-  // whole screen and holds FINAL_MS (GauntletStage's final recap, which lets go
-  // itself), then the run ending plays. Still no "See your run" button. This
-  // timer is only the backstop for a run drawn without the stage.
+  // answer like the other misses"). From 2026-11-19 (owner) it is the plain
+  // spotlight every other miss gets, pick tagged and right answer lit, with no
+  // final big-answer screen and no shortened hold: it stands REVEAL_DELAY +
+  // FINAL_MS, then the run ending plays. Still no "See your run" button.
   useEffect(() => {
     if (!reveal || r.phase !== 'done') return undefined;
-    const t = setTimeout(() => setReveal(null), TOWERS ? REVEAL_DELAY + 600 + FINAL_MS + 1500 : MISS_MS + 400);
+    const t = setTimeout(() => setReveal(null), TOWERS ? REVEAL_DELAY + FINAL_MS : MISS_MS + 400);
     return () => clearTimeout(t);
   }, [reveal, r.phase]);
 
@@ -1143,10 +1145,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
           // end that says 'see run'"). Only a hand-off to a next quiz opens the
           // big button; after the last quiz the spotlight holds, then the
           // ending plays on its own (the effect beside VERDICT_MS).
-          recap={reveal && r.phase === 'done' ? {
-            final: true, autoMs: FINAL_MS, eyebrow: 'The answer',
-            onGo: () => setReveal(null),
-          } : reveal && r.phase === 'verdict' && upNext ? {
+          // THE LAST MISS IS A MISS LIKE ANY OTHER (owner, 2026-11-19): no final
+          // big-answer screen. The spotlight shows the pick and the right answer
+          // exactly as every earlier miss does, holds its full stand (the
+          // effect beside VERDICT_MS), then the ending plays.
+          recap={reveal && r.phase === 'verdict' && upNext ? {
             // The hand-off (owner, 2026-11-10): one large start button for the
             // next quiz on its own ground, nothing else. See GauntletStage.jsx.
             eyebrow: r.phase === 'verdict' && upNext

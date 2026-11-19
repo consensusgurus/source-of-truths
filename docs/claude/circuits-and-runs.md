@@ -978,6 +978,13 @@ out", and a thin bar counting `FINAL_MS` (3.2s, `RunClient.jsx`). It lets go by 
 a tap anywhere lets go sooner. Still no "See your run" button (owner, 2026-11-10). The 2.3s timer beside
 `VERDICT_MS` is now only a backstop, lengthened to cover the hold.
 
+**Superseded 2026-11-19 (owner):** the last miss gets NO final treatment. It shows the plain spotlight
+exactly like every other miss in the run (pick shaken and tagged "Your pick", veil down, right answer
+lit), with no grow-out and no big-answer screen, and the hold is NOT shortened: the spotlight stands
+`REVEAL_DELAY + FINAL_MS` (1.4s + 3.8s), then the ending plays. `recap.final` in GauntletStage.jsx is no
+longer passed by RunClient. Run shelf tile names of 16 or 17 characters ("Science Gauntlet") step down to
+19.5px (`.rgt-name.mid`, `app/today/RunGateTile.jsx`) so they fit without an ellipsis.
+
 ## Duels are retired; Challenges is the only head-to-head (owner, 2026-11-19)
 
 The old Duel feature (`/duel/*`, `/api/duel/*`, `useDuelContext` / `DuelBanner` on every
