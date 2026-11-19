@@ -209,8 +209,8 @@ function hoursOpen(){return SOLO?0:Math.max(0,Math.floor((Date.now()-env.board.o
 /* ---------- grading ---------- */
 function has(id){return M.crowd.has(id)||M.mine.has(id);}
 function nbCount(id){const c=id%COLS,r=(id/COLS)|0;let n=0;if(c>0&&has(id-1))n++;if(c<COLS-1&&has(id+1))n++;if(r>0&&has(id-COLS))n++;if(r<ROWS-1&&has(id+COLS))n++;return n;}
-function valueOf(id){const g=gradeAt(GRADES,id),first=!M.crowd.has(id),n=nbCount(id),age=first?1+Math.min(1,.05*Math.max(0,M.hours)):1;return {v:pieceValue({grade:g,hours:M.hours,neighbours:n,first}),g,first,age,n};}
-function explainVal(id){const o=valueOf(id),p=['grade '+o.g];if(o.age>1)p.push('plus '+Math.round((o.age-1)*100)+'% for going unclaimed');if(o.first)p.push('doubled for a first');if(o.n)p.push(Math.min(80,o.n*20)+'% off for '+o.n+' neighbor'+(o.n>1?'s':'')+' in place');return GN[o.g]+'. Worth '+o.v+': '+p.join(', ')+'.';}
+function valueOf(id){const g=gradeAt(GRADES,id),first=!M.crowd.has(id),n=nbCount(id),age=1;return {v:pieceValue({grade:g,hours:M.hours,neighbours:n,first}),g,first,age,n};}
+function explainVal(id){const o=valueOf(id),p=['grade '+o.g];if(o.first)p.push('doubled for a first');if(o.n)p.push(Math.min(80,o.n*20)+'% off for '+o.n+' neighbor'+(o.n>1?'s':'')+' in place');return GN[o.g]+'. Worth '+o.v+': '+p.join(', ')+'.';}
 let valCv=null;
 function valueMap(){if(valCv&&!valDirty)return valCv;valCv=valCv||mk(COLS,ROWS);const x=valCv.getContext('2d'),im=x.createImageData(COLS,ROWS),d=im.data;
   for(let id=0;id<TOTAL;id++){const o=id*4;if(has(id)){d[o+3]=0;continue;}const t=Math.min(1,valueOf(id).v/40);d[o]=253-131*t;d[o+1]=243-184*t;d[o+2]=208-208*t;d[o+3]=255;}

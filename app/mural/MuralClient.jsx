@@ -29,7 +29,7 @@ export default function MuralClient({ kind }) {
       <section style={{ maxWidth: 720, margin: '0 auto', padding: '24px 16px' }}>
         <h2>About {NAME}</h2>
         <p>{NAME} is a free daily online jigsaw puzzle with 4,000 pieces, 80 across and 50 down, cut from one real photograph. Everyone on Mind Loft builds the same one at the same time. Your tray holds a random handful of pieces: drag one to its spot, or tap the piece and then the spot. A wrong drop costs nothing.</p>
-        <p>Every piece you place scores points. Corners and edges are worth the least, detailed pieces more, and plain sky or water the most, because they are the hardest to place. A piece nobody on the site has placed yet is worth double, and its value creeps up the longer it goes unclaimed. The shared picture updates itself every two minutes, with no clock and no Give up.</p>
+        <p>Every piece you place scores points. Corners and edges are worth the least, detailed pieces more, and plain sky or water the most, because they are the hardest to place. A piece nobody on the site has placed yet is worth double. The shared picture updates itself every two minutes, with no clock and no Give up.</p>
         <p>Each {NAME} stays open until the whole site has placed every piece, for at least 24 hours, and the next one opens as soon as it is finished. Its twin, {other}, runs alongside it, so there is always a second mural to work on. The points you earn count toward your Mind Loft total for the day you earn them.</p>
       </section>
       <div ref={ref} className="mrl app" data-theme="light" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: MURAL_HTML }} />
