@@ -12,12 +12,27 @@
 //   - a Sunday board is on a Sunday and is bigger (more tray parts or cells).
 // Shown to fail on a board whose stored machine misses, and on one a single
 // spring solves.
-//   node scripts/verify-machine.mjs [--fast]   (--fast: 20px instead of 10px)
+// Boards from 2026-11-20 follow THE LADDER (scripts/gen-machine-bank.mjs
+// recipeFor): Monday and Tuesday are v1 boards built to the old Wednesday and
+// Friday recipes, Wednesday to Sunday are v2 CHAIN boards (gen-machine-v2.mjs:
+// three balls and three needed parts midweek, four on Friday, Saturday and
+// Sunday). A chain board must win, must miss when any one stored part is taken
+// away, must show a step for every link, and must be exactly what its seed
+// builds. --deep also re-proves that no two parts can win one (30px grid).
+// Shown to fail on a chain board with a part nudged off, on one with a fixed
+// piece edited, and on a Thursday carrying a v1 board.
+//   node scripts/verify-machine.mjs [--fast] [--deep] [--only 9,10]
+//   (--fast: 20px instead of 10px; --deep: the full two-part sweep on chain
+//   boards; --only: just those board numbers, for iterating, never the gate)
 import { PUZZLES } from '../app/machine/puzzles.js';
 import { run, makeState, pieceSegs, C } from '../lib/machine-engine.js';
-import { fairness, FAIR_MIN, sense, layout } from './gen-machine-bank.mjs';
+import { fairness, FAIR_MIN, sense, layout, recipeFor } from './gen-machine-bank.mjs';
+import { GEN2, build2, check2cheap, twoPartWin } from './gen-machine-v2.mjs';
 
 const STEP = process.argv.includes('--fast') ? 20 : 10;
+const DEEP = process.argv.includes('--deep'); // also re-prove that no two parts win a v2 board (minutes a board)
+const ONLY = (() => { const i = process.argv.indexOf('--only'); return i >= 0 ? new Set(process.argv[i + 1].split(',').map(Number)) : null; })(); // --only 9,10: just those board numbers (for iterating; not the gate)
+const LADDER_FROM = '2026-11-20'; // boards from here follow recipeFor (the 2026-11-19 ladder)
 let fails = 0;
 const bad = (n, m) => { fails++; console.log(`✗ #${n}: ${m}`); };
 const TYPES = new Set(['shelf', 'crate', 'wall', 'post', 'floor', 'door', 'button', 'plunger', 'hoop', 'bucket', 'bell', 'balloon', 'ramp', 'spring', 'belt', 'bumper', 'fan', 'seesaw', 'pipe', 'magnet', 'dominoes', 'cannon', 'glue', 'gate']);
@@ -44,6 +59,7 @@ const T0 = Date.now();
 let prev = null;
 for (const P of PUZZLES) {
   const n = P.num;
+  if (ONLY && !ONLY.has(n)) { prev = P; continue; }
   // shape
   if (prev && P.num !== prev.num + 1) bad(n, `num follows ${prev.num}`);
   if (prev && !(P.live > prev.live)) bad(n, `live ${P.live} not after ${prev.live}`);
@@ -100,11 +116,24 @@ for (const P of PUZZLES) {
   // one part of the stored machine 10px in any direction still wins at least
   // FAIR_MIN of the time, so the answer is findable by eye, not a pixel hunt.
   if (P.live >= '2026-11-20') {
-    const why = sense(P, P.band); if (why) bad(n, why);
-    // a generated board must be exactly what its seed lays out: no hand edits behind the generator's back
-    if (P.seed !== undefined) {
-      const G = layout(P.seed, P.band); const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-      if (!G || !same(G.pieces, P.pieces) || !same(G.balls, P.balls) || !same(G.goal, P.goal) || !same(G.tray, P.tray) || G.w !== P.w || G.h !== P.h) bad(n, `does not match seed ${P.seed} (edited by hand, or the generator changed without a GEN bump)`);
+    const lay = P.lay || P.band, v2 = P.gen === GEN2;
+    // THE LADDER (owner, 2026-11-19: Thursday was "far too easy"): each weekday is built to its recipe
+    if (P.live >= LADDER_FROM) { const want = recipeFor(P.live); if (P.gen !== want.gen || lay !== want.lay) bad(n, `built as ${P.gen || 'hand'}/${lay}, the ladder wants ${want.gen}/${want.lay} on this weekday`); }
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+    if (v2) {
+      // a chain board: three or four links, every stored part needed, a step for every link
+      const c = check2cheap(P, lay, P.sol || []); if (!c.ok) bad(n, c.why);
+      if (!P.goal.ball) bad(n, 'a chain board names the ball that has to finish the job');
+      // and it must be exactly what its seed builds: no hand edits behind the generator's back
+      const G = build2(P.seed, lay);
+      if (!G || !same(G.L.pieces, P.pieces) || !same(G.L.balls, P.balls) || !same(G.L.goal, P.goal) || !same(G.L.tray, P.tray) || !same(G.sol, P.sol) || G.L.w !== P.w || G.L.h !== P.h) bad(n, `does not match seed ${P.seed} (edited by hand, or the generator changed without a GEN2 bump)`);
+      if (DEEP) { const two = twoPartWin(P, 30); if (two) bad(n, `two parts win: ${two.pair.map((q) => `${q.t}${q.dir || ''} at ${q.px},${q.py}`).join(' + ')}`); }
+    } else {
+      const why = sense(P, lay); if (why) bad(n, why);
+      if (P.seed !== undefined) {
+        const G = layout(P.seed, lay);
+        if (!G || !same(G.pieces, P.pieces) || !same(G.balls, P.balls) || !same(G.goal, P.goal) || !same(G.tray, P.tray) || G.w !== P.w || G.h !== P.h) bad(n, `does not match seed ${P.seed} (edited by hand, or the generator changed without a GEN bump)`);
+      }
     }
     const f = fairness(P, P.sol || []);
     if (f < FAIR_MIN) bad(n, `stored machine is a pixel hunt: ${(f * 100).toFixed(0)}% of 10px nudges still win (need ${FAIR_MIN * 100}%)`);

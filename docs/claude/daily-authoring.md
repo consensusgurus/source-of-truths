@@ -443,7 +443,7 @@ archive and hub chips use the short form `Sun`.
 | Towers | a 7x7 skyline instead of the weekday 5x5 (from launch, 2026-08-24) |
 | Mercury | nine thermometers and eight printed digits, against six thermometers and fifteen to thirty digits on weekdays (from launch, 2026-08-24) |
 | Polka | a deal from the top of the measured difficulty distribution (from launch, 2026-08-24) |
-| Machine | a bigger board and more parts in the tray, against 14 x 10 and four parts on weekdays |
+| Machine | an 18 x 12 board and a four-link chain (four balls, four needed parts, six in the tray), against 14 x 10 on weekdays |
 | Crate | five crates in a bigger warehouse, against three on Monday and Tuesday and four the rest of the week |
 | Bot | P2 and P3 rows on a bigger board (up to 7x7, five to eight lamps); its par is the setter's best, proved only to seven commands |
 | Peg | 24 to 30 pegs, against 9 to 12 on Monday and Tuesday |
@@ -1173,10 +1173,60 @@ make this error proof and repeatable."
     hand edit to a generated board fails the gate. To change a future board, rebuild it:
     `--replace D1,D2` regenerates those dates in place (titles stay unique), and `--pin D=SEED` rebuilds a date
     from a known seed instead of searching;
-  - band by weekday: Mon/Tue gentle (3 tray parts, fairness >= 0.5), Wed/Thu moderate (3-4, >= 0.35), Fri/Sat tough
-    (4), Sun the Sunday Edition (18 x 12, five or six tray parts);
+  - band by weekday, AS REBUILT 2026-11-19 (see "The Machine ladder" below): the label a player sees is still
+    Mon/Tue gentle, Wed/Thu moderate, Fri/Sat tough, Sun the Sunday Edition, but what is built behind each label
+    moved up. The recipe a board was built to is stored as `lay` when it differs from `band`;
   - titles come from the board's features and never repeat in the bank; goal lines are written from the goal.
   It takes a few minutes a board on two cores (`--jobs 2`), so a two-week batch is roughly an hour. Preview boards
   with `--dry` before writing if the layouts need a look. If the generator ever changes how it lays boards out,
   bump `GEN` in the script so stored seeds stay tied to the version that made them.
 - verify-machine also prints a warning when the Machine bank has under 10 days left.
+
+### The Machine ladder (owner, 2026-11-19: "today's machine is far too easy for a thursday")
+
+Owner: "today's machine is far too easy for a thursday. need more machine elements and steps. use existing later
+week inventory to fill earlier days and create new harder thursdays and other days as necessary." The day he said it
+(No. 3, The Wind Tunnel) was a two-part board, and so was every board in the bank. What changed, all in
+`scripts/gen-machine-bank.mjs` (`recipeFor`) and the new `scripts/gen-machine-v2.mjs`:
+
+| Day | Label shown | Built as | Machine needs |
+|---|---|---|---|
+| Mon | Gentle | v1, the old Wednesday recipe (`lay: 'moderate'`) | 2 parts of 3 or 4 |
+| Tue | Gentle | v1, the old Friday recipe (`lay: 'tough'`) | 2 parts of 4 |
+| Wed, Thu | Moderate | v2 chain, three links | 3 parts of 5 |
+| Fri, Sat | Tough | v2 chain, four links | 4 parts of 6 |
+| Sun | Sunday Edition | v2 chain, four links, 18 x 12 | 4 parts of 6 |
+
+- **A v2 board is a chain.** Link 1: the kicked ball has to reach the first trigger. Each later link: the ball that
+  trigger let go has to reach the next one. Last link: the last ball has to reach the goal. Triggers are a side-on
+  button, a face-up button a ball lands on, a seesaw with the next ball on its low end, and a row of dominoes that
+  topples into a button; a button opens a trapdoor cage or fires a loaded cannon. In the first batch (13 chain
+  boards, 2026-11-20 to 12-06) cannons are on 5 and face-up buttons on 9, but NO seesaw or domino board passed the
+  skip scan: the builder offers them and they keep getting thrown out. Worth a look if the owner wants them seen.
+- **It is built along the physics** (`build2(seed, lay)`): for each link the builder drops one tray part on the
+  ball's path, runs the real engine, and puts the trigger (or the goal) where the ball only goes because of that
+  part. The stored machine is the parts the builder used; the same seed rebuilds the same board and machine, and
+  verify-machine rebuilds every v2 board and compares.
+- **The goal of a chain board names its ball,** bell and balloon included ("Ring the bell with the tennis ball").
+  The engine gained that on 2026-11-19: with `goal.ball` set, only that ball rings the bell for the win, and another
+  ball that reaches the balloon first pops it and the run is lost. A board with no `goal.ball` on its bell or balloon
+  plays exactly as before, so boards 1 to 3 are untouched. Without this a chain was pointless: the kicked ball could
+  ring the bell with one part.
+- **What a v2 board must pass** (`check2`): the stored machine wins and misses with any one part taken away; the
+  winning run shows a step (press, seesaw throw, topple, cannon shot) per link; fairness; a spare tray part; THE SKIP
+  SCAN (no single part, anywhere on the 30px grid, sets off anything past the first link); no single part wins at
+  10px; and NO TWO PARTS WIN: every pair on the 60px grid, then on the 30px grid every pair whose first part sets off
+  a link on its own (only pairs where the second part can be touched on the path the first one makes are run, the rest
+  play out as runs already covered). That sweep is most of the build time. It is NOT every pair at 30px: that takes
+  20 to 30 minutes a board (and on the 18 x 12 Sunday board the second part of the 30px pass sits on the 60px grid, or
+  one Sunday is an hour), and `verify-machine --deep` runs the full thing. `verify-machine` re-checks everything but the pair
+  sweep on every run.
+- **Old inventory went down the week, none was thrown away for being easy on its day.** The six v1 boards that were
+  Wed to Sat boards now sit on Mondays and Tuesdays (same board, same seed, new date, `lay` recording the recipe).
+  The v1 boards that were Mon/Tue and Sunday boards are no longer scheduled; their seeds are in
+  docs/claude/games-other.md (Machine) if they are ever wanted.
+- **verify-machine enforces the ladder** from 2026-11-20: a board whose `gen`/`lay` is not the weekday's recipe fails.
+  To change the ladder, change `recipeFor` and `LADDER_FROM` together, for future dates only.
+- **Build time.** A v2 board takes roughly five to fifteen minutes on one core: the search for a board that passes the
+  skip scan (about one built board in fifteen midweek, one in sixty for four links), then the pair sweep.
+  `--jobs 2` builds two dates at once. Restock a week or two at a time, well before the runway warning.

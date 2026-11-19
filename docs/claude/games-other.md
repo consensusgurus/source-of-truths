@@ -2989,6 +2989,13 @@ Visual, skills Spatial and Planning, on `app/SimpleDaily.jsx`. Wired by `scripts
   board #1 frozen as the basketball drops for the hoop, with the real engine's ball paths, and a row of part chips
   (Ramp, Spring, Belt, Seesaw, Bumper). `public/og/tile/machine.png` is the board alone on the blueprint. Source:
   render the card HTML with a bundle of lib/machine-art.js + machine-ui.js + puzzles.js and local Manrope woffs.
+- **THE LADDER (owner, 2026-11-19: "today's machine is far too easy for a thursday. need more machine elements and
+  steps").** Boards from 2026-11-20: Mon/Tue are two-part v1 boards built to the old Wed and Fri recipes; Wed/Thu
+  are three-link CHAIN boards (three balls, three needed parts of five); Fri/Sat and the Sunday Edition are four-link
+  chains (four balls, four needed parts of six; Sunday on 18 x 12). Chain boards use cannons, second and third
+  cages and face-up buttons (seesaws and dominoes are offered by the builder but none has passed the checks yet),
+  and their goal names the ball that has to finish the job. Full rules:
+  daily-authoring.md, "The Machine ladder". Never schedule a two-part board from Wednesday on again.
 - **Restocking: never by hand.** `node scripts/gen-machine-bank.mjs --through YYYY-MM-DD` builds, checks and appends
   boards (see daily-authoring.md, "Bank runway and the Machine restock"). Boards from 2026-11-20 carry `gen` and
   `seed` and must pass the fairness rule in verify-machine.
@@ -3012,7 +3019,7 @@ Visual, skills Spatial and Planning, on `app/SimpleDaily.jsx`. Wired by `scripts
   sits on the other end), pipe (in the top, out the side at the speed it went in), magnet (steel ball only),
   dominoes (topple in turn, the last shoves what is in front of it or presses a button), cannon, glue, one-way gate.
   Goals: hoop (enter from above), bucket, bell, balloon. The mockup's "New parts" section runs a live demo of each.
-- **Bank** `app/machine/puzzles.js`, HAND-BUILT boards tuned in the engine (no generator yet). No. 1 (2026-11-17) is
+- **Bank** `app/machine/puzzles.js`: Nos. 1 to 3 are hand-built, everything after is generated (see Restocking). No. 1 (2026-11-17) is
   the mockup's board. `app/machine/page.js` strips `sol` and future days. A live board is frozen: an engine change
   that alters any outcome replays old saves differently, so gate physics changes to future boards if one is ever
   needed. **Checker** `scripts/verify-machine.mjs`: shape and ranges; the stored machine fits and wins; the empty
@@ -3028,8 +3035,15 @@ Visual, skills Spatial and Planning, on `app/SimpleDaily.jsx`. Wired by `scripts
   card a day still holds: a browser that already had today's card gets Machine on its next day.
 - **Placement:** Visual; group Roll and route (Topple, Roll, Chomp, Machine); finish set Rolling puzzles; family with
   Topple, Roll, Chomp, Tangled and Pack; Sunday Edition yes (a bigger board, more parts).
-- **Open:** the bank runs out fast: restock by hand (and Sunday 2026-11-22 needs its Sunday board) until a generator
-  exists. Pinch to zoom while placing on phones. Fans blow through walls (no occlusion).
+- **Open:** pinch to zoom while placing on phones. Fans blow through walls (no occlusion), which on a chain board
+  can lift a tennis ball out of its cage: legal, and the checks run the real engine so they account for it.
+- **v1 boards built before the ladder and not scheduled now** (all passed every v1 check on 2026-11-18). The Monday
+  and Tuesday ones can go straight onto a later Monday or Tuesday with
+  `node scripts/gen-machine-bank.mjs --through <date> --pin <date>=<seed>`: Monday recipe (`moderate`): Bell Ringer
+  5413525045. Tuesday recipe (`tough`): The Free Throw 5946405317, Last Call 7970192026, The Bell Tower 4747811077.
+  Retired as too easy for any day now: the old Mon/Tue boards (`gentle`: The Long Shot 9834500015, Saved by the Bell
+  3056881066, The Release 9354548014, High Hopes 1858287178) and the old two-part Sundays (`sunday`: Ring Once
+  6612119026, The Doorbell 9168786053, The Cage 1525430048).
 
 ## Seated: the daily seating-chart puzzle (launched 2026-11-14)
 

@@ -29,8 +29,14 @@
 //         least FAIR_MIN of the time, so a solution is findable by eye, not a
 //         pixel hunt.
 //   * Band by weekday: Mon/Tue gentle, Wed/Thu moderate, Fri/Sat tough, Sun the
-//     Sunday Edition (18 x 12 board, five or six tray parts). The band also sets
-//     how forgiving the solution must be (robustness ranges below).
+//     Sunday Edition. THE LADDER (owner, 2026-11-19: "today's machine is far too
+//     easy for a thursday. need more machine elements and steps"): what is built
+//     behind each label is set by recipeFor below. Monday and Tuesday are the
+//     boards described here (v1, two parts), built to the old Wednesday and
+//     Friday recipes. Wednesday to Sunday are v2 CHAIN boards from
+//     scripts/gen-machine-v2.mjs: three balls and three needed parts midweek,
+//     four on Friday, Saturday and Sunday. A board stores the recipe it was
+//     built to as `lay` when that differs from its band.
 //   * Titles and goal lines are written from the board's own features, never
 //     repeating a title already in the bank, with no em dashes.
 //   * After writing, it runs scripts/verify-machine.mjs on the whole bank and
@@ -43,6 +49,7 @@ import os from 'os';
 import { fileURLToPath } from 'url';
 import { spawn, spawnSync } from 'child_process';
 import { run, makeState, pieceSegs, C } from '../lib/machine-engine.js';
+import { GEN2, build2, check2, goalText2, titlePools2 } from './gen-machine-v2.mjs';
 
 const GEN = 'v1';
 export const FAIR_MIN = 0.25;
@@ -226,14 +233,20 @@ export function check(L, band) {
 
 /* ---------- names ---------- */
 const BALL_NAME = { bowling: 'bowling ball', basket: 'basketball', tennis: 'tennis ball', steel: 'steel ball' };
-function goalText(L) {
+function goalText(L, gen) {
+  if (gen === GEN2) return goalText2(L);
   const g = L.goal; const b = g.ball && L.balls.find((x) => x.id === g.ball);
   if (g.type === 'hoop') return `Sink the ${BALL_NAME[b.kind]} in the hoop`;
   if (g.type === 'bucket') return `Drop the ${BALL_NAME[b.kind]} in the bucket`;
   if (g.type === 'bell') return 'Ring the bell';
   return 'Pop the balloon';
 }
-function titleFor(L, used, seed) {
+function titleFor(L, used, seed, gen) {
+  if (gen === GEN2) {
+    const rng = mulberry(seed);
+    for (const pool of titlePools2(L)) for (const t of shuffle(pool.slice(), rng)) if (!used.has(t)) { used.add(t); return t; }
+    let i = 2; while (used.has(`The Contraption ${i}`)) i++; used.add(`The Contraption ${i}`); return `The Contraption ${i}`;
+  }
   const has = (t) => L.pieces.some((p) => p.t === t);
   const pits = L.pieces.filter((p) => p.t === 'floor').length > 1 || L.pieces.some((p) => p.t === 'hoop' && p.x > 0 && p.x < L.w - 1);
   const pools = [];
@@ -256,23 +269,45 @@ function titleFor(L, used, seed) {
 const dow = (iso) => new Date(`${iso}T12:00:00Z`).getUTCDay();
 const nextDay = (iso) => { const d = new Date(`${iso}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); };
 const bandFor = (iso) => ['sunday', 'gentle', 'gentle', 'moderate', 'moderate', 'tough', 'tough'][dow(iso)];
+// THE LADDER (owner, 2026-11-19: "today's machine is far too easy for a thursday. need more machine
+// elements and steps. use existing later week inventory to fill earlier days and create new harder
+// thursdays and other days"). The band a player sees still goes by weekday, but what gets built moved
+// up: Monday is built to the old Wednesday recipe and Tuesday to the old Friday one (v1, two parts),
+// and Wednesday to Sunday are v2 chains (three parts midweek, four on Friday, Saturday and Sunday).
+// `lay` is the recipe a board was built to; it is stored on the board when it differs from `band`.
+export const recipeFor = (iso) => [
+  { gen: GEN2, lay: 'sunday' }, { gen: GEN, lay: 'moderate' }, { gen: GEN, lay: 'tough' },
+  { gen: GEN2, lay: 'moderate' }, { gen: GEN2, lay: 'moderate' }, { gen: GEN2, lay: 'tough' }, { gen: GEN2, lay: 'tough' },
+][dow(iso)];
 const todayNY = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
 const label = (iso) => new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
 export function buildDate(iso, maxTries = 4000, pin) {
-  const band = bandFor(iso); const base = hash(`machine:${GEN}:${iso}`) * 1000;
+  const band = bandFor(iso), { gen, lay } = recipeFor(iso); const base = hash(`machine:${gen}:${iso}`) * 1000;
+  const one = (seed) => {
+    if (gen === GEN2) { const b = build2(seed, lay); if (!b) return { why: 'no board' }; const r = check2(b.L, lay, b.sol); return r.ok ? { ok: true, L: b.L, sol: b.sol, fair: r.fair } : r; }
+    const L = layout(seed, lay); if (!L) return { why: 'no layout' }; const r = check(L, lay); return r.ok ? { ok: true, L, sol: r.sol, fair: r.fair } : r;
+  };
   if (pin) { // rebuild from a recorded seed: that seed and nothing else
-    const L = layout(pin, band); const r = L ? check(L, band) : { why: 'no layout' };
+    const r = one(pin);
     if (!r.ok) throw new Error(`${iso}: pinned seed ${pin} does not make a passing board (${r.why})`);
-    return { iso, band, seed: pin, L, sol: r.sol, fair: r.fair, tries: 1 };
+    return { iso, band, lay, gen, seed: pin, L: r.L, sol: r.sol, fair: r.fair, tries: 1 };
   }
   for (let i = 0; i < maxTries; i++) {
-    const seed = base + i; const L = layout(seed, band); if (!L) continue;
-    const t0 = Date.now(); const r = check(L, band);
+    const seed = base + i; const t0 = Date.now(); const r = one(seed);
     if (process.env.MACHINE_GEN_DEBUG) process.stderr.write(`${iso} seed ${seed}: ${r.ok ? 'ok' : r.why} ${Date.now() - t0}ms\n`);
-    if (r.ok) return { iso, band, seed, L, sol: r.sol, fair: r.fair, tries: i + 1 };
+    if (r.ok) return { iso, band, lay, gen, seed, L: r.L, sol: r.sol, fair: r.fair, tries: i + 1 };
   }
   throw new Error(`no board for ${iso} after ${maxTries} seeds`);
+}
+export function rowFor(r, num, used) {
+  const [y, m, dd] = r.iso.split('-').map(Number);
+  const row = { num, quizId: `machine-${m}-${dd}-${String(y).slice(2)}`, live: r.iso, dateLabel: label(r.iso), band: r.band };
+  if (r.band === 'sunday') row.sunday = true;
+  row.title = titleFor(r.L, used, r.seed, r.gen); row.goalText = goalText(r.L, r.gen);
+  Object.assign(row, { w: r.L.w, h: r.L.h, pieces: r.L.pieces, balls: r.L.balls, goal: r.L.goal, tray: r.L.tray, sol: r.sol, gen: r.gen, seed: r.seed });
+  if (r.lay !== r.band) row.lay = r.lay;
+  return row;
 }
 
 /* ---------- CLI ---------- */
@@ -322,11 +357,7 @@ if (process.argv[1] && process.argv[1].endsWith('gen-machine-bank.mjs')) {
   let num = last.num; const rows = [];
   for (const d of dates) {
     const r = results[d]; const old = PUZZLES.find((p) => p.live === d); num = old ? old.num : num + 1;
-    const [y, m, dd] = d.split('-').map(Number);
-    const row = { num, quizId: `machine-${m}-${dd}-${String(y).slice(2)}`, live: d, dateLabel: label(d), band: r.band };
-    if (r.band === 'sunday') row.sunday = true;
-    row.title = titleFor(r.L, used, r.seed); row.goalText = goalText(r.L);
-    Object.assign(row, { w: r.L.w, h: r.L.h, pieces: r.L.pieces, balls: r.L.balls, goal: r.L.goal, tray: r.L.tray, sol: r.sol, gen: GEN, seed: r.seed });
+    const row = rowFor(r, num, used);
     rows.push(row);
   }
   if (args.includes('--dry')) { for (const r of rows) console.log(JSON.stringify(r)); process.exit(0); }
