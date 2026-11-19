@@ -13,7 +13,7 @@
 // not counted. Nothing here pops up over the board mid game.
 
 import {
-  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, gradeAt, pieceValue, muralLaunched, muralFirstOpens, parseMuralId, MURAL_MIN_MS, muralDateLabel,
+  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, gradeAt, pieceValue, muralLaunched, muralFirstOpens, parseMuralId, MURAL_MIN_MS, muralDateLabel, privateMuralId,
 } from '@/lib/mural-shared';
 import { openMemorial } from './memorial';
 import { holdThemeColor } from '@/lib/theme-color-hold';
@@ -115,8 +115,18 @@ export function bootMural(root, cfg) {
         if (dead) return;
         if (db.ok && db.j && db.j.grades && (db.j.completed || db.j.closes <= Date.now())) { solo = db.j.id; b = db; }
       }
-      if (!solo && !muralLaunched(K.key)) { waitScreen(); return; }
-      bootMsg(`Opening ${K.name}.`);
+      // A PRIVATE MURAL (owner, 2026-11-19): /mural/p/<code>. Its board is asked for
+      // by id; it is live play like the public one, with its own standings and wall.
+      const privId = !solo ? privateMuralId(cfg.priv) : null;
+      if (cfg.priv && !solo) {
+        if (!privId) { bootMsg('That private mural link is not right. Check the link and try again.'); return; }
+        bootMsg('Opening your private mural.');
+        b = await getJSON(`/api/mural/board?id=${privId}`);
+        if (dead) return;
+        if (!b.ok || !b.j || !b.j.grades) { bootMsg('That private mural could not be found. Check the link and try again.'); return; }
+      }
+      if (!solo && !privId && !muralLaunched(K.key)) { waitScreen(); return; }
+      if (!privId) bootMsg(`Opening ${K.name}.`);
       if (!b) b = await getJSON(`/api/mural/board?kind=${K.key}`);
       if (dead) return;
       if (!b.ok || !b.j || !b.j.grades) { bootMsg(`${K.name} is not open yet. Check back in a minute.`); return; }
@@ -144,10 +154,10 @@ export function bootMural(root, cfg) {
         start({ id, board: b.j, img, state: {}, me: { pieces: (saved && saved.pieces) || [], points: 0, firsts: 0 }, anon, email, q, solo: true, crowd: st.j || {}, crowdMe: me.j || {}, wall });
         return;
       }
-      start({ id, board: b.j, img, state: st.j || {}, me: me.j || {}, anon, email, q });
+      start({ id, board: b.j, img, state: st.j || {}, me: me.j || {}, anon, email, q, priv: privId ? { code: cfg.priv, ...(b.j.private || {}) } : null });
     } catch (e) {
       console.error('mural', e);
-      bootMsg(`${K.name} could not load. Refresh to try again.`);
+      bootMsg(`${K.name} could not load. Reload the page to try again.`);
     }
   })();
 
@@ -208,7 +218,7 @@ function pieceCanvas(id,cssPx,cv){
 const src=mk(W,H),crowdL=mk(W,H),mineL=mk(W,H);
 const sctx=src.getContext('2d'),cctx=crowdL.getContext('2d'),mctx=mineL.getContext('2d');
 sctx.drawImage(img,cx0,cy0,cw0,ch0,0,0,W,H);
-const cv=$('cv'),ctx=cv.getContext('2d'),refCv=$('refCv');refCv.height=Math.round(refCv.width*H/W);const rctx=refCv.getContext('2d');
+const cv=$('cv'),ctx=cv.getContext('2d'),refCv=$('refCv');refCv.width=1056;refCv.height=Math.round(refCv.width*H/W);const rctx=refCv.getContext('2d');
 const M={crowd:new Set(),mine:new Set(),pts:0,firsts:0,hours:0,hand:[],loose:[],done:false,rank:null,name:null};
 let STATE=env.state||{};
 // SHARPNESS (owner, 2026-11-19, a phone screenshot of a smeared piece: "have to
@@ -219,7 +229,7 @@ const view={s:1,tx:0,ty:0,cw:0,ch:0,min:.1,max:72/PS};
 let valDirty=true,isPhone=false,C={},sel=null,refTab='pic',pulses=[],needDraw=false,tick=UPDATE,HANDN=8,TSZ=68,HCOLS=8,TRAYR=2,finShown=false;
 try{const v=+localStorage.getItem('mural_tray_rows');if(v>=1&&v<=3)TRAYR=v;}catch(e){}
 function colors(){const cs=getComputedStyle(root);C={bd:cs.getPropertyValue('--bd').trim(),slot:cs.getPropertyValue('--slot').trim(),ink:cs.getPropertyValue('--ink').trim(),page:cs.getPropertyValue('--page').trim()};}
-const SOLO=!!env.solo;
+const SOLO=!!env.solo,PRIV=env.priv||null;
 function hoursOpen(){return SOLO?0:Math.max(0,Math.floor((Date.now()-env.board.opens)/3600000));}
 
 /* ---------- grading ---------- */
@@ -262,11 +272,22 @@ function draw(){
 }
 function drawRef(){
   if($('ref').classList.contains('mini'))return;
-  const w=refCv.width,h=refCv.height;rctx.setTransform(1,0,0,1,0,0);rctx.fillStyle=C.slot;rctx.fillRect(0,0,w,h);rctx.imageSmoothingQuality='high';
-  if(refTab==='pic')rctx.drawImage(src,0,0,w,h);else if(refTab==='val'){rctx.imageSmoothingEnabled=false;rctx.drawImage(valueMap(),0,0,w,h);rctx.imageSmoothingEnabled=true;}else{rctx.drawImage(crowdL,0,0,w,h);rctx.drawImage(mineL,0,0,w,h);}
-  const k=w/W,x=Math.max(0,-view.tx/view.s)*k,y=Math.max(0,-view.ty/view.s)*k,x2=Math.min(W,(view.cw-view.tx)/view.s)*k,y2=Math.min(H,(view.ch-view.ty)/view.s)*k;
-  if(x2-x<w-2||y2-y<h-2){rctx.strokeStyle='#ffffff';rctx.lineWidth=5;rctx.strokeRect(x,y,x2-x,y2-y);rctx.strokeStyle='#15171c';rctx.lineWidth=2;rctx.strokeRect(x,y,x2-x,y2-y);}
+  /* THE PICTURE ZOOMS (owner, 2026-11-19: "add ability to zoom even more on the viewfinder of the
+     full image of the mural. currently you cant zoom in to see detail"). RZ is the part of the
+     picture the panel shows: s times closer, centred on (cx, cy) in picture pixels. */
+  const w=refCv.width,h=refCv.height,sw=W/RZ.s,sh=H/RZ.s,sx=Math.max(0,Math.min(W-sw,RZ.cx-sw/2)),sy=Math.max(0,Math.min(H-sh,RZ.cy-sh/2));
+  rctx.setTransform(1,0,0,1,0,0);rctx.fillStyle=C.slot;rctx.fillRect(0,0,w,h);rctx.imageSmoothingQuality='high';
+  if(refTab==='pic')rctx.drawImage(src,sx,sy,sw,sh,0,0,w,h);else if(refTab==='val'){const vm=valueMap(),kx=COLS/W,ky=ROWS/H;rctx.imageSmoothingEnabled=false;rctx.drawImage(vm,sx*kx,sy*ky,sw*kx,sh*ky,0,0,w,h);rctx.imageSmoothingEnabled=true;}else{rctx.drawImage(crowdL,sx,sy,sw,sh,0,0,w,h);rctx.drawImage(mineL,sx,sy,sw,sh,0,0,w,h);}
+  const k=w/sw,x=(Math.max(0,-view.tx/view.s)-sx)*k,y=(Math.max(0,-view.ty/view.s)-sy)*k,x2=(Math.min(W,(view.cw-view.tx)/view.s)-sx)*k,y2=(Math.min(H,(view.ch-view.ty)/view.s)-sy)*k;
+  if(x2-x<w-2||y2-y<h-2){rctx.strokeStyle='#ffffff';rctx.lineWidth=8;rctx.strokeRect(x,y,x2-x,y2-y);rctx.strokeStyle='#15171c';rctx.lineWidth=3;rctx.strokeRect(x,y,x2-x,y2-y);}
 }
+const RZ={s:1,cx:W/2,cy:H/2,max:10};
+function rzClamp(){RZ.s=Math.max(1,Math.min(RZ.max,RZ.s));const sw=W/RZ.s,sh=H/RZ.s;RZ.cx=Math.max(sw/2,Math.min(W-sw/2,RZ.cx));RZ.cy=Math.max(sh/2,Math.min(H-sh/2,RZ.cy));}
+/* Where on the picture a point of the panel is. */
+function rzAt(e){const r=refCv.getBoundingClientRect(),sw=W/RZ.s,sh=H/RZ.s;return [RZ.cx-sw/2+(e.clientX-r.left)/r.width*sw,RZ.cy-sh/2+(e.clientY-r.top)/r.height*sh];}
+function rzUi(){const l=$('rzLab');if(l)l.textContent=(RZ.s<9.95?(Math.round(RZ.s*10)/10):Math.round(RZ.s))+'x';refCv.classList.toggle('zoomed',RZ.s>1.01);const o=$('rzOut'),i=$('rzIn');if(o)o.disabled=RZ.s<=1.01;if(i)i.disabled=RZ.s>=RZ.max-.01;}
+/* Zoom by f, keeping the picture point (px, py) under the same spot of the panel. */
+function rzZoom(f,px,py){const s0=RZ.s,s1=Math.max(1,Math.min(RZ.max,s0*f));if(s1===s0)return;if(px===undefined){px=RZ.cx;py=RZ.cy;}RZ.cx=px+(RZ.cx-px)*s0/s1;RZ.cy=py+(RZ.cy-py)*s0/s1;RZ.s=s1;rzClamp();rzUi();req();}
 const toSrc=(px,py)=>[(px-view.tx)/view.s,(py-view.ty)/view.s];
 /* ---------- hand ---------- */
 /* THE TRAY (owner, 2026-11-19): one to three rows, the player's choice (two by
@@ -306,7 +327,7 @@ function ui(){
   $('sPts').textContent=M.pts;$('menuBtn').textContent='Menu \u00b7 '+M.pts+' pts';$('sLeft').textContent=M.mine.size;
   /* THE SITE'S TOTAL, NOT FIRSTS (owner, 2026-11-19: "dont need to show 'firsts', instead also give total places along with %. and that number will have the '+5' or whatever on every refresh"). */
   const done=M.crowd.size+[...M.mine].filter(i=>!M.crowd.has(i)).length,pc=done/TOTAL*100;
-  $('sAll').textContent=done.toLocaleString();$('sAllLab').textContent='Site Total \u00b7 '+(pc>0&&pc<10?pc.toFixed(1):Math.round(pc))+'%';
+  $('sAll').textContent=done.toLocaleString();$('sAllLab').textContent=(PRIV?'All Placed':'Site Total')+' \u00b7 '+(pc>0&&pc<10?pc.toFixed(1):Math.round(pc))+'%';
   $('meta').textContent='Open '+M.hours+(M.hours===1?' hour':' hours');
   coolTick();
 }
@@ -369,7 +390,7 @@ function dropGroup(l){
 function finish(){
   M.done=true;
   $('dTitle').textContent='You placed all '+TOTAL.toLocaleString();
-  $('dLead').textContent='Every piece of '+K.name+' is on your board. Standings settle when it closes.';
+  $('dLead').textContent='Every piece of '+(PRIV?'this mural':K.name)+' is on your board. Standings settle when it closes.';
   $('dPts').textContent=M.pts;$('dFirst').textContent=M.firsts;$('dMiss').textContent=M.mine.size;
   setTimeout(()=>$('doneSheet').classList.add('show'),700);
 }
@@ -424,6 +445,7 @@ function send(id,val,tries){
           valDirty=true;renderHand();ui();req();
         }
       }else if(o.status===409){pending--;setMsg(K.name+' has closed.');poll();}
+      else if(o.status===403){pending--;setMsg('Only members of '+((PRIV&&PRIV.group)||'this group')+' can place pieces here. Join the group to play.');}
       else throw new Error('place');
     })
     .catch(()=>{if(dead)return;if(tries<3)setTimeout(()=>send(id,val,tries+1),1500*(tries+1));else{pending--;setMsg('That piece did not save. Check your connection.');}});
@@ -465,10 +487,11 @@ async function poll(){
     checkEnd();
   }catch(e){}finally{polling=false;}
 }
+let booted=false;
 function checkEnd(){
   if(finShown)return;
   const complete=SOLO?M.mine.size>=TOTAL:(!!STATE.completed||(STATE.n||0)>=TOTAL),closed=!SOLO&&Date.now()>=env.board.closes;
-  if(complete||closed){M.done=true;renderHand();ui();finShown=true;coolTick();setTimeout(()=>showFinish(complete,closed),900);}
+  if(complete||closed){M.done=true;renderHand();ui();finShown=true;liveFinish=booted&&complete;coolTick();setTimeout(()=>showFinish(complete,closed),liveFinish?350:900);}
 }
 every(()=>{
   tick--;
@@ -536,12 +559,29 @@ function tup(e){
 }
 window.addEventListener('pointerup',tup,{signal:ac.signal});window.addEventListener('pointercancel',tup,{signal:ac.signal});
 /* ---------- reference panel ---------- */
-function refJump(e){const r=refCv.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*W,sy=(e.clientY-r.top)/r.height*H;if(view.s<view.min*1.8)view.s=Math.min(view.max,view.min*3.2);view.tx=view.cw/2-sx*view.s;view.ty=view.ch/2-sy*view.s;clampView();req();}
-let refDown=false;
-refCv.addEventListener('pointerdown',e=>{refDown=true;refCv.setPointerCapture(e.pointerId);refJump(e);});
-refCv.addEventListener('pointermove',e=>{if(refDown)refJump(e);});
-refCv.addEventListener('pointerup',()=>refDown=false);refCv.addEventListener('pointercancel',()=>refDown=false);
-root.querySelectorAll('#refSeg button').forEach(b=>b.onclick=()=>{refTab=b.dataset.r;root.querySelectorAll('#refSeg button').forEach(x=>x.classList.toggle('on',x===b));$('refCap').textContent=refTab==='pic'?'The finished picture. Tap it to jump there. Drag the bar to move it.':refTab==='val'?'Pieces nobody has placed. Darker is worth more.':'Everything placed so far, by everyone.';req();});
+function refJump(e){const p=rzAt(e),sx=p[0],sy=p[1];if(view.s<view.min*1.8)view.s=Math.min(view.max,view.min*3.2);view.tx=view.cw/2-sx*view.s;view.ty=view.ch/2-sy*view.s;clampView();req();}
+/* On the whole picture a press jumps the board there and a drag keeps jumping, as before. Zoomed
+   in, a drag moves the picture instead and a tap jumps. Two fingers pinch; the wheel zooms. */
+const rptr=new Map();let rg=null;
+refCv.addEventListener('pointerdown',e=>{
+  refCv.setPointerCapture(e.pointerId);rptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(rptr.size===2){const a=[...rptr.values()];rg={pinch:true,d:Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1,s:RZ.s};return;}
+  rg={x0:e.clientX,y0:e.clientY,cx:RZ.cx,cy:RZ.cy,moved:false,pan:RZ.s>1.01};
+  if(!rg.pan)refJump(e);
+});
+refCv.addEventListener('pointermove',e=>{
+  if(!rptr.has(e.pointerId)||!rg)return;rptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(rg.pinch){if(rptr.size<2)return;const a=[...rptr.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1,mid={clientX:(a[0].x+a[1].x)/2,clientY:(a[0].y+a[1].y)/2},p=rzAt(mid);rzZoom((rg.s*d/rg.d)/RZ.s,p[0],p[1]);return;}
+  if(!rg.pan){refJump(e);return;}
+  if(!rg.moved&&Math.hypot(e.clientX-rg.x0,e.clientY-rg.y0)<5)return;
+  rg.moved=true;const r=refCv.getBoundingClientRect();RZ.cx=rg.cx-(e.clientX-rg.x0)/r.width*(W/RZ.s);RZ.cy=rg.cy-(e.clientY-rg.y0)/r.height*(H/RZ.s);rzClamp();req();
+});
+function refUp(e){if(!rptr.has(e.pointerId))return;rptr.delete(e.pointerId);const g=rg;if(rptr.size===0)rg=null;if(g&&!g.pinch&&g.pan&&!g.moved&&e.type==='pointerup')refJump(e);}
+refCv.addEventListener('pointerup',refUp);refCv.addEventListener('pointercancel',refUp);
+refCv.addEventListener('wheel',e=>{e.preventDefault();const p=rzAt(e);rzZoom(e.deltaY<0?1.25:1/1.25,p[0],p[1]);},{passive:false});
+$('rzIn').onclick=()=>rzZoom(1.6);$('rzOut').onclick=()=>rzZoom(1/1.6);$('rzLab').onclick=()=>{RZ.s=1;rzClamp();rzUi();req();};
+rzUi();
+root.querySelectorAll('#refSeg button').forEach(b=>b.onclick=()=>{refTab=b.dataset.r;root.querySelectorAll('#refSeg button').forEach(x=>x.classList.toggle('on',x===b));$('refCap').textContent=refTab==='pic'?'The finished picture. Zoom in to see detail. Tap it to jump there.':refTab==='val'?'Pieces nobody has placed. Darker is worth more.':'Everything placed so far, by everyone.';req();});
 let refState=0;
 function setRef(n){refState=n;const r=$('ref');r.classList.toggle('big',n===1);r.classList.toggle('mini',n===2);$('refSize').textContent=n===0?'Larger':'Hide';clampRef();req();}
 $('refSize').onclick=()=>setRef((refState+1)%3);
@@ -597,6 +637,10 @@ function openWall(mode,o){
     note='You have now rebuilt all '+TOTAL.toLocaleString()+' pieces on your own.';
     primary={label:'Play Today’s '+K.name,href:K.route};
     alts=[{label:'See Your Finished Copy',onClick:closeWall},shelf];
+  }else if(PRIV){
+    primary={label:'Start Another Private Mural',href:'/mural/private'};
+    alts=[{label:'See The Finished Mural',onClick:closeWall},{label:'Standings',onClick:()=>{closeWall();standings();$('lbSheet').classList.add('show');}},{label:'Play '+K.name,href:K.route}];
+    top=[{label:'Standings',onClick:()=>{closeWall();standings();$('lbSheet').classList.add('show');}}];
   }else{
     if(closed)primary={label:'Play The New '+K.name,onClick:()=>window.location.reload()};
     alts=[{label:complete?'See The Finished '+K.name:'See The '+K.name,onClick:closeWall},{label:'Standings',onClick:()=>{closeWall();standings();$('lbSheet').classList.add('show');}},{label:'Build It Yourself',href:K.route+'?solo='+env.id}];
@@ -605,15 +649,36 @@ function openWall(mode,o){
   }
   closeWall();
   memo=openMemorial($('fin'),{
-    name:K.name,eyebrow:K.name+' · '+muralDateLabel(env.id)+(fullPic?' · Finished':' · Closed'),
+    name:PRIV?'private mural':K.name,eyebrow:(PRIV?'Private Mural'+(PRIV.group?' · '+PRIV.group:''):K.name+' · '+muralDateLabel(env.id))+(fullPic?' · Finished':' · Closed'),
     cols:COLS,rows:ROWS,src,wall:wallData,state:crowd,me,complete:fullPic,hoursOpen:hrs,
     dark:theme==='dark',animate:o.animate!==false,credit:creditLine(),homeHref:'/',
-    top,primary,alts,note,next,bars:barsHold,
+    top,primary,alts,note,next,bars:barsHold,sweep:o.sweep!==false,
   });
   if(o.confetti)confetti();
 }
+/* THE REVEAL (owner, 2026-11-19: "we also need an end animation to reveal the final screen you
+   built"). When the last piece lands while the player is here, the board pulls back to show the
+   whole picture, a ring and a band of light cross it, and the wall's own colour opens out from the
+   middle of the picture until it covers the screen; the wall is then built underneath it. A page
+   opened on an already finished mural goes straight to the wall. */
+function reveal(then){
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce||!liveFinish){then(false);return;}
+  liveFinish=false;
+  root.querySelectorAll('.sheet').forEach(x=>x.classList.remove('show'));
+  fit();req();
+  const st=$('stage').getBoundingClientRect(),bx=st.left+view.tx,by=st.top+view.ty,bw=W*view.s,bh=H*view.s;
+  const fx=document.createElement('div');fx.className='finFx';fx.style.setProperty('--fx',(bx+bw/2)+'px');fx.style.setProperty('--fy',(by+bh/2)+'px');
+  fx.innerHTML='<div class="ring" style="left:'+bx+'px;top:'+by+'px;width:'+bw+'px;height:'+bh+'px"><i></i></div><div class="fill" style="background:'+(theme==='dark'?'#0b0f1a':'#f1affb')+'"></div>';
+  root.appendChild(fx);
+  setMsg(SOLO?'That is every piece. You rebuilt it.':'The last piece is in. '+(PRIV?'Your mural':K.name)+' is complete.');
+  setTimeout(()=>{if(!dead)fx.classList.add('go');},1500);
+  setTimeout(()=>{if(dead)return;then(true);setTimeout(()=>fx.remove(),60);},2500);
+}
+let liveFinish=false;
 function showFinish(complete,closed){
-  const go=()=>{if(dead)return;if(SOLO)openWall('rebuilt',{complete:true});else openWall('live',{complete,closed,confetti:complete});};
+  const open=(swept)=>{if(dead)return;if(SOLO)openWall('rebuilt',{complete:true,sweep:!swept});else openWall('live',{complete,closed,confetti:complete,sweep:!swept});};
+  const go=()=>{if(dead)return;if(complete)reveal(open);else open(false);};
   if(wallAsked&&wallData){go();return;}
   /* Who placed what, in order, for the build and the blocks. Without it the wall still opens, from the standings snapshot. */
   wallAsked=true;
@@ -652,8 +717,9 @@ function finNext(box,complete,closed){
 function creditLine(){const p=env.board.photo||{};return p.name?'Photo: '+p.name+(p.by?', by '+p.by:'')+(p.lic?' ('+p.lic+')':'')+', Wikimedia Commons.':'';}
 
 /* ---------- wiring ---------- */
-/* No wait on Refresh (owner, 2026-11-19: "Remove the refresh limit"); the 10 second timer is gone. */
-function coolTick(){const b=$('dealBtn'),w=!!(M&&M.done&&finShown);b.disabled=!!(M&&M.done)&&!w;b.textContent=w?'The Wall':'Refresh';}
+/* No wait on Swap (owner, 2026-11-19: "Remove the refresh limit"); the 10 second timer is gone.
+   The button reads Swap (owner, 2026-11-19: "relabel 'refresh' as swap"): "refresh" is the board's own two-minute update. */
+function coolTick(){const b=$('dealBtn'),w=!!(M&&M.done&&finShown);b.disabled=!!(M&&M.done)&&!w;b.textContent=w?'The Wall':'Swap';}
 function refreshSet(){if(M.done){if(finShown)showFinish(SOLO||!!STATE.completed||(STATE.n||0)>=TOTAL,!SOLO&&Date.now()>=env.board.closes);return;}dealAll();setMsg(M.hand.some(x=>x!==null)?'New set, from anywhere on the mural. Use the picture to find where each one goes.':'You have placed everything.');}
 $('dealBtn').onclick=refreshSet;
 $('helpBtn').onclick=()=>$('helpSheet').classList.add('show');
@@ -678,6 +744,18 @@ applyMe(env.me);
 loadLoose();
 if(SOLO){for(const q of ['#updBox','#allBox']){const ub=root.querySelector(q);if(ub)ub.style.display='none';}$('lbBtn').textContent='The Wall';}
 $('credit').textContent=creditLine();
+if(PRIV){
+  /* A PRIVATE MURAL'S HEADER: no Mural / MuralToo switch, a tag that says whose it is, and Invite,
+     which copies the link. Site Total reads All Placed: only the people invited build it. */
+  const sg=$('muralSeg');if(sg){const tag=document.createElement('span');tag.className='privTag';tag.textContent=PRIV.group?PRIV.group+'\u2019s Mural':'Private Mural';sg.replaceWith(tag);}
+  const pb=$('privBtn');
+  if(pb){pb.textContent='Invite';pb.removeAttribute('href');pb.setAttribute('role','button');pb.style.cursor='pointer';
+    pb.onclick=(ev)=>{ev.preventDefault();const link=window.location.origin+'/mural/p/'+PRIV.code;const done=()=>setMsg('Invite link copied. '+(PRIV.group?'Members of '+PRIV.group+' can open it and play.':'Anyone you send it to can open it and play.'));
+      try{navigator.clipboard.writeText(link).then(done,()=>setMsg('Invite link: '+link));}catch(e){setMsg('Invite link: '+link);}};}
+  const hl=root.querySelector('#helpSheet .lead');
+  if(hl)hl.textContent='A private mural: one picture, '+TOTAL.toLocaleString()+' pieces, built by '+(PRIV.group?'the members of '+PRIV.group:'everyone who has the invite link')+'. It stays open until every piece is placed. It scores on its own standings and does not count toward your Mind Loft points.';
+  $('dOther').textContent='Play '+K.name;$('dOther').onclick=()=>{window.location.href=K.route;};
+}
 fit();if(isPhone){view.s=Math.min(view.max,37/PS);view.tx=view.cw/2-W*.5*view.s;view.ty=view.ch/2-H*.5*view.s;clampView();}
 dealAll();
 setMsg(SOLO?'Shelf copy: build it alone, at your own pace. Nothing here scores, and your pieces are kept in this browser.':'Drag a piece onto the mural, or tap a piece and then tap its spot.');
@@ -686,6 +764,6 @@ ro=new ResizeObserver(()=>{const r=$('stage').getBoundingClientRect();if(Math.ab
 ro.observe($('stage'));
 /* A RETURN VISIT (shelf or archive) opens on the wall, before Replay. A copy already rebuilt does not fire the finish again. */
 if(SOLO){if(M.mine.size>=TOTAL){finShown=true;M.done=true;renderHand();ui();coolTick();}openWall('visit');}
-checkEnd();
+checkEnd();booted=true;
   }
 }

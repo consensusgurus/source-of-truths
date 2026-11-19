@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { muralPlayer, currentBoard } from '@/lib/mural';
+import { muralPlayer, currentBoard, privateMeta, mayPlacePrivate } from '@/lib/mural';
 import { parseMuralId, MURAL_TOTAL } from '@/lib/mural-shared';
 
 // POST /api/mural/place { id, piece, anonId, email? }
@@ -26,15 +26,26 @@ export async function POST(request) {
   // 2026-11-19) numbers its pieces differently, so its placements would land in
   // the wrong spots. It sends no total, or the old one: answer as a closed
   // mural, which makes that page stop and reload.
-  if (Number(body.total) !== MURAL_TOTAL) return NextResponse.json({ error: 'closed' }, { status: 409, headers: NO_STORE });
+  const priv = !!parseMuralId(id).priv;
+  if (!priv && Number(body.total) !== MURAL_TOTAL) return NextResponse.json({ error: 'closed' }, { status: 409, headers: NO_STORE });
   const who = await muralPlayer(supabaseAdmin, { anonId: str(body.anonId, 64) || null, email: str(body.email) || null });
   if (!who) return NextResponse.json({ error: 'No player' }, { status: 400, headers: NO_STORE });
+  // A PRIVATE MURAL (owner, 2026-11-19): a group's mural takes pieces from its
+  // members only; a link-only one from anyone who has the link. It never files
+  // site points, so there is no credit call below for it.
+  if (priv) {
+    try {
+      const meta = await privateMeta(supabaseAdmin, id);
+      if (!meta) return NextResponse.json({ error: 'closed' }, { status: 409, headers: NO_STORE });
+      if (!(await mayPlacePrivate(supabaseAdmin, meta, who.userId))) return NextResponse.json({ error: 'members' }, { status: 403, headers: NO_STORE });
+    } catch (e) { console.error('mural private check', e); return NextResponse.json({ error: 'Try again in a moment.' }, { status: 503, headers: NO_STORE }); }
+  }
   const args = { p_mural: id, p_piece: piece, p_player: who.player, p_user: who.userId, p_name: who.name };
   let { data, error } = await supabaseAdmin.rpc('mural_place', args);
   // RUN UNTIL FINISHED (2026-11-19): a board made under the old noon-to-noon rule
   // still carries its old close until someone loads the page. If that is what
   // refused this placement, push the close out (currentBoard does) and try once more.
-  if (!error && data && data.error === 'closed') {
+  if (!priv && !error && data && data.error === 'closed') {
     try {
       const cur = await currentBoard(supabaseAdmin, parseMuralId(id).kind);
       if (cur && cur.board && cur.board.id === id && !cur.board.completed_at) ({ data, error } = await supabaseAdmin.rpc('mural_place', args));
@@ -47,7 +58,7 @@ export async function POST(request) {
   // (migration 70) appends the running total, at most every ten minutes here;
   // the page forces the last one through /api/mural/credit. A failure here never fails
   // the placement, which is already saved.
-  if (data && !data.dup && !data.taken) {
+  if (!priv && data && !data.dup && !data.taken) {
     try {
       const anon = str(body.anonId, 64) || null;
       const c = await supabaseAdmin.rpc('mural_credit', { p_mural: id, p_player: who.player, p_user: who.userId, p_name: who.name, p_anon: anon, p_force: false });

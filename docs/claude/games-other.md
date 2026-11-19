@@ -3512,6 +3512,53 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
   their own contribution, a link to the Puzzle Shelf, and EITHER a button for the other mural (if
   that one is open and unfinished) OR a countdown to the next one of this kind; the page loads the
   new mural itself when the countdown ends.
+- **PRIVATE MURALS (owner, 2026-11-19: "ability to do murals with your group or with A group";
+  "you start them via a button on menu of puzzle itself 'private mural' that takes you to the
+  share page. this will also exist on jigsaw puzzle shelf where the murals are").**
+  - **One more board, reached by a code.** Id `mural-p<8 char code>` (`parseMuralId` answers
+    `{ kind: 'mural', priv: true, code }`), row in `mural_boards` with `kind: 'private'`, page
+    `/mural/p/<code>` (noindex), same `MuralClient` and engine with `priv`. Placing, the snapshot,
+    standings, `/api/mural/me`, the picture and the wall all key on the board id, so they run
+    unchanged. `kind: 'private'` keeps it out of `currentBoard`, and `mural_shelf()` only lists
+    dated ids, so it is never the open Mural and never on the public shelf.
+  - **Who may place.** `mural_private` (migration 75) holds the starter and, for a group's mural,
+    the group. A link-only mural takes pieces from anyone with the link, guests included; a
+    group's mural from members only (`mayPlacePrivate`; the place route answers 403 `members`).
+    Group ids never reach the browser: the start page sends a group's CODE.
+  - **It scores nothing toward the site** (owner agreed: two friends on a small board could farm
+    doubled firsts). The place and credit routes skip `mural_credit()` for a private id. It has
+    its own standings and its own wall.
+  - **Sizes** (`PRIVATE_SIZES`, all 8 by 5): 640, 1,000, 1,960, 4,000. `gradePixels` /
+    `gradePhoto` take cols and rows; the public cut is the default. A private board is never
+    recut by `ensureBoard`, and the place route checks `total` only for the public mural.
+  - **Starting one** (`/mural/private`, `PrivateMuralClient`, `GET/POST /api/mural/private`):
+    who builds it (Anyone With The Link, or one of your groups), how many pieces, one of three
+    pictures from the Jig pool (Show Three Others reshuffles), Start, then the link with Copy
+    Link and Open The Mural. Below, the private murals you started or can play through a group.
+    Starting needs a name (an account); joining by link does not. Limits: `PRIVATE_OPEN_MAX` (3)
+    open per starter, one open per group. Runs until finished, no 24 hour minimum.
+  - **Entry points:** the `Private Mural` pill in the Mural header (it reads `Invite` inside a
+    private mural and copies the link), and a line on the Puzzle Shelf's Murals tab.
+  - **In play:** the Mural / MuralToo switch becomes a tag (`<Group>'s Mural` or `Private
+    Mural`), Site Total reads All Placed, the Rules lead is rewritten, and the wall offers Start
+    Another Private Mural.
+  - **Until migration 75 is applied** the start page says private murals are being switched on
+    and nothing else changes: no public path reads `mural_private`.
+  - A PostgREST `or()` filter needs a player id quoted (`owner.eq."u:<uuid>"`): the colon is
+    reserved there.
+- **The tray button reads Swap, not Refresh (owner, 2026-11-19).** "Refresh" is the board's own
+  two-minute update; Swap trades the tray for a new random set.
+- **The picture panel zooms (owner, 2026-11-19: "add ability to zoom even more on the viewfinder
+  of the full image of the mural. currently you cant zoom in to see detail").** `RZ` in the
+  engine: up to 10x, by the `−  1x  +` control under the picture (the middle resets), the mouse
+  wheel, or a pinch. On the whole picture a press still jumps the board there; zoomed in, a drag
+  moves the picture and a tap jumps. The panel's canvas is 1056 wide so a zoomed view is sharp.
+- **The reveal (owner, 2026-11-19: "we also need an end animation to reveal the final screen you
+  built").** `reveal()` in the engine. When the last piece lands while the player is on the page:
+  the board pulls back to fit, a ring and a band of light cross the picture, then the wall's own
+  colour opens out from the middle of the picture until it covers the screen, and the wall builds
+  under it (its band sweep is skipped, `sweep: false`). A page opened on an already finished
+  mural goes straight to the wall. Off under reduced motion.
 - **At a refresh, a piece someone else placed leaves the player's hand too (owner, 2026-11-19: "i
   pulled out a piece just as the refresh happened ... those pieces placed should disappear no
   matter what").** The refresh already swapped such pieces out of the tray and off the board's
@@ -3578,7 +3625,7 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
 - **Every `/api/mural` route sets `fetchCache = 'force-no-store'`.** Without it Next kept an empty
   Supabase read in its data cache and the launch answered "not open" with the boards already saved.
 - **Files:** `app/mural/` (page, MuralClient, engine.js, markup.js, puzzles.js),
-  `app/mural/memorial.js` (the wall), `app/muraltoo/`, `app/api/mural/{board,img,state,me,place,wall}`, `lib/mural.js`,
+  `app/mural/memorial.js` (the wall), `app/muraltoo/`, `app/mural/private/` (start and share page), `app/mural/p/[code]/` (a private mural), `app/api/mural/{board,img,state,me,place,wall,private}`, `lib/mural.js`,
   `lib/mural-shared.js`, migrations 69 and 70. The engine is a plain DOM and canvas program that
   React mounts once (`bootMural`); its CSS is scoped under `.mrl`.
 - **Checker** `scripts/verify-mural.mjs`: day lists, schedule across both clock changes, launch

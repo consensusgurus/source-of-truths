@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { ensureBoard, currentBoard, boardOnDay, publicBoard } from '@/lib/mural';
+import { ensureBoard, currentBoard, boardOnDay, publicBoard, privateMeta } from '@/lib/mural';
 import { parseMuralId, MURAL_KINDS } from '@/lib/mural-shared';
 
 // GET /api/mural/board?id=<kind>-<YYYY-MM-DD>
@@ -39,5 +39,20 @@ export async function GET(request) {
   const cache = byDay ? 'public, max-age=60, s-maxage=300' : byKind ? 'public, max-age=20, s-maxage=30' : (fin ? 'public, max-age=300, s-maxage=86400' : 'public, max-age=30, s-maxage=60');
   const body = publicBoard(out.board);
   if (out.nextAt) body.nextAt = out.nextAt;
+  // A private mural says so, and whose it is (owner, 2026-11-19).
+  if (!byKind && parseMuralId(id).priv) {
+    body.private = { by: null, group: null };
+    try {
+      const meta = await privateMeta(supabaseAdmin, id);
+      if (meta) {
+        body.private.by = meta.owner_name || null;
+        if (meta.group_id) {
+          const g = await supabaseAdmin.from('quiz_groups').select('name').eq('id', meta.group_id).maybeSingle();
+          body.private.group = (g.data && g.data.name) || 'A Group';
+        }
+      }
+    } catch (e) { console.error('mural private meta', e); }
+    return NextResponse.json(body, { headers: { 'Cache-Control': fin ? 'public, max-age=300, s-maxage=3600' : 'public, max-age=30, s-maxage=60' } });
+  }
   return NextResponse.json(body, { headers: { 'Cache-Control': cache } });
 }

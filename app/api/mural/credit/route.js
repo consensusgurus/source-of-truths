@@ -22,6 +22,8 @@ export async function POST(request) {
   try { body = JSON.parse(await request.text()); } catch (e) { body = null; }
   const id = str(body && body.id, 40);
   if (!parseMuralId(id)) return NextResponse.json({ error: 'Bad request' }, { status: 400, headers: NO_STORE });
+  // A private mural scores nothing toward the site (owner, 2026-11-19).
+  if (parseMuralId(id).priv) return NextResponse.json({}, { headers: NO_STORE });
   const anon = str(body.anonId, 64) || null;
   const who = await muralPlayer(supabaseAdmin, { anonId: anon, email: str(body.email) || null });
   if (!who) return NextResponse.json({ error: 'No player' }, { status: 400, headers: NO_STORE });

@@ -166,7 +166,8 @@ const MAX_TILES = 120;
  *      /api/mural/wall answer, or null), state (the crowd snapshot), me
  *      { name, firsts, pts, rank, pieces }, complete, hoursOpen, dark, animate,
  *      credit, homeHref, top: [{label, href|onClick}], primary {label, sub,
- *      href|onClick}, alts: [{label, href|onClick}], note, next(el), bars(color) }
+ *      href|onClick}, alts: [{label, href|onClick}], note, next(el), bars(color),
+ *      sweep (false when the board's own reveal already filled the screen) }
  * Returns { close() }.
  */
 export function openMemorial(fin, d) {
@@ -278,7 +279,7 @@ export function openMemorial(fin, d) {
   const sweepCols = dark ? RAMP.slice(0, 6).map((c) => mix(c, DARK_GROUND, 0.55)) : RAMP.slice(0, 6).map((c) => mix(c, '#ffffff', 0.4));
   const el = document.createElement('div');
   el.className = animate ? 'mw' : 'mw still';
-  el.innerHTML = (animate ? '<div class="mwSweep" aria-hidden="true">' + sweepCols.map((c, i) => '<i style="background:' + c + ';animation-delay:' + (120 + i * 70) + 'ms"></i>').join('') + '</div>' : '')
+  el.innerHTML = (animate && d.sweep !== false ? '<div class="mwSweep" aria-hidden="true">' + sweepCols.map((c, i) => '<i style="background:' + c + ';animation-delay:' + (120 + i * 70) + 'ms"></i>').join('') + '</div>' : '')
     + '<div class="mwTop rise">'
     + '<a class="mwHome" href="' + esc(d.homeHref || '/') + '" aria-label="Back to Mind Loft home"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><path d="M3 22V11l10-8 10 8v11h-5v-8l-5 5-5-5v8z" fill="currentColor"/></svg><span>Mind Loft</span></a>'
     + '<span class="sp"></span>' + top.map((o) => link(o, 'mwTxt')).join('')

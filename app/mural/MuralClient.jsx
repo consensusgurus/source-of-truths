@@ -9,7 +9,7 @@ import { MURAL_KINDS } from '@/lib/mural-shared';
 // Mural and MuralToo share this client; `kind` picks which one. React mounts
 // the static markup once and hands the node to the board engine, which owns
 // everything inside it from then on (see engine.js).
-export default function MuralClient({ kind }) {
+export default function MuralClient({ kind, priv = null }) {
   const K = MURAL_KINDS[kind] || MURAL_KINDS.mural;
   const NAME = K.name;
   const other = kind === 'muraltoo' ? 'Mural' : 'MuralToo';
@@ -21,8 +21,8 @@ export default function MuralClient({ kind }) {
     // a finished mural on its wall (memorial.js) before the player replays it.
     let solo = null, p = null;
     try { const sp = new URLSearchParams(window.location.search); solo = sp.get('solo'); p = sp.get('p'); } catch (e) { solo = null; p = null; }
-    return bootMural(ref.current, { kind, solo, p });
-  }, [kind]);
+    return bootMural(ref.current, { kind, solo, p, priv });
+  }, [kind, priv]);
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: MURAL_CSS + MEMORIAL_CSS }} />

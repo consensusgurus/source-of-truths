@@ -233,6 +233,10 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
             Mural and MuralToo are 4,000 piece jigsaws the whole site builds together. Once one is finished or its day is over, it comes here to build alone: no points, no clock, and your pieces are kept on this device.
             {' '}<a href="/mural">Play Mural</a> or <a href="/muraltoo">MuralToo</a> while they are open.
           </p>
+          {/* PRIVATE MURALS (owner, 2026-11-19: "this will also exist on jigsaw puzzle shelf where the murals are"). */}
+          <p className="jsh-mlede">
+            Want one of your own? <a href="/mural/private">Start A Private Mural</a> to build with your group or anyone you send the link to. The ones you are in are listed there too.
+          </p>
           {murals === null ? <p className="jsh-mnone">Loading the murals.</p> : !murals.length ? (
             <p className="jsh-mnone">No mural has finished yet. The first one lands here when its last piece is placed.</p>
           ) : (
