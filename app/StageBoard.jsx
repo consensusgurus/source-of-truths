@@ -119,9 +119,9 @@ const CSS = `
 .sbd{display:none;}
 @media (max-width:899px){
   .sbd{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;flex:none;padding:4px 0 14px;box-sizing:border-box;}
-  .sbd-b{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;box-sizing:border-box;padding:0 14px;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;font:inherit;font-size:13px;font-weight:800;line-height:1;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
-  .sbd-b[aria-expanded='true']{background:currentColor;}
-  .sbd-b[aria-expanded='true'] span,.sbd-b[aria-expanded='true'] svg{color:var(--pst-bg, var(--sft-bg, #fff));}
+  .sbd .sbd-b{font-family:'Manrope',system-ui,-apple-system,sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;box-sizing:border-box;padding:0 14px;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;font-size:13px;font-weight:800;letter-spacing:0;line-height:1;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+  .sbd .sbd-b[aria-expanded='true']{background:currentColor;}
+  .sbd .sbd-b[aria-expanded='true'] span,.sbd .sbd-b[aria-expanded='true'] svg{color:var(--pst-bg, var(--sft-bg, #fff));}
   .sbd-p{width:100%;box-sizing:border-box;border:1px solid currentColor;border-radius:14px;overflow:hidden;text-align:left;}
   .sbd-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:10px 14px 8px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;line-height:1.4;}
   .sbd-h span{letter-spacing:.04em;opacity:.8;}

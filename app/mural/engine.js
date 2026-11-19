@@ -192,7 +192,8 @@ let STATE=env.state||{};
 // (30 from the 3840 photo), so the closest zoom stops at 64 CSS px a piece;
 // it used to go to 110 and the phone loaded the half-size photo on top of that.
 const view={s:1,tx:0,ty:0,cw:0,ch:0,min:.1,max:72/PS};
-let valDirty=true,isPhone=false,C={},sel=null,refTab='pic',pulses=[],needDraw=false,tick=UPDATE,HANDN=8,TSZ=68,finShown=false;
+let valDirty=true,isPhone=false,C={},sel=null,refTab='pic',pulses=[],needDraw=false,tick=UPDATE,HANDN=8,TSZ=68,HCOLS=8,TRAYR=2,finShown=false;
+try{const v=+localStorage.getItem('mural_tray_rows');if(v>=1&&v<=3)TRAYR=v;}catch(e){}
 function colors(){const cs=getComputedStyle(root);C={bd:cs.getPropertyValue('--bd').trim(),slot:cs.getPropertyValue('--slot').trim(),ink:cs.getPropertyValue('--ink').trim(),page:cs.getPropertyValue('--page').trim()};}
 const SOLO=!!env.solo;
 function hoursOpen(){return SOLO?0:Math.max(0,Math.floor((Date.now()-env.board.opens)/3600000));}
@@ -210,7 +211,7 @@ function valueMap(){if(valCv&&!valDirty)return valCv;valCv=valCv||mk(COLS,ROWS);
 function resize(){
   const r=$('stage').getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);
   view.cw=r.width;view.ch=r.height;cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);
-  const phone=window.innerWidth<=720;isPhone=phone;HANDN=2*(phone?5:Math.max(6,Math.floor((window.innerWidth-28+8)/76)));/* two rows (owner, 2026-11-19: "show more pieces ... Second row?") */TSZ=phone?Math.floor((window.innerWidth-20-4*8)/5):68;TSZ=Math.min(TSZ,68);
+  const phone=window.innerWidth<=720;isPhone=phone;sizeHand();
   view.min=Math.min(view.cw/W,view.ch/H)*.94;
 }
 function fit(){view.s=view.min;view.tx=(view.cw-W*view.s)/2;view.ty=(view.ch-H*view.s)/2;req();}
@@ -241,10 +242,17 @@ function drawRef(){
 }
 const toSrc=(px,py)=>[(px-view.tx)/view.s,(py-view.ty)/view.s];
 /* ---------- hand ---------- */
+/* THE TRAY (owner, 2026-11-19): one to three rows, the player's choice (two by
+   default, remembered), on every format; every row is filled edge to edge, so
+   the column count comes from the hand's own width and the piece size stretches
+   to fill it (never past 68px). */
+function sizeHand(){const h=$('hand'),g=8;const w=Math.max(200,(h&&h.clientWidth)||(window.innerWidth-(isPhone?20:28)));const cols=Math.max(isPhone?5:6,Math.ceil((w+g)/(68+g)));HCOLS=cols;TSZ=Math.min(68,Math.floor((w-g*(cols-1))/cols));HANDN=cols*TRAYR;}
+function fitHand(){if(M.hand.length>HANDN){M.hand.length=HANDN;if(sel!==null&&sel>=HANDN)sel=null;}else if(M.hand.length<HANDN){const inHand=new Set(M.hand.filter(x=>x!==null&&x!==undefined)),pool=allOpen().filter(id=>!inHand.has(id));while(M.hand.length<HANDN){if(!pool.length){M.hand.push(null);continue;}const j=Math.floor(Math.random()*pool.length);M.hand.push(pool[j]);pool[j]=pool[pool.length-1];pool.pop();}}renderHand();}
+function rowsUi(){root.querySelectorAll('.rows [data-rows]').forEach(b=>{const on=+b.dataset.rows===TRAYR;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');});}
 function allOpen(){const busy=new Set(M.loose.map(l=>l.id)),out=[];for(let id=0;id<TOTAL;id++)if(!M.mine.has(id)&&!busy.has(id))out.push(id);return out;}
 function dealAll(){M.hand=[];const pool=allOpen();for(let k=0;k<HANDN;k++){if(!pool.length){M.hand.push(null);continue;}const j=Math.floor(Math.random()*pool.length);M.hand.push(pool[j]);pool[j]=pool[pool.length-1];pool.pop();}sel=null;renderHand();}
 function renderHand(){
-  const h=$('hand');h.innerHTML='';
+  const h=$('hand');h.innerHTML='';h.style.setProperty('--hc',HCOLS);h.style.setProperty('--ts',TSZ+'px');
   for(let k=0;k<HANDN;k++){
     const id=M.hand[k],b=document.createElement('button');b.className='piece'+(id===null||id===undefined?' empty':'')+(sel===k?' sel':'');b.dataset.k=k;b.style.width=b.style.height=TSZ+'px';
     if(id!==null&&id!==undefined&&!M.done){b.appendChild(pieceCanvas(id,TSZ-10));const o=valueOf(id),t=document.createElement('span');t.className='x2'+(o.first?'':' v1');t.textContent=(o.first?'1st ':'')+o.v;b.appendChild(t);b.setAttribute('aria-label','Piece worth '+o.v+(o.first?', first placement':''));}
@@ -553,7 +561,9 @@ $('themeBtn').textContent=theme==='dark'?'Light':'Dark';
 root.querySelectorAll('.sheet .in').forEach(el=>{const sc=document.createElement('div');sc.className='sc';while(el.firstChild)sc.appendChild(el.firstChild);el.appendChild(sc);});
 root.querySelectorAll('.sheet').forEach(s=>{s.addEventListener('click',e=>{if(e.target===s||e.target.hasAttribute('data-close'))s.classList.remove('show');});});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')root.querySelectorAll('.sheet').forEach(s=>s.classList.remove('show'));if(e.key==='+'||e.key==='=')zoomAt(view.cw/2,view.ch/2,1.4);if(e.key==='-')zoomAt(view.cw/2,view.ch/2,1/1.4);if(e.key==='0')fit();},{signal:ac.signal});
-window.addEventListener('resize',()=>{resize();clampView();clampRef();if(M.hand.length!==HANDN)dealAll();else renderHand();req();},{signal:ac.signal});
+window.addEventListener('resize',()=>{resize();clampView();clampRef();fitHand();req();},{signal:ac.signal});
+root.querySelectorAll('.rows [data-rows]').forEach(b=>{b.onclick=()=>{const n=+b.dataset.rows;if(n===TRAYR)return;TRAYR=n;try{localStorage.setItem('mural_tray_rows',String(n));}catch(e){}rowsUi();sizeHand();fitHand();};});
+rowsUi();
 function setFull(on){const wasFit=view.s<=view.min*1.001;root.classList.toggle('full',on);const cx=(view.cw/2-view.tx)/view.s,cy=(view.ch/2-view.ty)/view.s;resize();if(M){if(wasFit)fit();else{view.tx=view.cw/2-cx*view.s;view.ty=view.ch/2-cy*view.s;clampView();}clampRef();req();}}
 $('fullBtn').onclick=()=>setFull(true);$('menuBtn').onclick=()=>setFull(false);
 
@@ -568,7 +578,7 @@ fit();if(isPhone){view.s=Math.min(view.max,37/PS);view.tx=view.cw/2-W*.5*view.s;
 dealAll();
 setMsg(SOLO?'Shelf copy: build it alone, at your own pace. Nothing here scores, and your pieces are kept in this browser.':'Drag a piece onto the mural, or tap a piece and then tap its spot.');
 ui();draw();
-ro=new ResizeObserver(()=>{const r=$('stage').getBoundingClientRect();if(Math.abs(r.width-view.cw)<1&&Math.abs(r.height-view.ch)<1)return;const wasFit=view.s<=view.min*1.001;resize();if(wasFit)fit();else clampView();clampRef();req();});
+ro=new ResizeObserver(()=>{const r=$('stage').getBoundingClientRect();if(Math.abs(r.width-view.cw)<1&&Math.abs(r.height-view.ch)<1)return;const wasFit=view.s<=view.min*1.001,hn=HANDN,ts=TSZ;resize();if(HANDN!==hn||TSZ!==ts)fitHand();if(wasFit)fit();else clampView();clampRef();req();});
 ro.observe($('stage'));
 checkEnd();
   }
