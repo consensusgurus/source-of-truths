@@ -47,7 +47,7 @@ export async function POST(request) {
   // (migration 70) appends the running total, at most every ten minutes here;
   // the page forces the last one through /api/mural/credit. A failure here never fails
   // the placement, which is already saved.
-  if (data && !data.dup) {
+  if (data && !data.dup && !data.taken) {
     try {
       const anon = str(body.anonId, 64) || null;
       const c = await supabaseAdmin.rpc('mural_credit', { p_mural: id, p_player: who.player, p_user: who.userId, p_name: who.name, p_anon: anon, p_force: false });

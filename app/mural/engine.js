@@ -388,6 +388,10 @@ function send(id,val,tries){
       if(dead)return;
       if(o.ok&&o.j&&typeof o.j.points==='number'){
         pending--;creditSoon();
+        if(o.j.taken){
+          M.pts-=val.v;if(val.first)M.firsts--;M.crowd.add(id);drawPiece(cctx,id);valDirty=true;
+          setMsg('Someone else placed that piece first, so it scores nothing.');renderHand();ui();req();return;
+        }
         if(o.j.points!==val.v||o.j.first!==val.first){
           M.pts+=o.j.points-val.v;
           if(val.first&&!o.j.first){M.firsts--;M.crowd.add(id);drawPiece(cctx,id);setMsg('Someone got there first. '+o.j.points+(o.j.points===1?' point.':' points.'));}
