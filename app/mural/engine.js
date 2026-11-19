@@ -223,7 +223,7 @@ function draw(){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=C.bd;ctx.fillRect(0,0,view.cw,view.ch);
   ctx.save();ctx.translate(view.tx,view.ty);ctx.scale(view.s,view.s);
   ctx.fillStyle=C.slot;ctx.fillRect(0,0,W,H);ctx.imageSmoothingQuality='high';
-  ctx.globalAlpha=.4;ctx.drawImage(crowdL,0,0);ctx.globalAlpha=1;ctx.drawImage(mineL,0,0);
+  /* crowd pieces at full colour (owner, 2026-11-19: faded pieces made the picture impossible to match) */ctx.drawImage(crowdL,0,0);ctx.drawImage(mineL,0,0);
   const now=performance.now();pulses=pulses.filter(p=>now-p.t<(p.nw?4000:700));
   for(const p of pulses){const c=p.id%COLS,r=(p.id/COLS)|0;if(p.nw){const a=1-(now-p.t)/4000;ctx.globalAlpha=a*.75;ctx.fillStyle='#f2c230';ctx.fillRect(c*PS,r*PS,PS,PS);continue;}const a=1-(now-p.t)/700,g=(1-a)*PS*.9;ctx.strokeStyle=C.ink;ctx.globalAlpha=a;ctx.lineWidth=3/view.s;ctx.strokeRect(c*PS-g,r*PS-g,PS+2*g,PS+2*g);}
   ctx.globalAlpha=1;
