@@ -6,8 +6,10 @@
 //   - the top open ideas by votes, so the board's front page is visible at a glance
 // A quiet day sends nothing: no email when there are no ideas, posts or reports.
 //
-// Sent the same way as the weekly research email: the send-notification-email Supabase
-// Edge Function in raw mode (it holds the Brevo key and always mails the admin address).
+// It goes to m@mindloftdaily.com, the site's address for everything (owner, 2026-11-18: "It needs
+// to go to our new email"), sent through Resend with the newsletter's sender (RESEND_API_KEY and
+// NEWSLETTER_FROM on Vercel). NOT through the send-notification-email Edge Function: that one
+// mails the old sourceoftruthsadmin address.
 // Wired to a daily Vercel cron (vercel.json, 13:05 UTC, 8:05am Eastern in winter).
 // CRON_SECRET, when set, is checked like the other crons. ?dry=1 returns the email
 // as JSON without sending it, and only with the admin cookie.
@@ -24,6 +26,8 @@ import { isAdmin } from '@/lib/admin-auth';
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
+
+const DIGEST_TO = 'm@mindloftdaily.com';
 
 const esc = (s) => String(s == null ? '' : s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -118,12 +122,15 @@ export async function GET(request) {
 
     if (dry) return NextResponse.json({ ok: true, dry: true, subject, html: body });
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-notification-email`, {
+    const key = process.env.RESEND_API_KEY;
+    const from = process.env.NEWSLETTER_FROM;
+    if (!key || !from) throw new Error('RESEND_API_KEY / NEWSLETTER_FROM not set');
+    const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
-      headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'raw', subject, html: body }),
+      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ from, to: [DIGEST_TO], subject, html: body, tags: [{ name: 'kind', value: 'community-digest' }] }),
     });
-    if (!res.ok) throw new Error(`edge function ${res.status}: ${await res.text()}`);
+    if (!res.ok) throw new Error(`resend ${res.status}: ${await res.text()}`);
     return NextResponse.json({ ok: true, sent: true, ideas: ideas.length, posts: posts.length, reported: repPosts.length + repIdeas.length });
   } catch (err) {
     if (err instanceof Missing) return NextResponse.json({ ok: true, sent: false, reason: 'community tables not set up yet (migration 66)' });

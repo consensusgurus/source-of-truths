@@ -1,7 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
-const ADMIN_EMAIL = "sourceoftruthsadmin@gmail.com";
+// Mind Loft's address for everything since 2026-11-16 (owner, 2026-11-18). Takes effect only
+// once this function is redeployed in Supabase.
+const ADMIN_EMAIL = "m@mindloftdaily.com";
 
 serve(async (req) => {
   try {

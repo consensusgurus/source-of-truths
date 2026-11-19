@@ -2,7 +2,7 @@
 // vercel.json). Summarizes consensus alerts from the past 7 days plus the
 // unresolved backlog, and emails the editor through the existing
 // send-notification-email Supabase Edge Function (which holds the Brevo key
-// as a Supabase secret and sends from sourceoftruthsadmin@gmail.com).
+// as a Supabase secret and sends to ADMIN_EMAIL, m@mindloftdaily.com once the function is redeployed).
 // No extra env vars needed beyond the Supabase ones already set.
 // Optional: CRON_SECRET (same bearer check as the daily consensus cron).
 

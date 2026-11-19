@@ -797,9 +797,9 @@ Everything Else leads with six community tiles: Community, Post-Game Talk, Idea 
 Loft Shop, Puzzle Peers (eighteen tiles in all, an even count).
 
 **Daily digest email (owner, 2026-11-18):** `app/api/cron/community-digest` runs on a Vercel cron
-at 13:05 UTC (8:05am Eastern in winter, 9:05 in summer) and mails the admin address
-(sourceoftruthsadmin@gmail.com) through the send-notification-email Edge Function in raw mode,
-like the weekly research email. It covers the last 24 hours: new ideas in full, Talk post and player
+at 13:05 UTC (8:05am Eastern in winter, 9:05 in summer) and mails **m@mindloftdaily.com**
+through Resend with the newsletter sender (RESEND_API_KEY, NEWSLETTER_FROM), not through the
+send-notification-email Edge Function (owner, 2026-11-18: everything goes to the new address). It covers the last 24 hours: new ideas in full, Talk post and player
 counts by puzzle, everything reported (marked HIDDEN at the threshold), and the top five open ideas.
 A quiet day sends nothing, and so does a missing migration 66. `?dry=1` with the admin cookie
 returns the email as JSON without sending. Puzzle Peers form entries are NOT in it: they already
