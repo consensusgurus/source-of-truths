@@ -785,7 +785,8 @@ Hub stays as is). One-row GroupsShell cap and one segmented tab row on every pag
   published products from the storefront's own public collection feeds once an hour (`revalidate = 3600`;
   `https://mindloft-shop.fourthwall.com/collections/<slug>.json`, no token, 20 a page, later pages at
   `/collections/<slug>/<n>.json`; the Storefront API token was dropped 2026-11-19 because GitHub push protection
-  refuses a commit that carries it) and passes each card's name, photo, price range and colour count to
+  refuses a commit that carries it). The shelf order is the hand-ordered Fourthwall collection `shop-all` (owner, 2026-11-19: Brain Fuel
+  mug first, then the light blue hat, never a khaki hat up front); a product not filed in it follows at the end. The page passes each card's name, photo, price range and colour count to
   `ShopClient.jsx`. A product added or changed in Fourthwall appears here on its own within the hour.
   No tabs: two flat `.cm-seg` filters, All / Brand / Witty-ish (Witty-ish is the Fourthwall
   collection `witty-ish`, everything else is Brand) and All / Shirts / Hoodies / Hats / Mugs (read

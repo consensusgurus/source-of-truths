@@ -40,7 +40,16 @@ function kindOf(name) {
 
 async function loadProducts() {
   try {
-    const [all, witty] = await Promise.all([collection('all'), collection('witty-ish').catch(() => null)]);
+    // 'shop-all' is a hand-ordered Fourthwall collection (owner, 2026-11-19: the Brain Fuel mug first, then
+    // the light blue hat, never a khaki hat up front). Anything published but not yet filed in it follows,
+    // in the storefront's own order.
+    const [ordered, everything, witty] = await Promise.all([
+      collection('shop-all').catch(() => []),
+      collection('all'),
+      collection('witty-ish').catch(() => null),
+    ]);
+    const filed = new Set(ordered.map((p) => p.handle));
+    const all = [...ordered, ...everything.filter((p) => !filed.has(p.handle))];
     const wittySlugs = witty ? new Set(witty.map((p) => p.handle)) : null;
     return all
       .filter((p) => p && p.handle && p.title && p.available !== false)
