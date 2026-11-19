@@ -452,7 +452,7 @@ const BY_KEY = {
   ping: Ping, carmen: () => <Globe />, span: () => <Globe />, atlas: () => <Globe />, flank: () => <Globe pin={false} />, passport: () => <Globe />,
   // Logic
   venn: Venn, lamps: Lamps, plot: Plot, paths: Track, tangled: Tangle, chomp: Maze, hedge: Maze, topple: () => <Block />,
-  roll: () => <Block die />, jig: Jig, saw: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,
+  roll: () => <Block die />, jig: Jig, saw: Jig, mural: Jig, muraltoo: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,
   connect: Dots, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, bot: Bot, peg: Peg, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
   // End Game
   turn: Othello, four: Four, gift: Quarto, yose: Go, mate: () => <Chess target={4} />, check: () => <Chess target={11} />,

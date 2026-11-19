@@ -185,6 +185,8 @@ const GAMES = [
   { key: 'snug', href: '/snug', name: 'Snug', tag: 'Fit the pieces, one way only', img: '/games/btn-snug.png' },
   { key: 'jig', href: '/jig', name: 'Jig', tag: 'The daily jigsaw', img: '/games/btn-jig.png' },
   { key: 'saw', href: '/saw', name: 'Saw', tag: 'The tall daily jigsaw', img: '/games/btn-saw.png' },
+  { key: 'mural', href: '/mural', name: 'Mural', tag: 'The giant jigsaw we all build', img: '/games/btn-mural.png' },
+  { key: 'muraltoo', href: '/muraltoo', name: 'MuralToo', tag: 'The midnight giant jigsaw', img: '/games/btn-muraltoo.png' },
   { key: 'check', href: '/check', name: 'Check', tag: 'Red to play and sweep', img: '/games/btn-check.png' },
   { key: 'rung', href: '/rung', name: 'Rung', tag: 'One letter at a time', img: '/games/btn-rung.png' },
   { key: 'hinge', href: '/hinge', name: 'Hinge', tag: 'Chain the compounds', img: '/games/btn-hinge.png' },
@@ -274,7 +276,7 @@ const CATEGORIES = [
   // Logic lost its photo, observation and moving-piece puzzles to Visual, and
   // End Game and Cards merged into Table Games (owner, 2026-11-12).
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'defuse', 'sudoclue', 'snug', 'connect', 'mop', 'mow', 'plow', 'chef', 'seated', 'bag', 'errands', 'dash', 'bot', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'ergo', 'docket', 'plot'] },
-  { key: 'visual', label: 'Visual', keys: ['jig', 'saw', 'swap', 'slide', 'spin', 'spot', 'witness', 'focus', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'pack', 'machine', 'crate', 'paths', 'chomp'] },
+  { key: 'visual', label: 'Visual', keys: ['jig', 'saw', 'mural', 'muraltoo', 'swap', 'slide', 'spin', 'spot', 'witness', 'focus', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'pack', 'machine', 'crate', 'paths', 'chomp'] },
   { key: 'endgame', label: 'Table Games', keys: ['taire', 'peg', 'cell', 'mahj', 'pairs', 'hands', 'hold', 'shoe', 'finesse', 'crib', 'mate', 'defend', 'swindle', 'queen', 'four', 'gift', 'check', 'chain', 'turn', 'yose'] },
   { key: 'arcade', label: 'Arcade', keys: ['blocks', 'snake', 'squash', 'simon', 'dario', 'sweep'] },
 ];

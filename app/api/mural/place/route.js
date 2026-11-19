@@ -29,5 +29,17 @@ export async function POST(request) {
   });
   if (error) { console.error('mural place', error); return NextResponse.json({ error: 'Try again in a moment.' }, { status: 503, headers: NO_STORE }); }
   if (data && data.error) return NextResponse.json({ error: data.error }, { status: data.error === 'closed' ? 409 : 400, headers: NO_STORE });
+  // SITE POINTS (owner, 2026-11-19): the points count toward the Eastern day
+  // they are earned in, as that day's Mural or MuralToo result. mural_credit()
+  // (migration 70) appends the running total, at most every ten minutes here;
+  // the page forces the last one through /api/mural/credit. A failure here never fails
+  // the placement, which is already saved.
+  if (data && !data.dup) {
+    try {
+      const anon = str(body.anonId, 64) || null;
+      const c = await supabaseAdmin.rpc('mural_credit', { p_mural: id, p_player: who.player, p_user: who.userId, p_name: who.name, p_anon: anon, p_force: false });
+      if (c.error) console.error('mural credit', c.error);
+    } catch (e) { console.error('mural credit', e); }
+  }
   return NextResponse.json(data || {}, { headers: NO_STORE });
 }

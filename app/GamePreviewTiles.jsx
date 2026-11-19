@@ -438,6 +438,14 @@ const Jig = () => (
   <g transform="translate(148 42) scale(0.8) translate(-148 -42)">{[[104, -2], [148, -2], [104, 42], [148, 42]].map(([x, y], i) => (
     <path key={i} d={`M${x} ${y}${PieceP}`} className={i === 3 ? 'd' : i === 0 ? 'm' : 'w'} transform={i === 3 ? `translate(8 6)` : undefined} />))}</g>
 );
+// Mural: a wide picture in a fine grid of pieces, part of it placed by the crowd
+// and a few pieces placed by you
+const Mural = () => (
+  <g><rect x={96} y={10} width={104} height={64} rx={3} className="w" />
+    <path d="M109 10v64M122 10v64M135 10v64M148 10v64M161 10v64M174 10v64M187 10v64M96 26h104M96 42h104M96 58h104" className="sm" />
+    <rect x={96} y={10} width={39} height={16} className="m" /><rect x={96} y={26} width={26} height={16} className="m" /><rect x={161} y={42} width={39} height={16} className="m" /><rect x={174} y={58} width={26} height={16} className="m" />
+    <rect x={135} y={26} width={13} height={16} className="d" /><rect x={148} y={42} width={13} height={16} className="d" /></g>
+);
 const Saw = () => (
   <g><rect x={126} y={2} width={44} height={80} rx={3} className="w" />
     <path d="M148 2v80M126 22h44M126 42h44M126 62h44" className="sm" />
@@ -802,7 +810,7 @@ export const TILE_BY_KEY = {
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
   suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
-  connect: Connect, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, bot: Bot, peg: Peg, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw,
+  connect: Connect, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, bot: Bot, peg: Peg, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw, mural: Mural, muraltoo: Mural,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,

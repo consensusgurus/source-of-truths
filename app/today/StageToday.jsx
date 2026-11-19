@@ -46,6 +46,7 @@ const LIVE_KEYS = new Set(liveDailyKeys());
 const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
 import { SUDOKU_POOL, DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
 import { FEATURED_KEYS, FEATURED_RECENT } from '@/lib/featured';
+import { muralFeaturedKey } from '@/lib/mural-shared';
 import GameGlyph from '../GameGlyph';
 import GamePreview, { GP_CSS } from '../GamePreview';
 import { SHARE_TILE } from '@/lib/share-tile';
@@ -3195,10 +3196,27 @@ export default function StageToday() {
   // popular puzzles that are in no run, taken in turn, until the row holds as
   // many cards as the grid has columns (Tiles or Details alike). A puzzle you
   // have finished drops out and the next in line takes its place.
+  // ONE MURAL LEADS THE ROW (owner, 2026-11-19: "one of the two in Featured ...
+  // the Featured one is the one expiring soonest"). muralFeaturedKey() names it:
+  // Mural before noon Eastern, MuralToo from noon, Mural alone until MuralToo's
+  // first board opens. It reads the clock, so it is set in an effect and never
+  // during render, and rechecked each minute so the card changes at noon and
+  // midnight without a reload. A mural is never finished while it is open, so
+  // it stays in the row after you have played it; the other one is never used
+  // to fill the row.
+  const [muralFeat, setMuralFeat] = useState(null);
+  useEffect(() => {
+    const set = () => setMuralFeat(muralFeaturedKey());
+    set();
+    const t = setInterval(set, 60000);
+    return () => clearInterval(t);
+  }, []);
   const featFor = (n) => {
     if (n < 1) return [];
-    const out = []; const seen = new Set();
+    const out = []; const seen = new Set(['mural', 'muraltoo']);
     const add = (g) => { if (g && !seen.has(g.key) && !done.has(g.key) && out.length < n) { seen.add(g.key); out.push(g); } };
+    const lead = muralFeat && alpha.find((g) => g.key === muralFeat);
+    if (lead) out.push(lead);
     for (const k of FEATURED_KEYS) add(alpha.find((g) => g.key === k));
     const inRun = new Set(RUN_GAMES);
     for (const c of circuits) for (const g of c.games) inRun.add(g.key);

@@ -13,7 +13,7 @@
 // not counted. Nothing here pops up over the board mid game.
 
 import {
-  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, currentMuralId, gradeAt, pieceValue,
+  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, currentMuralId, gradeAt, pieceValue, muralLaunched, muralFirstOpens, parseMuralId, muralWindow,
 } from '@/lib/mural-shared';
 
 function getAnonId() {
@@ -40,6 +40,7 @@ async function getJSON(url) {
 export function bootMural(root, cfg) {
   const ac = new AbortController();
   const timers = [];
+  const cleanups = [];
   let dead = false;
   let ro = null;
   const $ = (id) => root.querySelector('#' + id);
@@ -55,13 +56,47 @@ export function bootMural(root, cfg) {
   if (window.innerWidth <= 720) root.classList.add('full');
 
   function bootMsg(t) { const e = $('msg'); if (e) e.textContent = t; }
+  // THE WAITING SCREEN (owner, 2026-11-19): a kind whose first board has not
+  // opened yet shows when it opens and counts down, and sends the reader to the
+  // one that is open. It reloads itself into the board at the opening.
+  let waitT = null;
+  function waitScreen() {
+    const other = K.key === 'mural' ? MURAL_KINDS.muraltoo : MURAL_KINDS.mural;
+    const opens = muralFirstOpens(K.key);
+    const el = document.createElement('div');
+    el.className = 'fin show';
+    el.innerHTML = '<div class="finIn" style="padding-top:12vh">'
+      + '<div class="eb">' + K.name + ' \u00b7 ' + K.runs + '</div>'
+      + '<h2>Opens At ' + K.opensAt + '</h2>'
+      + '<p class="lead" id="waitLead"></p>'
+      + '<p class="rule">' + K.name + ' is a 10,000 piece jigsaw the whole site builds together, the twin of ' + other.name + '. A new one opens every day at ' + K.opensAt.toLowerCase().replace(' et', ' ET') + ' and runs for 24 hours.</p>'
+      + (muralLaunched(other.key) ? '<a class="primary" style="display:inline-block;width:auto;margin-top:14px;text-decoration:none" href="' + other.route + '">Play ' + other.name + ' Now</a>' : '')
+      + '<p class="rule" style="margin-top:18px"><a href="/" style="color:inherit">Back To Mind Loft</a></p>'
+      + '</div>';
+    root.appendChild(el);
+    const lead = el.querySelector('#waitLead');
+    const tick = () => {
+      const left = opens - Date.now();
+      if (left <= 0) { clearInterval(waitT); window.location.reload(); return; }
+      const m = Math.ceil(left / 60000), h = Math.floor(m / 60);
+      lead.textContent = 'The first ' + K.name + ' opens in ' + (h ? h + (h === 1 ? ' hour' : ' hours') + ' and ' : '') + (m % 60) + (m % 60 === 1 ? ' minute.' : ' minutes.');
+    };
+    tick();
+    waitT = setInterval(tick, 15000);
+  }
   function loadImg(id, w) {
     return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('img')); i.src = `/api/mural/img?id=${id}&w=${w}`; });
   }
 
   (async () => {
     try {
-      const id = currentMuralId(K.key);
+      // A SHELF COPY (owner, 2026-11-19): ?solo=<id> opens a finished or closed
+      // mural to build alone. Nothing is sent to the server and nothing scores;
+      // the pieces placed are kept in this browser.
+      const sp = parseMuralId(cfg.solo);
+      const solo = sp && sp.kind === K.key && muralWindow(cfg.solo).closes <= Date.now() ? cfg.solo : null;
+      if (!solo && !muralLaunched(K.key)) { waitScreen(); return; }
+      const id = solo || currentMuralId(K.key);
       bootMsg(`Opening ${K.name}.`);
       const b = await getJSON(`/api/mural/board?id=${id}`);
       if (dead) return;
@@ -75,6 +110,13 @@ export function bootMural(root, cfg) {
       const q = `id=${id}&anonId=${encodeURIComponent(anon || '')}${email ? `&email=${encodeURIComponent(email)}` : ''}`;
       const [st, me] = await Promise.all([getJSON(`/api/mural/state?id=${id}`), getJSON(`/api/mural/me?${q}`)]);
       if (dead) return;
+      const wasDone = !!(st.j && (st.j.completed || (st.j.n || 0) >= MURAL_COLS * MURAL_ROWS));
+      if (solo || (cfg.solo === id && wasDone)) {
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem('mural_solo_' + id) || 'null'); } catch (e) { saved = null; }
+        start({ id, board: b.j, img, state: {}, me: { pieces: (saved && saved.pieces) || [], points: 0, firsts: 0 }, anon, email, q, solo: true, crowd: st.j || {} });
+        return;
+      }
       start({ id, board: b.j, img, state: st.j || {}, me: me.j || {}, anon, email, q });
     } catch (e) {
       console.error('mural', e);
@@ -84,8 +126,10 @@ export function bootMural(root, cfg) {
 
   return () => {
     dead = true;
+    if (waitT) clearInterval(waitT);
     ac.abort();
     timers.forEach(clearInterval);
+    cleanups.forEach((f) => { try { f(); } catch (e) {} });
     if (ro) ro.disconnect();
     document.body.style.overflow = prevOverflow;
   };
@@ -143,7 +187,8 @@ let STATE=env.state||{};
 const view={s:1,tx:0,ty:0,cw:0,ch:0,min:.1,max:110/PS};
 let valDirty=true,isPhone=false,C={},sel=null,refTab='pic',pulses=[],needDraw=false,tick=UPDATE,HANDN=8,TSZ=68,finShown=false;
 function colors(){const cs=getComputedStyle(root);C={bd:cs.getPropertyValue('--bd').trim(),slot:cs.getPropertyValue('--slot').trim(),ink:cs.getPropertyValue('--ink').trim(),page:cs.getPropertyValue('--page').trim()};}
-function hoursOpen(){return Math.max(0,Math.floor((Date.now()-env.board.opens)/3600000));}
+const SOLO=!!env.solo;
+function hoursOpen(){return SOLO?0:Math.max(0,Math.floor((Date.now()-env.board.opens)/3600000));}
 
 /* ---------- grading ---------- */
 function has(id){return M.crowd.has(id)||M.mine.has(id);}
@@ -244,14 +289,33 @@ function applyMe(j){
   if(typeof j.points==='number'&&!pending){M.pts=j.points;M.firsts=j.firsts||0;}
 }
 let pending=0;
+/* SITE POINTS: the place route files the day's running total at most every ten
+   minutes; this forces the last one through when the player goes idle or leaves. */
+let creditDirty=false,creditT=null;
+function creditBody(){return JSON.stringify({id:env.id,anonId:env.anon,email:env.email||undefined});}
+function creditNow(){
+  if(!creditDirty||SOLO)return;creditDirty=false;
+  fetch('/api/mural/credit',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:creditBody()}).catch(()=>{creditDirty=true;});
+}
+function creditSoon(){creditDirty=true;clearTimeout(creditT);creditT=setTimeout(creditNow,45000);}
+function creditLeave(){
+  if(!creditDirty||SOLO)return;creditDirty=false;
+  try{if(navigator.sendBeacon&&navigator.sendBeacon('/api/mural/credit',creditBody()))return;}catch(e){}
+  creditDirty=true;creditNow();
+}
+const onHide=()=>{if(document.visibilityState==='hidden')creditLeave();};
+document.addEventListener('visibilitychange',onHide);window.addEventListener('pagehide',creditLeave);
+cleanups.push(()=>{document.removeEventListener('visibilitychange',onHide);window.removeEventListener('pagehide',creditLeave);clearTimeout(creditT);});
+function saveSolo(){try{localStorage.setItem('mural_solo_'+env.id,JSON.stringify({pieces:[...M.mine]}));}catch(e){}}
 function send(id,val,tries){
+  if(SOLO){setTimeout(saveSolo,0);return;}
   if(!tries)pending++;
   fetch('/api/mural/place',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:env.id,piece:id,anonId:env.anon,email:env.email||undefined})})
     .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})))
     .then(o=>{
       if(dead)return;
       if(o.ok&&o.j&&typeof o.j.points==='number'){
-        pending--;
+        pending--;creditSoon();
         if(o.j.points!==val.v||o.j.first!==val.first){
           M.pts+=o.j.points-val.v;
           if(val.first&&!o.j.first){M.firsts--;M.crowd.add(id);drawPiece(cctx,id);setMsg('Someone got there first. '+o.j.points+(o.j.points===1?' point.':' points.'));}
@@ -266,7 +330,7 @@ function send(id,val,tries){
 let flashUntil=0,lastPoll=Date.now(),polling=false;
 function flashUpdate(n){flashUntil=Date.now()+5000;$('updBox').classList.add('flash');$('sUpd').textContent='+'+n;$('updLab').textContent=n===1?'New piece':'New pieces';}
 async function poll(){
-  if(polling||dead)return;polling=true;
+  if(polling||dead||SOLO)return;polling=true;
   try{
     const had=M.hand.filter(x=>x!==null&&x!==undefined&&!M.crowd.has(x));
     const [st,me]=await Promise.all([getJSON('/api/mural/state?id='+env.id),getJSON('/api/mural/me?'+env.q)]);
@@ -288,7 +352,7 @@ async function poll(){
 }
 function checkEnd(){
   if(finShown)return;
-  const complete=(STATE.n||0)>=TOTAL,closed=Date.now()>=env.board.closes;
+  const complete=SOLO?M.mine.size>=TOTAL:(!!STATE.completed||(STATE.n||0)>=TOTAL),closed=!SOLO&&Date.now()>=env.board.closes;
   if(complete||closed){M.done=true;renderHand();ui();finShown=true;setTimeout(()=>showFinish(complete,closed),900);}
 }
 every(()=>{
@@ -418,14 +482,52 @@ function showFinish(complete,closed){
   const pc=$('finPic');pc.width=Math.min(1500,W);pc.height=Math.round(pc.width*H/W);
   const px=pc.getContext('2d');
   if(complete)px.drawImage(src,0,0,pc.width,pc.height);else{px.fillStyle=C.slot;px.fillRect(0,0,pc.width,pc.height);px.drawImage(crowdL,0,0,pc.width,pc.height);px.drawImage(mineL,0,0,pc.width,pc.height);}
-  const n=STATE.n||0,players=STATE.players||0,hrs=hoursOpen();
+  const n=STATE.n||0,players=STATE.players||0,hrs=STATE.completed?Math.max(0,Math.floor((Date.parse(STATE.completed)-env.board.opens)/3600000)):hoursOpen();
   $('finEb').textContent=K.name+' · '+K.runs;
   $('finTitle').textContent=K.name+(complete?' Complete':' Closed');
   $('finLead').textContent=(complete?TOTAL.toLocaleString()+' pieces, placed by ':n.toLocaleString()+' of '+TOTAL.toLocaleString()+' pieces placed, by ')+players.toLocaleString()+(players===1?' player':' players')+' and '+(g.players||0).toLocaleString()+((g.players||0)===1?' guest':' guests')+'.'+(complete&&!closed?' Finished '+hrs+(hrs===1?' hour':' hours')+' after it opened.':'');
   $('fFirst').textContent=M.firsts.toLocaleString();$('fShare').textContent=(M.firsts/TOTAL*100).toFixed(M.firsts/TOTAL<.1?1:0)+'%';$('fPts').textContent=M.pts.toLocaleString();$('fRank').textContent=M.mine.size&&M.rank?M.rank:'–';
   $('finCredit').textContent=creditLine();
   if(closed){$('finClose').textContent='Play The New '+K.name;$('finClose').onclick=()=>window.location.reload();}
+  if(SOLO){$('finTitle').textContent=K.name+' Complete';$('finLead').textContent='All '+TOTAL.toLocaleString()+' pieces, placed by you alone.';}
+  else finNext(complete,closed);
   $('fin').classList.add('show');$('fin').scrollTop=0;if(complete)confetti();
+}
+/* WHAT COMES AFTER (owner, 2026-11-19): a finished mural is closed. Say so, say
+   what this player gave it, point at the Puzzle Shelf where it can be built
+   alone, and either offer the other mural (if it is open and unfinished) or
+   count down to the next one of this kind, which the page then loads itself. */
+let nextT=null;
+function finNext(complete,closed){
+  let box=$('finNext');
+  if(!box){box=document.createElement('div');box.id='finNext';$('finLead').insertAdjacentElement('afterend',box);}
+  const other=K.key==='mural'?MURAL_KINDS.muraltoo:MURAL_KINDS.mural;
+  const mine=M.firsts?' You placed '+M.firsts.toLocaleString()+(M.firsts===1?' piece':' pieces')+' first and scored '+M.pts.toLocaleString()+(M.pts===1?' point.':' points.'):(M.mine.size?' You placed '+M.mine.size.toLocaleString()+(M.mine.size===1?' piece.':' pieces.'):'');
+  const note=complete?'This '+K.name+' is finished, so it is closed. Every piece is on the wall.'+mine:'This '+K.name+' has closed.'+mine;
+  box.innerHTML='<p class="rule" style="margin-top:4px">'+note+'</p>'
+    +'<p class="rule" id="finCount" style="font-weight:800;color:var(--ink)"></p>'
+    +'<div id="finOther"></div>'
+    +'<p class="rule"><a href="/jig/shelf?tab=murals" style="color:inherit;font-weight:800">Build It Yourself On The Puzzle Shelf</a></p>';
+  clearInterval(nextT);
+  if(!closed){
+    const opens=env.board.closes;
+    const tickN=()=>{
+      const left=opens-Date.now();
+      if(left<=0){clearInterval(nextT);window.location.reload();return;}
+      const m=Math.ceil(left/60000),h=Math.floor(m/60);
+      const e=$('finCount');if(e)e.textContent='The next '+K.name+' opens in '+(h?h+(h===1?' hour':' hours')+' and ':'')+(m%60)+(m%60===1?' minute.':' minutes.');
+    };
+    tickN();nextT=setInterval(tickN,15000);timers.push(nextT);
+    $('finClose').textContent='Look At The Finished '+K.name;
+  }
+  if(muralLaunched(other.key)){
+    getJSON('/api/mural/state?id='+currentMuralId(other.key)).then(o=>{
+      if(dead||!o.ok||!o.j)return;
+      const open=!o.j.completed&&(o.j.n||0)<(o.j.total||TOTAL);
+      const e=$('finOther');
+      if(e&&open)e.innerHTML='<a class="primary" style="display:inline-block;width:auto;text-decoration:none" href="'+other.route+'">Play '+other.name+' Now</a>';
+    }).catch(()=>{});
+  }
 }
 function creditLine(){const p=env.board.photo||{};return p.name?'Photo: '+p.name+(p.by?', by '+p.by:'')+(p.lic?' ('+p.lic+')':'')+', Wikimedia Commons.':'';}
 $('finClose').onclick=()=>$('fin').classList.remove('show');
@@ -454,10 +556,11 @@ colors();resize();
 M.hours=hoursOpen();
 applyState(env.state).forEach(id=>drawPiece(cctx,id));
 applyMe(env.me);
+if(SOLO){for(const q of ['#lbBtn','#updBox']){const sg=root.querySelector(q);if(sg)sg.style.display='none';}}
 $('credit').textContent=creditLine();
 fit();if(isPhone){view.s=Math.min(view.max,37/PS);view.tx=view.cw/2-W*.5*view.s;view.ty=view.ch/2-H*.5*view.s;clampView();}
 dealAll();
-setMsg('Drag a piece onto the mural, or tap a piece and then tap its spot.');
+setMsg(SOLO?'Shelf copy: build it alone, at your own pace. Nothing here scores, and your pieces are kept in this browser.':'Drag a piece onto the mural, or tap a piece and then tap its spot.');
 ui();draw();
 ro=new ResizeObserver(()=>{const r=$('stage').getBoundingClientRect();if(Math.abs(r.width-view.cw)<1&&Math.abs(r.height-view.ch)<1)return;const wasFit=view.s<=view.min*1.001;resize();if(wasFit)fit();else clampView();clampRef();req();});
 ro.observe($('stage'));

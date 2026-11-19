@@ -89,6 +89,8 @@ export const DAILY_GAMES = [
   { key: 'snug', href: '/snug', name: 'Snug', tag: 'fit the pieces, one way only', store: 'sot_snug_day', accent: '#3b5bdb', bg: '#e8ecfb', border: 'rgba(59,91,219,0.35)' },
   { key: 'jig', href: '/jig', name: 'Jig', tag: 'the daily jigsaw', store: 'sot_jig_day', accent: '#0e7490', bg: '#e6f4f7', border: 'rgba(14,116,144,0.38)' },
   { key: 'saw', href: '/saw', name: 'Saw', tag: 'the tall daily jigsaw', store: 'sot_saw_day', accent: '#0f766e', bg: '#ccfbf1', border: 'rgba(15,118,110,0.4)' },
+  { key: 'mural', href: '/mural', name: 'Mural', tag: 'the giant jigsaw we all build', store: 'sot_mural_day', accent: '#0369a1', bg: '#e0f2fe', border: 'rgba(3,105,161,0.38)' },
+  { key: 'muraltoo', href: '/muraltoo', name: 'MuralToo', tag: 'the midnight giant jigsaw', store: 'sot_muraltoo_day', accent: '#4338ca', bg: '#e0e7ff', border: 'rgba(67,56,202,0.38)' },
   { key: 'check', href: '/check', name: 'Check', tag: 'red to play and sweep', store: 'sot_check_day', accent: '#166e5a', bg: '#e6f3ef', border: 'rgba(22,110,90,0.35)' },
   { key: 'hinge', href: '/hinge', name: 'Hinge', tag: 'chain the compounds', store: 'sot_hinge_day', accent: '#4f46e5', bg: '#e0e7ff', border: 'rgba(79,70,229,0.4)' },
   { key: 'rung', href: '/rung', name: 'Rung', tag: 'one letter at a time', store: 'sot_rung_day', accent: '#155e75', bg: '#e4f2f6', border: 'rgba(21,94,117,0.35)' },

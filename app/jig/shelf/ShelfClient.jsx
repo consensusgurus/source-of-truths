@@ -129,6 +129,22 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
     // ?g=saw (the link under Saw's board) opens on Saw. Read after mount so
     // the server HTML and the first client render agree.
     try { const g = new URLSearchParams(window.location.search).get('g'); if (g === 'saw' || g === 'jig') setFilter(g); } catch (e) {}
+    // ?tab=murals (the link on a finished Mural's closing screen) opens on Murals.
+    try { if (new URLSearchParams(window.location.search).get('tab') === 'murals') setFilter('murals'); } catch (e) {}
+  }, []);
+  // THE MURALS TAB (owner, 2026-11-19: "these huge puzzles should also show up
+  // in puzzle shelf on a different tab maybe, toggled", and "It will be
+  // available to play on the puzzle shelf"). Every Mural and MuralToo that is
+  // complete or has closed, newest first, from /api/mural/shelf. A box opens
+  // the mural as a shelf copy (?solo=<id>): built alone, no points, the pieces
+  // kept in this browser. The open murals are linked above the list.
+  const [murals, setMurals] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/mural/shelf').then((r) => r.json())
+      .then((d) => { if (alive) setMurals(Array.isArray(d && d.murals) ? d.murals : []); })
+      .catch(() => { if (alive) setMurals([]); });
+    return () => { alive = false; };
   }, []);
   const counts = {
     all: total,
@@ -203,14 +219,39 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
           ['solved', 'Solved'],
           ['unplayed', 'Not played'],
           ['sun', 'Sundays'],
+          ['murals', 'Murals'],
         ].map(([k, lab]) => (
           <button key={k} type="button" className={filter === k ? 'on' : ''} aria-pressed={filter === k} onClick={() => setFilter(k)}>
-            {lab} <b>{marks.ready || k === 'all' || k === 'sun' || k === 'jig' || k === 'saw' ? counts[k] : '–'}</b>
+            {lab} <b>{k === 'murals' ? (murals ? murals.length : '–') : marks.ready || k === 'all' || k === 'sun' || k === 'jig' || k === 'saw' ? counts[k] : '–'}</b>
           </button>
         ))}
       </div>
 
-      <div className="jsh-grid">
+      {filter === 'murals' ? (
+        <section className="jsh-murals" aria-label="Finished murals">
+          <p className="jsh-mlede">
+            Mural and MuralToo are 10,000 piece jigsaws the whole site builds together. Once one is finished or its day is over, it comes here to build alone: no points, no clock, and your pieces are kept on this device.
+            {' '}<a href="/mural">Play Mural</a> or <a href="/muraltoo">MuralToo</a> while they are open.
+          </p>
+          {murals === null ? <p className="jsh-mnone">Loading the murals.</p> : !murals.length ? (
+            <p className="jsh-mnone">No mural has finished yet. The first one lands here when its last piece is placed or its 24 hours are up.</p>
+          ) : (
+            <div className="jsh-mgrid">
+              {murals.map((m) => (
+                <a key={m.id} className="jsh-mcard" href={`${m.route}?solo=${m.id}`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/api/mural/img?id=${m.id}&w=960`} alt={m.title || `${m.name}, ${m.date}`} loading="lazy" />
+                  <span className="jsh-mname">{m.name} · {m.date}</span>
+                  <span className="jsh-msub">{m.title ? `${m.title}. ` : ''}10,000 pieces. {m.complete ? 'Finished by the crowd.' : `${m.placed.toLocaleString()} placed before it closed.`}</span>
+                  <span className="jsh-mgo">Build It Yourself</span>
+                </a>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : null}
+
+      <div className="jsh-grid" style={filter === 'murals' ? { display: 'none' } : undefined}>
         <section className="jsh-shelves" aria-label="The shelf, a week to a row">
           <div className="jsh-dow" aria-hidden="true">
             <span />
@@ -352,6 +393,15 @@ const CSS = `
 .jsh-chips button b{font-weight:800;color:var(--stg-mute);margin-left:3px;}
 .jsh-chips button.on{background:var(--jsh-hue);color:var(--jsh-ink);border-color:var(--jsh-hue);}
 .jsh-chips button.on b{color:var(--jsh-ink);opacity:.75;}
+.jsh-mlede{max-width:760px;margin:0 0 18px;font-size:15px;line-height:1.55;color:var(--stg-mute);font-weight:500;}
+.jsh-mlede a{color:var(--stg-ink);font-weight:800;}
+.jsh-mnone{font-size:15px;font-weight:700;color:var(--stg-mute);padding:24px 0;}
+.jsh-mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.jsh-mcard{display:flex;flex-direction:column;gap:6px;padding:10px 10px 14px;border:1px solid var(--stg-ink);border-radius:14px;background:var(--stg-card,transparent);color:var(--stg-ink);text-decoration:none;}
+.jsh-mcard img{width:100%;aspect-ratio:25/16;object-fit:cover;border-radius:8px;border:1px solid var(--stg-ink);display:block;}
+.jsh-mname{font-size:16px;font-weight:800;line-height:1.35;}
+.jsh-msub{font-size:13px;line-height:1.5;color:var(--stg-mute);font-weight:500;}
+.jsh-mgo{align-self:flex-start;margin-top:4px;font-size:13px;font-weight:800;padding:8px 14px;border-radius:999px;background:var(--jsh-hue);color:var(--jsh-ink);}
 
 .jsh-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:26px;align-items:start;}
 .jsh-shelves{min-width:0;padding:14px 16px 6px;border-radius:14px;background:var(--stg-surf);border:1px solid var(--stg-line);}

@@ -3434,3 +3434,91 @@ it a "board game", not a card game.
   replays to one peg in the center, a fresh exhaustive solve also wins, odds recompute, and no
   start repeats in the bank (mirrors included). About 7s.
 - **Show the answer**: as Bot, `/api/daily-answer?game=peg&num=N`.
+
+## Mural and MuralToo: the 10,000 piece jigsaws the whole site builds together (launched 2026-11-19)
+
+Owner, 2026-11-19, from the mockup at https://claude.ai/artifact/4yLz3PXuT1s2exrDxuUwDB. One real
+photograph cut 125 x 80, and everyone on the site places pieces of the SAME one. Each player works
+their own copy; the shared mural is the union of everyone's FIRST placements.
+
+- **Two a day.** Mural runs noon to noon Eastern, MuralToo midnight to midnight, so one is always
+  open. A mural's id is `<kind>-YYYY-MM-DD`, the Eastern date it opens (`lib/mural-shared.js`
+  `muralWindow`, `currentMuralId`); it closes when the next of its kind opens, so a daylight-saving
+  day is 23 or 25 hours.
+- **The name is MuralToo, one word, no space** (owner, 2026-11-19). `verify-mural` greps for it.
+- **MuralToo's first board is 2026-11-20** (owner: "Only mural should be open now. MuralToo a
+  waiting screen until Midnight"). `MURAL_KINDS[kind].first` is the launch floor: `ensureBoard`
+  refuses an id dated before it, `LAUNCH_DAILY` keeps the game off the rosters until then, and the
+  page shows a waiting screen that counts down and reloads itself at the opening.
+- **NO CLOCK AND NO GIVE UP (owner ruling, the one exception to the every-daily-has-Give-up rule).**
+  Misses are not counted and a wrong drop costs nothing. There is no per-player piece limit.
+- **Photos are real**, from the Jig pool (`app/jig/puzzles.js`: live at least 7 days ago, landscape
+  JPEG, not used in the last 28 murals), served through `/api/mural/img`. The server grades every
+  piece from the 1280px thumbnail the first time a mural is asked for (`lib/mural.js`
+  `ensureBoard`, jpeg-js). The picture rule is loose on purpose (owner: "given the scoring system,
+  not need to apply as strict of picture rules ... ideally limit that somewhat"): a photo is passed
+  over when more than 20% of its pieces are flat or one flat block is over 250 pieces, and if none
+  of four candidates pass the least flat one is used.
+- **Grades:** corner 1, edge 2, detailed 3, busy 4, plain 6, flat color in a patch under 10 pieces
+  8, a block of 10 to 49 = 10, a block of 50 or more = 12. **Value**, in this order: the grade; while
+  nobody has placed the piece, +5% per whole hour the mural has been open, capped at double; minus
+  20% per neighbor (of four) already in place on the crowd's mural or your own, floor 20%; doubled
+  if you are the first on the site. Rounded, minimum 1. `pieceValue()` in `lib/mural-shared.js`
+  and `mural_place()` in migration 69 are the same formula and must stay so.
+- **Strict first, decided by the database when you place** (the partial unique index
+  `mural_places_first`), not at the next refresh. The client shows its own estimate at once and
+  corrects it from the server's answer ("Someone got there first").
+- **The board refreshes itself every 2 minutes** from `/api/mural/state`, which the CDN holds for
+  120 seconds, so the crowd's pieces cost one function call per two minutes however many players
+  are watching. New pieces glow gold, the header flashes the count, and the message line reports
+  it. Nothing pops up mid game.
+- **The tray** fills the bottom and deals a random set from the WHOLE mural. Refresh deals a new
+  set on a 10 second timer. There is NO "pieces from the area on screen" option (owner: "that is
+  too much of a clue"); do not add one.
+- **The picture panel** is movable and parks top right; its button cycles Larger, Hide, and a small
+  Picture button. Tabs: Picture, Crowd, Value. Full screen (board and tray only) is the default on
+  a phone and a button on a desktop.
+- **The closing screen** shows the finished or closed picture and a bubble per member sized by the
+  pieces they placed first, with every guest in ONE bubble (owner).
+- **Site points (owner, 2026-11-19: "points until midnight ET, so only MuralToo ends on time").**
+  Both are registered dailies (`unit: 'points'`, `solvesOnScore`, `bestRun`). `mural_credit()`
+  (migration 70) counts the points a player earned on that kind in the current EASTERN DAY and
+  files them as `mural-M-D-YY` / `muraltoo-M-D-YY` (total 100, guesses_used = firsts that day). So
+  a Mural's noon-to-noon points split across two site days, and MuralToo's land in one.
+  **THE ROWS ARE APPENDED, NEVER UPDATED:** every quiz route reads only rows with a higher id
+  (`lib/quiz-results-cache`), so a running total is a NEW row each time, and `bestRun` on the
+  registry row makes `isArcade()` true so every board keeps the best (the latest) row of the day.
+  The place route files one at most every ten minutes; the page forces the last one through
+  `/api/mural/credit` when the player idles 45 seconds or leaves. `XP_DAILY_CAP` holds each at 10
+  IQ a day, or IQ would count rows. The day lists `app/mural/puzzles.js` and
+  `app/muraltoo/puzzles.js` carry only the days (`scripts/gen-mural-bank.mjs --until <date>`).
+  The Mural's own standings (Standings button) still total the whole mural.
+- **A mural closes when it is complete (owner, 2026-11-19).** The placement that fills the last
+  piece stamps `mural_boards.completed_at`, and `mural_place()` answers `closed` from then on.
+  Anyone who opens it afterwards gets the closing screen with a notice that it was finished,
+  their own contribution, a link to the Puzzle Shelf, and EITHER a button for the other mural (if
+  that one is open and unfinished) OR a countdown to the next one of this kind; the page loads the
+  new mural itself when the countdown ends.
+- **The Puzzle Shelf's Murals tab** (`/jig/shelf?tab=murals`, `/api/mural/shelf`) lists every mural
+  that is complete or closed. A box opens `/<kind>?solo=<id>`: a shelf copy built alone, with no
+  points, nothing sent to the server, and the placed pieces kept in the browser
+  (`mural_solo_<id>` in localStorage).
+- **Featured (owner): exactly one of the two leads the home's Featured row, the one closing
+  soonest.** `muralFeaturedKey()`: Mural before noon Eastern, MuralToo from noon; Mural alone until
+  MuralToo exists. `StageToday` `featFor` reads it in an effect, keeps the card after you have
+  played (a mural is never finished while open), and never uses the other one to fill the row.
+  Neither key belongs in `FEATURED_KEYS`.
+- **No Sunday Edition:** a mural is the same size every day.
+- **Every `/api/mural` route sets `fetchCache = 'force-no-store'`.** Without it Next kept an empty
+  Supabase read in its data cache and the launch answered "not open" with the boards already saved.
+- **Files:** `app/mural/` (page, MuralClient, engine.js, markup.js, puzzles.js),
+  `app/muraltoo/`, `app/api/mural/{board,img,state,me,place}`, `lib/mural.js`,
+  `lib/mural-shared.js`, migrations 69 and 70. The engine is a plain DOM and canvas program that
+  React mounts once (`bootMural`); its CSS is scoped under `.mrl`.
+- **Checker** `scripts/verify-mural.mjs`: day lists, schedule across both clock changes, launch
+  floor, Featured rule, piece values against the SQL, registry rows, and the name.
+- **The board's markup is raw HTML (`markup.js`) and must stay balanced.** A stray closing tag
+  made the server and the browser disagree and failed hydration on every load until 2026-11-19.
+  Keep the crawlable "About" prose BEFORE the board in `MuralClient`.
+- **Not built yet:** a rate limit or server-side proof on `/api/mural/place` (the server trusts
+  that a piece was placed correctly).

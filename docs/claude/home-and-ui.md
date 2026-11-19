@@ -2964,3 +2964,20 @@ the first screen with the old rule injected: no game that fit changed (desktop 1
 Crux, Scour, Links, Span, Tally, Tuck, Alibi, Fill, Outwit, Sworn, Shards and Machine went from cut to padded.
 Jig, Saw, Redact and Carmen pin the column to the window on purpose (`height:100%;min-height:0`) and keep that.
 Rule: never set a fixed height on `.pst-col` unless the board is meant to fill the window and fit it.
+
+## A pop-up's scroll bar sits inside its rounded corners (owner, 2026-11-19)
+
+Owner, on Mural's Rules and Standings sheets: "slider needs to fit the rounded edges of pop-up...
+this should be universal rule for any pop-up slider." A sheet with rounded corners must not let its
+scroll bar run into the corner radius or poke outside it. Put the scroll on an INNER element, with
+the rounded box set to `overflow:hidden`, and inset the scrolling area from the top and bottom by
+about the corner radius (Mural's sheets are the reference, `.mrl .sheet` in `app/mural/markup.js`).
+Applies to every new pop-up; existing ones are a burn-down list.
+
+## One mural leads Featured: the one closing soonest (owner, 2026-11-19)
+
+See "Mural and MuralToo" in `games-other.md`. `featFor` in `app/today/StageToday.jsx` puts
+`muralFeaturedKey()` first in the Featured row (Mural before noon Eastern, MuralToo from noon),
+keeps it there after it has been played, and never fills the row with the other one. Both sit in
+Visual like any other daily.
+
