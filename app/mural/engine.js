@@ -236,7 +236,7 @@ function draw(){
   ctx.fillStyle=C.slot;ctx.fillRect(0,0,W,H);const moving=performance.now()<hotUntil||pulses.length>0;ctx.imageSmoothingQuality=moving?'low':'high';
   /* crowd pieces at full colour (owner, 2026-11-19: faded pieces made the picture impossible to match) */ctx.drawImage(crowdL,0,0);ctx.drawImage(mineL,0,0);
   const now=performance.now();pulses=pulses.filter(p=>now-p.t<(p.nw?4000:700));
-  for(const p of pulses){const c=p.id%COLS,r=(p.id/COLS)|0;if(p.nw){const a=1-(now-p.t)/4000;ctx.globalAlpha=a*.75;ctx.fillStyle='#f2c230';ctx.fillRect(c*PS,r*PS,PS,PS);continue;}const a=1-(now-p.t)/700,g=(1-a)*PS*.9;ctx.strokeStyle=C.ink;ctx.globalAlpha=a;ctx.lineWidth=3/view.s;ctx.strokeRect(c*PS-g,r*PS-g,PS+2*g,PS+2*g);}
+  for(const p of pulses){const c=p.id%COLS,r=(p.id/COLS)|0;if(p.nw){const a=1-(now-p.t)/4000;ctx.globalAlpha=a*.75;ctx.fillStyle='#f2c230';piecePath(ctx,p.id);ctx.fill();continue;}/* the crowd flash takes the piece's own shape (owner, 2026-11-19) */const a=1-(now-p.t)/700,g=(1-a)*PS*.9;ctx.strokeStyle=C.ink;ctx.globalAlpha=a;ctx.lineWidth=3/view.s;ctx.strokeRect(c*PS-g,r*PS-g,PS+2*g,PS+2*g);}
   ctx.globalAlpha=1;
   for(const l of M.loose){ctx.save();ctx.translate(l.x-(l.id%COLS+.5)*PS,l.y-(((l.id/COLS)|0)+.5)*PS);if(!moving){ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=6;}drawPiece(ctx,l.id,'rgba(0,0,0,.6)');ctx.restore();}
   ctx.restore();
@@ -267,9 +267,16 @@ function dealAll(){M.hand=[];const pool=allOpen();for(let k=0;k<HANDN;k++){if(!p
    Every placement rebuilt every tray piece from the full photo, up to 75 clipped draws of a
    3840 px image. Piece images are now cached by id and size and reused, so a redraw only moves
    them. */
+let td=null,handDirty=false;
 const PCACHE=new Map();
 function trayCanvas(id,size){const k=id+'|'+size;let c=PCACHE.get(k);if(!c){c=pieceCanvas(id,size);if(PCACHE.size>400)PCACHE.clear();PCACHE.set(k,c);}return c;}
 function renderHand(){
+  /* FROZEN PIECES IN THE TRAY (owner, 2026-11-19 screenshot): the board refresh redrew the tray in
+     the middle of a drag, the dragged piece's button vanished, its pointerup never came, and the
+     drag image stayed stuck over the tray. A redraw now waits for the drop, and any stray drag
+     image is cleared. */
+  if(td&&td.drag){handDirty=true;return;}
+  handDirty=false;root.querySelectorAll('.ghost').forEach(g=>g.remove());
   const h=$('hand');h.innerHTML='';h.style.setProperty('--hc',HCOLS);h.style.setProperty('--ts',TSZ+'px');
   for(let k=0;k<HANDN;k++){
     const id=M.hand[k],b=document.createElement('button');b.className='piece'+(id===null||id===undefined?' empty':'')+(sel===k?' sel':'');b.dataset.k=k;b.style.width=b.style.height=TSZ+'px';
@@ -486,14 +493,13 @@ cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
 cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,Math.exp(-e.deltaY*.0016));},{passive:false});
 $('zIn').onclick=()=>zoomAt(view.cw/2,view.ch/2,1.6);$('zOut').onclick=()=>zoomAt(view.cw/2,view.ch/2,1/1.6);$('zFit').onclick=fit;
 /* ---------- tray drag ---------- */
-let td=null;
 const hand=$('hand');
 hand.addEventListener('pointerdown',e=>{const b=e.target.closest('.piece');if(!b||b.disabled)return;const k=+b.dataset.k;if(M.hand[k]===null||M.done)return;b.setPointerCapture(e.pointerId);td={k,id:M.hand[k],x0:e.clientX,y0:e.clientY,b,drag:false,touch:e.pointerType==='touch'};});
-hand.addEventListener('pointermove',e=>{
+window.addEventListener('pointermove',e=>{
   if(!td)return;
   if(!td.drag&&Math.hypot(e.clientX-td.x0,e.clientY-td.y0)>8){td.drag=true;const g=Math.max(46,(PS+2*MARG)*view.s);td.g=pieceCanvas(td.id,g);td.g.className='ghost';td.gs=g;root.appendChild(td.g);td.b.classList.add('out');}
   if(td.drag){td.cx=e.clientX;td.cy=e.clientY-(td.touch?td.gs*.75:0);if(!td.raf){const t=td;t.raf=requestAnimationFrame(()=>{t.raf=0;if(t.g)t.g.style.transform='translate3d('+(t.cx-t.gs/2)+'px,'+(t.cy-t.gs/2)+'px,0)';});}}
-});
+},{signal:ac.signal});
 function tup(e){
   if(!td)return;const t=td;td=null;
   if(t.drag){if(t.raf)cancelAnimationFrame(t.raf);t.g.remove();t.b.classList.remove('out');const r=cv.getBoundingClientRect();
@@ -501,7 +507,7 @@ function tup(e){
     renderHand();
   }else{sel=sel===t.k?null:t.k;renderHand();if(sel!==null)setMsg(explainVal(t.id));}
 }
-hand.addEventListener('pointerup',tup);hand.addEventListener('pointercancel',tup);
+window.addEventListener('pointerup',tup,{signal:ac.signal});window.addEventListener('pointercancel',tup,{signal:ac.signal});
 /* ---------- reference panel ---------- */
 function refJump(e){const r=refCv.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*W,sy=(e.clientY-r.top)/r.height*H;if(view.s<view.min*1.8)view.s=Math.min(view.max,view.min*3.2);view.tx=view.cw/2-sx*view.s;view.ty=view.ch/2-sy*view.s;clampView();req();}
 let refDown=false;
