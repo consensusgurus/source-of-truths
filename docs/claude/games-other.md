@@ -3493,6 +3493,9 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
   IQ a day, or IQ would count rows. The day lists `app/mural/puzzles.js` and
   `app/muraltoo/puzzles.js` carry only the days (`scripts/gen-mural-bank.mjs --until <date>`).
   The Mural's own standings (Standings button) still total the whole mural.
+- **The home tile's count is PLAYERS, not rows (owner, 2026-11-19).** `countsPlayers(key)` in
+  `lib/daily-games.js`; `/api/quiz/daily-combined` reports the day's distinct players for these two,
+  which is everyone who has placed a piece that Eastern day.
 - **A mural closes when it is complete (owner, 2026-11-19).** The placement that fills the last
   piece stamps `mural_boards.completed_at`, and `mural_place()` answers `closed` from then on.
   Anyone who opens it afterwards gets the closing screen with a notice that it was finished,

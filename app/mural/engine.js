@@ -565,6 +565,5 @@ ui();draw();
 ro=new ResizeObserver(()=>{const r=$('stage').getBoundingClientRect();if(Math.abs(r.width-view.cw)<1&&Math.abs(r.height-view.ch)<1)return;const wasFit=view.s<=view.min*1.001;resize();if(wasFit)fit();else clampView();clampRef();req();});
 ro.observe($('stage'));
 checkEnd();
-root.__mural={M,attempt,poll,PS,COLS,view};
   }
 }

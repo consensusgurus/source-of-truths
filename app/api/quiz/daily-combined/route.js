@@ -10,7 +10,7 @@ import { scoreOutrankGame } from '@/lib/outrank-score';
 import { scoreFeudGame } from '@/lib/feud-score';
 import { scoreHerdGame } from '@/lib/herd-score';
 import { scorePollGame } from '@/lib/poll-score';
-import { attemptsModeForQuizId, attemptsPlan, arcadeRanksForQuizId } from '@/lib/daily-games';
+import { attemptsModeForQuizId, attemptsPlan, arcadeRanksForQuizId, countsPlayers } from '@/lib/daily-games';
 import { GAME_PUZZLES, etTodayServer, suffixOfDate, gamesForSuffix } from '@/lib/daily-slate';
 import { groupByCode, membersOf, isMissingTable } from '@/lib/groups';
 import { circuitKeysFor, circuitById, isMarquee, circuitScoreMode, circuitScorer } from '@/lib/circuits';
@@ -628,7 +628,8 @@ export async function GET(request) {
       const gr = scoreGame(gameRows);
       // field = all traceable first-attempt players (registered + guests); plays
       // = EVERY completion for that puzzle (repeats included).
-      return { key: g.key, quizId: g.quizId, num: g.num, rev: g.rev, href: g.href, field: gr.field, plays: gameRows.length, players: gr.players };
+      // Mural and MuralToo: one count per player (countsPlayers in lib/daily-games).
+      return { key: g.key, quizId: g.quizId, num: g.num, rev: g.rev, href: g.href, field: gr.field, plays: countsPlayers(g.key) ? gr.field : gameRows.length, players: gr.players };
     });
 
     overallFull = combineDaily(gameResults, dayBestN);
