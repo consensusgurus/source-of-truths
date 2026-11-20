@@ -67,17 +67,25 @@ for (const day of ['2026-11-19', '2027-03-13', '2027-03-14', '2027-07-04', '2027
 const tooOpens = S.muralFirstOpens('muraltoo');
 eq(et(tooOpens), '2026-11-20 00:00', 'MuralToo first opens');
 eq(S.muralLaunched('muraltoo', tooOpens - 1), false, 'MuralToo launched a millisecond early');
-eq(S.muralLaunched('muraltoo', tooOpens), true, 'MuralToo launched at its opening');
+if (!(S.MURAL_HELD && S.MURAL_HELD.has('muraltoo'))) eq(S.muralLaunched('muraltoo', tooOpens), true, 'MuralToo launched at its opening');
 eq(S.muralIdAllowed('muraltoo-2026-11-19'), false, 'muraltoo-2026-11-19 allowed');
 eq(S.muralIdAllowed('muraltoo-2026-11-20'), true, 'muraltoo-2026-11-20 allowed');
 eq(S.muralIdAllowed('mural-2026-11-18'), false, 'mural-2026-11-18 allowed');
 eq(S.muralIdAllowed('mural-2026-11-19'), true, 'mural-2026-11-19 allowed');
 if (liveDailyKeys('2026-11-19').includes('muraltoo')) fail('MuralToo is on the roster on 2026-11-19');
 if (!liveDailyKeys('2026-11-19').includes('mural')) fail('Mural is not on the roster on 2026-11-19');
-if (!liveDailyKeys('2026-11-20').includes('muraltoo')) fail('MuralToo is not on the roster on 2026-11-20');
+const TOO_HELD = !!(S.MURAL_HELD && S.MURAL_HELD.has('muraltoo'));
+// HELD (owner, 2026-11-20): MuralToo is off every roster and never Featured.
+if (TOO_HELD) {
+  if (liveDailyKeys('2026-11-20').includes('muraltoo')) fail('MuralToo is held but on the roster');
+  if (S.muralLaunched('muraltoo')) fail('MuralToo is held but counts as launched');
+} else if (!liveDailyKeys('2026-11-20').includes('muraltoo')) fail('MuralToo is not on the roster on 2026-11-20');
 
 // 4. Featured: the one closing soonest
 const H = 3600000;
+if (TOO_HELD) {
+  for (const t of [tooOpens + 1, tooOpens + 12 * H, tooOpens + 20 * H]) eq(S.muralFeaturedKey(t), 'mural', `featured while MuralToo is held, ${et(t)}`);
+} else {
 eq(S.muralFeaturedKey(tooOpens - 11 * H), 'mural', 'featured the afternoon before MuralToo exists');
 eq(S.muralFeaturedKey(tooOpens + 1), 'mural', 'featured just after midnight');
 eq(S.muralFeaturedKey(tooOpens + 12 * H - 1), 'mural', 'featured a millisecond before noon');
@@ -88,6 +96,7 @@ for (const t of [tooOpens + 1, tooOpens + 5 * H, tooOpens + 12 * H, tooOpens + 2
   const f = S.muralFeaturedKey(t), o = f === 'mural' ? 'muraltoo' : 'mural';
   const cf = S.muralWindow(S.currentMuralId(f, t)).closes, co = S.muralWindow(S.currentMuralId(o, t)).closes;
   if (!(cf < co)) fail(`featured at ${et(t)} is ${f}, which does not close first`);
+}
 }
 
 // 5. piece values

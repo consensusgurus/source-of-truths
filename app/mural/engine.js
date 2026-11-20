@@ -13,7 +13,7 @@
 // not counted. Nothing here pops up over the board mid game.
 
 import {
-  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, gradeAt, pieceValue, muralLaunched, muralFirstOpens, parseMuralId, MURAL_MIN_MS, muralDateLabel, privateMuralId,
+  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, gradeAt, pieceValue, muralLaunched, muralHeld, muralFirstOpens, parseMuralId, MURAL_MIN_MS, muralDateLabel, privateMuralId,
 } from '@/lib/mural-shared';
 import { openMemorial } from './memorial';
 import { holdThemeColor } from '@/lib/theme-color-hold';
@@ -67,6 +67,18 @@ export function bootMural(root, cfg) {
     const opens = muralFirstOpens(K.key);
     const el = document.createElement('div');
     el.className = 'fin show';
+    // HELD (owner, 2026-11-20): resting while its pictures are reworked. No countdown.
+    if (muralHeld(K.key)) {
+      el.innerHTML = '<div class="finIn" style="padding-top:12vh">'
+        + '<div class="eb">' + K.name + '</div>'
+        + '<h2>Back Soon</h2>'
+        + '<p class="rule">' + K.name + ' is taking a short break while we pick livelier pictures for it. ' + other.name + ', the 4,000 piece jigsaw the whole site builds together, is open now.</p>'
+        + (muralLaunched(other.key) ? '<a class="primary" style="display:inline-block;width:auto;margin-top:14px;text-decoration:none" href="' + other.route + '">Play ' + other.name + ' Now</a>' : '')
+        + '<p class="rule" style="margin-top:18px"><a href="/" style="color:inherit">Back To Mind Loft</a></p>'
+        + '</div>';
+      root.appendChild(el);
+      return;
+    }
     el.innerHTML = '<div class="finIn" style="padding-top:12vh">'
       + '<div class="eb">' + K.name + ' \u00b7 ' + K.runs + '</div>'
       + '<h2>Opens At ' + K.opensAt + '</h2>'
@@ -86,8 +98,11 @@ export function bootMural(root, cfg) {
     tick();
     waitT = setInterval(tick, 15000);
   }
+  // `v` names the photo: the image is cached forever by URL, and an unplayed
+  // board can be given a new picture (lib/mural.js repickIfUnplayed).
+  let imgV = '';
   function loadImg(id, w) {
-    return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('img')); i.src = `/api/mural/img?id=${id}&w=${w}`; });
+    return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('img')); i.src = `/api/mural/img?id=${id}&w=${w}${imgV ? `&v=${imgV}` : ''}`; });
   }
 
   (async () => {
@@ -131,6 +146,7 @@ export function bootMural(root, cfg) {
       if (dead) return;
       if (!b.ok || !b.j || !b.j.grades) { bootMsg(`${K.name} is not open yet. Check back in a minute.`); return; }
       const id = b.j.id;
+      imgV = b.j.pv || '';
       const phone = window.innerWidth <= 720;
       // Phones take the full 3840 photo too (see SHARPNESS in start): half size
       // left 15 source pixels a piece. Only a device that reports little memory

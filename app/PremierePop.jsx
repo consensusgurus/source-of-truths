@@ -341,7 +341,8 @@ const ML_WHY = [
   ['crowd', 'We All Build The Same One', 'Every other daily is yours alone. Here the crowd\u2019s pieces fade in on your board every two minutes.'],
   ['clock', 'No Clock, No Give Up', 'It is open for 24 hours. Place five pieces or five hundred, and come back whenever you like.'],
   ['bars', 'Hard Pieces Pay More', 'Plain sky beats a corner, and a piece nobody has placed yet pays double.'],
-  ['two', 'Two A Day', 'Mural opens at noon ET. MuralToo, its twin, opens at midnight.'],
+  // 'Two A Day' (MuralToo) is off while MuralToo is held (owner, 2026-11-20).
+  ['two', 'Open Until It Is Done', 'Each mural stays open until its last piece is placed, then the next one opens.'],
 ];
 const ML_ICON = {
   crowd: <><circle cx="8" cy="9" r="3" /><circle cx="17" cy="10" r="2.5" /><path d="M2.5 20c.6-3.4 2.8-5 5.5-5s4.9 1.6 5.5 5M14.5 15.2c.8-.3 1.6-.4 2.5-.4 2.3 0 4 1.3 4.5 4.2" /></>,

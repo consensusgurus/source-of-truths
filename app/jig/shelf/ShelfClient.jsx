@@ -231,7 +231,7 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
         <section className="jsh-murals" aria-label="Finished murals">
           <p className="jsh-mlede">
             Mural and MuralToo are 4,000 piece jigsaws the whole site builds together. Once one is finished or its day is over, it comes here to build alone: no points, no clock, and your pieces are kept on this device.
-            {' '}<a href="/mural">Play Mural</a> or <a href="/muraltoo">MuralToo</a> while they are open.
+            {' '}<a href="/mural">Play Mural</a> while it is open.
           </p>
           {/* PRIVATE MURALS (owner, 2026-11-19: "this will also exist on jigsaw puzzle shelf where the murals are"). */}
           <p className="jsh-mlede">
@@ -244,7 +244,7 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
               {murals.map((m) => (
                 <a key={m.id} className="jsh-mcard" href={`${m.route}?solo=${m.id}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/api/mural/img?id=${m.id}&w=960`} alt={m.title || `${m.name}, ${m.date}`} loading="lazy" />
+                  <img src={`/api/mural/img?id=${m.id}&w=960${m.pv ? `&v=${m.pv}` : ''}`} alt={m.title || `${m.name}, ${m.date}`} loading="lazy" />
                   <span className="jsh-mname">{m.name} · {m.date}</span>
                   <span className="jsh-msub">{m.title ? `${m.title}. ` : ''}{(m.total || 4000).toLocaleString()} pieces. {m.complete ? 'Finished by the crowd.' : `${m.placed.toLocaleString()} placed before it closed.`}</span>
                   <span className="jsh-mgo">Build It Yourself</span>
