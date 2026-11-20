@@ -885,7 +885,14 @@ if(PRIV){
   if(hl)hl.textContent='A private mural: one picture, '+TOTAL.toLocaleString()+' pieces, built by '+(PRIV.group?'the members of '+PRIV.group:'everyone who has the invite link')+'. It stays open until every piece is placed. It scores on its own standings and does not count toward your Mind Loft points.';
   $('dOther').textContent='Play '+K.name;$('dOther').onclick=()=>{window.location.href=K.route;};
 }
-fit();if(isPhone){view.s=Math.min(view.max,37/PS);view.tx=view.cw/2-W*.5*view.s;view.ty=view.ch/2-H*.5*view.s;clampView();}
+/* THE OPENING VIEW (owner, 2026-11-20: "mural seems to work best when zoomed in... make that change").
+   The whole board fitted to a desktop screen made each piece about 10 px, too small to match or drop.
+   Both phone and desktop now open zoomed in (37 and 42 CSS px a piece), centred on the open edge of the
+   build: the middle of the empty slots that touch a placed piece. 0 still shows the whole board. */
+function openView(){fit();const px=isPhone?37:42;if(W*view.s/COLS>=px)return;view.s=Math.min(view.max,Math.max(view.min,px/PS));
+  let sx=0,sy=0,n=0;for(let id=0;id<TOTAL;id++){if(has(id)||!nbCount(id))continue;sx+=id%COLS;sy+=(id/COLS)|0;n++;}
+  const fx=n?(sx/n+.5)*PS:W*.5,fy=n?(sy/n+.5)*PS:H*.5;view.tx=view.cw/2-fx*view.s;view.ty=view.ch/2-fy*view.s;clampView();req();}
+openView();
 dealAll();
 setMsg(SOLO?'Shelf copy: build it alone, at your own pace. Nothing here scores, and your pieces are kept in this browser.':'Drag a piece onto the mural, or tap a piece and then tap its spot.');
 ui();draw();
