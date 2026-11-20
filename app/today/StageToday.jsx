@@ -1891,6 +1891,10 @@ export default function StageToday() {
   const top = overall.slice(0, 10);
   const myRow = meKey ? overall.find((r) => r && r.userKey === meKey) : null;
   const myOut = myRow && !top.some((r) => r && r.userKey === meKey) ? myRow : null;
+  // ONE "TODAY" RANK ON THE HOME (owner, 2026-11-20): the cap's Today figure is
+  // the reader's place on the day board the rail shows, so the two cannot
+  // disagree. The IQ day rank is the fallback until the board has the reader.
+  const boardRank = (myRow && Number(myRow.rank)) || (board && board.me && Number(board.me.rank)) || null;
   const topRow = top[0] && top[0].total != null ? top[0] : null;
 
   // THE DAY'S FIELD SIZE BELONGS ON THE BOARD, NOT THE FEED (owner, 2026-08-31).
@@ -2830,7 +2834,7 @@ export default function StageToday() {
       <button type="button" aria-pressed={sortBy === 'diff'} onClick={() => pickSort('diff')}
         title="Gentlest first, rated every Sunday night from the last 7 days of play"><span className="sty-sl">Easy to Hard</span><span className="sty-ss">Easy</span></button>
       <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}
-        title="Most played across the site today">Popular</button>
+        title="Most played today. A run's plays count once, on the run">Popular</button>
       <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
       <button type="button" aria-pressed={sortBy === 'new'} onClick={() => pickSort('new')}
         title="The most recently launched puzzles first">Newest</button>
@@ -2908,10 +2912,9 @@ export default function StageToday() {
       {/* THE COMMUNITY, right under Runs (owner, 2026-11-18, "Where To Link" spot 3). A door. */}
       <a className="sty-ixb sty-ixbr" href="/community" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('community', null)}<span>Community</span></a>
       {/* The rest of the community, each a door (owner, 2026-11-18: "Add more buttons to home for chat, shop, puzzle peers"). */}
-      <a className="sty-ixb sty-ixbr" href="/community/talk" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('talk', null)}<span>Post-Game Talk</span></a>
-      <a className="sty-ixb sty-ixbr" href="/community/groups" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('groups', null)}<span>Groups</span></a>
+      {/* ONE COMMUNITY ROW (owner, 2026-11-20, the home cleanup): Post-Game Talk, Groups and
+          Puzzle Peers are reached from the Community page; the shop keeps its own row. */}
       <a className="sty-ixb sty-ixbr" href="/community/shop" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('shop', null)}<span>Loft Shop</span></a>
-      <a className="sty-ixb sty-ixbr" href="/community/peers" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('peers', null)}<span>Puzzle Peers</span></a>
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)', 'sty-ixq')}
       {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)', 'sty-ixe1')}
       {/* BUILD A RUN SITS RIGHT UNDER RUNS (owner, 2026-11-07). A door, not a pane. */}
@@ -3353,8 +3356,24 @@ export default function StageToday() {
     // tiles already read; the week's plays only break a tie.
     if (sortBy !== 'pop' || !board) return list;
     const w = (fav && fav.week) || {};
-    const t = (g) => Number((boardBy[g.key] || {}).plays) || 0;
-    return list.slice().sort((a, b) => (t(b) - t(a)) || ((w[b.key] || 0) - (w[a.key] || 0)) || a.name.localeCompare(b.name));
+    const raw = (g) => Number((boardBy[g.key] || {}).plays) || 0;
+    // A RUN'S PLAYS COUNT ONCE, ON THE RUN (owner, 2026-11-20, the home cleanup
+    // mockup: Popular led with six Trivia Gauntlet legs under the gauntlet's own
+    // tile). A puzzle that is a leg of a run ranks by its plays OUTSIDE the run,
+    // estimated off the day board alone, so there is no new request and nothing
+    // reshuffles as run figures land: a quiz run's legs are only played inside
+    // it, so the run takes its busiest leg's plays; any other run takes its
+    // quietest leg's plays (everyone who ran it played every leg). Legs are not
+    // sent to the foot: ties fall back to the raw plays, then the week.
+    const take = new Map();
+    for (const c of circuits) {
+      if (!c || c.poly || !Array.isArray(c.games) || c.games.length < 2) continue;
+      const ps = c.games.map(raw);
+      const n = FOLD_RUNS.includes(c.id) ? Math.max(...ps) : Math.min(...ps);
+      if (n > 0) for (const g of c.games) take.set(g.key, (take.get(g.key) || 0) + n);
+    }
+    const t = (g) => Math.max(0, raw(g) - (take.get(g.key) || 0));
+    return list.slice().sort((a, b) => (t(b) - t(a)) || (raw(b) - raw(a)) || ((w[b.key] || 0) - (w[a.key] || 0)) || a.name.localeCompare(b.name));
   };
   const favBlock = (cat, games, k) => {
     if (!k) return null;
@@ -3542,8 +3561,9 @@ export default function StageToday() {
   // choice is kept (sot_rail_tab). Its data is one /api/quiz/multiple-choice
   // read, made while the tab is selected; the phone's Multiple Choice button
   // after the runs reads the same answer (the rail itself is desktop only).
-  const [railTab, setRailTab] = useState('mc');
-  useEffect(() => { try { const v = localStorage.getItem('sot_rail_tab'); if (v === 'all' || v === 'mc') setRailTab(v); } catch (e) { /* private window */ } }, []);
+  // THE TAB LEFT THE RAIL (owner, 2026-11-20, the home cleanup): the rail shows
+  // the pane's own board only. The Multiple Choice view below is kept but unreached.
+  const [railTab, setRailTab] = useState('all');
   const pickRailTab = (v) => { setRailTab(v); try { localStorage.setItem('sot_rail_tab', v); } catch (e) { /* private window */ } };
   const [mcRail, setMcRail] = useState(null);
   const mcAsked = useRef(false);
@@ -3652,7 +3672,7 @@ export default function StageToday() {
                 ? <a className="sty-ebr" href={withTq(`/groups/${railGrp.code}`)}>You #{railGrp.mine.rank} of {railGrp.field}</a>
                 : <span className="sty-ebr">You #{railGrp.mine.rank} of {railGrp.field}</span>) : null}
             </div>
-            <ol>
+            <ol style={{ '--rh': rh.toFixed(2) + 'px' }}>
               {railGrp.rows.map((r) => (
                 <li key={r.userKey} className={r.me ? 'me' : ''}>
                   <i>{r.rank}</i><span>{r.username || 'Player'}</span><b>{Math.round(r.total)}</b>
@@ -3668,11 +3688,12 @@ export default function StageToday() {
                 group's box above does. The tabs name the scope. */}
             {/* Rank without "You", the as-of time small at the end (owner, 2026-11-20: the header overflowed). */}
             <div className="sty-eb">Everyone{rd && rd.me && rd.me.rank && rd.field
-              ? <span className="sty-ebr">#{rd.me.rank} of {Number(rd.field).toLocaleString('en-US')}{asOfEl}</span>
-              : rd && rd.field ? <span className="sty-ebr">{Number(rd.field).toLocaleString('en-US')} {rd.field === 1 ? 'player' : 'players'}{asOfEl}</span>
-              : asOfEl ? <span className="sty-ebr">{asOfEl}</span> : null}</div>
-            {tabs}
+              ? <span className="sty-ebr">You #{rd.me.rank} of {Number(rd.field).toLocaleString('en-US')}</span>
+              : rd && rd.field ? <span className="sty-ebr">{Number(rd.field).toLocaleString('en-US')} {rd.field === 1 ? 'player' : 'players'}</span>
+              : null}</div>
             <ol style={{ '--rh': rh.toFixed(2) + 'px' }}>{slots}</ol>
+            {/* The as-of time is the board's foot line (owner, 2026-11-20), so the header is the same two parts as the boxes above. */}
+            {asOfEl ? <div className="sty-rasof">Today&rsquo;s points{asOfEl}</div> : null}
           </div>
         )}
       </aside>
@@ -3859,8 +3880,8 @@ export default function StageToday() {
   // a chip per group beside the title on desktop, a banner on the phone, and
   // the games that group played today once switched on. One state, so a group
   // shown in My Puzzles is shown in All Puzzles too.
-  const grpChips = () => (who && grpGames.length ? (
-    <span className="sty-mgchips" data-lab="Group" onClick={(e) => e.stopPropagation()}>
+  const grpChips = (extra) => (who && grpGames.length ? (
+    <span className={'sty-mgchips' + (extra ? ' ' + extra : '')} data-lab="Group" onClick={(e) => e.stopPropagation()}>
       {grpGames.map((x) => (
         <button key={x.code} type="button" className={'sty-mgc' + (mineGrp.has(x.code) ? ' on' : '')}
           aria-pressed={mineGrp.has(x.code)} onClick={() => flipMineGrp(x.code)}>
@@ -4652,12 +4673,13 @@ export default function StageToday() {
           {ix && (paneOn === ALL_ID || !!paneCat(paneOn) || isSkillId(paneOn)) ? (
             <>{/* GROUPED BY JOB (owner, 2026-11-10): how it looks, how it is ordered,
                    whose games, then search with all the spare width. */}
-              {viewCtl(paneOn)}{sortCtl(false)}{paneOn === ALL_ID ? grpChips() : catChips(paneOn, 'sty-mgchips')}{capFind}</>
+              {viewCtl(paneOn)}{sortCtl(false)}{paneOn === ALL_ID ? grpChips('sty-mgall') : catChips(paneOn, 'sty-mgchips')}{capFind}</>
           ) : ix && paneOn === QUIZ_ID ? quizCapTools : null}
         </div>
         <div className="sty-rt">
         {/* THE COMMUNITY PILL (owner, 2026-11-18, spot 2): beside the figures, a live count while people post. */}
-        <CommunityPill className="sty-cpill" />
+        {/* Not .sty-cpill: that is the run pill, and its ::before dot doubled the live dot (owner, 2026-11-20). */}
+        <CommunityPill className="sty-cmpill" />
         <div className="sty-figs">
           {/* NO NAME, NO FIGURES: a guest gets the one control that would fill
               the row. Copy is the owner's (2026-10-07). */}
@@ -4667,6 +4689,12 @@ export default function StageToday() {
           ) : null}
           {/* THE NAME OPENS A MENU (owner, 2026-11-06): Stats (the profile, where it
               went on its own since 2026-10-26) and Log out. Same on the phone pill. */}
+          {/* THE GROUP SWITCH SITS BY THE NAME (owner, 2026-11-20): whose games, beside who
+              you are. On a narrower cap the text toggle in the tools row stays instead. */}
+          {who && ix && paneOn === ALL_ID ? grpGames.map((x) => (
+            <button key={'gt-' + x.code} type="button" className={'sty-who sty-grpt' + (mineGrp.has(x.code) ? ' on' : '')} aria-pressed={mineGrp.has(x.code)}
+              title={`Show the games ${x.name} played today`} onClick={() => flipMineGrp(x.code)}><b>{x.name}</b></button>
+          )) : null}
           {who ? <NameMenu name={who} className="sty-who" href={withTq('/player/' + encodeURIComponent(who))} title="Stats or log out"><b>{who}</b><i>player</i></NameMenu> : null}
           {/* THE DRAWING TICKETS (owner, 2026-10-15): the count, while the $100
               drawing runs, opening Your challenges. See app/ChallengeBack.jsx. */}
@@ -4686,7 +4714,7 @@ export default function StageToday() {
           {who ? (
             <a className={'sty-fc sty-fca sty-fday' + (capWait ? ' wait' : '')} href="#sty-board"
               onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
-              {capWait ? null : <b key="v">{stats.dayRank ? <>#<RollNum value={stats.dayRank} /></> : '\u2013'}</b>}
+              {capWait ? null : <b key="v">{(boardRank || stats.dayRank) ? <>#<RollNum value={boardRank || stats.dayRank} /></> : '\u2013'}</b>}
               {capWait ? null : <i key="l">Today</i>}
               <StagePatch key="p" on={capWait} light={light} />
             </a>
@@ -5038,7 +5066,7 @@ export default function StageToday() {
                 <CommunityBand />
                 <div className={'sty-mst' + (who ? '' : ' guest')}>
                   <a href="#sty-board" onClick={(e) => { e.preventDefault(); setLbScope('all'); goPane(BOARD_ID, 'sty-board'); }}>
-                    <b>{who && stats.dayRank ? '#' + stats.dayRank : '\u2013'}</b><i>Today</i>
+                    <b>{who && (boardRank || stats.dayRank) ? '#' + (boardRank || stats.dayRank) : '\u2013'}</b><i>Today</i>
                   </a>
                   <a href={who && mGroup ? withTq('/groups/' + mGroup.code) : '/groups'} onClick={() => { if (who && mGroup) pickGroup(mGroup.code); }}>
                     <b>{who && mGroup && mGroup.rank ? '#' + mGroup.rank : '\u2013'}</b><i>{who && mGroup && mGroup.name ? mGroup.name : 'Group'}</i>
@@ -8880,6 +8908,13 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-ix .sty-rlb .sty-eb,.sty-rail .cbr-hd{padding:9px 12px;font-size:13.5px;font-weight:800;letter-spacing:0;text-transform:none;line-height:1.35;color:var(--stg-ink);}
   .sty-ix .sty-rlb .sty-eb em{font-style:normal;font-weight:600;color:var(--stg-mute);}
   .sty-ix .sty-rlb .sty-eb .sty-asof{font-size:10px;font-weight:600;color:var(--stg-mute);white-space:nowrap;}
+  .sty-ix .sty-rlb .sty-rasof{padding:7px 12px 8px;border-top:1px solid var(--stg-ink);font-size:11px;font-weight:600;color:var(--stg-mute);white-space:nowrap;}
+  /* The group switch by the name (2026-11-20): the name chip's shape, filled while on. */
+  .sty-cap.v2 .sty-figs > button.sty-grpt{background:transparent;font:inherit;color:var(--stg-ink);cursor:pointer;margin:0;border-radius:999px;}
+  .sty-cap.v2 .sty-figs > button.sty-grpt > b{font-size:14px;font-weight:700;line-height:1.3;}
+  .sty-cap.v2 .sty-figs > button.sty-grpt:hover,.sty-cap.v2 .sty-figs > button.sty-grpt.on{background:var(--stg-ink);color:var(--stg-ground);}
+  @media (min-width:1261px){ .sty-captools .sty-mgchips.sty-mgall{display:none;} }
+  @media (max-width:1260px){ .sty-cap.v2 .sty-figs > button.sty-grpt{display:none;} }
   .sty-ix .sty-rlb .sty-eb .sty-ebr,.sty-rail .cbr-hd a{font-size:12px;font-weight:700;color:color-mix(in srgb, var(--stg-ink) 72%, transparent);}
   /* 5. THE INDEX IS ONE JOINED LIST (option 5A). The category rows, All
      Puzzles and My Puzzles share one outlined box with ink dividers, the shape
@@ -8901,8 +8936,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      their own, so it sat lower. Both now share margins, padding and leading. */
   .sty-ix > .sty-ixn:not(.re) > .sty-ixsw{flex:1 1 0;justify-content:flex-start;align-self:flex-start;margin:8px 0 4px;}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixsw button{line-height:1;}
-  .sty-ix > .sty-ixn:not(.re) > .sty-ixre{flex:0 0 auto;align-self:flex-start;margin:8px 0 4px;border:0;border-radius:0;padding:6px 0 4px;background:transparent;
-    line-height:1;font-size:13px;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
+  /* REORDER IS THE LIST'S LAST ROW (owner, 2026-11-20): it floated alone between the two
+     boxes once the Categories / Skills switch left; now a slim row joined to the foot. */
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixb:is(.ct, .sty-ixtop):not(.on).ixj2{border-bottom-left-radius:0;border-bottom-right-radius:0;}
+  .sty-ix > .sty-ixn:not(.re) > .sty-ixre{flex:1 1 100%;align-self:stretch;margin:-9px 0 0;border:1px solid var(--stg-ink);border-radius:0 0 12px 12px;padding:7px 12px 6px;background:transparent;text-align:left;
+    line-height:1.3;font-size:12px;font-weight:600;color:color-mix(in srgb, var(--stg-ink) 62%, transparent);}
   .sty-ix > .sty-ixn:not(.re) > .sty-ixre:hover{color:var(--stg-ink);}
 }
 /* ── THE PHONE'S COHERENCE PASS (owner, 2026-11-11: "i like m1b and m2", then

@@ -43,8 +43,7 @@ export function CommunityBand() {
 
 const PILL_CSS = `
 .cm-pill{display:inline-flex;align-items:center;gap:7px;height:40px;box-sizing:border-box;padding:0 16px;border:1px solid var(--stg-ink);border-radius:999px;
-  background:#a6f4e7;color:#08222e !important;text-decoration:none;white-space:nowrap;font-size:14px;line-height:1.25;flex:none;}
-.stage-page:not([data-stage-theme=light]) .cm-pill{background:color-mix(in srgb,#a6f4e7 24%,transparent);color:var(--stg-ink) !important;}
+  background:transparent;color:var(--stg-ink) !important;text-decoration:none;white-space:nowrap;font-size:14px;line-height:1.25;flex:none;}
 .cm-pill b{font-weight:800;}
 .cm-pill i{font-style:normal;font-weight:600;opacity:.8;}
 .cm-pill .d,.cm-mband .d{width:8px;height:8px;border-radius:50%;background:#0b7a5c;flex:none;}

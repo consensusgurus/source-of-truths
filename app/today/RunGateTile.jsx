@@ -149,7 +149,7 @@ export function MoreRunsTile({ rest, open, onToggle, players, colorOf }) {
         {rest.slice(0, 3).map((c) => (
           <span key={c.id} className="rgt-leg" style={{ '--lc': softGround(colorOf(c), 0.45) }}
             title={`${c.name}: ${Number(players(c) || 0).toLocaleString('en-US')} playing today`}>
-            {String(c.name).replace(/ Gauntlet$/, '').replace(/^Enter the /, '')}<i>{Number(players(c)) > 0 ? Number(players(c)).toLocaleString('en-US') : '\u2013'}</i>
+            {String(c.name).replace(/ Gauntlet$/, '').replace(/^Enter the /, '')}
           </span>
         ))}
       </span>
@@ -228,9 +228,11 @@ export const RGT_CSS = `
 .rgt.fin .rgt-go{background:transparent;}
 /* The button centres in the space between the header and the legs (owner, 2026-11-16:
    "center these start buttons to fill the space"): margin:auto 0 inside the flex column. */
-/* THE FOOT TAKES THE BUTTON'S COLOUR (owner, 2026-11-12: "the bottom section
-   matches the button color (darker)"), on every run tile, the white ones too. */
-.rgt-cs{display:flex;justify-content:space-between;gap:8px;padding:7px 14px 7px 16px;border-top:1px solid #0b1b2b;background:var(--rgc);font-size:12.5px;font-weight:600;white-space:nowrap;}
+/* ONE STRENGTH FOR EVERY FOOT STRIP (owner, 2026-11-20, the home cleanup mockup):
+   the run tile's foot is the same 60% mix a puzzle card's crowd strip uses, so the
+   Start button is the only full-strength colour on the tile. Supersedes the
+   2026-11-12 "matches the button color (darker)" foot. Dark keeps the full step. */
+.rgt-cs{display:flex;justify-content:space-between;gap:8px;padding:7px 14px 7px 16px;border-top:1px solid #0b1b2b;background:color-mix(in srgb, var(--rgc) 60%, #fff);font-size:12.5px;font-weight:600;white-space:nowrap;}
 .rgt-cs .ld{min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .rgt-cs b,.rgt-cs .ct{font-weight:800;}
 /* PERSON ICON BY THE PLAY COUNT (owner, 2026-11-10): any tile count span
@@ -257,10 +259,11 @@ html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt-go{backgrou
    background should go"): a run whose colour is the page's own goes white,
    like the puzzle cards, and keeps its button and legs in colour. */
 .rgt.rgt-w{background:#fff;}
-.rgt.rgt-w .rgt-cs{background:var(--rgc);}
 .stage-page:not([data-stage-theme=light]) .rgt.rgt-w{background:#1a2130;}
 .rgt.rgt-more{--rgc:#0b1b2b;background:#fff;cursor:pointer;}
-.rgt-more .rgt-go{background:#0b1b2b;color:#fff;font:inherit;font-weight:900;font-size:15px;cursor:pointer;width:100%;}
+/* A QUIET SIBLING (owner, 2026-11-20): the same button shape as a run's Start,
+   white with the ink outline, so the row keeps one skeleton. */
+.rgt-more .rgt-go{background:#fff;color:#0b1b2b;font:inherit;font-weight:900;font-size:15px;cursor:pointer;width:100%;}
 .rgt-more .rgt-cs{background:#eef1f6;text-decoration:none;color:inherit;}
 .rgt-more .rgt-em{background:#eef1f6;--e1:#cfd7e3;}
 /* The list takes the room the headline and rule take on a run tile and sits
@@ -273,7 +276,7 @@ html[data-stage-color=mono] .stage-page[data-stage-theme=light] .rgt-go{backgrou
 .rgt-band i{font-style:normal;font-weight:800;display:inline-flex;align-items:center;gap:4px;flex:none;}
 .rgt-band i svg{opacity:.7;}
 .stage-page:not([data-stage-theme=light]) .rgt.rgt-more{background:#1a2130;--rgc:#e9edf4;border-color:#5a6475;}
-.stage-page:not([data-stage-theme=light]) .rgt-more .rgt-go{background:#e9edf4;color:#0b1b2b;}
+.stage-page:not([data-stage-theme=light]) .rgt-more .rgt-go{background:transparent;color:#e9edf4;border-color:#5a6475;}
 .stage-page:not([data-stage-theme=light]) .rgt-more .rgt-cs{background:#11161f;}
 .stage-page:not([data-stage-theme=light]) .rgt-more .rgt-em{background:#11161f;--e1:#3a4558;}
 .stage-page:not([data-stage-theme=light]) .rgt-more :is(.rgt-legs,.rgt-leg,.rgt-em){border-color:#5a6475;}

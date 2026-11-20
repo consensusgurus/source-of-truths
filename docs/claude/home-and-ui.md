@@ -3004,3 +3004,17 @@ Mural is a new kind of puzzle: a small mural with the Blank / Faded / Bright leg
 is different, and one Play Mural button. On a phone the reasons keep only their titles. MuralToo
 has no card. Preview with `?premiere=1`.
 
+
+## The desktop home cleanup: one grammar per job (owner, 2026-11-20)
+
+Owner approved the cohesion mockup and said "implement all of those". What it set:
+
+- **Popular counts a run's plays once, on the run.** In `sortGames` (StageToday), a puzzle that is a leg of a run ranks by its plays outside the run, estimated off the day board alone (no request, nothing reshuffles): a FOLD_RUNS quiz run takes its busiest leg's plays, any other run its quietest leg's. Ties fall back to raw plays, then the week. Legs are not sent to the foot. This refines the 2026-11-09 "one list" ruling; the tile still prints the raw play count.
+- **Every foot strip is the 60% mix.** A run tile's `.rgt-cs` uses the same `color-mix(... 60%, #fff)` as a puzzle card's crowd strip in light; the Start button is the only full-strength colour. Supersedes the 2026-11-12 darker run foot. Dark keeps the full step.
+- **More Runs is a quiet sibling.** Same skeleton as a run tile, a white Start-shaped button with the ink outline, no counts in its leg band.
+- **The rail has one header pattern and one row height.** Title left, the reader's standing right ("You #N of M"). Your Challenges carries the record in the header and See all in its row. The as-of time is the Everyone box's foot line (`.sty-rasof`). The Multiple Choice tab is gone from the rail (the view code is kept, unreached).
+- **One "Today" rank.** The cap's Today figure is the reader's place on the day board the rail shows (`boardRank`), falling back to the IQ day rank until the board has the reader.
+- **Community.** The cap pill is an outline, and its class is `sty-cmpill`, never `sty-cpill` (the run pill's `::before` dot doubled the live dot). The desktop index has one Community row; Post-Game Talk, Groups and Puzzle Peers are reached from the Community page. The phone tiles are unchanged.
+- **Reorder is the category list's last row** on desktop, joined to the foot of the box.
+- **The group switch sits by the name chip** from 1261px up (`.sty-grpt`); below that the text toggle in the tools row stays.
+- **Menu rows are square.** `.nmm-r` states `border-radius:0`: the global button radius made the Log out row's fill a pill.

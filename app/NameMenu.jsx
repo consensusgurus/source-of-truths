@@ -135,7 +135,7 @@ const CSS = `
 @media (prefers-reduced-motion:no-preference){.nmm{animation:nmm-in .14s ease-out;}}
 @keyframes nmm-in{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
 .nmm-r{display:flex;align-items:center;justify-content:space-between;height:48px;box-sizing:border-box;padding:0 16px;
-  margin:0;border:0;background:none;font:inherit;font-size:14px;font-weight:800;color:inherit !important;
+  margin:0;border:0;border-radius:0;background:none;font:inherit;font-size:14px;font-weight:800;color:inherit !important;
   text-decoration:none;text-align:left;cursor:pointer;}
 .nmm-r + .nmm-r{border-top:1px solid rgba(11,15,26,.2);}
 .nmm.dk .nmm-r + .nmm-r{border-top-color:rgba(255,255,255,.2);}
