@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { buildLeaderboardMatrix, playerStanding } from '@/lib/quiz-anon';
-import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
+import { loadDailyResultsCached } from '@/lib/daily-results-cache';
 import { resolvePlayerKeys } from '@/lib/quiz-identity';
 import { isHiddenViewer } from '@/lib/hidden-players';
 
@@ -114,7 +114,14 @@ export async function GET(request) {
     let who0 = null;
     if (anonId || email) { try { who0 = await resolvePlayerKeys(supabaseAdmin, { anonId, email }); } catch (e) { who0 = null; } }
     const shadow = !!(who0 && isHiddenViewer(who0.keys));
-    const { data: all, error } = await loadQuizResultsCached(supabaseAdmin, { force: wantFresh, includeHidden: shadow });
+    // ONE QUIZ'S ROWS, NOT THE WHOLE TABLE (Vercel cost fix, 2026-11-20). This
+    // route used to load every quiz_results row (645,000 by then) on each cold
+    // instance, about 4.5s and hundreds of MB, only to keep one quiz's rows: it
+    // was the most frequent full-table load on the site (logs, 2026-11-20).
+    // The scoped loader reads just this quizId through the quiz_results_quiz
+    // index with the same column tiers, the same id order, the same `force`
+    // and the same hidden-player rule, so `data` below is the same rows.
+    const { data: all, error } = await loadDailyResultsCached(supabaseAdmin, [quizId], { force: wantFresh, includeHidden: shadow });
     if (error) {
       console.error('quiz board error', error);
       return NextResponse.json({ error: 'db error' }, { status: 500 });
