@@ -6,7 +6,10 @@ export default function robots() {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
+        // The jigsaw photo routes are images, not API calls: Google Images may
+        // fetch them (2026-11-19). The more specific Allow wins over /api/.
+        // Each refuses a day that is not live, so no surprise leaks.
+        allow: ['/', '/api/jig/img', '/api/saw/img'],
         disallow: ['/admin', '/api/'],
       },
     ],

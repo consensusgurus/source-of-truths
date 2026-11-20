@@ -7,6 +7,7 @@ import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { categoryColor, gameCategory } from '@/lib/category-ramp';
 import { SITE_URL } from '@/lib/site';
 import { T } from '@/lib/theme';
+import { GAUNTLET_SEO, gauntletJsonLd } from '@/lib/run-seo';
 
 import { PUZZLES as deepPuzzles } from '../../../deep/puzzles';
 import { QUESTION_MAP as deepQuestions } from '../../../deep/questions';
@@ -214,7 +215,19 @@ function dayFor(bank, today) {
 // NOTHING HERE CLAIMS A NUMBER WE HAVE NOT MEASURED. No "most players are out
 // by question ten": it reads well and we have not counted it. The stakes are
 // carried by what the game actually does, which is enough.
+// THE GAUNTLETS' SHORT ADDRESSES ARE INDEXED (2026-11-19). lib/run-seo.js
+// GAUNTLET_SEO holds the search title and description; the share copy below
+// (openGraph, twitter) is untouched, so a shared link reads exactly as before.
 export async function generateMetadata({ params }) {
+  const meta = await shareMetadata({ params });
+  const id = decodeURIComponent(params.id || '');
+  const seo = GAUNTLET_SEO[id];
+  const c = circuitById(id);
+  if (!seo || !c || !c.path || !meta || !meta.title) return meta;
+  return { ...meta, title: seo.title, description: seo.description, robots: { index: true, follow: true } };
+}
+
+async function shareMetadata({ params }) {
   const c = circuitById(decodeURIComponent(params.id));
   if (!c) return {};
   if (runEngine(c.id) === 'jam') {
@@ -459,8 +472,12 @@ export default function CircuitRunPage({ params }) {
     sections.forEach((s, i) => { if (slots[i] >= 0) s.slot = slots[i]; });
   }
 
+  // Head-only schema for the indexed gauntlet addresses (2026-11-19). Script
+  // tags paint nothing, so the run looks exactly as it did.
+  const ld = gauntletJsonLd(circuit.id);
   return (
     <Suspense fallback={null}>
+      {ld.map((x, i) => <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(x) }} />)}
       <RunClient
         circuitId={circuit.id}
         circuitName={circuit.name}

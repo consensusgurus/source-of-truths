@@ -24,9 +24,13 @@ import { gameCategory } from '@/lib/game-seo';
 // fetched either.
 
 export const metadata = {
-  title: 'Jigsaw Puzzle Shelf: Free Daily Jigsaw Archive | Mind Loft',
+  // THE JIGSAW HUB (owner, 2026-11-19: "we have a jigsaw hub page, the jigsaw
+  // shelf. use that as the place to build or add language"). The search title
+  // and description now aim at "free online jigsaw puzzles"; the share copy
+  // below and the page's own heading are unchanged.
+  title: 'Free Online Jigsaw Puzzles: Daily Jigsaws and Archive | Mind Loft',
   description:
-    'Every Jig and Saw daily jigsaw so far, wide and tall, a new photo for each every day. Play any past puzzle free, no app or signup.',
+    'Free online jigsaw puzzles, no download: a new wide and tall photo jigsaw every day, every past one to replay, and 4,000 piece jigsaws built together.',
   alternates: { canonical: '/jig/shelf' },
   openGraph: {
     images: [{ url: '/og/jig-shelf.png', width: 1200, height: 630, alt: 'The Jigsaw Puzzle Shelf: past daily jigsaw photos on wooden shelves, today a question mark' }],
@@ -61,7 +65,22 @@ function licenceUrl(lic) {
 }
 const commonsPage = (t) => `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(t.replace(/ /g, '_'))}`;
 
+// The first three answer the hub searches (2026-11-19); they print in the
+// Questions block at the foot of the page, under the shelves, where the
+// existing three already sit.
 const FAQ = [
+  {
+    q: 'Are these jigsaw puzzles free to play online?',
+    a: 'Yes. Every jigsaw on Mind Loft is free in your browser, on a phone or a computer, with no download, no app and no signup. A new Jig and a new Saw open every day at midnight Eastern, and every past puzzle on this shelf stays free to replay.',
+  },
+  {
+    q: 'What kinds of jigsaw puzzles are there?',
+    a: 'Jig is a daily 80 piece jigsaw of a wide photo. Saw is a daily tall jigsaw of 77 or 80 pieces. Mural and MuralToo are 4,000 piece jigsaws that everyone on the site builds together, and Mind Loft Kids has the same photos in 6 to 30 pieces.',
+  },
+  {
+    q: 'Can I do a big jigsaw puzzle with friends?',
+    a: 'Yes. Mural and MuralToo are 4,000 piece multiplayer jigsaws the whole site builds at once, and a Private Mural is the same giant jigsaw for just your group or anyone you send the link to. Finished murals come back to this shelf to build alone.',
+  },
   {
     q: 'What is the Jigsaw Puzzle Shelf?',
     a: 'It is every Jig and Saw daily jigsaw so far, one box per puzzle per day, a week to a shelf: Jig on top, the tall Saw below it. Each box shows that day’s photograph and its piece count. Pick any past box to play that puzzle free from the archive.',
@@ -103,6 +122,15 @@ export default function JigShelfPage() {
     description: metadata.description,
     url: `${SITE_URL}/jig/shelf`,
     isPartOf: { '@type': 'WebSite', name: 'Mind Loft', url: SITE_URL },
+    // The hub's games (2026-11-19), so the page reads as the home of every jigsaw.
+    hasPart: [
+      ['Jig: the daily jigsaw puzzle', '/jig'],
+      ['Saw: the tall daily jigsaw puzzle', '/saw'],
+      ['Mural: the 4,000 piece multiplayer jigsaw', '/mural'],
+      ['MuralToo: the midnight 4,000 piece jigsaw', '/muraltoo'],
+      ['Private Mural: a giant jigsaw for your group', '/mural/private'],
+      ['Kids jigsaw puzzles', '/kids/jigsaw'],
+    ].map(([name, href]) => ({ '@type': 'WebPage', name, url: `${SITE_URL}${href}` })),
     mainEntity: {
       '@type': 'ItemList',
       name: 'Jig and Saw daily jigsaw puzzles',

@@ -1146,8 +1146,29 @@ sentence on how it is scored. That entry is what prints the run's questions, lin
 game and every other run, and puts it in the sitemap. The page then mounts
 `<StageTail run="<id>" theme="dark" />` after the client (drop `theme` if the run follows the
 reader's register, as Price Check does), emits `runBreadcrumbJsonLd('<id>')`, and gives its
-Game schema an image (its `/card` route is fine). A run whose page is deliberately noindex
-(the Trivia and Math Gauntlets, whose landing pages rank instead) goes in `RUN_LANDINGS`.
+Game schema an image (its `/card` route is fine). The five gauntlets (`/trivia`, `/triviaencore`,
+`/english`, `/science`, `/math`) go in `RUN_LANDINGS` AND `GAUNTLET_SEO` instead.
+
+**The gauntlets are INDEXED at their short addresses (owner, 2026-11-19).** They used to be noindex
+with the `/circuits/<id>` landing meant to rank; Search Console over 90 days showed the landings
+earning almost nothing while every share pointed at the noindex short address. Now `GAUNTLET_SEO`
+in `lib/run-seo.js` holds each one's search title and description (searcher words: "Free Daily
+Trivia Quiz", "Free Daily Math Quiz"), `app/circuits/[id]/run/page.js` sets `index: true` for them
+and emits `gauntletJsonLd(id)` (Game + BreadcrumbList), and `circuitsEntries` puts the five short
+paths in the sitemap. The landings retitle to "<Name>: How It Works, Today's Lineup and Trophy" so the
+two pages do not compete. All of it is HEAD-ONLY: owner rule for this pass was "do not change any UI
+element", so the share copy, headings and screens are untouched. No FAQPage on the run pages: they
+print no visible questions, and schema must match what the page shows. A new gauntlet adds a
+`GAUNTLET_SEO` entry.
+
+**Jigsaw photos are crawlable (2026-11-19).** `app/robots.js` allows `/api/jig/img` and
+`/api/saw/img` (the more specific Allow beats the `/api/` Disallow; both refuse a day that is not
+live), and the past Jig and Saw sitemap entries carry `images` (the image sitemap extension, written
+by `lib/sitemap-xml.js`). The Jigsaw Puzzle Shelf (`/jig/shelf`) is the jigsaw HUB (owner: "use that
+as the place to build or add language"): its search title targets "free online jigsaw puzzles", its
+CollectionPage lists Jig, Saw, Mural, MuralToo, Private Mural and Kids as `hasPart`, and new hub
+language goes in its FAQ block at the foot of the page. Mural and MuralToo take different search
+angles (multiplayer, noon / giant, midnight) so they stop competing for one query.
 
 ## Bank runway and the Machine restock: two commands (owner, 2026-11-18)
 

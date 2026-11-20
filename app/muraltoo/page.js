@@ -11,8 +11,8 @@ import { categoryCrumb } from '@/lib/game-seo';
 // for a reader without scripts.
 
 export const metadata = {
-  title: 'Free 4,000 Piece Shared Jigsaw: MuralToo | Mind Loft',
-  description: 'A free daily 4,000 piece online jigsaw puzzle that every player builds together, open until it is finished. Harder pieces and firsts score more.',
+  title: 'Free Giant Online Jigsaw Puzzle at Midnight: MuralToo | Mind Loft',
+  description: 'The midnight twin of Mural: a free 4,000 piece jigsaw puzzle the whole site builds together, open from midnight Eastern until it is finished. No signup.',
   alternates: { canonical: '/muraltoo' },
   openGraph: {
     images: [{ url: '/og/muraltoo.png', width: 1200, height: 630, alt: 'MuralToo, a 4,000 piece online jigsaw puzzle from Mind Loft that everyone builds together' }],
@@ -36,7 +36,7 @@ const gameJsonLd = {
   name: 'MuralToo',
   alternateName: 'MuralToo: The Second Shared 4,000 Piece Jigsaw Puzzle',
   url: `${SITE_URL}/muraltoo`,
-  description: 'A free daily online jigsaw puzzle with 4,000 pieces that every player on the site builds together, the twin of Mural. Each player gets a tray of pieces from one real photograph; placing a piece scores points, harder pieces score more, and a piece nobody has placed yet scores double. The shared picture updates every two minutes. A new MuralToo opens every day at midnight Eastern and runs until the next midnight. No clock, no signup.',
+  description: 'A free daily online jigsaw puzzle with 4,000 pieces that every player on the site builds together, the twin of Mural. Each player gets a tray of pieces from one real photograph; placing a piece scores points, harder pieces score more, and a piece nobody has placed yet scores double. The shared picture updates every two minutes. A new MuralToo opens at midnight Eastern and stays open until its last piece is placed, at least 24 hours; the next one opens when it closes. No clock, no signup.',
   genre: ['Puzzle', 'Jigsaw puzzle', 'Multiplayer puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

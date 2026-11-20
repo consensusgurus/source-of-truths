@@ -11,8 +11,8 @@ import { categoryCrumb } from '@/lib/game-seo';
 // for a reader without scripts.
 
 export const metadata = {
-  title: 'Free 4,000 Piece Online Jigsaw, Built Together: Mural | Mind Loft',
-  description: 'A free daily 4,000 piece online jigsaw puzzle that every player builds together. Harder pieces and first placements score more. Open until it is finished.',
+  title: 'Free Multiplayer Jigsaw Puzzle, 4,000 Pieces: Mural | Mind Loft',
+  description: 'A free daily multiplayer jigsaw puzzle: 4,000 pieces of one photo that everyone online builds together, open from noon Eastern until it is finished.',
   alternates: { canonical: '/mural' },
   openGraph: {
     images: [{ url: '/og/mural.png', width: 1200, height: 630, alt: 'Mural, a 4,000 piece online jigsaw puzzle from Mind Loft that everyone builds together' }],
@@ -36,7 +36,7 @@ const gameJsonLd = {
   name: 'Mural',
   alternateName: 'Mural: The Shared 4,000 Piece Jigsaw Puzzle',
   url: `${SITE_URL}/mural`,
-  description: 'A free daily online jigsaw puzzle with 4,000 pieces that every player on the site builds together. Each player gets a tray of pieces from one real photograph; placing a piece scores points, harder pieces score more, and a piece nobody has placed yet scores double. The shared picture updates every two minutes. A new Mural opens every day at noon Eastern and runs for 24 hours. No clock, no signup.',
+  description: 'A free daily online jigsaw puzzle with 4,000 pieces that every player on the site builds together. Each player gets a tray of pieces from one real photograph; placing a piece scores points, harder pieces score more, and a piece nobody has placed yet scores double. The shared picture updates every two minutes. A new Mural opens at noon Eastern and stays open until its last piece is placed, at least 24 hours; the next one opens when it closes. No clock, no signup.',
   genre: ['Puzzle', 'Jigsaw puzzle', 'Multiplayer puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,

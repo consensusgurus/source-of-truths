@@ -4,6 +4,7 @@ import { ALL_CIRCUITS, circuitById, circuitGamesFor, circuitPageHref, isMarquee 
 import { categoryColor, categoryColorLight } from '@/lib/category-ramp';
 import { SITE_URL } from '@/lib/site';
 import { genericFor } from '@/lib/puzzle-categories';
+import { GAUNTLET_SEO } from '@/lib/run-seo';
 
 // /circuits/<id> — a circuit's own page, and the thing a shared circuit link
 // lands on.
@@ -60,7 +61,13 @@ export async function generateMetadata({ params }) {
   const names = games.map((g) => g.name).join(', ');
   const title = isMarquee(c.id)
     ? 'The Daily Five: Five Daily Puzzles, One Run | Mind Loft'
-    : `The ${c.name} Circuit: ${n} Daily Puzzles, One Run | Mind Loft`;
+    // The five gauntlets are QUIZZES, and their short addresses (/trivia, /math...)
+    // now rank for "daily trivia quiz" and the like (lib/run-seo.js GAUNTLET_SEO,
+    // 2026-11-19). This landing takes the how-it-works searches instead, so the
+    // two pages do not compete. Head only: the page's own heading is unchanged.
+    : GAUNTLET_SEO[c.id]
+      ? `${c.name}: How It Works, Today's Lineup and Trophy | Mind Loft`
+      : `The ${c.name} Circuit: ${n} Daily Puzzles, One Run | Mind Loft`;
   // The description is the share invite plus the roster, which is the pair a
   // searcher needs: what the run is, and which games are in it.
   const description = `${c.share.invite}${names ? ` Today: ${names}.` : ''} Free, no account needed, and ranked on your combined placement across all ${n}.`;
