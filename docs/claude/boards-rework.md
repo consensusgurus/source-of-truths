@@ -64,3 +64,15 @@ database (Micro, near its Disk IO budget) and faster home and end screens.
 
 Do not move routes off the full-table cache by other means: see the 2026-11-20 incident in
 platform.md.
+
+## Up Next picks from the day board (2026-11-20)
+
+The puzzle ending's Play Similar / Switch Gears picks no longer cost two uncached
+`/api/quiz/daily-combined` reads per finish. The cron requests the overall board with
+`pool=1`, so `boards-v1/overall` carries `pool`: per game `{key, plays, named, solved,
+clocks, secs}`. `usePuzzleStandings` (app/WhereYouStand.jsx) prices the picks on the client
+with `lib/pick-pool.js`, a copy of the route's picks loop (same floors, sibling rule, ladder,
+nearest-relative extras). **Change the two together.** If the board is missing, older than
+15 minutes or another ET day, the hook falls back to the old two live reads. The picks no
+longer carry `after` (a day-board rank), so the "moves you to #N in Today's Puzzles" lines
+drop out, which matches the puzzle-only ending ruling.

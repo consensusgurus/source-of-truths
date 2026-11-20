@@ -962,6 +962,32 @@ export async function GET(request) {
       stand.aboveN = aboveAll.length;
       stand.above = aboveAll.slice(0, 300);
     }
+    // THE PICK POOL (owner, 2026-11-20, docs/claude/boards-rework.md): ?pool=1
+    // returns, for every game in this read, the site-wide figures the
+    // easiest-points picks are built from (the loop above), so the prebuilt
+    // day board can carry them and an ending prices its picks on the client
+    // (lib/pick-pool.js) instead of asking this route per player.
+    let pool = null;
+    if (!circuitOn && searchParams.get('pool')) {
+      pool = [];
+      for (const g of gameResults || []) {
+        if (!g || !g.players) continue;
+        const rowsG = [...g.players.values()];
+        let solved = 0, named = 0;
+        const clocks = [];
+        for (const p of rowsG) {
+          if (p.username) named += 1;
+          if (p.abandoned) continue;
+          const sc = Number(p.score) || 0, tt = Number(p.total) || 0;
+          if (!(tt > 0 ? sc / tt >= 0.5 : sc > 0)) continue;
+          solved += 1;
+          const te = Number(p.timeElapsed);
+          if (Number.isFinite(te) && te > 0) clocks.push(te);
+        }
+        clocks.sort((a, b) => a - b);
+        pool.push({ key: g.key, plays: rowsG.length, named, solved, clocks: clocks.length, secs: clocks.length ? clocks[Math.floor(clocks.length / 2)] : null });
+      }
+    }
     // ?top=N asks for a longer board (the home's side column), capped at 30.
     const topN = Math.min(30, Math.max(DISPLAY, parseInt(searchParams.get('top') || '', 10) || DISPLAY));
     // THE RUN SCORECARD (owner, 2026-10-20): every run ends on one table of
@@ -1202,6 +1228,7 @@ export async function GET(request) {
       meProvisional,
       rival,
       stand,
+      ...(pool ? { pool } : {}),
       vs,
     }, { headers: (fresh || shadow) ? NO_STORE_HEADERS : CACHE_HEADERS });
   } catch (e) {

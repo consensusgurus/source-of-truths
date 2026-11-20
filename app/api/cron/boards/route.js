@@ -67,7 +67,7 @@ export async function GET(request) {
   const errors = [];
 
   // 1. The day's board and every run's board, through the live route itself.
-  try { built.overall = await combined('all=1&top=30'); } catch (e) { errors.push(String(e.message || e)); }
+  try { built.overall = await combined('all=1&top=30&pool=1'); } catch (e) { errors.push(String(e.message || e)); }
   for (const c of DISPLAY_CIRCUITS) {
     try { built[`circuit-${c.id}`] = await combined(`circuit=${encodeURIComponent(c.id)}&all=1&top=30`); }
     catch (e) { errors.push(String(e.message || e)); }

@@ -35,6 +35,7 @@ import { dailyMeIdentity } from './dailyMeClient';
 import { resultPostsSettled } from './ResultQueue';
 import { sharedGet } from './sharedGet';
 import GameGlyph from './GameGlyph';
+import { picksFromPool, todaySuffixET } from '@/lib/pick-pool';
 
 // The daily points ladder (lib/daily-combined LADDER), by registered place.
 const LADDER = [15, 12, 10, 8, 7, 6, 5, 4, 3, 2];
@@ -162,6 +163,7 @@ function mcRow(d) {
 export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board, next = null }) {
   const [rows2, setRows2] = useState(null);
   const [ready, setReady] = useState(false);
+  const [pre, setPre] = useState(null);
   const asked = useRef(false);
   useEffect(() => {
     if (!on || asked.current || !gameKey || !game || !game.rank) return undefined;
@@ -173,12 +175,27 @@ export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board, ne
     // price this game's relatives (Encore after Emcee) from how you did here.
     const nAll = Math.max(Number(game.n) || 0, game.rank);
     const pr = nAll >= 3 ? Math.min(1, Math.max(0.05, Math.round((game.rank / nAll) * 20) / 20)) : null;
-    resultPostsSettled(4000).then(() => {
+    // THE PICKS FROM THE PREBUILT BOARD (owner, 2026-11-20): the ending shows
+    // this puzzle's standings only, so the day and category reads were left
+    // feeding just the Up Next picks. Those now come from the day board the
+    // cron writes (`pool`), a CDN-cached read. Missing, stale (over 15 minutes)
+    // or another day's board falls back to the two live reads below.
+    const liveReads = () => resultPostsSettled(4000).then(() => {
       const day = sharedGet('/api/quiz/daily-combined?' + qsOf({ less: gameKey, plus, pr })).catch(() => null);
       const catP = keys.length >= 2
         ? sharedGet('/api/quiz/daily-combined?' + qsOf({ keys: keys.join(','), less: gameKey, plus, pr })).catch(() => null)
         : Promise.resolve(null);
       return Promise.all([catP, day]);
+    });
+    const today = todaySuffixET();
+    fetch('/api/boards?name=overall').then((r) => (r.ok ? r.json() : null)).catch(() => null).then((b) => {
+      const ok = b && Array.isArray(b.pool) && b.pool.length && b.asOf && Date.now() - b.asOf < 15 * 60 * 1000
+        && (!today || !b.date || b.date === today);
+      if (!ok) return liveReads();
+      const dayPicks = picksFromPool(b.pool, { lessKeys: [gameKey], pr });
+      const catPicks = keys.length >= 2 ? picksFromPool(b.pool, { lessKeys: [gameKey], keep: new Set(keys), pr }) : [];
+      if (alive) setPre({ dayPicks, catPicks });
+      return [null, null];
     }).then(([c, d]) => {
       if (!alive) return;
       const out = [];
@@ -207,6 +224,7 @@ export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board, ne
   const all = rows2 || [];
   const day = all.find((r) => r.id === 'day');
   const catRow = all.find((r) => r.id === 'cat');
+  if (pre) return { rows: ready ? [first, ...all] : null, ready, first, dayPicks: pre.dayPicks, catPicks: pre.catPicks };
   return { rows: ready ? [first, ...all] : null, ready, first, dayPicks: day ? day.picks : [], catPicks: catRow ? catRow.picks : [] };
 }
 
