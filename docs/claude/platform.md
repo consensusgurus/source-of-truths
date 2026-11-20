@@ -860,3 +860,17 @@ Results page, desktop and phone, and the results board gets a fourth tab, Talk, 
 `app/community/TalkPanel.jsx` compact. The bands and the tab show for TODAY's puzzle only
 (`curISO` set), never on an archived day. The band is just one line, "Talk About Today's <Game>", and the two buttons (owner,
 2026-11-18): no eyebrow, no player count, no finishers-only note, and no request.
+
+## Scoped quiz_results reads need a (quiz_id, id) index first (2026-11-20 incident)
+
+Do NOT switch a route from the full-table cache (`loadQuizResultsCached`) to the scoped loader
+(`loadDailyResultsCached`) without first adding an index on `quiz_results (quiz_id, id)`.
+On 2026-11-20 `/api/quiz/board` (commit c1e1115, one quizId) and `/api/quiz/daily-game` (090bfd4,
+a game's ~150 ids) were moved to the scoped loader to stop every cold instance loading the
+645,000-row snapshot (~4.5s each, 143 loads in 30 minutes, mostly from board). The scoped read is
+`quiz_id IN (...) AND id > x ORDER BY id LIMIT 1000`, and without a composite index Postgres can
+walk the primary key and filter, so each call scans much of the table. Under real traffic the
+database saturated and EVERY scoped reader timed out ('daily results: refresh timed out', 60s
+runtime timeouts) in daily-combined, daily-me, multiple-choice and groups/standing, from 09:22 to
+09:33 ET. Both were reverted (7103ab0, 83a903c). With the index in place, retry board first and
+watch the logs for 'refresh timed out' for 15 minutes before touching anything else.
