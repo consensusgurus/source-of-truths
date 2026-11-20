@@ -57,12 +57,53 @@ export function bootMural(root, cfg) {
   document.body.style.overflow = 'hidden';
   if (window.innerWidth <= 720) root.classList.add('full');
 
-  function bootMsg(t) { const e = $('msg'); if (e) e.textContent = t; }
+  // THE LOADING SCREEN (owner, 2026-11-20): the board is a 4,000 piece photo and
+  // can take several seconds, so a large centred card covers the page until the
+  // board is drawn, in place of the small tray line. Errors land on it too.
+  const bootEl = document.createElement('div');
+  bootEl.className = 'mrlBoot';
+  bootEl.setAttribute('role', 'status');
+  bootEl.setAttribute('aria-live', 'polite');
+  bootEl.innerHTML = '<style>'
+    + '.mrlBoot{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:var(--page);color:var(--ink);transition:opacity .35s ease;padding:24px}'
+    + '.mrlBoot.out{opacity:0;pointer-events:none}'
+    + '.mrlBoot .bIn{max-width:460px;width:100%;text-align:center}'
+    + '.mrlBoot .bEb{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}'
+    + '.mrlBoot h2{font-size:clamp(30px,6vw,44px);line-height:1.1;margin:0 0 12px;font-weight:800}'
+    + '.mrlBoot p{font-size:17px;line-height:1.5;margin:0 0 6px;color:var(--ink)}'
+    + '.mrlBoot .bStep{color:var(--mute);font-size:15px;margin-top:4px}'
+    + '.mrlBoot .bBar{height:8px;border-radius:99px;background:var(--soft);overflow:hidden;margin:22px auto 0;max-width:320px}'
+    + '.mrlBoot .bBar i{display:block;height:100%;width:35%;border-radius:99px;background:var(--ink);animation:mrlBootSlide 1.3s ease-in-out infinite}'
+    + '.mrlBoot.err .bBar{display:none}'
+    + '.mrlBoot a{color:inherit}'
+    + '@keyframes mrlBootSlide{0%{transform:translateX(-110%)}100%{transform:translateX(320%)}}'
+    + '@media (prefers-reduced-motion:reduce){.mrlBoot .bBar i{animation:none;width:100%;opacity:.35}}'
+    + '</style><div class="bIn">'
+    + '<div class="bEb">' + K.name + '</div>'
+    + '<h2 id="bootH">Loading</h2>'
+    + '<p id="bootP">This is a big page: one 4,000 piece picture the whole site builds together. It can take a few seconds.</p>'
+    + '<p class="bStep" id="bootStep"></p>'
+    + '<div class="bBar"><i></i></div>'
+    + '</div>';
+  root.appendChild(bootEl);
+  function bootStep(t) { const e = bootEl.querySelector('#bootStep'); if (e) e.textContent = t; }
+  function hideBoot() { if (!bootEl.parentNode) return; bootEl.classList.add('out'); setTimeout(() => { if (bootEl.parentNode) bootEl.parentNode.removeChild(bootEl); }, 400); }
+  // A message that ends the load (not open, bad link, failed) replaces the card's text.
+  function bootMsg(t) {
+    const e = $('msg'); if (e) e.textContent = t;
+    if (!bootEl.parentNode) return;
+    bootEl.classList.add('err');
+    bootEl.querySelector('#bootH').textContent = 'Not Loaded';
+    bootEl.querySelector('#bootP').textContent = t;
+    bootEl.querySelector('#bootStep').innerHTML = '<a href="/">Back To Mind Loft</a>';
+  }
+  const paint = () => new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
   // THE WAITING SCREEN (owner, 2026-11-19): a kind whose first board has not
   // opened yet shows when it opens and counts down, and sends the reader to the
   // one that is open. It reloads itself into the board at the opening.
   let waitT = null;
   function waitScreen() {
+    hideBoot();
     const other = K.key === 'mural' ? MURAL_KINDS.muraltoo : MURAL_KINDS.mural;
     const opens = muralFirstOpens(K.key);
     const el = document.createElement('div');
@@ -135,13 +176,13 @@ export function bootMural(root, cfg) {
       const privId = !solo ? privateMuralId(cfg.priv) : null;
       if (cfg.priv && !solo) {
         if (!privId) { bootMsg('That private mural link is not right. Check the link and try again.'); return; }
-        bootMsg('Opening your private mural.');
+        bootStep('Opening your private mural.');
         b = await getJSON(`/api/mural/board?id=${privId}`);
         if (dead) return;
         if (!b.ok || !b.j || !b.j.grades) { bootMsg('That private mural could not be found. Check the link and try again.'); return; }
       }
       if (!solo && !privId && !muralLaunched(K.key)) { waitScreen(); return; }
-      if (!privId) bootMsg(`Opening ${K.name}.`);
+      if (!privId) bootStep(`Opening ${K.name}.`);
       if (!b) b = await getJSON(`/api/mural/board?kind=${K.key}`);
       if (dead) return;
       if (!b.ok || !b.j || !b.j.grades) { bootMsg(`${K.name} is not open yet. Check back in a minute.`); return; }
@@ -152,11 +193,13 @@ export function bootMural(root, cfg) {
       // left 15 source pixels a piece. Only a device that reports little memory
       // starts smaller, and a failed load falls back a size.
       const big = !((navigator.deviceMemory || 8) <= 4);
+      bootStep('Loading the picture.');
       let img;
       try { img = await loadImg(id, big ? 3840 : 1920); }
       catch (e) { img = await loadImg(id, big ? 1920 : 960); }
       const anon = getAnonId(), email = getEmail();
       const q = `id=${id}&anonId=${encodeURIComponent(anon || '')}${email ? `&email=${encodeURIComponent(email)}` : ''}`;
+      bootStep('Setting out the pieces.');
       const [st, me] = await Promise.all([getJSON(`/api/mural/state?id=${id}`), getJSON(`/api/mural/me?${q}`)]);
       if (dead) return;
       const wasDone = !!(st.j && (st.j.completed || (st.j.n || 0) >= (b.j.cols || MURAL_COLS) * (b.j.rows || MURAL_ROWS)));
@@ -167,10 +210,16 @@ export function bootMural(root, cfg) {
         let wall = null;
         try { const w = await getJSON(`/api/mural/wall?id=${id}`); if (w.ok && w.j && Array.isArray(w.j.order)) wall = w.j; } catch (e) { wall = null; }
         if (dead) return;
+        await paint();
+        if (dead) return;
         start({ id, board: b.j, img, state: {}, me: { pieces: (saved && saved.pieces) || [], points: 0, firsts: 0 }, anon, email, q, solo: true, crowd: st.j || {}, crowdMe: me.j || {}, wall });
+        hideBoot();
         return;
       }
+      await paint();
+      if (dead) return;
       start({ id, board: b.j, img, state: st.j || {}, me: me.j || {}, anon, email, q, priv: privId ? { code: cfg.priv, ...(b.j.private || {}) } : null });
+      hideBoot();
     } catch (e) {
       console.error('mural', e);
       bootMsg(`${K.name} could not load. Reload the page to try again.`);
@@ -185,6 +234,7 @@ export function bootMural(root, cfg) {
     cleanups.forEach((f) => { try { f(); } catch (e) {} });
     if (ro) ro.disconnect();
     document.body.style.overflow = prevOverflow;
+    if (bootEl.parentNode) bootEl.parentNode.removeChild(bootEl);
   };
 
   function start(env) {
