@@ -759,7 +759,7 @@ function popDraw(){
   const k=w/W,a=Math.max(0,-view.tx/view.s)*k,c=Math.max(0,-view.ty/view.s)*k,a2=Math.min(W,(view.cw-view.tx)/view.s)*k,c2=Math.min(H,(view.ch-view.ty)/view.s)*k;
   if(a2-a<w-2||c2-c<h-2){x.strokeStyle='#ffffff';x.lineWidth=6*dp;x.strokeRect(a,c,a2-a,c2-c);x.strokeStyle='#15171c';x.lineWidth=2.5*dp;x.strokeRect(a,c,a2-a,c2-c);}
 }
-function popClosed(){clearInterval(popTimer);popW=null;popCv=null;$('ref').classList.remove('popped');const b=$('refPop');if(b)b.textContent='Pop Out';req();}
+function popClosed(){clearInterval(popTimer);popW=null;popCv=null;$('ref').classList.remove('popped');const b=$('refPop');if(b)b.title='Pop the picture out to its own window';req();}
 function popOut(){
   if(popW&&!popW.closed){popW.close();popClosed();return;}
   const w=window.open('','mural_viewfinder','popup,width=760,height='+Math.round(760*H/W+40));
@@ -771,7 +771,7 @@ function popOut(){
   w.addEventListener('resize',()=>{popKey='';popDraw();});
   w.addEventListener('beforeunload',()=>setTimeout(popClosed,0));
   popTimer=setInterval(()=>{if(!popW||popW.closed)popClosed();},1000);
-  $('ref').classList.add('popped');$('refPop').textContent='Pop In';popDraw();
+  $('ref').classList.add('popped');$('refPop').title='Bring the picture back';popDraw();
 }
 $('refPop').onclick=popOut;
 $('updo').onclick=()=>{clearTimeout(updT);$('updo').classList.remove('show');};
