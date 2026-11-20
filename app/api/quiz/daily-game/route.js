@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
+import { loadDailyResultsCached } from '@/lib/daily-results-cache';
 import { KEEPS_ANSWER, dailySolvedRow } from '@/lib/daily-games';
 import { findQuizIdentity } from '@/lib/quiz-identity';
 import { scoreGame, guestGameResult, DAILY_KEYS } from '@/lib/daily-combined';
@@ -307,7 +307,14 @@ export async function GET(request) {
   } catch (e) { /* identity is best-effort */ }
 
   try {
-    const { data, error } = await loadQuizResultsCached(supabaseAdmin, { force: fresh });
+    // THIS GAME'S ROWS, NOT THE WHOLE TABLE (Vercel cost fix, 2026-11-20): every
+    // cold instance used to load all 645,000 quiz_results rows (~4.5s) to keep
+    // one game's. The scoped loader reads every dated id in the game's bank
+    // (future drops included) through the quiz_results_quiz index, with the
+    // same columns, id order, `force` and hidden-player rule. The pass below
+    // still applies DAILY_ONE_RE, so the rows it keeps are the same.
+    const ids = (puzzles || []).map((p) => p && p.quizId).filter((q) => q && DAILY_ONE_RE.test(q));
+    const { data, error } = ids.length ? await loadDailyResultsCached(supabaseAdmin, ids, { force: fresh }) : { data: [], error: null };
     if (error) {
       console.error('daily-game error', error);
       return NextResponse.json(none, { headers: CACHE_HEADERS });
