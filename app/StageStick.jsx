@@ -1489,7 +1489,7 @@ const CSS = `
 .sst:not(.sst-cover){top:-160px;bottom:-160px;height:auto;padding:160px 0;}
 .sst *,.sst-page *{box-sizing:border-box;}
 .sst-in{width:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px;
-  padding:max(10px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));}
+  padding:max(10px,var(--safe-top, 0px)) max(14px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));}
 .sst-top{display:flex;align-items:center;gap:12px;padding:2px 2px 0;}
 .sst-tb{display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 12px;border:1px solid var(--sst-ink);border-radius:99px;
   color:var(--sst-ink);font-size:13px;font-weight:800;text-decoration:none;}

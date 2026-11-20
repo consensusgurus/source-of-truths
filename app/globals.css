@@ -4,6 +4,14 @@
    places or the check fails. Values here are the CURRENT palette, unchanged;
    the Mind Loft flip swaps them here and in lib/theme.js together. */
 :root {
+  /* The top safe-area inset, used everywhere in place of env(safe-area-inset-top).
+     X's in-app browser (and Twitter's before it) reports the phone's notch inset
+     even though its own bar already sits between the notch and the page, so every
+     header padded itself down by ~40px and the fixed status strip below painted a
+     dark band over the top of the page (owner, 2026-11-19, seen on Mural). The
+     boot script in app/layout.js stamps data-inapp-x on <html> there and the
+     inset is zeroed. Anything new that needs the inset uses var(--safe-top). */
+  --safe-top: env(safe-area-inset-top, 0px);
   --ink: #0b0d12;
   --muted: #3f4757;
   --slate: #646c7a;
@@ -86,11 +94,14 @@ body::before {
   top: 0;
   left: 0;
   right: 0;
-  height: env(safe-area-inset-top, 0px);
+  height: var(--safe-top, 0px);
   background: var(--accent);
   z-index: 10000;
   pointer-events: none;
 }
+
+/* X / Twitter in-app browser: no notch strip, no header padding (see :root). */
+html[data-inapp-x] { --safe-top: 0px; }
 
 html {
   /* Matches body so overscroll never flashes white. On its own this does

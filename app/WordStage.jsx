@@ -136,8 +136,8 @@ export default function WordStage({
 const CSS = `
 .wst{position:fixed;inset:0;z-index:85;background:var(--wst-bg);color:var(--wst-ink);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
 .wst *{color:var(--wst-ink);}
-.wst-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:1px solid var(--wst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
-.wst-col{width:100%;max-width:520px;box-sizing:border-box;padding:max(12px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px;min-height:100%;}
+.wst-look{position:fixed;top:max(12px, var(--safe-top, 0px));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:1px solid var(--wst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
+.wst-col{width:100%;max-width:520px;box-sizing:border-box;padding:max(12px, var(--safe-top, 0px)) 10px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px;min-height:100%;}
 .wst-top{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:20px;animation:wstRise .35s ease-out both;}
 .wst-eb{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;max-width:100%;}
 .wst-clue{margin:0;text-align:center;font-size:clamp(23px,7.4vw,30px);line-height:1.18;font-weight:800;letter-spacing:-.02em;}

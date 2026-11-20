@@ -416,7 +416,7 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
             .qchm-ch.qchm-mob{visibility:visible;}
             .qchm-acts{display:none;}
           }
-          @media(max-width:560px){.qchm-r1{padding-top:env(safe-area-inset-top);}}
+          @media(max-width:560px){.qchm-r1{padding-top:var(--safe-top, 0px);}}
           /* LANDSCAPE ON A PHONE OR TABLET (owner, 2026-08-08). Held sideways a
              device has 390 to 820px of height, and 119px of permanently locked
              header is a quarter of it. Two moves, both gated on a COARSE POINTER
@@ -687,7 +687,7 @@ export default function QuizCommandHeader({ me, onSignup, ticker = [], variant =
         @media(max-width:820px){.qch-wl{display:none;}.qch-ws{display:inline-flex;align-items:center;}.qch-brandlogo{display:none !important;}.qch-searchbtn{display:inline-flex;margin-left:auto;}.qch-me{margin-left:0;}.qch-nm{max-width:none;}}
         @media(max-width:620px){.qch-ava{display:none;}.qch-hi{display:none;}.qch-bar{gap:9px;padding-left:12px;padding-right:12px;}.qch-seg a{padding:6px 10px;font-size:11px;}.qch-tlabel{display:none;}.qch-word{font-size:17px;}}
         @media(max-width:768px){.qch-tickwrap{display:none;}}
-        @media(max-width:560px){.qch-bar{padding-top:calc(9px + env(safe-area-inset-top));}.qch{min-height:calc(64px + env(safe-area-inset-top));}}
+        @media(max-width:560px){.qch-bar{padding-top:calc(9px + var(--safe-top, 0px));}.qch{min-height:calc(64px + var(--safe-top, 0px));}}
         /* Mobile header (owner 2026-07-29, rev 3): three slots, edges fixed, the
            identity absolutely centred in the bar for BOTH states so it is centred
            in the header rather than merely sitting between the side controls.

@@ -142,6 +142,11 @@ export default function RootLayout({ children }) {
             does, so the two can never disagree about what was asked for, and
             writeStageTheme keeps the attribute in step from here on, or a
             reader who switches TO light would stay suppressed in dark. */}
+        {/* X / TWITTER IN-APP BROWSER (owner, 2026-11-19): it reports the notch
+            inset while its own bar already covers the notch, which put a dark
+            band across the top of every page opened from a post. Stamped before
+            paint so --safe-top (globals.css) is 0 there from the first frame. */}
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{if(/Twitter/i.test(navigator.userAgent))document.documentElement.setAttribute('data-inapp-x','')}catch(e){}})();" }} />
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{var d=document.documentElement,q=null;try{q=new URLSearchParams(window.location.search).get('theme')}catch(e){}var t=(q==='light'||q==='dark')?q:window.localStorage.getItem('sot_theme2');if(t!=='light'&&t!=='dark')t='light';d.setAttribute('data-stage-boot',t);var P=location.pathname;if(P==='/'||/^\\/(today|quizzes|quiz\\/)/.test(P))d.setAttribute('data-stage-pre','');var c=null;try{c=new URLSearchParams(window.location.search).get('color')}catch(e){}if(c!=='balanced'&&c!=='full'&&c!=='mono')c=window.localStorage.getItem('sot_color1');if(c!=='full'&&c!=='mono')c='balanced';d.setAttribute('data-stage-color',c)}catch(e){}})();" }} />
         {/* LAYOUT C RESERVES ITS SPACE BEFORE FIRST PAINT (owner, 2026-10-10:
             moving from the home page to a game page jittered). The desktop

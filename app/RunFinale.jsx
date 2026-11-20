@@ -591,10 +591,10 @@ const CSS = `
 html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{visibility:hidden !important}
 .rfx.out{opacity:0;pointer-events:none}
 .rfx-fly{position:fixed;z-index:97;transform-origin:0 0;white-space:nowrap;pointer-events:none;font-family:Manrope,system-ui,sans-serif;font-variant-numeric:tabular-nums}
-.rfx .cap{position:absolute;top:max(18px, env(safe-area-inset-top));left:24px;right:24px;display:flex;justify-content:space-between;gap:12px;white-space:nowrap;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+.rfx .cap{position:absolute;top:max(18px, var(--safe-top, 0px));left:24px;right:24px;display:flex;justify-content:space-between;gap:12px;white-space:nowrap;font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
 .rfx .rcol{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:0 16px}
 .rfx .rhero{display:flex;flex-direction:column;align-items:center;gap:6px}
-.rfx.p1 .rcol{justify-content:flex-start;padding-top:calc(max(18px, env(safe-area-inset-top)) + 40px)}
+.rfx.p1 .rcol{justify-content:flex-start;padding-top:calc(max(18px, var(--safe-top, 0px)) + 40px)}
 .rfx .rfr-s{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column-reverse;text-align:left;transition:transform .42s cubic-bezier(.5,0,.85,.5)}
 .rfx .rfr-s.gone{transform:translateY(102%)}
 .rfx.p2 .rfr-s{display:none}
@@ -631,7 +631,7 @@ html.rfx-on .mrp-bd,html.rfx-on .gmp-bd,html.rfx-on .enp-bd,html.rfx-on .rnp-bd{
 @media (max-width:899px){
   .rfx .cap{left:16px;right:16px;font-size:11.5px;letter-spacing:.1em}
   .rfx .cap span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis}.rfx .cap span:last-child{flex:none}
-  .rfx.p1 .rcol{padding-top:calc(max(18px, env(safe-area-inset-top)) + 34px)}
+  .rfx.p1 .rcol{padding-top:calc(max(18px, var(--safe-top, 0px)) + 34px)}
   .rfx .rhero .num{font-size:112px}.rfx .rhero .unit{font-size:18px}
   .rfx .rfr-s{padding-bottom:env(safe-area-inset-bottom)}
   .rfx .rfr-in{gap:10px;padding:0 16px}

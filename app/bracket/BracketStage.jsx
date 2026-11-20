@@ -272,10 +272,10 @@ export default function BracketStage({
 const CSS = `
 .bks{position:fixed;inset:0;z-index:85;background:var(--bks-bg);color:var(--bks-ink);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
 .bks *{color:var(--bks-ink);}
-.bks-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:1px solid var(--bks-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
+.bks-look{position:fixed;top:max(12px, var(--safe-top, 0px));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:1px solid var(--bks-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
 .bks.inl{position:relative;inset:auto;z-index:auto;overflow:visible;border-radius:22px;margin:0 auto;max-width:640px;}
 .bks.inl .bks-col{min-height:max(600px, calc(100vh - 150px));}
-.bks-col{width:100%;max-width:520px;box-sizing:border-box;padding:max(12px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;min-height:100%;}
+.bks-col{width:100%;max-width:520px;box-sizing:border-box;padding:max(12px, var(--safe-top, 0px)) 14px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;min-height:100%;}
 .bks-eb{text-align:center;font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.75;}
 .bks-q{margin:0;text-align:center;font-size:clamp(22px,7vw,28px);line-height:1.15;font-weight:800;letter-spacing:-.02em;}
 .bks-win{position:relative;height:var(--bks-win);overflow:hidden;flex:none;}

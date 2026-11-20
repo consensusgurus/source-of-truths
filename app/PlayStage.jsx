@@ -122,7 +122,7 @@ const CSS = `
 /* A board that brings its own button styles opts out with .pst-raw (owner,
    2026-11-12, the Arcade on the stage); :where keeps the specificity unchanged. */
 .pst button:where(:not(.pst-raw *)){font:inherit;color:var(--pst-ink);cursor:pointer;-webkit-tap-highlight-color:transparent;}
-.pst-col{width:100%;max-width:520px;padding:max(12px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;min-height:100%;}
+.pst-col{width:100%;max-width:520px;padding:max(12px, var(--safe-top, 0px)) 14px max(14px, env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px;min-height:100%;}
 /* THE COLUMN GROWS WITH ITS GAME (owner, 2026-11-18: "why are buttons at bottom of screen cut off? ... i can't even scroll
    to see them... fix this anywhere it's an issue"). .pst is a fixed full-window flex row, and its column used to be
    STRETCHED to exactly the window height (or the phone foot rule's window + 48px); a game taller than that spilled out

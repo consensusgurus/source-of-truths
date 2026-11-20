@@ -374,7 +374,7 @@ function ReplayIcon() {
 
 const CSS = `
 .srl{width:100%;max-width:560px;margin:0 auto;
-  padding:max(8px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));}
+  padding:max(8px,var(--safe-top, 0px)) max(14px,env(safe-area-inset-right)) max(30px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));}
 .srl-top{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 0 14px;}
 .srl-tr{display:flex;gap:2px;}
 /* NO OUTLINES ON THE HEADER (owner, 2026-10-28): plain ink, a 40px tap area. */

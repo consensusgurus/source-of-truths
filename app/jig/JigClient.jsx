@@ -1675,7 +1675,7 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
             .jg-tray.vs .jg-tp{touch-action:pan-y;}
             .jg-more{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;font-family:${SANS};font-size:13.5px;font-weight:800;border-radius:12px;border:1.5px solid var(--stg-line2, rgba(11,15,26,0.24));background:var(--stg-surf2, ${COLORS.accentSoft});color:var(--stg-ink, ${COLORS.ink});cursor:pointer;}
             .jg-fs{padding:0 10px;}
-            .jg-card.jg-full{padding:calc(8px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom)) !important;}
+            .jg-card.jg-full{padding:calc(8px + var(--safe-top, 0px)) 10px calc(8px + env(safe-area-inset-bottom)) !important;}
             .jg-full .jg-top{margin-bottom:8px;}
             .jg-full .jg-play{gap:8px;}
             .jg-full .jg-side{flex:1 1 0;max-width:none;min-height:0;gap:8px;}

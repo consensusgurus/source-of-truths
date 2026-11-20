@@ -101,7 +101,7 @@ export default function QuizPlayOverlay({ open, background = T.surface, stage = 
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain',
-        padding: 'calc(12px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 0 calc(14px + env(safe-area-inset-left))',
+        padding: 'calc(12px + var(--safe-top, 0px)) calc(14px + env(safe-area-inset-right)) 0 calc(14px + env(safe-area-inset-left))',
         boxSizing: 'border-box',
       }}
     >

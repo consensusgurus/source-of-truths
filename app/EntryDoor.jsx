@@ -640,7 +640,7 @@ const CSS2 = `
    the list area is measured and filled, the foot is the skill page's foot. */
 .ent-pk{position:absolute;inset:0;z-index:1;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;
   background:color-mix(in srgb, var(--c) 45%, #ffffff);color:#08222e;
-  padding:max(14px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  padding:max(14px,var(--safe-top, 0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
   animation:ent-up .35s cubic-bezier(.2,.7,.2,1) both}
 .ent-pk > *{width:100%;max-width:820px;margin-left:auto;margin-right:auto}
 .ent-pk-top{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px}
@@ -676,7 +676,7 @@ const CSS2 = `
 @media (prefers-reduced-motion:reduce){.ent-pk,.ent-pk-list li{animation:none!important}}
 .ent-st{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .ent-stp{box-sizing:border-box;min-height:100%;display:flex;flex-direction:column;gap:20px;max-width:1080px;margin:0 auto;
-  padding:max(22px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  padding:max(22px,var(--safe-top, 0px)) max(16px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
   animation:ent-up .4s cubic-bezier(.2,.7,.2,1) both}
 @media (min-width:761px){.ent-stp{padding-left:48px;padding-right:48px}}
 .ent-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -757,7 +757,7 @@ const INK = RAMP_INK;
 const CSS = `
 .ent-door{position:fixed;inset:0;z-index:6000;background:#ffffff;color:#08222e;font-family:'Manrope',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
 .ent-pg{position:absolute;inset:0;box-sizing:border-box;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(16px,3.4vh,34px);
-  padding:max(28px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+  padding:max(28px,var(--safe-top, 0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .ent-ask{margin:0;font-size:clamp(30px,4.2vw,50px);line-height:1.1;font-weight:800;letter-spacing:-0.03em;text-align:center;text-wrap:balance;max-width:900px;color:#08222e}
 .ent-foot{display:flex;flex-direction:column;align-items:center;gap:14px}
 .ent-h{margin:0;font-size:clamp(17px,1.7vw,21px);font-weight:700;color:#3d5260;text-align:center;letter-spacing:-0.01em}
@@ -822,7 +822,7 @@ const CSS = `
    the headline and the button leave, five rows of two, so the button is always
    on screen without scrolling. */
 @media (max-width:760px){
-  .ent-pg{justify-content:flex-start;gap:clamp(12px,2.4vh,22px);padding-top:max(22px,env(safe-area-inset-top,0px));padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
+  .ent-pg{justify-content:flex-start;gap:clamp(12px,2.4vh,22px);padding-top:max(22px,var(--safe-top, 0px));padding-bottom:max(16px,env(safe-area-inset-bottom,0px))}
   .ent-ask{font-size:clamp(26px,8vw,34px)}
   .ent-foot{width:100%;gap:12px}
   .ent-h{font-size:clamp(15px,4.3vw,18px)}
@@ -843,7 +843,7 @@ const CSS = `
    chips, and one outlined button to everything. Still one screen, no scroll:
    the two tiles hold their height while the counts are on their way. */
 @media (max-width:760px){
-  .ent-pg{align-items:stretch;gap:0;padding-top:max(20px,env(safe-area-inset-top,0px))}
+  .ent-pg{align-items:stretch;gap:0;padding-top:max(20px,var(--safe-top, 0px))}
   .ent-ask-d{display:none}
   .ent-ask-m{display:inline}
   .ent-m{display:flex;flex-direction:column}

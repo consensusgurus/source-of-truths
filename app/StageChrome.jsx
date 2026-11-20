@@ -682,7 +682,7 @@ const MONO = "'Manrope',ui-monospace,'SFMono-Regular',monospace";
 const CSS = `
 .stg-top{background:var(--stg-ground,#0b0f1a);font-family:${SANS};color:var(--stg-ink,#e9edf4);}
 
-.stg-sim{padding:max(12px, env(safe-area-inset-top)) 14px 8px;}
+.stg-sim{padding:max(12px, var(--safe-top, 0px)) 14px 8px;}
 html:not([data-stage-pastel]) .stg-sim,html:not([data-stage-pastel]) .stg-simt{display:none;}
 html[data-stage-pastel] .stg-cap,html[data-stage-pastel] .stg-prog,html[data-stage-pastel] .stg-strip{display:none !important;}
 /* THE GAP BETWEEN THE TWO HEADERS (owner report, 2026-10-27: "why does this

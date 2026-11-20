@@ -261,8 +261,8 @@ export default function GauntletStage({ bg, ink = RAMP_INK, qKey, question, choi
 const CSS = `
 .gst{position:fixed;inset:0;z-index:85;background:var(--gst-bg);color:var(--gst-ink);display:flex;justify-content:center;overflow-y:auto;overflow-x:hidden;font-family:'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;}
 .gst *{color:var(--gst-ink);}
-.gst-top{position:fixed;top:max(12px, env(safe-area-inset-top));left:14px;right:12px;z-index:2;color:var(--gst-ink)}
-.gst-look{position:fixed;top:max(12px, env(safe-area-inset-top));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:1px solid var(--gst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
+.gst-top{position:fixed;top:max(12px, var(--safe-top, 0px));left:14px;right:12px;z-index:2;color:var(--gst-ink)}
+.gst-look{position:fixed;top:max(12px, var(--safe-top, 0px));right:12px;z-index:2;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:20px;border:1px solid var(--gst-ink);background:transparent;cursor:pointer;padding:0;opacity:.8}
 .gst-look:hover{opacity:1}
 /* SITE NAVIGATION SHOWN (owner, 2026-10-30: the light/dark, back and share
    buttons showed twice above the question). With the frame's own header up,
@@ -271,8 +271,8 @@ const CSS = `
 html.lc-on:not(.lc-focus) .gst{top:var(--lc-hh,62px);}
 html.lc-on:not(.lc-focus) .gst-top,html.lc-on:not(.lc-focus) .gst-look,html.lc-on:not(.lc-focus) .gst-brand{display:none !important;}
 html.lc-on:not(.lc-focus) .gst-col{padding-top:28px;}
-.gst-brand{position:fixed;top:max(12px, env(safe-area-inset-top));left:14px;z-index:2;display:inline-flex;align-items:center;gap:8px;height:40px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:-.01em;}
-.gst-col{width:100%;max-width:600px;box-sizing:border-box;padding:max(68px, calc(env(safe-area-inset-top) + 56px)) 16px 22px;display:flex;flex-direction:column;justify-content:center;gap:28px;min-height:100%;}
+.gst-brand{position:fixed;top:max(12px, var(--safe-top, 0px));left:14px;z-index:2;display:inline-flex;align-items:center;gap:8px;height:40px;text-decoration:none;font-weight:800;font-size:16px;letter-spacing:-.01em;}
+.gst-col{width:100%;max-width:600px;box-sizing:border-box;padding:max(68px, calc(var(--safe-top, 0px) + 56px)) 16px 22px;display:flex;flex-direction:column;justify-content:center;gap:28px;min-height:100%;}
 .gst-q{text-align:center;font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-0.02em;animation:gstRise .45s ease-out both;}
 .gst-kick{align-self:center;display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:5px 13px 5px 10px;border:1px solid var(--gst-ink);border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;line-height:1.2;margin-bottom:-10px;animation:gstRise .45s ease-out both;}
 .gst-kick::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--gst-ink);}

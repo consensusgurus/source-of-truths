@@ -136,7 +136,7 @@ export default function CircuitFrame({ cat = null, label = 'Runs', progress = nu
 
 // NOTE: this block is a JS template literal, so no backticks in the comments.
 const CSS = `
-.cfr-stb{max-width:720px;margin:0 auto;box-sizing:border-box;padding:max(12px, env(safe-area-inset-top)) 14px 6px;}
+.cfr-stb{max-width:720px;margin:0 auto;box-sizing:border-box;padding:max(12px, var(--safe-top, 0px)) 14px 6px;}
 
 .cfr{min-height:100vh;background:var(--stg-ground);color:var(--stg-ink);
   font-family:${SANS};-webkit-font-smoothing:antialiased;}

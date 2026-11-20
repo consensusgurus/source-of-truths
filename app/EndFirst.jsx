@@ -243,7 +243,7 @@ const CSS = `
 /* THE PHONE: the colour is the page. The header sits at the top, the result
    takes the middle, the three plays stack, and two quiet buttons close it. */
 .ef-ph{justify-content:flex-start;gap:12px;min-height:100vh;min-height:100dvh;
-  padding:max(10px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));}
+  padding:max(10px,var(--safe-top, 0px)) max(16px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));}
 .ef-ph .ef-top{width:100%;}
 .ef-ph .ef-mid{flex:1;justify-content:center;gap:12px;padding:8px 0;}
 .ef-ph .ef-eb{font-size:12px;}

@@ -880,7 +880,7 @@ export default function DarioClient({ puzzles = [], forceNum = null }) {
         .dr-box:fullscreen .dr-pl, .dr-box:fullscreen .dr-pr { flex-direction: column; }
         /* Full-screen play layer on phones and tablets: covers the whole window, controls beside the screen. It
            carries the stage page's register, so it is pale in light and dark in dark like the page under it. */
-        .dr-imm { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; min-height: 0; background: var(--stg-ground, #000); color: var(--stg-ink, #fff); touch-action: none; overscroll-behavior: none; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+        .dr-imm { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; min-height: 0; background: var(--stg-ground, #000); color: var(--stg-ink, #fff); touch-action: none; overscroll-behavior: none; padding: var(--safe-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
         .dr-imm .dr-box, .dr-imm .dr-box.touch { position: relative; max-width: none; width: 100%; height: 100%; box-sizing: border-box; padding: 12px; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; grid-template-areas: "cv cv" "pl pr"; align-items: center; align-content: center; gap: 14px; }
         .dr-imm .dr-cv { width: 100%; max-width: calc((100svh - 150px) * 1.7857); justify-self: center; }
         .dr-imm .dr-b { width: 72px; height: 70px; }

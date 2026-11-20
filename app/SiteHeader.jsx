@@ -123,7 +123,7 @@ function CommandHeader({ active, search, onSearch, sortBy, onSort, sortButtons, 
         @media(max-width:640px){.shc-sortwrap{display:none;}.shc-sorttxt{display:none;}}
         @media(max-width:560px){
           .shc{width:100vw;margin-left:calc(50% - 50vw);}
-          .shc-bar{padding-top:calc(9px + env(safe-area-inset-top));padding-left:14px;padding-right:14px;gap:9px;}
+          .shc-bar{padding-top:calc(9px + var(--safe-top, 0px));padding-left:14px;padding-right:14px;gap:9px;}
           .shc-word{font-size:17px;}
           .shc-search{min-width:0;}
           .shc-seg a{padding:6px 11px;font-size:11.5px;}
@@ -217,7 +217,7 @@ export default function SiteHeader({ active = 'lists', maxWidth = 1180, visitors
         @media(max-width:560px){
           .sh-outer{padding:0;}
           .sh-root{width:100vw;margin-left:calc(50% - 50vw);}
-          .sh-bar,.sh-bar.flush{border-radius:0;padding:calc(11px + env(safe-area-inset-top)) 14px 11px;}
+          .sh-bar,.sh-bar.flush{border-radius:0;padding:calc(11px + var(--safe-top, 0px)) 14px 11px;}
           .sh-top{flex-wrap:nowrap;}
           .sh-word{font-size:18px;}
           .sh-tag{display:none;}

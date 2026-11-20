@@ -7962,7 +7962,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mtb.pane .sty-mfbtn{flex:none;width:40px;height:40px;}
 }
 @media (max-width:900px){
-  .sty-mtop{display:flex;flex-direction:column;gap:12px;padding:max(12px, env(safe-area-inset-top)) 16px 2px;--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
+  .sty-mtop{display:flex;flex-direction:column;gap:12px;padding:max(12px, var(--safe-top, 0px)) 16px 2px;--mi:var(--stg-ink);--mb:1px solid var(--stg-ink);--mln:color-mix(in srgb, var(--stg-ink) 20%, transparent);}
   .stage-page .sty-cap,.stage-page .sty-rhome,.stage-page .sty-pins{display:none !important;}
   .dbn{display:none !important;}
   .sty-mtop a{color:var(--mi);text-decoration:none;}
@@ -8255,7 +8255,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mtop a.sty-mdraw.hd{display:flex;flex:0 1 auto;min-width:0;gap:12px;padding:6px 12px 7px;font-size:12px;border-radius:11px;background:#fde7ad;color:#08222e;}
   .stage-page:not([data-stage-theme=light]) .sty-mtop a.sty-mdraw.hd{background:color-mix(in srgb, #fdd97c 22%, transparent);color:var(--stg-ink);}
   .sty-mph .mph-fold > .sty-mdraw{display:none;}
-  .sty-mtop{gap:8px;padding-top:max(8px, env(safe-area-inset-top));padding-left:max(16px, env(safe-area-inset-left));padding-right:max(16px, env(safe-area-inset-right));}
+  .sty-mtop{gap:8px;padding-top:max(8px, var(--safe-top, 0px));padding-left:max(16px, env(safe-area-inset-left));padding-right:max(16px, env(safe-area-inset-right));}
   .sty-mph .mph-fold{gap:8px;}
   .sty-mph .mph-grid > .mph-t,.sty-mph .mph-grid > .mph-big{padding:7px 11px 8px;gap:2px;}
   .sty-mph .mph-grid > .mph-t b,.sty-mph .mph-grid > .mph-big b{font-size:16.5px;}
@@ -8272,7 +8272,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-grid > .mph-t em,.sty-mph .mph-grid > .mph-big em{font-size:11px;line-height:1.2;}
   .sty-mph .mph-grid{grid-auto-rows:minmax(38px,auto);gap:6px;}
   .sty-mph .mph-fold{gap:6px;}
-  .sty-mtop{gap:6px;padding-top:max(4px, env(safe-area-inset-top));}
+  .sty-mtop{gap:6px;padding-top:max(4px, var(--safe-top, 0px));}
   .sty-mtb{height:38px;}
   .sty-mph .mph-fold > .mph-seg{padding:2px;}
   .sty-mph .mph-fold > .mph-seg button{padding:5px 0 6px;font-size:12.5px;}
