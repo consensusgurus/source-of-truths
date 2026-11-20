@@ -350,7 +350,7 @@ export const GAME = {
       <>Leave the depot by <b>In</b>. The last street you plow ends at <b>Out</b>, the salt barn. You may pass Out on the way.</>,
     ],
     knack: 'Never take the last snowy street out of a part of town you have not finished. On a river day, count your bridges before you cross.',
-    footer: 'A finished town ranks on the clock, with fewer replays breaking a tie. Giving up scores nothing.',
+    footer: 'A finished town ranks on fewest replays, then the clock. Giving up scores nothing.',
   }),
   pitch: (P) => `${P.edges.length} snowed-in streets in ${P.town}. Plow every one exactly once and park at the salt barn.`,
   shareLine: (P, s, won, el) => `Plow #${P.num} · ${P.town} · ${won ? `${el} · ${plural(s.replays || 0)}` : 'unfinished'}`,

@@ -252,7 +252,7 @@ const GAME = {
         : <><b>Undo</b> takes back a step and <b>Restart</b> clears the house. Both are free.</>,
     ],
     knack: 'Look for the dead ends first. A tile with only two ways in and out has to be passed straight through, and a room with one doorway has to be the first or the last thing you mop.',
-    footer: replays(P) ? 'A spotless house ranks on the clock, with fewer replays breaking a tie. Giving up scores nothing.' : 'A spotless house ranks on the clock. Giving up scores nothing.',
+    footer: replays(P) ? 'A spotless house ranks on fewest replays, then the clock. Giving up scores nothing.' : 'A spotless house ranks on the clock. Giving up scores nothing.',
   }),
   pitch: (P) => (storeys(P) ? `${storeys(P)} and ${modelOf(P).n} tiles. Mop every one exactly once and get out.` : `${modelOf(P).n} tiles in the ${P.house}. Mop every one exactly once and get out.`),
   shareLine: (P, s, won, el) => `Mop #${P.num} · ${storeys(P) ? storeys(P).toLowerCase() : P.house} · ${won ? (replays(P) ? `${el} · ${plural(s.replays || 0)}` : el) : 'unfinished'}`,

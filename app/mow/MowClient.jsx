@@ -218,7 +218,7 @@ const GAME = {
       <>{doors(P)} The last square you mow is the one inside the gate marked <b>Out</b>.</>,
     ],
     knack: 'Corners and dead ends first. A square with only two ways in has to be driven straight through, and a section with one gate has to be mown in one go.',
-    footer: 'A finished yard ranks on the clock, with fewer replays breaking a tie. Giving up scores nothing.',
+    footer: 'A finished yard ranks on fewest replays, then the clock. Giving up scores nothing.',
   }),
   pitch: (P) => `${modelOf(P).n} squares of grass in the ${P.yard}. Mow every one exactly once and get out the gate.`,
   shareLine: (P, s, won, el) => `Mow #${P.num} · the ${P.yard} · ${won ? `${el} · ${plural(s.replays || 0)}` : 'unfinished'}`,

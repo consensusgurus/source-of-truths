@@ -2865,7 +2865,7 @@ Connect. Tile art `scripts/gen-mop-tiles.py`; share card `scripts/bake-og.mjs mo
   still running: one replay, kept in the save as `replays` and posted as `guesses_used`. A Replay button does the
   same by hand. Stepping onto the way Out before the house is done is refused free (it could only ever be a dead
   end). A DRAG that wobbles back onto the tile it just left is ignored, not a replay. The registry `miss` is now
-  `Replays`; the board ranks score, then the clock, then replays (`CLOCK_FIRST`, see scoring.md), and every result
+  `Replays`; the board ranks score, then fewest replays, then the clock (from 11/19; earlier boards clock first, see scoring.md), and every result
   line prints the replays, 0 included. Mop and Mow are a FAMILY (`GAME_FAMILIES.chores`): finishing one serves the
   other first.
 
@@ -2885,7 +2885,7 @@ house in a corner - it should vary". Logic, skills Spatial and Planning, on `app
   are the GATES, pieces are `[x, y, w, h, type]` with type one of tree, bush, hedge, flowers, veg, rock, birdbath,
   fountain, kennel, pond, shed, trampoline, house, corner (the engine reads only the first four).
 - **The rule** is Mop's quick-replay rule above, from day one: no Undo, a mown square is a replay, Replay button,
-  ranked clock then replays, replays always shown.
+  ranked fewest replays then clock (from 11/19), replays always shown.
 - **The ramp, one size a day:** Mon 6x6, Tue 7x6 (Gentle); Wed 7x7, Thu 8x7 (Moderate); Fri 8x8, Sat 9x8 (Tough);
   Sun 9x9, the Sunday Edition, the Estate. About one weekday in three comes and goes by a street gate two squares
   wide; the rest come in from the street (bottom) and leave by the back gate (top, off the Back Yard).
@@ -2930,7 +2930,7 @@ playable", then "Push to live now with good share link image". Logic, skills Spa
   so a trail always exists, usually many: the clock decides the board.
 - **The rule** is Mow's quick replay from day one: no Undo; driving down a plowed street flashes it and the truck is
   back at the depot 650ms later, clock running (one replay, saved as `replays`, posted as `guesses_used`); Replay
-  button; ranked clock then replays (`CLOCK_FIRST`); replays always shown. Passing the barn early is allowed. A drag
+  button; ranked fewest replays then clock (from 11/19; `CLOCK_FIRST` before); replays always shown. Passing the barn early is allowed. A drag
   that wobbles back down the street just plowed is ignored. Taps made while the truck is still moving count from the
   corner it is heading to and queue (up to eight).
 - **The ramp** (gen-plow SPEC, by weekday): Mon gentle 4x3 corners 15-19 streets, Tue gentle 5x3 19-24, Wed moderate

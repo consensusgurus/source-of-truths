@@ -940,6 +940,13 @@ posted as `guesses_used`. `CLOCK_FIRST` / `clockFirstQuizId` in `lib/daily-games
 then replays** for those ids (the depth term moves behind the clock). Mop's earlier boards all posted 0, so no crowned
 day reorders. `gameStats` prints "0 replays" for these two (zeroShows), where every other game hides a zero.
 
+**SUPERSEDED FROM THE 11/19 BOARDS: REPLAYS FIRST (owner, 2026-11-19).** "mop needs to be scored first by number of
+retries then by time, same for similar puzzles." From `REPLAYS_FIRST_CUTOVER` (2026-11-19) on, `clockFirstQuizId`
+returns false for Mop, Mow and Plow, so they rank on the plain default order: **score, then fewest replays, then the
+clock**. Boards before 11/19 keep the clock-first order they were crowned under. `CLOCK_FIRST` keeps its name only
+because `daily-row-stats` reads it to print "0 replays". Every other replay/run/move-counted daily (Machine, Crate,
+Peg, Bag, Seated, Pack...) already ranked count first, so these three were the only clock-first ones.
+
 ## A board shows the stat that decides it (owner, 2026-11-03)
 
 "Hands needs to show points, not busts. Are there any other puzzles where we show stats that
