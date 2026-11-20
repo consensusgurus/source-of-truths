@@ -3437,6 +3437,8 @@ it a "board game", not a card game.
 
 ## Mural and MuralToo: the 4,000 piece jigsaws the whole site builds together (launched 2026-11-19)
 
+**The home tile shows the build (owner, 2026-11-20, mockup A, on the condition that it not slow the page; "the % can be on a short lag").** `app/today/MuralProgress.jsx` swaps the Mural card's picture square for a 10 by 8 grid of the real board, shaded by how much of each part is placed, with "N% BUILT" under it. The figure is `/api/mural/progress?kind=` (count, total, 80 digits), held at the edge for ten minutes and served stale while rebuilt. The home asks for it 1.2s after its day board lands, never before; with no answer the tile keeps its drawing. Do not make the tile wait on it, and do not shorten the cache without a reason.
+
 **Tray and board buttons (owner, 2026-11-20).** The tray button that deals a new random set reads **Shuffle** (was Swap, and Refresh before that). **Clear Loose Pieces** sits on the board beside the zoom control (`#clearBtn`, bottom left), not in the tray: it acts on the board, and beside Shuffle it was one slip from the most used button.
 
 Owner, 2026-11-19, from the mockup at https://claude.ai/artifact/4yLz3PXuT1s2exrDxuUwDB. One real

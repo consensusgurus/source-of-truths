@@ -50,6 +50,8 @@ import { muralFeaturedKey } from '@/lib/mural-shared';
 import GameGlyph from '../GameGlyph';
 import GamePreview, { GP_CSS } from '../GamePreview';
 import { SHARE_TILE } from '@/lib/share-tile';
+import { MuralBand, loadMuralProgress, MURAL_PROGRESS_CSS } from './MuralProgress';
+import { MURAL_KINDS, muralHeld } from '@/lib/mural-shared';
 import RunGateTile, { RGT_CSS, MoreRunsTile, BuildRunTile } from './RunGateTile';
 import { gameFacts, FACT_ICONS } from '@/lib/game-facts';
 import CircuitArt from '../CircuitArt';
@@ -742,6 +744,13 @@ function eyebrow(cat, k) {
 // still loading all print the person icon and a dash; only a real count shows.
 const pcN = (n) => { const v = Number(n) || 0; return v > 0 ? v.toLocaleString('en-US') : '\u2013'; };
 
+// THE CARD'S PICTURE SQUARE. Mural's swaps to its live build grid once the
+// figure has landed (app/today/MuralProgress.jsx); every other game, and Mural
+// until then, draws what it always drew.
+function bandArt(g, px) {
+  const art = SHARE_TILE[g.key] ? <img src={SHARE_TILE[g.key]} alt="" width={px} height={px} decoding="async" /> : <GamePreview gameKey={g.key} square />;
+  return MURAL_KINDS[g.key] ? <MuralBand k={g.key}>{art}</MuralBand> : art;
+}
 function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue, res, i = 0, fk = null, dotsFor = null, light = true, day = null }) {
   const plays = day ? Number(day.plays || day.field) || 0 : null;
   const lead = day && Array.isArray(day.board) && day.board[0] ? day.board[0] : null;
@@ -826,7 +835,7 @@ function GameCard({ g, done, inprog, tq, canPin, favorites, toggleFavorite, hue,
         <span className="sty-gt sty-gtg">{g.tag}</span>
       )}
       {/* DETAILS VIEW (owner, 2026-11-07): shown only under .sty-det. */}
-      <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{SHARE_TILE[g.key] ? <img src={SHARE_TILE[g.key]} alt="" width="108" height="108" decoding="async" /> : <GamePreview gameKey={g.key} square />}</span>
+      <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{bandArt(g, 108)}</span>
       {/* THE SHARE CARD'S EYEBROW (owner, 2026-11-15), Details only. */}
       <span className="sty-geye">{eyebrow(g.cat, g.key)}</span>
       <span className="sty-gx">{fullDesc(g)}</span>
@@ -3250,6 +3259,13 @@ export default function StageToday() {
     const t = setInterval(set, 60000);
     return () => clearInterval(t);
   }, []);
+  // THE MURAL TILE'S BUILD FIGURE, asked for only after the day board is in, so
+  // it never competes with the page's own reads (owner, 2026-11-20).
+  useEffect(() => {
+    if (!board) return undefined;
+    const t = setTimeout(() => { for (const k of Object.keys(MURAL_KINDS)) if (!muralHeld(k)) loadMuralProgress(k); }, 1200);
+    return () => clearTimeout(t);
+  }, [!!board]);
   const featFor = (n) => {
     if (n < 1) return [];
     const out = []; const seen = new Set(['mural', 'muraltoo']);
@@ -5002,7 +5018,7 @@ export default function StageToday() {
                     return (
                       <a key={g.key} className={'mph-g' + (isDone ? ' done' : '')} href={href} style={mTone(g.cat)}
                         onClick={(e) => floodNav(e, href, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
-                        <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{SHARE_TILE[g.key] ? <img src={SHARE_TILE[g.key]} alt="" width="92" height="92" decoding="async" /> : <GamePreview gameKey={g.key} square />}</span>
+                        <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{bandArt(g, 92)}</span>
                         {!isDone ? <span className="mey">{eyebrow(catLabel(g.cat), g.key)}</span> : null}
                         <b>{g.name}</b>
                         <em className="mx">{fullDesc(g)}</em>
@@ -5163,7 +5179,7 @@ export default function StageToday() {
                           onClick={(e) => floodNav(e, `${routeOf(g)}${tq ? '?' + tq.slice(1) : ''}`, SUDOKU_POOL.includes(g.key) ? '#a5b4fc' : gameColor(g.key))}>
                           {/* THE PHONE DETAILS CARD MATCHES THE DESKTOP ONE (owner, 2026-11-08):
                               board band, glyph by the name, facts row. */}
-                          {mDet ? <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{SHARE_TILE[g.key] ? <img src={SHARE_TILE[g.key]} alt="" width="92" height="92" decoding="async" /> : <GamePreview gameKey={g.key} square />}</span> : null}
+                          {mDet ? <span className={'sty-gband' + (SHARE_TILE[g.key] ? ' art' : '')} aria-hidden="true">{bandArt(g, 92)}</span> : null}
                           {/* THE SHARE CARD'S EYEBROW ON THE PHONE TOO (owner, 2026-11-15: "this should show on mobile too"). */}
                           {mDet && !isDone ? <span className="mey">{eyebrow(g.cat, g.key)}</span> : null}
                           <b>{mDet ? null : pc && !s ? null : <i className="dot" aria-hidden="true" />}{g.name}</b>
@@ -5990,6 +6006,7 @@ const CSS = `
 .sty-fc.wait{min-width:54px;min-height:30px;}
 ${PATCH_CSS}
 ${GP_CSS}
+${MURAL_PROGRESS_CSS}
 ${RGT_CSS}
 .sty-figs b{display:block;font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;}
 .sty-figs b i{font-style:normal;font-weight:600;color:var(--stg-mute);font-size:12px;}
