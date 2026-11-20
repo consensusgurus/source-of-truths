@@ -269,6 +269,7 @@ function piecePath(ctx,id){
   ctx.closePath();
 }
 function drawPiece(ctx,id,line){
+  if(ctx===cctx){layV++;for(const m of MIP)if(m.c)m.d.push(id);}
   const c=id%COLS,r=(id/COLS)|0,x0=Math.max(0,c*PS-MARG),y0=Math.max(0,r*PS-MARG),x1=Math.min(W,(c+1)*PS+MARG),y1=Math.min(H,(r+1)*PS+MARG);
   ctx.save();piecePath(ctx,id);ctx.clip();ctx.drawImage(src,x0,y0,x1-x0,y1-y0,x0,y0,x1-x0,y1-y0);ctx.restore();
   piecePath(ctx,id);ctx.strokeStyle=line||'rgba(0,0,0,.3)';ctx.lineWidth=.8;ctx.stroke();
@@ -281,7 +282,33 @@ function pieceCanvas(id,cssPx,cv){
   drawPiece(ctx,id,'rgba(0,0,0,.55)');
   return cv;
 }
-const src=mk(W,H),crowdL=mk(W,H),mineL=mk(W,H);
+/* One layer holds every placed piece, the crowd's and yours: the two were always drawn together,
+   and a second full-size layer doubled the work of every frame (2026-11-20). */
+const src=mk(W,H),crowdL=mk(W,H),mineL=crowdL;
+/* SPEED (owner, 2026-11-20: "everything on page is so laggy"). Every frame used to scale two
+   full-size layers (3840 x 2400 each) onto the board and rebuild the picture panel from the full
+   photo, even for a one-pixel pan. Now: zoomed out, the board draws from a smaller copy of the
+   placed pieces (rebuilt only when a piece lands); zoomed in, it draws only the part on screen;
+   and the picture panel is redrawn only when what it shows changes. layV counts piece changes. */
+let layV=0;const MIP=[{f:.5,c:null,v:-1,d:[]},{f:.25,c:null,v:-1,d:[]}];
+/* A placed piece only touches its own patch, so the small copy is patched, not rebuilt. */
+function mipLayer(m){
+  if(m.v===layV)return m.c;
+  const fresh=!m.c;if(fresh)m.c=mk(Math.round(W*m.f),Math.round(H*m.f));
+  const x=m.c.getContext('2d');x.imageSmoothingQuality='high';
+  if(fresh||m.d.length>300){x.clearRect(0,0,m.c.width,m.c.height);x.drawImage(crowdL,0,0,m.c.width,m.c.height);}
+  else for(const id of m.d){const c=id%COLS,r=(id/COLS)|0,f=m.f;
+    const a=Math.max(0,Math.floor((c*PS-MARG)*f)),b=Math.max(0,Math.floor((r*PS-MARG)*f)),a2=Math.min(m.c.width,Math.ceil(((c+1)*PS+MARG)*f)),b2=Math.min(m.c.height,Math.ceil(((r+1)*PS+MARG)*f));
+    x.clearRect(a,b,a2-a,b2-b);x.drawImage(crowdL,a/f,b/f,(a2-a)/f,(b2-b)/f,a,b,a2-a,b2-b);}
+  m.d=[];m.v=layV;return m.c;}
+function drawPlaced(dpr){
+  const px=view.s*dpr;/* device pixels per picture pixel */
+  const m=px<=.25?MIP[1]:px<=.5?MIP[0]:null;
+  if(m){ctx.drawImage(mipLayer(m),0,0,W,H);return;}
+  const x0=Math.max(0,Math.floor(-view.tx/view.s)),y0=Math.max(0,Math.floor(-view.ty/view.s)),x1=Math.min(W,Math.ceil((view.cw-view.tx)/view.s)),y1=Math.min(H,Math.ceil((view.ch-view.ty)/view.s));
+  if(x1<=x0||y1<=y0)return;const w=x1-x0,h=y1-y0;
+  ctx.drawImage(crowdL,x0,y0,w,h,x0,y0,w,h);
+}
 const sctx=src.getContext('2d'),cctx=crowdL.getContext('2d'),mctx=mineL.getContext('2d');
 sctx.drawImage(img,cx0,cy0,cw0,ch0,0,0,W,H);
 const cv=$('cv'),ctx=cv.getContext('2d'),refCv=$('refCv');refCv.width=1056;refCv.height=Math.round(refCv.width*H/W);const rctx=refCv.getContext('2d');
@@ -303,10 +330,10 @@ function has(id){return M.crowd.has(id)||M.mine.has(id);}
 function nbCount(id){const c=id%COLS,r=(id/COLS)|0;let n=0;if(c>0&&has(id-1))n++;if(c<COLS-1&&has(id+1))n++;if(r>0&&has(id-COLS))n++;if(r<ROWS-1&&has(id+COLS))n++;return n;}
 function valueOf(id){const g=gradeAt(GRADES,id),first=!M.crowd.has(id),n=nbCount(id),age=1;return {v:pieceValue({grade:g,hours:M.hours,neighbours:n,first}),g,first,age,n};}
 function explainVal(id){const o=valueOf(id),p=['grade '+o.g];if(o.first)p.push('doubled for a first');if(o.n)p.push(Math.min(80,o.n*20)+'% off for '+o.n+' neighbor'+(o.n>1?'s':'')+' in place');return GN[o.g]+'. Worth '+o.v+': '+p.join(', ')+'.';}
-let valCv=null;
+let valCv=null,valGen=0;
 function valueMap(){if(valCv&&!valDirty)return valCv;valCv=valCv||mk(COLS,ROWS);const x=valCv.getContext('2d'),im=x.createImageData(COLS,ROWS),d=im.data;
   for(let id=0;id<TOTAL;id++){const o=id*4;if(has(id)){d[o+3]=0;continue;}const t=Math.min(1,valueOf(id).v/40);d[o]=253-131*t;d[o+1]=243-184*t;d[o+2]=208-208*t;d[o+3]=255;}
-  x.putImageData(im,0,0);valDirty=false;return valCv;}
+  x.putImageData(im,0,0);valDirty=false;valGen++;return valCv;}
 /* ---------- view ---------- */
 function resize(){
   const r=$('stage').getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);
@@ -326,7 +353,7 @@ function draw(){
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=C.bd;ctx.fillRect(0,0,view.cw,view.ch);
   ctx.save();ctx.translate(view.tx,view.ty);ctx.scale(view.s,view.s);
   ctx.fillStyle=C.slot;ctx.fillRect(0,0,W,H);const moving=performance.now()<hotUntil||pulses.length>0;ctx.imageSmoothingQuality=moving?'low':'high';
-  /* crowd pieces at full colour (owner, 2026-11-19: faded pieces made the picture impossible to match) */ctx.drawImage(crowdL,0,0);ctx.drawImage(mineL,0,0);
+  /* crowd pieces at full colour (owner, 2026-11-19: faded pieces made the picture impossible to match) */drawPlaced(dpr);
   const now=performance.now();pulses=pulses.filter(p=>now-p.t<(p.nw?4000:700));
   for(const p of pulses){const c=p.id%COLS,r=(p.id/COLS)|0;if(p.nw){const a=1-(now-p.t)/4000;ctx.globalAlpha=a*.75;ctx.fillStyle='#f2c230';piecePath(ctx,p.id);ctx.fill();continue;}/* the crowd flash takes the piece's own shape (owner, 2026-11-19) */const a=1-(now-p.t)/700,g=(1-a)*PS*.9;ctx.strokeStyle=C.ink;ctx.globalAlpha=a;ctx.lineWidth=3/view.s;ctx.strokeRect(c*PS-g,r*PS-g,PS+2*g,PS+2*g);}
   ctx.globalAlpha=1;
@@ -359,14 +386,22 @@ function drawPops(now){
   }
   ctx.restore();
 }
+let refBase=null,refKey='',refHotUntil=0;
+function refHot(){refHotUntil=performance.now()+140;}
 function drawRef(){
   if($('ref').classList.contains('mini'))return;
   /* THE PICTURE ZOOMS (owner, 2026-11-19: "add ability to zoom even more on the viewfinder of the
      full image of the mural. currently you cant zoom in to see detail"). RZ is the part of the
      picture the panel shows: s times closer, centred on (cx, cy) in picture pixels. */
   const w=refCv.width,h=refCv.height,sw=W/RZ.s,sh=H/RZ.s,sx=Math.max(0,Math.min(W-sw,RZ.cx-sw/2)),sy=Math.max(0,Math.min(H-sh,RZ.cy-sh/2));
-  rctx.setTransform(1,0,0,1,0,0);rctx.fillStyle=C.slot;rctx.fillRect(0,0,w,h);rctx.imageSmoothingQuality='high';
-  if(refTab==='pic')rctx.drawImage(src,sx,sy,sw,sh,0,0,w,h);else if(refTab==='val'){const vm=valueMap(),kx=COLS/W,ky=ROWS/H;rctx.imageSmoothingEnabled=false;rctx.drawImage(vm,sx*kx,sy*ky,sw*kx,sh*ky,0,0,w,h);rctx.imageSmoothingEnabled=true;}else{rctx.drawImage(crowdL,sx,sy,sw,sh,0,0,w,h);rctx.drawImage(mineL,sx,sy,sw,sh,0,0,w,h);}
+  const vm=refTab==='val'?valueMap():null;
+  const rq=performance.now()<refHotUntil?'low':'high';
+  const key=rq+'|'+refTab+'|'+w+'x'+h+'|'+sx+','+sy+','+sw+'|'+C.slot+'|'+(refTab==='crowd'?layV:0)+'|'+(refTab==='val'?valGen:0);
+  if(!refBase||refBase.width!==w||refBase.height!==h){refBase=mk(w,h);refKey='';}
+  if(key!==refKey){const b=refBase.getContext('2d');refKey=key;
+    b.setTransform(1,0,0,1,0,0);b.fillStyle=C.slot;b.fillRect(0,0,w,h);b.imageSmoothingQuality=rq;
+    if(refTab==='pic')b.drawImage(src,sx,sy,sw,sh,0,0,w,h);else if(vm){const kx=COLS/W,ky=ROWS/H;b.imageSmoothingEnabled=false;b.drawImage(vm,sx*kx,sy*ky,sw*kx,sh*ky,0,0,w,h);b.imageSmoothingEnabled=true;}else{b.drawImage(crowdL,sx,sy,sw,sh,0,0,w,h);}}
+  rctx.setTransform(1,0,0,1,0,0);rctx.drawImage(refBase,0,0);
   const k=w/sw,x=(Math.max(0,-view.tx/view.s)-sx)*k,y=(Math.max(0,-view.ty/view.s)-sy)*k,x2=(Math.min(W,(view.cw-view.tx)/view.s)-sx)*k,y2=(Math.min(H,(view.ch-view.ty)/view.s)-sy)*k;
   if(x2-x<w-2||y2-y<h-2){rctx.strokeStyle='#ffffff';rctx.lineWidth=8;rctx.strokeRect(x,y,x2-x,y2-y);rctx.strokeStyle='#15171c';rctx.lineWidth=3;rctx.strokeRect(x,y,x2-x,y2-y);}
 }
@@ -376,7 +411,7 @@ function rzClamp(){RZ.s=Math.max(1,Math.min(RZ.max,RZ.s));const sw=W/RZ.s,sh=H/R
 function rzAt(e){const r=refCv.getBoundingClientRect(),sw=W/RZ.s,sh=H/RZ.s;return [RZ.cx-sw/2+(e.clientX-r.left)/r.width*sw,RZ.cy-sh/2+(e.clientY-r.top)/r.height*sh];}
 function rzUi(){const l=$('rzLab');if(l)l.textContent=(RZ.s<9.95?(Math.round(RZ.s*10)/10):Math.round(RZ.s))+'x';refCv.classList.toggle('zoomed',RZ.s>1.01);const o=$('rzOut'),i=$('rzIn');if(o)o.disabled=RZ.s<=1.01;if(i)i.disabled=RZ.s>=RZ.max-.01;}
 /* Zoom by f, keeping the picture point (px, py) under the same spot of the panel. */
-function rzZoom(f,px,py){const s0=RZ.s,s1=Math.max(1,Math.min(RZ.max,s0*f));if(s1===s0)return;if(px===undefined){px=RZ.cx;py=RZ.cy;}RZ.cx=px+(RZ.cx-px)*s0/s1;RZ.cy=py+(RZ.cy-py)*s0/s1;RZ.s=s1;rzClamp();rzUi();req();}
+function rzZoom(f,px,py){const s0=RZ.s,s1=Math.max(1,Math.min(RZ.max,s0*f));if(s1===s0)return;hot();refHot();if(px===undefined){px=RZ.cx;py=RZ.cy;}RZ.cx=px+(RZ.cx-px)*s0/s1;RZ.cy=py+(RZ.cy-py)*s0/s1;RZ.s=s1;rzClamp();rzUi();req();}
 const toSrc=(px,py)=>[(px-view.tx)/view.s,(py-view.ty)/view.s];
 /* ---------- hand ---------- */
 /* THE TRAY (owner, 2026-11-19): one to three rows, the player's choice (two by
@@ -653,7 +688,7 @@ function tup(e){
 }
 window.addEventListener('pointerup',tup,{signal:ac.signal});window.addEventListener('pointercancel',tup,{signal:ac.signal});
 /* ---------- reference panel ---------- */
-function refJump(e){const p=rzAt(e),sx=p[0],sy=p[1];if(view.s<view.min*1.8)view.s=Math.min(view.max,view.min*3.2);view.tx=view.cw/2-sx*view.s;view.ty=view.ch/2-sy*view.s;clampView();req();}
+function refJump(e){hot();refHot();const p=rzAt(e),sx=p[0],sy=p[1];if(view.s<view.min*1.8)view.s=Math.min(view.max,view.min*3.2);view.tx=view.cw/2-sx*view.s;view.ty=view.ch/2-sy*view.s;clampView();req();}
 /* On the whole picture a press jumps the board there and a drag keeps jumping, as before. Zoomed
    in, a drag moves the picture instead and a tap jumps. Two fingers pinch; the wheel zooms. */
 const rptr=new Map();let rg=null;
@@ -668,7 +703,7 @@ refCv.addEventListener('pointermove',e=>{
   if(rg.pinch){if(rptr.size<2)return;const a=[...rptr.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1,mid={clientX:(a[0].x+a[1].x)/2,clientY:(a[0].y+a[1].y)/2},p=rzAt(mid);rzZoom((rg.s*d/rg.d)/RZ.s,p[0],p[1]);return;}
   if(!rg.pan){refJump(e);return;}
   if(!rg.moved&&Math.hypot(e.clientX-rg.x0,e.clientY-rg.y0)<5)return;
-  rg.moved=true;const r=refCv.getBoundingClientRect();RZ.cx=rg.cx-(e.clientX-rg.x0)/r.width*(W/RZ.s);RZ.cy=rg.cy-(e.clientY-rg.y0)/r.height*(H/RZ.s);rzClamp();req();
+  rg.moved=true;hot();refHot();const r=refCv.getBoundingClientRect();RZ.cx=rg.cx-(e.clientX-rg.x0)/r.width*(W/RZ.s);RZ.cy=rg.cy-(e.clientY-rg.y0)/r.height*(H/RZ.s);rzClamp();req();
 });
 function refUp(e){if(!rptr.has(e.pointerId))return;rptr.delete(e.pointerId);const g=rg;if(rptr.size===0)rg=null;if(g&&!g.pinch&&g.pan&&!g.moved&&e.type==='pointerup')refJump(e);}
 refCv.addEventListener('pointerup',refUp);refCv.addEventListener('pointercancel',refUp);
