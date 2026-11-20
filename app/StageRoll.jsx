@@ -233,11 +233,24 @@ export default function StageRoll({
             {/* WHERE YOU STAND, NESTED IN THE BAR (owner, 2026-11-03): the
                 three ranks ride under the result; the bar opens them. */}
             {standRows && phase >= 2 && !open ? (
+              standRows.length === 1 ? (
+                /* ONE FULL-WIDTH STRIP (owner, 2026-11-20, option B): with only the
+                   puzzle's own standing left, the rank spans the bar with its caption
+                   and a field track, instead of one chip in a three-column grid. */
+                <span className="srl-strip" aria-hidden="true">
+                  <span className="srl-sr1">
+                    <b><span className="nm">{standRows[0].name}</span>#{standRows[0].rank.toLocaleString('en-US')}{standRows[0].of > 1 ? <small>of {standRows[0].of.toLocaleString('en-US')}</small> : null}</b>
+                    {standRows[0].cap ? <i>{standRows[0].cap}</i> : null}
+                  </span>
+                  {standRows[0].of > 1 ? <span className="srl-trk"><span style={{ width: `${Math.max(4, Math.min(100, standRows[0].rank === 1 ? 100 : Number(standRows[0].pct) || 0))}%` }} /></span> : null}
+                </span>
+              ) : (
               <span className="srl-chips" aria-hidden="true">
                 {standRows.map((r) => (
                   <span key={r.id} className="srl-chip2"><i>{r.id === 'day' ? 'Puzzles' : r.name}</i><b>#{r.rank.toLocaleString('en-US')}{r.up ? <small> &uarr;{r.up}</small> : null}</b></span>
                 ))}
               </span>
+              )
             ) : null}
           </button>
         </div>
@@ -407,6 +420,14 @@ const CSS = `
 .srl-chip2 i{font-style:normal;font-size:11.5px;font-weight:800;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .srl-bar .srl-chip2 b{display:inline;width:auto;padding:0;margin:0;font-size:15px;font-weight:800;letter-spacing:0;line-height:1.2;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:visible;}
 .srl-chip2 small{font-size:10.5px;font-weight:800;}
+.srl-strip{display:flex;flex-direction:column;gap:7px;min-width:0;margin-right:6px;padding:8px 12px 10px;border-radius:10px;background:var(--sst-wash);}
+.srl-sr1{display:flex;align-items:baseline;justify-content:space-between;gap:10px;min-width:0;}
+.srl-bar .srl-sr1 b{display:flex;align-items:baseline;min-width:0;width:auto;padding:0 0 .12em;margin:0;font-size:16px;font-weight:800;letter-spacing:0;line-height:1.25;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:visible;}
+.srl-sr1 b .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;padding-bottom:.12em;margin:0 .3em -.12em 0;}
+.srl-sr1 b small{flex:none;margin-left:.3em;font-size:13px;font-weight:700;}
+.srl-sr1 i{flex:none;font-style:normal;font-size:12px;font-weight:800;line-height:1.3;white-space:nowrap;}
+.srl-trk{position:relative;display:block;height:8px;border-radius:99px;background:color-mix(in srgb,var(--sst-ink) 14%,transparent);overflow:hidden;}
+.srl-trk span{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--sst-ink);}
 .srl-bar b{display:block;width:100%;font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.15;padding:.08em 0 .2em;margin:-.08em 0 -.2em;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums;}
 .srl-bar .ch{flex:none;width:26px;height:26px;display:flex;align-items:center;justify-content:center;opacity:.65;transition:transform .35s cubic-bezier(.2,.8,.2,1);}
 .srl-bar.open .ch{transform:rotate(180deg);opacity:1;}
