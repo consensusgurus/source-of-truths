@@ -211,6 +211,8 @@ export function usePuzzleStandings({ on, gameKey, gameName, cat, game, board, ne
 }
 
 // ── THE RUN ENDING'S THREE ROWS ────────────────────────────────────────────
+// RUN_ONLY (2026-11-20): one row, the run's own. Set false to bring back the day and category rows.
+const RUN_ONLY = true;
 // run: { rank, n }; board: [{ rank, name, fig, me, gap }]; keys: the legs' daily keys.
 export function useRunStandings({ on, runId, runName, keys, run, board, unitWord = 'right' }) {
   const [rows2, setRows2] = useState(null);
@@ -225,6 +227,9 @@ export function useRunStandings({ on, runId, runName, keys, run, board, unitWord
   useEffect(() => {
     if (!on || asked.current || !runId) return undefined;
     asked.current = true;
+    // THAT RUN ONLY (owner, 2026-11-20): run endings show the run's own board,
+    // never the day's or a category's, so those two uncached reads are gone.
+    if (RUN_ONLY) { setRows2([]); setReady(true); return undefined; }
     let alive = true;
     resultPostsSettled(8000).then(() => {
       const day = legs.length

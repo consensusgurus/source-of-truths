@@ -232,7 +232,7 @@ export default function StageRoll({
             </span>
             {/* WHERE YOU STAND, NESTED IN THE BAR (owner, 2026-11-03): the
                 three ranks ride under the result; the bar opens them. */}
-            {standRows && phase >= 2 ? (
+            {standRows && phase >= 2 && !open ? (
               <span className="srl-chips" aria-hidden="true">
                 {standRows.map((r) => (
                   <span key={r.id} className="srl-chip2"><i>{r.id === 'day' ? 'Puzzles' : r.name}</i><b>#{r.rank.toLocaleString('en-US')}{r.up ? <small> &uarr;{r.up}</small> : null}</b></span>
@@ -242,6 +242,16 @@ export default function StageRoll({
           </button>
         </div>
 
+        {/* THE RANK ONCE, SHOW BOARD BELOW IT (owner, 2026-11-20): the standings open
+            straight under the bar, and the bar's chips hide while they are open. */}
+        {standRows ? (
+          <section className={'srl-beat ' + (phase >= 2 && open ? 'focus' : phase >= 2 ? 'gone' : 'pend')}>
+            <div className="srl-full">
+              <div className="sst-card srl-land"><StandCard rows={standRows} /></div>
+            </div>
+          </section>
+        ) : null}
+
         {onShowBoard ? (
           <section className={'srl-beat ' + (phase >= 2 && open ? 'focus' : phase >= 2 ? 'gone' : 'pend')}>
             <div className="srl-full">
@@ -249,14 +259,6 @@ export default function StageRoll({
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16M15 4v16" /></svg>
                 {showBoardLabel || 'Show Board'}
               </button>
-            </div>
-          </section>
-        ) : null}
-
-        {standRows ? (
-          <section className={'srl-beat ' + (phase >= 2 && open ? 'focus' : phase >= 2 ? 'gone' : 'pend')}>
-            <div className="srl-full">
-              <div className="sst-card srl-land"><StandCard rows={standRows} /></div>
             </div>
           </section>
         ) : null}

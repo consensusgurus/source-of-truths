@@ -880,15 +880,15 @@ export default function LayoutCInner({ gameKey }) {
               outlined box in the home's order and groups. */}
           <div className="lc-eeh">Everything Else</div>
           <div className="lc-eebox">
-            {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
-            {/* The community, under Runs, as on the home (owner, 2026-11-18). */}
+            {/* Order as on the home (owner, 2026-11-20): the community first, then Quizzes, Runs, Build a Run. */}
             {ixDoor('/community', 'Community')}
             {ixDoor('/community/talk', 'Post-Game Talk')}
             {ixDoor('/community/groups', 'Groups')}
             {ixDoor('/community/shop', 'Loft Shop')}
             {ixDoor('/community/peers', 'Puzzle Peers')}
-            {ixDoor('/build-a-run', 'Build a Run')}
             {ixHash('sty-quizzes', 'Quizzes')}
+            {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
+            {ixDoor('/build-a-run', 'Build a Run')}
             {ixDoor('/archive', 'Puzzle Archive')}
             {/* Jigsaw Puzzle Shelf, under the archive (owner, 2026-11-18). Keep in step with StageToday. */}
             {ixDoor('/jig/shelf', 'Jigsaw Puzzle Shelf')}

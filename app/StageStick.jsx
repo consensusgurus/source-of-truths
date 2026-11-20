@@ -313,6 +313,10 @@ export default function StageStick({
     })(),
   });
   const standRows = stand.rows && stand.rows.length >= 2 ? stand.rows : null;
+  // THAT PUZZLE ONLY (owner, 2026-11-20): every end screen shows this puzzle's
+  // standing and nothing site-wide or category-wide. `standRows` still feeds the
+  // next-play picks (Switch Gears, the path); only `viewRows` is ever drawn.
+  const viewRows = stand.rows && stand.rows.some((r) => r.id === 'game') ? stand.rows.filter((r) => r.id === 'game') : null;
   // The beat waits for its figures, but never long: past STAND_WAIT_MS the
   // ending goes on without it and the card simply fills in when they land.
   // A board read that lands after the mount (owner report, 2026-11-04: Roll's
@@ -331,7 +335,7 @@ export default function StageStick({
     if (standGo || !hasStanding) return undefined;
     if (stand.ready) {
       standGoAt.current = Date.now();
-      setBeatRows(standRows);
+      setBeatRows(viewRows);
       setStandGo(true);
       return undefined;
     }
@@ -642,10 +646,7 @@ export default function StageStick({
       {s.gameKey && !s.boardLabel ? (
         <div className="sst-scope" role="tablist" aria-label="Leaderboard">
           <button type="button" role="tab" aria-selected={scope === 'today'} className={scope === 'today' ? 'on' : ''} onClick={() => setScope('today')}>Today</button>
-          {desk && standRows ? standRows.slice(1).map((r) => (
-            <button key={r.id} type="button" role="tab" aria-selected={scope === r.id} className={scope === r.id ? 'on' : ''} onClick={() => setScope(r.id)}>{r.name}</button>
-          )) : null}
-          <button type="button" role="tab" aria-selected={scope === 'all'} className={scope === 'all' ? 'on' : ''} onClick={() => setScope('all')}>All time</button>
+          {/* No category, Today's Puzzles or All time tabs (owner, 2026-11-20: that puzzle only). */}
           {/* POST-GAME TALK, a fourth tab, only after finishing (owner, 2026-11-18, spot 4). */}
           {talkOn ? <button type="button" role="tab" aria-selected={scope === 'talk'} className={scope === 'talk' ? 'on' : ''} onClick={() => setScope('talk')}>Talk{talkN ? ` ${talkN}` : ''}</button> : null}
         </div>
@@ -738,7 +739,7 @@ export default function StageStick({
           </a>
         ) : null}
       </section>
-      {band && desk && standRows ? <div className={'sst-h2 sst-bandwys ' + on(2)}><PassCard rows={standRows} band /></div> : resultStats(live)}
+      {band && desk && viewRows ? <div className={'sst-h2 sst-bandwys ' + on(2)}><PassCard rows={viewRows} band /></div> : resultStats(live)}
     </div>
   );
 
@@ -755,7 +756,7 @@ export default function StageStick({
           {metric && metric.label ? <i className="sst-ml">{metric.label}</i> : null}
         </div>
       </section>
-      {standRows ? <div className={'sst-h2 sst-bandwys ' + on(2)}><StandChips rows={standRows} gameName={s.gameName} /></div> : <div className="sst-hsp" />}
+      {viewRows ? <div className={'sst-h2 sst-bandwys ' + on(2)}><StandChips rows={viewRows} gameName={s.gameName} /></div> : <div className="sst-hsp" />}
       <section className={on(1) + ' sst-hl3'}>
         {replayNow ? (replayNow.href
           ? <a className="sst-tl" href={replayNow.href} onClick={replayNow.onClick || undefined}>Replay</a>
@@ -1007,7 +1008,7 @@ export default function StageStick({
   // The Full Results Page's Up next row shows these same three, in the first
   // screen's order: Play Similar, Switch Gears, the run (owner, 2026-11-12).
   const firstPicksList = [simBig, gearBig, runBig].filter(Boolean);
-  const gameRow = standRows ? standRows.find((r) => r.id === 'game') : null;
+  const gameRow = viewRows ? viewRows[0] : null;
   const firstBoard = (() => {
     const fig = (r) => ({ rank: r.rank, name: r.username, fig: gameStats(r, s.missLabel, s.gameKey), me: !!r.me });
     const top = Array.isArray(s.allTop) && s.allTop.length ? s.allTop : sRows.filter((r) => r && !r.gap && !r.empty);
@@ -1027,7 +1028,7 @@ export default function StageStick({
       gamePill={gameRow ? { name: s.gameName || 'This puzzle', rank: gameRow.rank, of: gameRow.of }
         : typeof s.myRank === 'number' ? { name: s.gameName || 'This puzzle', rank: s.myRank, of: null } : null}
       groupPill={groupStandingOf(grp, s.gameKey)}
-      dayPill={dayRow ? { rank: dayRow.rank, of: dayRow.of, up: dayRow.up } : null}
+      dayPill={null}
       board={firstBoard}
       sim={simBig} run={runBig} gear={gearBig} retry={phone ? retry : null}
       chal={chal ? { label: chal.draw ? `Challenge · Win ${DRAWING.prizeLabel}` : 'Challenge a friend', onClick: chal.onSend }
@@ -1072,7 +1073,7 @@ export default function StageStick({
   const playNode = mainPick || small.length ? (
     <PassPlay main={mainPick ? { key: mainPick.key, name: mainPick.g.name, href: mainPick.g.href, mins: mainPick.mins, why: mainPick.why, line: passLine(mainPick) } : null} small={small} />
   ) : null;
-  const passNode = standRows ? <PassCard rows={standRows} wide={desk} /> : null;
+  const passNode = viewRows ? <PassCard rows={viewRows} wide={desk} /> : null;
   // PLAY NEXT, desktop (owner, 2026-11-04): with the standings up in the band,
   // the row below is three big picks, each with the game's own description,
   // why it is suggested and what a typical finish would do for you today.
@@ -1109,7 +1110,7 @@ export default function StageStick({
     </div>
   ) : null;
   // The standing GIF's caption: the day, and what this puzzle moved.
-  const standCaption = dayRow ? `#${dayRow.rank} of ${dayRow.of.toLocaleString('en-US')} today.${dayRow.up ? ` Up ${dayRow.up} with ${s.gameName || 'this puzzle'}.` : ''}` : null;
+  const standCaption = null;   // no day standing on endings (owner, 2026-11-20)
   const ezList = desk ? dayPicks.slice(0, 5) : [];
 
   // ── 2-5. THE CARDS ─────────────────────────────────────────────────────
@@ -1370,13 +1371,13 @@ export default function StageStick({
   const nextC = (stops.length || firstPicksList.length) ? (
     <section className={'sst-card sst-nc sst-nx ' + on(3)}>
       <div className="sst-ncm">
-        <EndNext stops={stops} picks={firstPicksList} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} />
+        <EndNext stops={stops} picks={firstPicksList} from={null} passName={null} armed={false} />
         {/* POST-GAME TALK, below Up next (owner, 2026-11-18). */}
         {talkOn ? <TalkBand gameKey={s.gameKey} gameName={s.gameName} where="sheet" /> : null}
         {rankCard}
         {pnNode(true)}
       </div>
-      <div className="sst-ncs"><EndDay dayRow={dayRow} stops={stops} grp={grp} />{runLink}{chalCard}</div>
+      <div className="sst-ncs"><EndDay dayRow={null} stops={stops} grp={grp} />{runLink}{chalCard}</div>
     </section>
   ) : null;
 
@@ -1433,14 +1434,14 @@ export default function StageStick({
           similar={similar} another={another} archive={archive} curISO={curISO}
           onShowBoard={back} showBoardLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show Board'}
           retry={retry} homeHref={allHref || '/'}
-          standRows={standRows} beatRows={beatRows} standGo={standGo} noCount={noCount}
+          standRows={viewRows} beatRows={beatRows} standGo={standGo} noCount={noCount}
           passNode={(stops.length || firstPicksList.length) ? (armed) => (
             <>
-              <EndNext phone stops={stops} picks={firstPicksList} from={dayRow ? dayRow.rank : null} passName={passName} armed={false} />
+              <EndNext phone stops={stops} picks={firstPicksList} from={null} passName={null} armed={false} />
               {talkOn ? <TalkBand gameKey={s.gameKey} gameName={s.gameName} where="sheet" phone /> : null}
             </>
           ) : passNode}
-          playNode={stops.length ? <EndDay dayRow={dayRow} stops={stops} grp={grp} /> : playNode}
+          playNode={stops.length ? <EndDay dayRow={null} stops={stops} grp={grp} /> : playNode}
           {...replayProps}
         />
         ) : null}

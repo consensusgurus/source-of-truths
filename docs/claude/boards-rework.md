@@ -42,6 +42,17 @@ database (Micro, near its Disk IO budget) and faster home and end screens.
   the category boxes. Phone Full Results: show the rank once (no second set of boxes) and move Show
   Board below the standings. Mockups: https://claude.ai/artifact/9eZ5UsdbQxDMD9S2dABjqn
 
+- 2026-11-20 (second push): END SCREENS SHOW THAT PUZZLE ONLY. StageStick draws `viewRows` (the
+  game row) everywhere: no Today's Puzzles pill, no category / Today's Puzzles / All time tabs, no day
+  rank on EndDay, EndNext or the standing GIF caption. `standRows` (game + category + day) still feeds
+  the next-play picks, so the two daily-combined reads in usePuzzleStandings STAY until the picks come
+  from a prebuilt board. Phone (StageRoll): standings open right under the bar, its chips hide while
+  open, Show Board sits below. Runs: useRunStandings RUN_ONLY = true, so the day and category reads
+  (fresh=1, uncached) are gone; GauntletScreens shows the run's own card from one row.
+- Home rail header: "#70 of 88" (no "You"), the as-of time small at the end. Everything Else order:
+  community first (Community, Post-Game Talk, Groups, Loft Shop, Puzzle Peers), then Quizzes, Runs,
+  Build a Run, then the rest; same on the phone tiles and the puzzle-page sidebar.
+
 ## Next phases (one page at a time, evenings, watch logs 15 minutes after each)
 
 1. Home overall leaderboard and the leaderboard page read `/api/boards?name=overall`, show `asOf`.

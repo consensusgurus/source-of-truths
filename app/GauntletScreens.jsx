@@ -681,7 +681,8 @@ export function GauntletEndStage({
     run: rank ? { rank, n: fieldSize } : null,
     board: board && Array.isArray(board.rows) ? board.rows.map((r) => (r.gap ? { gap: true } : { rank: r.rank, name: r.name, fig: r.score != null ? String(r.score) : '', me: !!r.me })) : [],
   });
-  const standRows = stand.rows && stand.rows.length >= 2 ? stand.rows : null;
+  // One row now, the run's own (owner, 2026-11-20): the card shows it rather than vanishing.
+  const standRows = stand.rows && stand.rows.length >= 1 ? stand.rows : null;
   const standCard = standRows ? <StandCard rows={standRows} className="gsx-card gsx-wys" /> : null;
   // PHONES (owner, 2026-11-04): the page shows three big tiles with the move up;
   // the leaderboard (the card above) lives in the top bar's dropdown instead.
@@ -844,7 +845,7 @@ export function GauntletEndStage({
             {rankText ? <span data-rf={phone ? undefined : 'rank'}>{rankText}</span> : null}
             {nextLine ? <span className="rbe-nx">{nextLine}</span> : null}
           </span>
-          {standRows ? (
+          {standRows && standRows.length >= 2 ? (
             <span className="rbe-ranks">
               {standRows.slice(0, 3).map((r) => (
                 <span key={r.id}><em>{r.name}</em><b>#{Number(r.rank).toLocaleString('en-US')}</b></span>

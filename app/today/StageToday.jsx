@@ -2904,8 +2904,7 @@ export default function StageToday() {
           ? <><span className="sty-ixl">{skillOfId(cat).name}</span><span className="sty-ixs">{skillOfId(cat).short}</span></>
           : catLabel(cat), hueFor(cat))))}
       <span className="sty-ixsep sty-ixee" aria-hidden="true" />
-      {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)', 'sty-ixe1')}
-      {/* BUILD A RUN SITS RIGHT UNDER RUNS (owner, 2026-11-07). A door, not a pane. */}
+      {/* EVERYTHING ELSE ORDER (owner, 2026-11-20): the community first, then Quizzes, Runs and Build a Run. */}
       {/* THE COMMUNITY, right under Runs (owner, 2026-11-18, "Where To Link" spot 3). A door. */}
       <a className="sty-ixb sty-ixbr" href="/community" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('community', null)}<span>Community</span></a>
       {/* The rest of the community, each a door (owner, 2026-11-18: "Add more buttons to home for chat, shop, puzzle peers"). */}
@@ -2913,8 +2912,10 @@ export default function StageToday() {
       <a className="sty-ixb sty-ixbr" href="/community/groups" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('groups', null)}<span>Groups</span></a>
       <a className="sty-ixb sty-ixbr" href="/community/shop" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('shop', null)}<span>Loft Shop</span></a>
       <a className="sty-ixb sty-ixbr" href="/community/peers" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('peers', null)}<span>Puzzle Peers</span></a>
-      <a className="sty-ixb sty-ixbr" href="/build-a-run" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('buildrun', null)}<span>Build a Run</span></a>
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)', 'sty-ixq')}
+      {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)', 'sty-ixe1')}
+      {/* BUILD A RUN SITS RIGHT UNDER RUNS (owner, 2026-11-07). A door, not a pane. */}
+      <a className="sty-ixb sty-ixbr" href="/build-a-run" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('buildrun', null)}<span>Build a Run</span></a>
       {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
           and Leaderboards + Stats are one group; the tests, Kids and the lists
           are their own group below; Most Appreciated comes last. The phone
@@ -3562,7 +3563,7 @@ export default function StageToday() {
     // A prebuilt board carries no reader row: take it from the page's own board.
     const rd = rd0 && rd0.pre ? { ...rd0, me: (board && board.me) || null } : rd0;
     const asOfEl = rd && rd.asOf
-      ? <em>{' · as of '}{new Date(rd.asOf).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</em> : null;
+      ? <small className="sty-asof">{' · as of '}{new Date(rd.asOf).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }).replace(/ [AP]M$/, '')}</small> : null;
     const gN = railGrp ? railGrp.rows.length : 0;
     const avail = dim.navH ? dim.navH - 24 - (gN ? 24 + gN * 30 + 16 : 0) : 16 * 30;
     const n = Math.max(5, Math.min(25, Math.floor(avail / 30)));
@@ -3665,9 +3666,11 @@ export default function StageToday() {
             {/* ONE HEADER PATTERN IN THE RAIL (owner, 2026-11-10): the board's
                 name at the left, your standing on it at the right, as the
                 group's box above does. The tabs name the scope. */}
-            <div className="sty-eb">Everyone{asOfEl}{rd && rd.me && rd.me.rank && rd.field
-              ? <span className="sty-ebr">You #{rd.me.rank} of {Number(rd.field).toLocaleString('en-US')}</span>
-              : rd && rd.field ? <span className="sty-ebr">{Number(rd.field).toLocaleString('en-US')} {rd.field === 1 ? 'player' : 'players'}</span> : null}</div>
+            {/* Rank without "You", the as-of time small at the end (owner, 2026-11-20: the header overflowed). */}
+            <div className="sty-eb">Everyone{rd && rd.me && rd.me.rank && rd.field
+              ? <span className="sty-ebr">#{rd.me.rank} of {Number(rd.field).toLocaleString('en-US')}{asOfEl}</span>
+              : rd && rd.field ? <span className="sty-ebr">{Number(rd.field).toLocaleString('en-US')} {rd.field === 1 ? 'player' : 'players'}{asOfEl}</span>
+              : asOfEl ? <span className="sty-ebr">{asOfEl}</span> : null}</div>
             {tabs}
             <ol style={{ '--rh': rh.toFixed(2) + 'px' }}>{slots}</ol>
           </div>
@@ -5061,9 +5064,9 @@ export default function StageToday() {
                   <a href="/community/groups"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3" /><circle cx="17" cy="9" r="2.5" /><path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6" /><path d="M15 14.2c.6-.1 1.3-.2 2-.2 2.8 0 4 2 4 5" /></svg><b>Groups</b></a>
                   <a href="/community/shop"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg><b>Loft Shop</b></a>
                   <a href="/community/peers"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4" /><path d="M7 4h10l3 4-8 12L4 8z" /></svg><b>Puzzle Peers</b></a>
+                  <button type="button" onClick={() => goPane(QUIZ_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5" /><path d="M12 17h.01" /></svg><b>Quizzes</b></button>
                   <button type="button" onClick={() => mOpen(CIRC_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 4v16" /><path d="M5 5h11l-2 4 2 4H5" /></svg><b>Runs<em>{circuits.filter(runFull).length} of {circuits.length}</em></b></button>
                   <a href="/build-a-run"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><b>Build a Run</b></a>
-                  <button type="button" onClick={() => goPane(QUIZ_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5" /><path d="M12 17h.01" /></svg><b>Quizzes</b></button>
                   <button type="button" onClick={() => goPane(BOARD_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7" /></svg><b>Leaderboards + Stats</b></button>
                   <a href={withTq('/archive')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="1" /><path d="M5 9v10h14V9M10 13h4" /></svg><b>Puzzle Archive</b></a>
                   <a href={withTq('/jig/shelf')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 9h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v3H4z" /><path d="M4 4h16" /></svg><b>Jigsaw Puzzle Shelf</b></a>
@@ -8447,7 +8450,10 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
     border-top-color:color-mix(in srgb, var(--stg-ink) 16%, transparent);border-radius:0;background:var(--stg-surf);
     padding:7px 13px;font-size:13.5px;font-weight:700;}
   .sty-ixn .sty-ixee ~ .sty-ixb.on{background:var(--stg-ink);color:var(--stg-ground);}
-  .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixe1{margin-top:0;border-top:1px solid var(--stg-ink);border-radius:12px 12px 0 0;}
+  /* The box's rounded top sits on its first row (owner, 2026-11-20 reorder): the
+     community on a wide index; Quizzes where the community rows are hidden. */
+  @media (min-width:901px){ .sty-ixn .sty-ixee + .sty-ixb{margin-top:0;border-top:1px solid var(--stg-ink);border-radius:12px 12px 0 0;} }
+  @media (max-width:900px){ .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixq{margin-top:0;border-top:1px solid var(--stg-ink);border-radius:12px 12px 0 0;} }
   .sty-ixn .sty-ixee ~ .sty-ixsep{display:none;}
   .sty-ixn .sty-ixee ~ .sty-ixsep + .sty-ixb{border-top:1px solid var(--stg-ink);}
   .sty-ixn .sty-ixee ~ .sty-ixb.sty-ixend{border-bottom-width:1px;border-radius:0 0 12px 12px;}
@@ -8680,7 +8686,6 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-gbuild .sty-gpl.sty-gcs,.sty:not([data-stage-theme=light]) .sty-gbuild .sty-gpl.sty-gcs{background:var(--stg-ink);color:var(--stg-ground);}
   .sty-gbuild:hover .sty-gn{text-decoration:underline;text-underline-offset:3px;}
   /* Build a Run in the index's Everything Else box, under Runs. */
-  .sty-ixn .sty-ixee ~ .sty-ixe1.on + .sty-ixbr{border-top:1px solid var(--stg-ink);border-radius:12px 12px 0 0;}
   .sty-gdl{display:flex;justify-content:space-between;gap:6px;font-size:12px;line-height:1.35;min-width:0;}
   .sty-gdl b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .sty-gdl i{font-style:normal;font-weight:600;flex:none;}
@@ -8874,6 +8879,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      no italics) and the reader's standing or the way through at the right. */
   .sty-ix .sty-rlb .sty-eb,.sty-rail .cbr-hd{padding:9px 12px;font-size:13.5px;font-weight:800;letter-spacing:0;text-transform:none;line-height:1.35;color:var(--stg-ink);}
   .sty-ix .sty-rlb .sty-eb em{font-style:normal;font-weight:600;color:var(--stg-mute);}
+  .sty-ix .sty-rlb .sty-eb .sty-asof{font-size:10px;font-weight:600;color:var(--stg-mute);white-space:nowrap;}
   .sty-ix .sty-rlb .sty-eb .sty-ebr,.sty-rail .cbr-hd a{font-size:12px;font-weight:700;color:color-mix(in srgb, var(--stg-ink) 72%, transparent);}
   /* 5. THE INDEX IS ONE JOINED LIST (option 5A). The category rows, All
      Puzzles and My Puzzles share one outlined box with ink dividers, the shape
