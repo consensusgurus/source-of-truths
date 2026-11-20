@@ -226,7 +226,7 @@ let STATE=env.state||{};
 // (30 from the 3840 photo), so the closest zoom stops at 64 CSS px a piece;
 // it used to go to 110 and the phone loaded the half-size photo on top of that.
 const view={s:1,tx:0,ty:0,cw:0,ch:0,min:.1,max:72/PS};
-let valDirty=true,isPhone=false,C={},sel=null,refTab='pic',pulses=[],needDraw=false,tick=UPDATE,HANDN=8,TSZ=68,HCOLS=8,TRAYR=2,finShown=false;
+let valDirty=true,isPhone=false,C={},sel=null,refTab='pic',pulses=[],pops=[],needDraw=false,tick=UPDATE,HANDN=8,TSZ=68,HCOLS=8,TRAYR=2,finShown=false;
 try{const v=+localStorage.getItem('mural_tray_rows');if(v>=1&&v<=3)TRAYR=v;}catch(e){}
 function colors(){const cs=getComputedStyle(root);C={bd:cs.getPropertyValue('--bd').trim(),slot:cs.getPropertyValue('--slot').trim(),ink:cs.getPropertyValue('--ink').trim(),page:cs.getPropertyValue('--page').trim()};}
 const SOLO=!!env.solo,PRIV=env.priv||null;
@@ -267,8 +267,31 @@ function draw(){
   for(const l of M.loose){ctx.save();ctx.translate(l.x-(l.id%COLS+.5)*PS,l.y-(((l.id/COLS)|0)+.5)*PS);if(!moving){ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=6;}drawPiece(ctx,l.id,'rgba(0,0,0,.6)');ctx.restore();}
   ctx.restore();
   ctx.strokeStyle=C.ink;ctx.lineWidth=1;ctx.strokeRect(Math.round(view.tx)+.5,Math.round(view.ty)+.5,Math.round(W*view.s),Math.round(H*view.s));
+  drawPops(now);
   drawRef();
-  if(pulses.length)req();
+  if(pulses.length||pops.length)req();
+}
+/* POINTS POP (owner, 2026-11-19: "a subtle scoring animation for each placed piece ... that shows the
+   number of points awarded when piece locked in"). A small "+N" rises off the piece's home and fades,
+   drawn in screen space so it reads the same at any zoom. A first placement pops in gold. The server's
+   verdict can still change the value (send() below): a taken piece drops its pop, a corrected one
+   updates it in place. */
+const POP_MS=1100,calm=(()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){return false;}})();
+function popFor(id,v,first){pops=pops.filter(p=>p.id!==id);pops.push({id,v,first,t:performance.now()});}
+function drawPops(now){
+  pops=pops.filter(p=>now-p.t<POP_MS);if(!pops.length)return;
+  const ff=getComputedStyle(root).fontFamily||'Manrope,sans-serif';
+  ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+  for(const p of pops){
+    const k=(now-p.t)/POP_MS,ease=1-Math.pow(1-k,3);
+    const x=view.tx+(p.id%COLS+.5)*PS*view.s,y=view.ty+((((p.id/COLS)|0)+.5)*PS)*view.s-(calm?0:6+22*ease);
+    const sc=calm?1:(k<.15?.7+.3*(k/.15):1),fs=Math.round(15*sc);
+    ctx.globalAlpha=k<.6?1:Math.max(0,1-(k-.6)/.4);
+    ctx.font='800 '+fs+'px '+ff;const t='+'+p.v;
+    ctx.lineWidth=4;ctx.strokeStyle=C.page||'#fff';ctx.strokeText(t,x,y);
+    ctx.fillStyle=p.first?'#c9970f':(C.ink||'#111');ctx.fillText(t,x,y);
+  }
+  ctx.restore();
 }
 function drawRef(){
   if($('ref').classList.contains('mini'))return;
@@ -342,7 +365,7 @@ function attempt(id,sx,sy,from){
     const val=valueOf(id),first=val.first;send(id,val,0);M.mine.add(id);drawPiece(mctx,id);M.pts+=val.v;if(first)M.firsts++;valDirty=true;
     M.loose=M.loose.filter(l=>l.id!==id);saveLoose();
     if(from!==null&&from!==undefined&&M.hand[from]===id)M.hand[from]=null;const hi=M.hand.indexOf(id);if(hi>=0)M.hand[hi]=null;if(M.hand.every(x=>x===null||x===undefined)&&M.mine.size<TOTAL)dealAll();
-    pulses.push({id,t:performance.now()});sel=null;
+    pulses.push({id,t:performance.now()});if(!SOLO)popFor(id,val.v,first);sel=null;
     setMsg((first?'First on the mural. ':'Placed. ')+val.v+(val.v===1?' point':' points')+' ('+GN[val.g].toLowerCase()+').');
     if(M.mine.size>=TOTAL)finish();
     renderHand();ui();req();return true;
@@ -435,11 +458,11 @@ function send(id,val,tries){
       if(o.ok&&o.j&&typeof o.j.points==='number'){
         pending--;creditSoon();
         if(o.j.taken){
-          M.pts-=val.v;if(val.first)M.firsts--;M.crowd.add(id);drawPiece(cctx,id);valDirty=true;
+          M.pts-=val.v;if(val.first)M.firsts--;M.crowd.add(id);drawPiece(cctx,id);valDirty=true;pops=pops.filter(p=>p.id!==id);
           setMsg('Someone else placed that piece first, so it scores nothing.');renderHand();ui();req();return;
         }
         if(o.j.points!==val.v||o.j.first!==val.first){
-          M.pts+=o.j.points-val.v;
+          M.pts+=o.j.points-val.v;{const pp=pops.find(p=>p.id===id);if(pp){pp.v=o.j.points;pp.first=!!o.j.first;}}
           if(val.first&&!o.j.first){M.firsts--;M.crowd.add(id);drawPiece(cctx,id);setMsg('Someone got there first. '+o.j.points+(o.j.points===1?' point.':' points.'));}
           else if(!val.first&&o.j.first)M.firsts++;
           valDirty=true;renderHand();ui();req();
