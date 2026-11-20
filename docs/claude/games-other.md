@@ -3635,3 +3635,12 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
   Keep the crawlable "About" prose BEFORE the board in `MuralClient`.
 - **Not built yet:** a rate limit or server-side proof on `/api/mural/place` (the server trusts
   that a piece was placed correctly).
+
+
+### 2026-11-20 additions (owner asks)
+
+- **Opening view:** opens zoomed in (42 CSS px a piece desktop, 37 phone), centred on the open edge of the build. Fit / 0 shows the whole board.
+- **Update note** (`#updo`, `showUpdNote` in engine.js): after each 2-minute refresh, a light note at the top (bottom on phones) lists who added pieces (diff of the snapshot's `contrib` by name, guests together as "Guests" because the snapshot does not name them), the player's points since the last refresh, and points lost on pieces someone else placed first. Fades after 9s; tap to close.
+- **Clear** (`#clearBtn`, beside Swap): takes every loose piece off the board back to the open pile and fills empty tray slots.
+- **Pop Out** (`#refPop`, desktop only): the viewfinder opens in its own window drawn by the page (same Picture / Crowd / Value tab, board view boxed, click jumps the board). The in-page panel tucks to its header until the window closes.
+- **The wall lists every guest on their own** ("Guest 1", "Guest 2", numbered by pieces) instead of one Guests block: `/api/mural/wall` returns guests inside `who` with `g: 1`, and `guests.f` is 0.

@@ -361,7 +361,7 @@ function draw(){
   ctx.restore();
   ctx.strokeStyle=C.ink;ctx.lineWidth=1;ctx.strokeRect(Math.round(view.tx)+.5,Math.round(view.ty)+.5,Math.round(W*view.s),Math.round(H*view.s));
   drawPops(now);
-  drawRef();
+  drawRef();popDraw();
   if(pulses.length||pops.length)req();
 }
 /* POINTS POP (owner, 2026-11-19: "a subtle scoring animation for each placed piece ... that shows the
@@ -389,7 +389,7 @@ function drawPops(now){
 let refBase=null,refKey='',refHotUntil=0;
 function refHot(){refHotUntil=performance.now()+140;}
 function drawRef(){
-  if($('ref').classList.contains('mini'))return;
+  if($('ref').classList.contains('mini')||$('ref').classList.contains('popped'))return;
   /* THE PICTURE ZOOMS (owner, 2026-11-19: "add ability to zoom even more on the viewfinder of the
      full image of the mural. currently you cant zoom in to see detail"). RZ is the part of the
      picture the panel shows: s times closer, centred on (cx, cy) in picture pixels. */
@@ -468,7 +468,7 @@ function attempt(id,sx,sy,from){
   if(M.done)return;
   const hx=(id%COLS+.5)*PS,hy=(((id/COLS)|0)+.5)*PS;
   if(Math.hypot(sx-hx,sy-hy)<=tol()){
-    const val=valueOf(id),first=val.first;send(id,val,0);M.mine.add(id);drawPiece(mctx,id);M.pts+=val.v;if(first)M.firsts++;valDirty=true;
+    const val=valueOf(id),first=val.first;send(id,val,0);M.mine.add(id);drawPiece(mctx,id);M.pts+=val.v;UPD.pts+=val.v;UPD.n++;if(first)M.firsts++;valDirty=true;
     M.loose=M.loose.filter(l=>l.id!==id);saveLoose();
     if(from!==null&&from!==undefined&&M.hand[from]===id)M.hand[from]=null;const hi=M.hand.indexOf(id);if(hi>=0)M.hand[hi]=null;if(M.hand.every(x=>x===null||x===undefined)&&M.mine.size<TOTAL)dealAll();
     pulses.push({id,t:performance.now()});if(!SOLO)popFor(id,val.v,first);sel=null;
@@ -564,11 +564,11 @@ function send(id,val,tries){
       if(o.ok&&o.j&&typeof o.j.points==='number'){
         pending--;creditSoon();
         if(o.j.taken){
-          M.pts-=val.v;if(val.first)M.firsts--;M.crowd.add(id);drawPiece(cctx,id);valDirty=true;pops=pops.filter(p=>p.id!==id);
+          M.pts-=val.v;UPD.pts-=val.v;UPD.lost+=val.v;UPD.ov++;if(val.first)M.firsts--;M.crowd.add(id);drawPiece(cctx,id);valDirty=true;pops=pops.filter(p=>p.id!==id);
           setMsg('Someone else placed that piece first, so it scores nothing.');renderHand();ui();req();return;
         }
         if(o.j.points!==val.v||o.j.first!==val.first){
-          M.pts+=o.j.points-val.v;{const pp=pops.find(p=>p.id===id);if(pp){pp.v=o.j.points;pp.first=!!o.j.first;}}
+          M.pts+=o.j.points-val.v;UPD.pts+=o.j.points-val.v;if(o.j.points<val.v){UPD.lost+=val.v-o.j.points;UPD.ov++;}{const pp=pops.find(p=>p.id===id);if(pp){pp.v=o.j.points;pp.first=!!o.j.first;}}
           if(val.first&&!o.j.first){M.firsts--;M.crowd.add(id);drawPiece(cctx,id);setMsg('Someone got there first. '+o.j.points+(o.j.points===1?' point.':' points.'));}
           else if(!val.first&&o.j.first)M.firsts++;
           valDirty=true;renderHand();ui();req();
@@ -582,6 +582,30 @@ function send(id,val,tries){
 let flashUntil=0,lastPoll=Date.now(),polling=false;
 /* What the last refresh brought sits beside the site total until the next one. */
 function flashUpdate(n){$('sNew').textContent=n>0?'+'+n.toLocaleString():'';}
+/* THE UPDATE NOTE (owner, 2026-11-20: "a light overlay at the top showing who contributed on a given
+   update? and maybe total points you got, and the subtracted amount for overlapping placements").
+   Each refresh compares the crowd's tallies with the last ones: who added pieces (members by name,
+   guests together, since the snapshot does not name them), and what this player scored since the last
+   refresh, less anything lost to a piece someone else placed first. Tap to close; it fades on its own. */
+const UPD={pts:0,lost:0,ov:0,n:0,swapped:0};let updT=0;
+const tallyOf=(st)=>{const m=new Map();for(const r of (st&&st.contrib)||[])if(r&&r.name)m.set(r.name,(m.get(r.name)||0)+(r.firsts||0));return {m,g:(st&&st.guests&&st.guests.firsts)||0};};
+function showUpdNote(before,after,fresh){
+  const el=$('updo');if(!el||SOLO)return;
+  const who=[];for(const [n,f] of after.m){const d=f-(before.m.get(n)||0);if(d>0)who.push([n,d]);}
+  who.sort((a,b)=>b[1]-a[1]);const gd=Math.max(0,after.g-before.g);
+  const mine=UPD.n>0||UPD.lost>0;if(!fresh&&!mine){UPD.pts=0;UPD.lost=0;UPD.ov=0;UPD.n=0;UPD.swapped=0;return;}
+  el.textContent='';const line=(cls)=>{const d=document.createElement('div');d.className=cls;el.appendChild(d);return d;};
+  const add=(d,t,b)=>{const x=document.createElement(b?'b':'span');x.textContent=t;d.appendChild(x);return x;};
+  const a=line('ul');add(a,'Update',1);add(a,' \u00b7 '+fresh.toLocaleString()+(fresh===1?' new piece':' new pieces'));
+  if(who.length||gd){const b=line('uw');const list=who.slice(0,6).map(([n,d])=>[n===M.name?'You':n,d]);if(gd)list.push(['Guests',gd]);
+    list.forEach(([n,d],i)=>{if(i)add(b,', ');add(b,n,1);add(b,' '+d.toLocaleString());});
+    if(who.length>6){const r=who.slice(6).reduce((x,y)=>x+y[1],0);add(b,', '+(who.length-6)+' more '+r.toLocaleString());}}
+  if(mine){const c=line('um');add(c,'You',1);add(c,' '+(UPD.pts>=0?'+':'\u2212')+Math.abs(UPD.pts).toLocaleString()+(Math.abs(UPD.pts)===1?' point':' points'));
+    if(UPD.lost>0){const x=add(c,' \u00b7 \u2212'+UPD.lost.toLocaleString()+' lost on '+UPD.ov+(UPD.ov===1?' piece':' pieces')+' placed first by someone else');x.className='neg';}}
+  if(UPD.swapped){const c=line('um');add(c,UPD.swapped+(UPD.swapped===1?' tray piece was':' tray pieces were')+' placed by someone else and swapped.');}
+  UPD.pts=0;UPD.lost=0;UPD.ov=0;UPD.n=0;UPD.swapped=0;
+  el.classList.add('show');clearTimeout(updT);updT=setTimeout(()=>el.classList.remove('show'),9000);
+}
 async function poll(){
   if(polling||dead||SOLO)return;polling=true;
   try{
@@ -590,8 +614,9 @@ async function poll(){
     if(dead)return;
     lastPoll=Date.now();tick=UPDATE;M.hours=hoursOpen();
     if(me.ok)applyMe(me.j);
+    let note=null;
     if(st.ok){
-      const add=applyState(st.j),t0=performance.now(),fresh=add.filter(id=>!M.mine.has(id));
+      const tb=tallyOf(STATE),add=applyState(st.j),t0=performance.now(),fresh=add.filter(id=>!M.mine.has(id));note=[tb,tallyOf(st.j),fresh.length];
       add.forEach(id=>drawPiece(cctx,id));fresh.forEach(id=>pulses.push({id,t:t0,nw:true}));
       if(!fresh.length)flashUpdate(0);
       if(fresh.length){
@@ -607,10 +632,11 @@ async function poll(){
         let lost=0;const pool=allOpen();
         for(let k=0;k<M.hand.length;k++){const x=M.hand[k];if(x!==null&&x!==undefined&&M.crowd.has(x)){lost++;if(sel===k)sel=null;if(pool.length){const j=Math.floor(Math.random()*pool.length);M.hand[k]=pool[j];pool[j]=pool[pool.length-1];pool.pop();}else M.hand[k]=null;}}
         const lb=M.loose.length;M.loose=M.loose.filter(l=>!M.crowd.has(l.id));if(M.loose.length!==lb)saveLoose();
-        valDirty=true;flashUpdate(fresh.length);
+        valDirty=true;flashUpdate(fresh.length);UPD.swapped+=lost;
         setMsg(K.name+' updated: '+fresh.length+(fresh.length===1?' new piece':' new pieces')+' from the crowd.'+(lost?' '+lost+' in your tray '+(lost>1?'were':'was')+' placed by someone else, so '+(lost>1?'they were':'it was')+' swapped for '+(lost>1?'new ones.':'a new one.'):''));
       }
     }
+    if(note)showUpdNote(note[0],note[1],note[2]);
     renderHand();ui();req();
     if($('lbSheet').classList.contains('show'))standings();
     checkEnd();
@@ -714,6 +740,42 @@ root.querySelectorAll('#refSeg button').forEach(b=>b.onclick=()=>{refTab=b.datas
 let refState=0;
 function setRef(n){refState=n;const r=$('ref');r.classList.toggle('big',n===1);r.classList.toggle('mini',n===2);$('refSize').textContent=n===0?'Larger':'Hide';clampRef();req();}
 $('refSize').onclick=()=>setRef((refState+1)%3);
+/* POP OUT (owner, 2026-11-20: "can we give users ability to pop-out view finder to new window?"). The
+   picture opens in its own window, drawn by this page: the same tab (Picture, Crowd, Value), the whole
+   mural, the board's view boxed; a click there jumps the board. The panel here tucks away meanwhile and
+   comes back when that window closes. */
+let popW=null,popCv=null,popBase=null,popKey='',popTimer=0;
+function popDraw(){
+  if(!popW||popW.closed||!popCv)return;
+  const d=popW.document,ww=d.documentElement.clientWidth||600,wh=d.documentElement.clientHeight||400,dp=Math.min(2,popW.devicePixelRatio||1);
+  const k0=Math.min(ww/W,wh/H),cw=Math.max(50,Math.floor(W*k0)),ch=Math.max(50,Math.floor(H*k0));
+  if(popCv.width!==Math.round(cw*dp)||popCv.height!==Math.round(ch*dp)){popCv.width=Math.round(cw*dp);popCv.height=Math.round(ch*dp);popCv.style.width=cw+'px';popCv.style.height=ch+'px';popKey='';}
+  const w=popCv.width,h=popCv.height,vm=refTab==='val'?valueMap():null;
+  const key=refTab+'|'+w+'x'+h+'|'+(refTab==='crowd'?layV:0)+'|'+(refTab==='val'?valGen:0)+'|'+C.slot;
+  if(!popBase||popBase.width!==w||popBase.height!==h){popBase=mk(w,h);popKey='';}
+  if(key!==popKey){popKey=key;const b=popBase.getContext('2d');b.fillStyle=C.slot;b.fillRect(0,0,w,h);b.imageSmoothingQuality='high';
+    if(refTab==='pic')b.drawImage(src,0,0,W,H,0,0,w,h);else if(vm){b.imageSmoothingEnabled=false;b.drawImage(vm,0,0,COLS,ROWS,0,0,w,h);b.imageSmoothingEnabled=true;}else b.drawImage(crowdL,0,0,W,H,0,0,w,h);}
+  const x=popCv.getContext('2d');x.setTransform(1,0,0,1,0,0);x.drawImage(popBase,0,0);
+  const k=w/W,a=Math.max(0,-view.tx/view.s)*k,c=Math.max(0,-view.ty/view.s)*k,a2=Math.min(W,(view.cw-view.tx)/view.s)*k,c2=Math.min(H,(view.ch-view.ty)/view.s)*k;
+  if(a2-a<w-2||c2-c<h-2){x.strokeStyle='#ffffff';x.lineWidth=6*dp;x.strokeRect(a,c,a2-a,c2-c);x.strokeStyle='#15171c';x.lineWidth=2.5*dp;x.strokeRect(a,c,a2-a,c2-c);}
+}
+function popClosed(){clearInterval(popTimer);popW=null;popCv=null;$('ref').classList.remove('popped');const b=$('refPop');if(b)b.textContent='Pop Out';req();}
+function popOut(){
+  if(popW&&!popW.closed){popW.close();popClosed();return;}
+  const w=window.open('','mural_viewfinder','popup,width=760,height='+Math.round(760*H/W+40));
+  if(!w){setMsg('Your browser blocked the window. Allow pop-ups for this site to pop the picture out.');return;}
+  popW=w;const d=w.document;d.title=K.name+': Picture';
+  d.body.innerHTML='';d.body.style.cssText='margin:0;background:'+(C.bd||'#e9e7e1')+';display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden;cursor:crosshair';
+  popCv=d.createElement('canvas');d.body.appendChild(popCv);
+  popCv.addEventListener('pointerdown',(e)=>{const r=popCv.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*W,sy=(e.clientY-r.top)/r.height*H;hot();if(view.s<view.min*1.8)view.s=Math.min(view.max,view.min*3.2);view.tx=view.cw/2-sx*view.s;view.ty=view.ch/2-sy*view.s;clampView();req();});
+  w.addEventListener('resize',()=>{popKey='';popDraw();});
+  w.addEventListener('beforeunload',()=>setTimeout(popClosed,0));
+  popTimer=setInterval(()=>{if(!popW||popW.closed)popClosed();},1000);
+  $('ref').classList.add('popped');$('refPop').textContent='Pop In';popDraw();
+}
+$('refPop').onclick=popOut;
+$('updo').onclick=()=>{clearTimeout(updT);$('updo').classList.remove('show');};
+cleanups.push(()=>{try{if(popW&&!popW.closed)popW.close();}catch(e){}clearInterval(popTimer);});
 const refEl=$('ref');let rdrag=null;
 function clampRef(){if(!refEl.style.left)return;const st=$('stage').getBoundingClientRect(),r=refEl.getBoundingClientRect();refEl.style.left=Math.max(4,Math.min(st.width-r.width-4,parseFloat(refEl.style.left)))+'px';refEl.style.top=Math.max(4,Math.min(st.height-r.height-4,parseFloat(refEl.style.top)))+'px';}
 function refDragStart(e){const st=$('stage').getBoundingClientRect(),r=refEl.getBoundingClientRect();rdrag={ox:e.clientX-r.left,oy:e.clientY-r.top,x0:e.clientX,y0:e.clientY,moved:false,pill:e.currentTarget.id==='refShow'};e.currentTarget.setPointerCapture(e.pointerId);refEl.style.left=(r.left-st.left)+'px';refEl.style.top=(r.top-st.top)+'px';refEl.style.right='auto';refEl.classList.add('moving');e.preventDefault();}
@@ -848,9 +910,19 @@ function creditLine(){const p=env.board.photo||{};return p.name?'Photo: '+p.name
 /* ---------- wiring ---------- */
 /* No wait on Swap (owner, 2026-11-19: "Remove the refresh limit"); the 10 second timer is gone.
    The button reads Swap (owner, 2026-11-19: "relabel 'refresh' as swap"): "refresh" is the board's own two-minute update. */
-function coolTick(){const b=$('dealBtn'),w=!!(M&&M.done&&finShown);b.disabled=!!(M&&M.done)&&!w;b.textContent=w?'The Wall':'Swap';}
+function coolTick(){const b=$('dealBtn'),w=!!(M&&M.done&&finShown);b.disabled=!!(M&&M.done)&&!w;b.textContent=w?'The Wall':'Swap';const cb=$('clearBtn');if(cb)cb.style.display=M&&M.done?'none':'';}
 function refreshSet(){if(M.done){if(finShown)showFinish(SOLO||!!STATE.completed||(STATE.n||0)>=TOTAL,!SOLO&&Date.now()>=env.board.closes);return;}dealAll();setMsg(M.hand.some(x=>x!==null)?'New set, from anywhere on the mural. Use the picture to find where each one goes.':'You have placed everything.');}
 $('dealBtn').onclick=refreshSet;
+/* CLEAR (owner, 2026-11-20: "need a button in bottom to clear unplaced pieces, by swap"). Takes every
+   loose piece off the board, back into the open pile, and fills any empty tray slots. */
+function clearLoose(){
+  if(M.done)return;const n=M.loose.length;
+  if(!n){setMsg('No loose pieces on the board to clear.');return;}
+  M.loose=[];saveLoose();if(gest&&gest.loose)gest=null;
+  const pool=allOpen();for(let k=0;k<M.hand.length;k++){if(M.hand[k]!==null&&M.hand[k]!==undefined)continue;if(!pool.length)break;const j=Math.floor(Math.random()*pool.length);M.hand[k]=pool[j];pool[j]=pool[pool.length-1];pool.pop();}
+  renderHand();ui();req();setMsg(n+(n===1?' loose piece':' loose pieces')+' cleared off the board.');
+}
+$('clearBtn').onclick=clearLoose;
 $('helpBtn').onclick=()=>$('helpSheet').classList.add('show');
 $('lbBtn').onclick=()=>{if(SOLO){openWall('visit',{animate:false});return;}standings();$('lbSheet').classList.add('show');};
 $('dOther').onclick=()=>{window.location.href=K.key==='mural'?'/muraltoo':'/mural';};

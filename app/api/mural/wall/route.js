@@ -11,8 +11,10 @@ import { parseMuralId, muralIdAllowed } from '@/lib/mural-shared';
 // one block a player. It reads the placement rows themselves, which are never
 // deleted, so a mural's wall is the same on the day it finishes and a year on.
 //
-//   who    the members, most pieces first: [{ n: name, f: firsts }]
-//   guests every guest together: { players, f }
+//   who    every player, most pieces first: [{ n: name, f: firsts }], a guest
+//          as { n: 'Guest 3', f, g: 1 } (owner, 2026-11-20: "do NOT group all
+//          guests. group by individual identifier"), numbered by pieces
+//   guests the guest count: { players, f: 0 } (f stays for old readers)
 //   order  piece ids, oldest placement first
 //   own    for each of those, 0 for a guest or 1 + its index in `who`
 //
@@ -60,10 +62,10 @@ export async function GET(request) {
     if (r.username) p.name = r.username;
     p.f += 1;
   }
-  const members = [...per.entries()].filter(([, p]) => p.member).sort((a, c) => c[1].f - a[1].f || (a[0] < c[0] ? -1 : 1));
+  const members = [...per.entries()].sort((a, c) => c[1].f - a[1].f || (a[0] < c[0] ? -1 : 1));
   const index = new Map(members.map(([player], i) => [player, i + 1]));
-  let guestPlayers = 0, guestFirsts = 0;
-  for (const [, p] of per) if (!p.member) { guestPlayers += 1; guestFirsts += p.f; }
+  let guestPlayers = 0;
+  for (const [, p] of members) if (!p.member) { guestPlayers += 1; p.guestNo = guestPlayers; }
 
   const seen = new Set();
   const order = [], own = [];
@@ -79,8 +81,8 @@ export async function GET(request) {
     id, cols: b.data.cols, rows: b.data.rows, total, n: order.length,
     opens: Date.parse(b.data.opens_at),
     completed: done ? Date.parse(b.data.completed_at) : null,
-    who: members.map(([, p]) => ({ n: p.name || 'Player', f: p.f })),
-    guests: { players: guestPlayers, f: guestFirsts },
+    who: members.map(([, p]) => (p.member ? { n: p.name || 'Player', f: p.f } : { n: 'Guest ' + p.guestNo, f: p.f, g: 1 })),
+    guests: { players: guestPlayers, f: 0 },
     order, own,
   }, {
     headers: { 'Cache-Control': done ? 'public, max-age=3600, s-maxage=2592000, stale-while-revalidate=86400' : 'public, max-age=30, s-maxage=120, stale-while-revalidate=60' },

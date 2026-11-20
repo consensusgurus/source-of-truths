@@ -184,7 +184,7 @@ export function openMemorial(fin, d) {
   let who;
   if (wall) {
     who = [{ n: 'Guests', f: (wall.guests && wall.guests.f) || 0, guest: true, players: (wall.guests && wall.guests.players) || 0 }]
-      .concat((wall.who || []).map((o) => ({ n: o.n || 'Player', f: o.f || 0 })));
+      .concat((wall.who || []).map((o) => ({ n: o.n || 'Player', f: o.f || 0, ...(o.g ? { g: true } : {}) })));
   } else {
     const g = st.guests || {};
     who = [{ n: 'Guests', f: g.firsts || 0, guest: true, players: g.players || 0 }]
@@ -199,11 +199,11 @@ export function openMemorial(fin, d) {
   const me = d.me || {};
   const myPieces = me.pieces ? Array.from(me.pieces) : [];
   let meIdx = -1;
-  if (wall && me.name && myPieces.length) {
+  if (wall && myPieces.length) {
     const tally = new Map();
     for (const p of myPieces) { const o = ownerOf[p]; if (o > 0) tally.set(o, (tally.get(o) || 0) + 1); }
     let best = 0;
-    for (const [o, c] of tally) if (c === who[o].f && c > best && who[o].n === me.name) { best = c; meIdx = o; }
+    if (me.name) for (const [o, c] of tally) if (c === who[o].f && c > best && who[o].n === me.name) { best = c; meIdx = o; }
     if (meIdx < 0) for (const [o, c] of tally) if (c === who[o].f && c > best) { best = c; meIdx = o; }
   } else if (!wall && me.name) {
     meIdx = who.findIndex((o, i) => i > 0 && o.n === me.name);
