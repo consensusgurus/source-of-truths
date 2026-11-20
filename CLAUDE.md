@@ -20,6 +20,7 @@ split verbatim out of this file on 2026-10-29; nothing was dropped.
 | A trivia gauntlet or trivia bank | `docs/claude/games-trivia.md` |
 | Any other specific daily game | `docs/claude/games-other.md` (grep for the game name) |
 | Caching, result posting, PWA/identity, SEO/noindex, share cards, admin, newsletter, archive | `docs/claude/platform.md` |
+| Prebuilt leaderboards (`/api/boards`, cron/boards), home/end-card board rework | `docs/claude/boards-rework.md` |
 
 Find a rule fast: `grep -n '^## ' docs/claude/*.md` lists every section; `grep -rn '<game or term>' docs/claude/`.
 
