@@ -3437,6 +3437,8 @@ it a "board game", not a card game.
 
 ## Mural and MuralToo: the 4,000 piece jigsaws the whole site builds together (launched 2026-11-19)
 
+**Tray and board buttons (owner, 2026-11-20).** The tray button that deals a new random set reads **Shuffle** (was Swap, and Refresh before that). **Clear Loose Pieces** sits on the board beside the zoom control (`#clearBtn`, bottom left), not in the tray: it acts on the board, and beside Shuffle it was one slip from the most used button.
+
 Owner, 2026-11-19, from the mockup at https://claude.ai/artifact/4yLz3PXuT1s2exrDxuUwDB. One real
 photograph cut 80 x 50, and everyone on the site places pieces of the SAME one. Each player works
 their own copy; the shared mural is the union of everyone's FIRST placements.

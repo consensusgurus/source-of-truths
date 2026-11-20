@@ -908,12 +908,14 @@ function finNext(box,complete,closed){
 function creditLine(){const p=env.board.photo||{};return p.name?'Photo: '+p.name+(p.by?', by '+p.by:'')+(p.lic?' ('+p.lic+')':'')+', Wikimedia Commons.':'';}
 
 /* ---------- wiring ---------- */
-/* No wait on Swap (owner, 2026-11-19: "Remove the refresh limit"); the 10 second timer is gone.
-   The button reads Swap (owner, 2026-11-19: "relabel 'refresh' as swap"): "refresh" is the board's own two-minute update. */
-function coolTick(){const b=$('dealBtn'),w=!!(M&&M.done&&finShown);b.disabled=!!(M&&M.done)&&!w;b.textContent=w?'The Wall':'Swap';const cb=$('clearBtn');if(cb)cb.style.display=M&&M.done?'none':'';}
+/* No wait on Shuffle (owner, 2026-11-19: "Remove the refresh limit"); the 10 second timer is gone.
+   The button reads Shuffle (owner, 2026-11-20: "change 'swap' to shuffle"; it was Swap, and Refresh before that):
+   "refresh" is the board's own two-minute update. */
+function coolTick(){const b=$('dealBtn'),w=!!(M&&M.done&&finShown);b.disabled=!!(M&&M.done)&&!w;b.textContent=w?'The Wall':'Shuffle';const cb=$('clearBtn');if(cb)cb.style.display=M&&M.done?'none':'';}
 function refreshSet(){if(M.done){if(finShown)showFinish(SOLO||!!STATE.completed||(STATE.n||0)>=TOTAL,!SOLO&&Date.now()>=env.board.closes);return;}dealAll();setMsg(M.hand.some(x=>x!==null)?'New set, from anywhere on the mural. Use the picture to find where each one goes.':'You have placed everything.');}
 $('dealBtn').onclick=refreshSet;
-/* CLEAR (owner, 2026-11-20: "need a button in bottom to clear unplaced pieces, by swap"). Takes every
+/* CLEAR LOOSE PIECES (owner, 2026-11-20). It acts on the board, so it sits on the board beside the zoom
+   control, not in the tray beside Shuffle (owner, later that day: "adjust where the 'clear' button is"). Takes every
    loose piece off the board, back into the open pile, and fills any empty tray slots. */
 function clearLoose(){
   if(M.done)return;const n=M.loose.length;
