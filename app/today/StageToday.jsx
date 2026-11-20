@@ -119,6 +119,28 @@ const routeOf = (g) => g.href || `/${g.key}`;
 // the middle of every category, so the reader had to skip past this morning to
 // find this afternoon. A stable two-way partition, so the order inside each
 // half is whatever the section already chose.
+// POPULAR IS DEALT ROUND ROBIN BY CATEGORY (owner, 2026-11-20: "i like the round
+// robin approach. let's do that here and on mobile"). Given a list already in
+// popularity order, round one is every category's most played puzzle, round two
+// every category's second, and so on; inside a round the more played leads. So
+// no stretch of the list is one colour, and every category is on the first
+// screen. A list of one category comes back unchanged.
+function dealByCat(sorted) {
+  if (!sorted || sorted.length < 3) return sorted;
+  const by = new Map();
+  const at = new Map();
+  sorted.forEach((g, i) => { at.set(g.key, i); const k = g.cat || ''; if (!by.has(k)) by.set(k, []); by.get(k).push(g); });
+  if (by.size < 2) return sorted;
+  const out = [];
+  for (let r = 0; out.length < sorted.length; r += 1) {
+    const round = [];
+    for (const l of by.values()) if (l[r]) round.push(l[r]);
+    if (!round.length) break;
+    round.sort((a, b) => at.get(a.key) - at.get(b.key));
+    for (const g of round) out.push(g);
+  }
+  return out;
+}
 function playedLast(list, done) {
   if (!list || !done || !done.size) return list;
   const open = [], shut = [];
@@ -2834,7 +2856,7 @@ export default function StageToday() {
       <button type="button" aria-pressed={sortBy === 'diff'} onClick={() => pickSort('diff')}
         title="Gentlest first, rated every Sunday night from the last 7 days of play"><span className="sty-sl">Easy to Hard</span><span className="sty-ss">Easy</span></button>
       <button type="button" aria-pressed={sortBy === 'pop'} onClick={() => pickSort('pop')}
-        title="Most played today. A run's plays count once, on the run">Popular</button>
+        title="Most played today, dealt one category at a time. A run's plays count once, on the run">Popular</button>
       <button type="button" aria-pressed={sortBy === 'az'} onClick={() => pickSort('az')}>A to Z</button>
       <button type="button" aria-pressed={sortBy === 'new'} onClick={() => pickSort('new')}
         title="The most recently launched puzzles first">Newest</button>
@@ -3373,7 +3395,7 @@ export default function StageToday() {
       if (n > 0) for (const g of c.games) take.set(g.key, (take.get(g.key) || 0) + n);
     }
     const t = (g) => Math.max(0, raw(g) - (take.get(g.key) || 0));
-    return list.slice().sort((a, b) => (t(b) - t(a)) || (raw(b) - raw(a)) || ((w[b.key] || 0) - (w[a.key] || 0)) || a.name.localeCompare(b.name));
+    return dealByCat(list.slice().sort((a, b) => (t(b) - t(a)) || (raw(b) - raw(a)) || ((w[b.key] || 0) - (w[a.key] || 0)) || a.name.localeCompare(b.name)));
   };
   const favBlock = (cat, games, k) => {
     if (!k) return null;
@@ -4946,7 +4968,8 @@ export default function StageToday() {
                     const feat = new Set([...FEATURED_KEYS, ...FEATURED_RECENT]);
                     const lead = pool.filter((g) => feat.has(g.key)).sort(by).slice(0, 2);
                     const rest = pool.filter((g) => !lead.includes(g) && (cnt(g) > 0 || !any)).sort(by);
-                    return [...lead, ...rest].map((g) => g.key);
+                    // The phone's Top Puzzles row deals by category too (2026-11-20), after its two leads.
+                    return [...lead, ...dealByCat(rest)].map((g) => g.key);
                   };
                   const topOk = !!day && circuits.length > 0;
                   if (!topOrder.current && topOk && fav && !fav.failed) {
