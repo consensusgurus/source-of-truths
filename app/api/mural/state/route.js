@@ -24,7 +24,15 @@ export async function GET(request) {
     if (!gone) console.error('mural state', error);
     return NextResponse.json({ error: 'Unavailable', available: !gone }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
   }
-  return NextResponse.json({ ...(data || {}), at: Date.now() }, {
+  // Active players: distinct players with a placement in the last 15 minutes. Read here, not in
+  // mural_state(), so it needs no migration; the response is edge-cached for two minutes anyway.
+  let active = 0;
+  try {
+    const since = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const { data: rec } = await supabaseAdmin.from('mural_places').select('player').eq('mural_id', id).gte('placed_at', since).limit(10000);
+    active = new Set((rec || []).map((x) => x.player)).size;
+  } catch (e) { active = 0; }
+  return NextResponse.json({ ...(data || {}), active, at: Date.now() }, {
     headers: { 'Cache-Control': 'public, max-age=30, s-maxage=120, stale-while-revalidate=60' },
   });
 }

@@ -354,7 +354,9 @@ function ui(){
   /* PLAYERS IN THE HEADER (owner, 2026-11-19): everyone who has placed a piece, members and guests, in the stats row, no new row. */
   const ply=Math.max((STATE.players||0)+((STATE.guests&&STATE.guests.players)||0),M.mine.size?1:0);
   $('sPly').textContent=ply.toLocaleString();$('plyBox').style.display=SOLO?'none':'';
-  $('meta').textContent='Open '+M.hours+(M.hours===1?' hour':' hours');
+  /* ACTIVE = placed a piece in the last 15 minutes (owner, 2026-11-19: "show contributing players and active players"). */
+  $('sAct').textContent=(STATE.active||0).toLocaleString();$('actBox').style.display=SOLO?'none':'';
+  $('meta').innerHTML='<b>'+M.hours+'</b>'+(M.hours===1?'Hour Open':'Hours Open');
   coolTick();
 }
 /* SNAP DISTANCE (owner, 2026-11-19: it accepted pieces far too easily, worst zoomed out). A third of a
