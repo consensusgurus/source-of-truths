@@ -7227,8 +7227,10 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-ixre{align-self:flex-start;margin-top:8px;border:1px solid var(--stg-line);background:none;border-radius:999px;
   padding:6px 12px;font:inherit;font-size:12px;font-weight:700;color:var(--stg-ink2);cursor:pointer;white-space:nowrap;}
 .sty-ixre:hover{color:var(--stg-ink);}
-.sty-ixre.on{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink);}
-.sty-ixre:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:2px;}
+/* DONE IS INK, NOT THE OLD ACCENT BLUE (owner, 2026-11-20: "uses an old color the site no longer uses"). */
+.sty-ixre.on{border-color:var(--stg-ink);background:var(--stg-ink);color:var(--stg-ground);}
+.sty-ixre.on:hover{color:var(--stg-ground);}
+.sty-ixre:focus-visible{outline:2px solid var(--stg-ink);outline-offset:2px;}
 /* SKILLS OR CATEGORIES (owner, 2026-10-18): one switch above the list. */
 .sty-ixsw{display:flex;gap:2px;padding:2px;margin:2px 4px 6px;border:1px solid var(--stg-cell-line);border-radius:999px;}
 .sty-ixsw button{flex:1 1 auto;border:0;border-radius:999px;background:transparent;color:var(--stg-ink2);
