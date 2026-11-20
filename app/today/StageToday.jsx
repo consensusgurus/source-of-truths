@@ -3034,9 +3034,22 @@ export default function StageToday() {
     const url = '/api/quiz/daily-combined?top=25'
       + (railKeys ? '&keys=' + encodeURIComponent(railKeys) : '') + (qs ? '&' + qs : '');
     const put = (v) => setRail((m) => ({ ...m, [railId]: v }));
-    fetch(url).then((r) => r.json()).then((d) => {
+    const live = () => fetch(url).then((r) => r.json()).then((d) => {
       put({ top: d && Array.isArray(d.overall) ? d.overall : [], me: (d && d.me) || null, field: (d && d.overallField) || 0 });
     }).catch(() => { put({ top: [], me: null, field: 0 }); });
+    if (railKeys) { live(); return; }
+    // PREBUILT DAY BOARD (owner, 2026-11-20, docs/claude/boards-rework.md). The
+    // All Puzzles rail reads the board the job rebuilds every 2 minutes instead
+    // of computing the whole day again for this reader; the reader's own row
+    // comes from the board the page already holds (`board.me`). Anything off
+    // (missing, more than 10 minutes old, another day) falls back to the live read.
+    fetch('/api/boards?name=overall').then((r) => (r.ok ? r.json() : null)).then((d) => {
+      const ok = d && Array.isArray(d.overall) && d.asOf && Date.now() - d.asOf < 10 * 60 * 1000
+        && (!board || !board.date || !d.date || d.date === board.date);
+      if (!ok) return live();
+      put({ top: d.overall, me: null, field: d.overallField || 0, asOf: d.asOf, pre: true });
+      return null;
+    }).catch(() => live());
   }, [wide, gamePane, railId, railKeys]);
   // The group's side of it costs no read at all: the standing already on the
   // page carries every member's points per game, so a category is a sum.
@@ -3545,7 +3558,11 @@ export default function StageToday() {
   const railLabel = railCat ? catLabel(railCat.cat) : 'All Puzzles';
   const railEl = (() => {
     if (!ix || !gamePane) return null;
-    const rd = rail[railId] || null;
+    const rd0 = rail[railId] || null;
+    // A prebuilt board carries no reader row: take it from the page's own board.
+    const rd = rd0 && rd0.pre ? { ...rd0, me: (board && board.me) || null } : rd0;
+    const asOfEl = rd && rd.asOf
+      ? <em>{' · as of '}{new Date(rd.asOf).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</em> : null;
     const gN = railGrp ? railGrp.rows.length : 0;
     const avail = dim.navH ? dim.navH - 24 - (gN ? 24 + gN * 30 + 16 : 0) : 16 * 30;
     const n = Math.max(5, Math.min(25, Math.floor(avail / 30)));
@@ -3648,7 +3665,7 @@ export default function StageToday() {
             {/* ONE HEADER PATTERN IN THE RAIL (owner, 2026-11-10): the board's
                 name at the left, your standing on it at the right, as the
                 group's box above does. The tabs name the scope. */}
-            <div className="sty-eb">Everyone{rd && rd.me && rd.me.rank && rd.field
+            <div className="sty-eb">Everyone{asOfEl}{rd && rd.me && rd.me.rank && rd.field
               ? <span className="sty-ebr">You #{rd.me.rank} of {Number(rd.field).toLocaleString('en-US')}</span>
               : rd && rd.field ? <span className="sty-ebr">{Number(rd.field).toLocaleString('en-US')} {rd.field === 1 ? 'player' : 'players'}</span> : null}</div>
             {tabs}

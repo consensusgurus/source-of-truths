@@ -24,10 +24,13 @@ export const dynamic = 'force-dynamic';
 // force-no-store, not just force-dynamic: without it Next 14 keeps this route's
 // Supabase GETs in Vercel's Data Cache across deploys (see cron/drawing-warm).
 export const fetchCache = 'force-no-store';
-export const maxDuration = 120;
+// 300 (was 120, 2026-11-20): a cold run loads the results table first and ran
+// into the 120s limit twice on its first morning.
+export const maxDuration = 300;
 
 // A run that started this recently means another one is (or was just) going.
-const RECENT_MS = 90 * 1000;
+// A run claimed this recently is still going (or just finished): skip.
+const RECENT_MS = 100 * 1000;
 const NO_STORE = { 'Cache-Control': 'no-store' };
 
 function authed(request) {
@@ -53,6 +56,10 @@ export async function GET(request) {
   if (prev && prev.startedAt && t0 - prev.startedAt < RECENT_MS && !new URL(request.url).searchParams.get('force')) {
     return NextResponse.json({ ok: true, skipped: 'recent', ageMs: t0 - prev.startedAt }, { headers: NO_STORE });
   }
+  // CLAIM THE RUN FIRST (2026-11-20): the index used to be written only at the
+  // end, so a slow run never told the next one it was still going and two could
+  // overlap. The hashes are kept, so nothing is rewritten because of the claim.
+  await writeBoard(supabaseAdmin, 'index', { ...(prev || {}), startedAt: t0 }, (prev && prev.at) || t0);
   const today = etTodayServer();
   const suffix = suffixOfDate(today);
   const hashes = prev && prev.date === suffix && prev.names ? { ...prev.names } : {};

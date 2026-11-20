@@ -31,6 +31,17 @@ database (Micro, near its Disk IO budget) and faster home and end screens.
 - The player's own fresh result is merged into the prebuilt board on the client, so they see it
   at once (keeps the 2026-11-13 rule: own score right after finishing, without errors).
 
+## Switched over
+
+- 2026-11-20: the desktop home's right-rail day board (All Puzzles tab) reads `overall`, with "as of"
+  beside Everyone; the reader's own row comes from the board the page already fetched (`board.me`).
+  Falls back to the live read when the stored board is missing, over 10 minutes old or another day.
+  Category tabs still read live (no prebuilt category boards).
+- Owner rulings later that morning: end screens show ONLY that puzzle's standings. Keep the group
+  standing on that puzzle and Vs your <weekday>; delete the All-Time tab, the Today's Puzzles pill and
+  the category boxes. Phone Full Results: show the rank once (no second set of boxes) and move Show
+  Board below the standings. Mockups: https://claude.ai/artifact/9eZ5UsdbQxDMD9S2dABjqn
+
 ## Next phases (one page at a time, evenings, watch logs 15 minutes after each)
 
 1. Home overall leaderboard and the leaderboard page read `/api/boards?name=overall`, show `asOf`.
