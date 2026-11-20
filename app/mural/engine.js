@@ -351,6 +351,9 @@ function ui(){
   /* THE SITE'S TOTAL, NOT FIRSTS (owner, 2026-11-19: "dont need to show 'firsts', instead also give total places along with %. and that number will have the '+5' or whatever on every refresh"). */
   const done=M.crowd.size+[...M.mine].filter(i=>!M.crowd.has(i)).length,pc=done/TOTAL*100;
   $('sAll').textContent=done.toLocaleString();$('sAllLab').textContent=(PRIV?'All Placed':'Site Total')+' \u00b7 '+(pc>0&&pc<10?pc.toFixed(1):Math.round(pc))+'%';
+  /* PLAYERS IN THE HEADER (owner, 2026-11-19): everyone who has placed a piece, members and guests, in the stats row, no new row. */
+  const ply=Math.max((STATE.players||0)+((STATE.guests&&STATE.guests.players)||0),M.mine.size?1:0);
+  $('sPly').textContent=ply.toLocaleString();$('plyBox').style.display=SOLO?'none':'';
   $('meta').textContent='Open '+M.hours+(M.hours===1?' hour':' hours');
   coolTick();
 }
@@ -532,7 +535,7 @@ function standings(){
   const rows=(STATE.top||[]).map((r,i)=>({rank:i+1,n:r.name,pts:r.points,first:r.firsts,pieces:r.pieces,me:!!(M.name&&r.member&&r.name===M.name)}));
   if(!rows.some(r=>r.me)&&M.mine.size)rows.push({rank:M.rank||'',n:'You',pts:M.pts,first:M.firsts,pieces:M.mine.size,me:true});
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  $('lbTable').innerHTML='<tr><th></th><th>Player</th><th class="n">Points</th><th class="n">Firsts</th><th class="n">Placed</th></tr>'+(rows.length?rows.map(r=>'<tr class="'+(r.me?'me':'')+'"><td>'+r.rank+'</td><td>'+esc(r.n)+'</td><td class="n">'+r.pts.toLocaleString()+'</td><td class="n">'+r.first.toLocaleString()+'</td><td class="n">'+r.pieces.toLocaleString()+'</td></tr>').join(''):'<tr><td></td><td>Nobody has placed a piece yet.</td><td></td><td></td><td></td></tr>');
+  $('lbTable').innerHTML='<tr><th></th><th>Player</th><th class="n">Points</th><th class="n">Placed</th></tr>'+(rows.length?rows.map(r=>'<tr class="'+(r.me?'me':'')+'"><td>'+r.rank+'</td><td>'+esc(r.n)+'</td><td class="n">'+r.pts.toLocaleString()+'</td><td class="n">'+r.pieces.toLocaleString()+'</td></tr>').join(''):'<tr><td></td><td>Nobody has placed a piece yet.</td><td></td><td></td></tr>');
 }
 
 /* ---------- board gestures ---------- */
