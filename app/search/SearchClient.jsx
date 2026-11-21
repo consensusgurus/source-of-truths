@@ -589,6 +589,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
 .trl .row .t i{font-style:normal;color:var(--mute);font-weight:700;margin-left:6px;font-size:12.5px}
 .trl .row.got .t{color:var(--mute);text-decoration:line-through;text-decoration-thickness:2px}
 .trl .row .n{flex:none;font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px;background:var(--soft);font-variant-numeric:tabular-nums}
+.trl .row .n.z{background:transparent;color:var(--mute);border:1px solid var(--soft)}
 .trl .row .n.u{background:var(--good);color:var(--good-ink)}
 .trl .row .dot{width:10px;height:10px;border-radius:999px;flex:none;border:1px solid var(--mute)}
 .trl .row .go{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;font:800 11.5px/1.3 ${SANS};padding:4px 9px;cursor:pointer}
@@ -639,12 +640,15 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
               <span className="dot" style={got ? { background: `hsl(${HUES[i % HUES.length]}, 72%, 62%)`, borderColor: 'transparent' } : undefined} />
               <span className="t">{it.t}{it.y ? <i>{it.y}</i> : null}</span>
               {got && found[i][0] >= 0 && <button className="go" onClick={() => { jumpTo(found[i][0], found[i][1]); if (narrow) setPanel(null); }}>Show</button>}
-              {n != null && (got || !live) && <span className={'n' + (got && n === 1 ? ' u' : '')} title="Players who have found it, and what it pays each of them">{got && n === 1 ? `Only you · ${SEARCH_POT}` : `${fmt(n)} found${n ? ` · ${fmt(searchValue(n))}` : ''}`}</span>}
+              {/* EVERY ROW SHOWS ITS FINDS (owner, 2026-11-20: "mark the number of finds
+                  in the list"): how many players have found it so far, found by you or
+                  not, and on your own finds what each finder is paid right now. */}
+              {n != null && <span className={'n' + (got && n === 1 ? ' u' : (!n ? ' z' : ''))} title="How many players have found it, and what it pays each of them">{got ? (n === 1 ? `Only you · ${SEARCH_POT} pts` : `${fmt(n)} finds · ${fmt(searchValue(n))} pts`) : (n ? `${fmt(n)} ${n === 1 ? 'find' : 'finds'}` : 'No finds')}</span>}
             </div>
           );
         })}
         {!listRows.length && <p className="note">Nothing on the list matches that.</p>}
-        <p className="note">The counts are how many players have found each one. Refresh for the latest; the final counts settle at midnight Eastern.</p>
+        <p className="note">Finds are how many players have found each one so far; on yours, pts is what each finder is paid right now. Refresh for the latest. They lock when the board closes.</p>
       </div>
     </div>
   );
