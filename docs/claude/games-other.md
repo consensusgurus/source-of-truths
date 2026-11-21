@@ -3648,3 +3648,40 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
 - **Clear** (`#clearBtn`, beside Swap): takes every loose piece off the board back to the open pile and fills empty tray slots.
 - **Pop Out** (`#refPop`, desktop only): the viewfinder opens in its own window drawn by the page (same Picture / Crowd / Value tab, board view boxed, click jumps the board). The in-page panel tucks to its header until the window closes.
 - **The wall lists every guest on their own** ("Guest 1", "Guest 2", numbered by pieces) instead of one Guests block: `/api/mural/wall` returns guests inside `who` with `g: 1`, and `guests.f` is 0.
+
+## Trawl: the enormous daily word search (launched 2026-11-20)
+
+Owner, 2026-11-20: "enormous, 700 movie titles for instance. scored based on unique finds most, total finds
+second. when you locate it, you see how many have found it, and you can press refresh later to see how many
+found it in the end." Then: "all the lists should be pop-culture, trivia, etc.... and they can repeat maybe 1
+month apart? or longer ideally."
+
+- **One big topic a day, hundreds of entries, one huge grid** (day one: 700 movie titles in 101x101). Every entry
+  is its letters with spaces, punctuation and accents dropped, `&` read as AND, in any of the eight directions,
+  and occurs EXACTLY once. No entry sits inside another or its reverse, so a stroke is graded from its letters.
+  Rules in `lib/trawl.js`, shared by the generator, the checker, the API and the page.
+- **Building a day:** `node scripts/gen-trawl.mjs <list.json> --date YYYY-MM-DD --theme "Movie Titles" --noun titles`
+  (list = `[{ t, y? }]`, best known first; `y` is a year or note shown in the list). It keeps up to 700, builds,
+  repairs until clean, and appends to `app/trawl/puzzles.js`. It refuses an existing date without `--replace`
+  and never rewrites a live board. About two minutes a board. Checked by `scripts/verify-trawl.mjs`.
+- **Topics:** pop culture and trivia only. A topic may come back no sooner than 30 days after its last use, as a
+  fresh grid (verify-trawl enforces the 30 days on the theme name). Sources used at launch: TMDB 10k films
+  (vote counts) plus recent films and pre-1960 classics by hand; TMDB casts for Movie Stars; the Billboard Hot
+  100 history (utdata/rwd-billboard-data) for Top 10 Hits and Hit Makers, with a rude-word screen.
+- **Scoring:** standings rank UNIQUE finds (entries nobody else has found) first, total finds second
+  (`trawlRank`). Each find tells the player how many others found it before them; Refresh (and an automatic
+  refresh every two minutes) shows the crowd's latest. The standings and counts settle at midnight Eastern.
+- **Storage, no new table:** one `outwit_picks` row per player per day under `trawl-M-D-YY` (as Poll does);
+  `anon_id` holds the player key (`u:<user id>` or `a:<anon id>`), `answers` is `{ f: [indices], t0 }`.
+  `GET /api/trawl?quizId=` is the crowd (counts, standings, every [unique, total]), edge cached 60s; `POST`
+  merges finds (today's board only) and files the running TOTAL as a quiz_results row when it grows and ten
+  minutes have passed, or when the page forces it on leaving, as Mural does. So the site boards and the home
+  tile read total finds (unit `finds`, `bestRun`); Trawl's own standings are the unique-first ranking.
+  Public player ids are a hash of the key, never the anon id.
+- **The page** is a fixed full-screen canvas like Mural's: only the squares in view are drawn. Mouse drag
+  circles a word; wheel pans, Ctrl + wheel zooms, right drag or Space + drag pans. Touch: one finger pans, pinch
+  zooms, tap first letter then last to circle. Minimap jumps anywhere. List (with search, All / To find /
+  Found and each found entry's count), Standings, Refresh, Dark, How to play. No clock, no Give up.
+  `?p=<num>` opens a past board read-only for the crowd (finds there are for fun).
+- Wired by `scripts/wire-trawl.mjs` (Word, beside Scour). Tiles `scripts/gen-trawl-tile.py`; share card
+  `public/og/trawl.png` is hand baked (HAND_BAKED).
