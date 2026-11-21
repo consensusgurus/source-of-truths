@@ -26,8 +26,8 @@
 //   boards; --only: just those board numbers, for iterating, never the gate)
 import { PUZZLES } from '../app/machine/puzzles.js';
 import { run, makeState, pieceSegs, C } from '../lib/machine-engine.js';
-import { fairness, FAIR_MIN, sense, layout, recipeFor } from './gen-machine-bank.mjs';
-import { GEN2, build2, check2cheap, twoPartWin } from './gen-machine-v2.mjs';
+import { fairness, FAIR_MIN, sense, layout, recipesFor } from './gen-machine-bank.mjs';
+import { GEN2, GEN3, build2, check2cheap, twoPartWin, qtyOf, trayParts, asPart } from './gen-machine-v2.mjs';
 
 const STEP = process.argv.includes('--fast') ? 20 : 10;
 const DEEP = process.argv.includes('--deep'); // also re-prove that no two parts win a v2 board (minutes a board)
@@ -74,26 +74,32 @@ for (const P of PUZZLES) {
   if (P.goal && P.goal.ball && !P.balls.some((b) => b.id === P.goal.ball)) bad(n, `goal ball ${P.goal.ball} missing`);
   if (!(P.tray.length >= 3 && P.tray.length <= 6)) bad(n, `tray of ${P.tray.length}`);
   for (const t of P.tray) if (!TRAY.has(t.t)) bad(n, `tray part ${t.t}`);
+  // STACKS (v3, 2026-11-21): a tray entry may hold 2 to 4 copies (`qty`), shown as the count on its chip
+  for (const t of P.tray) if (t.qty !== undefined && !(Number.isInteger(t.qty) && t.qty >= 2 && t.qty <= 4)) bad(n, `stack of ${t.qty} ${t.t}`);
+  if (P.tray.some((t) => t.qty) && P.gen !== GEN3) bad(n, 'a stack in the tray of a board that is not v3');
+  if (new Set(P.tray.map((t) => t.t)).size !== P.tray.length && P.gen === GEN3) bad(n, 'a v3 tray shows one part as two stacks');
   for (const p of P.pieces) if (p.wires) for (const id of p.wires) if (!P.pieces.some((q) => q.id === id)) bad(n, `wire to missing ${id}`);
   // Sunday
   if (P.sunday) {
     if (dow(P.live) !== 0) bad(n, 'sunday flag on a weekday');
     const wk = PUZZLES.filter((q) => !q.sunday && q.live < P.live).slice(-6);
-    if (wk.length && !(P.tray.length > Math.max(...wk.map((q) => q.tray.length)) || P.w * P.h > Math.max(...wk.map((q) => q.w * q.h)))) bad(n, 'Sunday is not bigger than its week');
+    if (wk.length && !(trayParts(P) > Math.max(...wk.map((q) => trayParts(q))) || P.w * P.h > Math.max(...wk.map((q) => q.w * q.h)))) bad(n, 'Sunday is not bigger than its week');
   } else if (dow(P.live) === 0 && PUZZLES.some((q) => q.sunday)) bad(n, 'a Sunday board without the sunday flag');
   // the stored machine
   const R = rules(P);
-  const sol = (P.sol || []).map((q) => ({ ...P.tray[q.ti], dir: q.dir || P.tray[q.ti].dir, px: q.px, py: q.py }));
+  const sol = (P.sol || []).map((q) => ({ ...asPart(P.tray[q.ti]), dir: q.dir || P.tray[q.ti].dir, px: q.px, py: q.py }));
   if (!sol.length) bad(n, 'no stored machine');
-  if (new Set((P.sol || []).map((q) => q.ti)).size !== sol.length) bad(n, 'stored machine uses a tray part twice');
+  const useOf = (i) => (P.sol || []).filter((q) => q.ti === i).length;
+  if ((P.sol || []).some((q) => !P.tray[q.ti])) bad(n, 'stored machine names a tray part that is not there');
+  else if (P.tray.some((t, i) => useOf(i) > qtyOf(t))) bad(n, 'stored machine uses more copies of a part than the tray holds');
   sol.forEach((p, i) => { if (!R.fits(p, sol.filter((_, j) => j !== i))) bad(n, `stored part ${i} (${p.t}) does not fit`); });
   if (!run(P, sol).won) bad(n, 'the stored machine does not win');
-  if (P.tray.every((t, i) => (P.sol || []).some((q) => q.ti === i))) bad(n, 'every tray part is used: the copy promises a spare');
+  if (P.tray.every((t, i) => useOf(i) >= qtyOf(t))) bad(n, 'every tray part is used: the copy promises a spare');
   // the empty board, and every single part
   const s0 = run(P, [], 1800, true);
   if (s0.won) bad(n, 'the empty board wins');
   const kinds = [];
-  for (const t of P.tray) for (const d of (t.dir ? [...new Set([t.dir, 'l', 'r'])] : [undefined])) kinds.push(d ? { ...t, dir: d } : { ...t }); // every way Flip can set it (an upward fan flips to l, then r)
+  for (const t0 of P.tray) { const t = asPart(t0); for (const d of (t.dir ? [...new Set([t.dir, 'l', 'r'])] : [undefined])) kinds.push(d ? { ...t, dir: d } : { ...t }); } // every way Flip can set it (an upward fan flips to l, then r)
   const seen = new Set(); let sims = 0;
   for (const k of kinds) {
     const sig = k.t + (k.dir || '');
@@ -116,18 +122,18 @@ for (const P of PUZZLES) {
   // one part of the stored machine 10px in any direction still wins at least
   // FAIR_MIN of the time, so the answer is findable by eye, not a pixel hunt.
   if (P.live >= '2026-11-20') {
-    const lay = P.lay || P.band, v2 = P.gen === GEN2;
+    const lay = P.lay || P.band, v2 = P.gen === GEN2 || P.gen === GEN3;
     // THE LADDER (owner, 2026-11-19: Thursday was "far too easy"): each weekday is built to its recipe
-    if (P.live >= LADDER_FROM) { const want = recipeFor(P.live); if (P.gen !== want.gen || lay !== want.lay) bad(n, `built as ${P.gen || 'hand'}/${lay}, the ladder wants ${want.gen}/${want.lay} on this weekday`); }
+    if (P.live >= LADDER_FROM) { const ok = recipesFor(P.live); if (!ok.some((w) => P.gen === w.gen && lay === w.lay)) bad(n, `built as ${P.gen || 'hand'}/${lay}, the ladder wants ${ok.map((w) => `${w.gen}/${w.lay}`).join(' or ')} on this weekday`); }
     const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
     if (v2) {
       // a chain board: three or four links, every stored part needed, a step for every link
-      const c = check2cheap(P, lay, P.sol || []); if (!c.ok) bad(n, c.why);
+      const c = check2cheap(P, lay, P.sol || [], P.gen); if (!c.ok) bad(n, c.why);
       if (!P.goal.ball) bad(n, 'a chain board names the ball that has to finish the job');
       // and it must be exactly what its seed builds: no hand edits behind the generator's back
-      const G = build2(P.seed, lay);
+      const G = build2(P.seed, lay, P.gen);
       if (!G || !same(G.L.pieces, P.pieces) || !same(G.L.balls, P.balls) || !same(G.L.goal, P.goal) || !same(G.L.tray, P.tray) || !same(G.sol, P.sol) || G.L.w !== P.w || G.L.h !== P.h) bad(n, `does not match seed ${P.seed} (edited by hand, or the generator changed without a GEN2 bump)`);
-      if (DEEP) { const two = twoPartWin(P, 30); if (two) bad(n, `two parts win: ${two.pair.map((q) => `${q.t}${q.dir || ''} at ${q.px},${q.py}`).join(' + ')}`); }
+      if (DEEP && (P.sol || []).length >= 3) { const two = twoPartWin(P, 30); if (two) bad(n, `two parts win: ${two.pair.map((q) => `${q.t}${q.dir || ''} at ${q.px},${q.py}`).join(' + ')}`); }
     } else {
       const why = sense(P, lay); if (why) bad(n, why);
       if (P.seed !== undefined) {

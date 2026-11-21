@@ -1247,6 +1247,20 @@ week inventory to fill earlier days and create new harder thursdays and other da
   Wed to Sat boards now sit on Mondays and Tuesdays (same board, same seed, new date, `lay` recording the recipe).
   The v1 boards that were Mon/Tue and Sunday boards are no longer scheduled; their seeds are in
   docs/claude/games-other.md (Machine) if they are ever wanted.
+- **STACKS, v3 (owner, 2026-11-21: "wouldnt multiple of some items make it more dynamic?", then "Change the
+  generator. Use existing inventory to fill farther out dates and build new multi item puzzles to fill, they
+  would just show a 2 or 3 or 4 instead of the 1 in the item tray image").** From `STACKS_FROM` (2026-11-22)
+  `recipeFor` builds every new board as a v3 chain (`build2(seed, band, 'v3')`, `BAND3`): Mon/Tue two links,
+  Wed/Thu three, Fri/Sat/Sun four, same weekday labels. A v3 tray entry may carry `qty` (2 to 4): that many
+  copies of one part, each placed and flipped on its own, and the chip's count shows how many are left. The
+  builder tries a part it already used before a new one (caps: ramp 3, magnet 1, the rest 2), every v3 machine
+  uses one part at least twice, a v3 tray never shows one part as two stacks, and spare copies on a stack count
+  as the spare. `sol` names a stack by its `ti`, so a stack used twice is in `sol` twice. The pair sweep runs a
+  stack against itself, and starts at three links (a two-link board IS a two-part machine). Boards built
+  before STACKS_FROM that were moved out keep their own recipe: `recipesFor` accepts either from that date.
+  `--insert FROM,TO` (whole weeks) builds new boards for those dates and moves every board from FROM on later
+  by the same number of days, each line otherwise untouched. First use, 2026-11-21: new stacked boards for
+  2026-11-22 to 11-28, the old Nos. 6 to 22 moved a week out.
 - **verify-machine enforces the ladder** from 2026-11-20: a board whose `gen`/`lay` is not the weekday's recipe fails.
   To change the ladder, change `recipeFor` and `LADDER_FROM` together, for future dates only.
 - **Build time.** A v2 board takes roughly five to fifteen minutes on one core: the search for a board that passes the

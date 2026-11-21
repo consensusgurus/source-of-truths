@@ -33,6 +33,14 @@
 import { run, makeState, step, rebuild, pieceSegs, C } from '../lib/machine-engine.js';
 
 export const GEN2 = 'v2';
+// v3 (owner, 2026-11-21: "wouldnt multiple of some items make it more dynamic?", then "Change the
+// generator ... they would just show a 2 or 3 or 4 instead of the 1 in the item tray image"): the
+// same chain builder, but the tray is STACKS. A tray entry may carry `qty` (2 to 4): that many
+// copies of the part, placed one by one, each flipped on its own. The builder reaches for a part
+// it already used before a new one, every v3 machine uses at least one part twice, and spare
+// copies on a stack are decoys too. A stored part's `ti` is its stack, so a stack used twice
+// shows up twice in `sol`. Mon/Tue get a two-link chain (two copies of one part, as a rule).
+export const GEN3 = 'v3';
 const MAXT = 1800;
 function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function shuffle(a, rng) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rng() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
@@ -44,6 +52,18 @@ export const BAND2 = {
   tough: { tray: [6, 6], links: 4, obst: [3, 5], fair: 0.25 },
   sunday: { tray: [6, 6], links: 4, obst: [6, 9], fair: 0.25 },
 };
+// v3: `tray` is the number of stacks, `parts` the copies across them
+export const BAND3 = {
+  gentle: { tray: [3, 4], parts: [4, 5], links: 2, obst: [2, 4], fair: 0.3 },
+  moderate: { tray: [3, 5], parts: [5, 6], links: 3, obst: [3, 5], fair: 0.3 },
+  tough: { tray: [4, 5], parts: [6, 7], links: 4, obst: [3, 5], fair: 0.25 },
+  sunday: { tray: [4, 6], parts: [7, 8], links: 4, obst: [6, 9], fair: 0.25 },
+};
+export const qtyOf = (t) => t.qty || 1;
+export const trayParts = (L) => L.tray.reduce((a, t) => a + qtyOf(t), 0);
+// a tray entry as a part on the board (the stack size is the tray's business, not the engine's)
+export const asPart = (t) => { const { qty, ...p } = t; return p; };
+const bandOf = (band, gen) => (gen === GEN3 ? BAND3 : BAND2)[band];
 
 /* ---------- placement rules (the same as verify-machine and lib/machine-ui) ---------- */
 function segBox(segs) { let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; for (const s of segs) { x0 = Math.min(x0, s.ax - s.th, s.bx - s.th); y0 = Math.min(y0, s.ay - s.th, s.by - s.th); x1 = Math.max(x1, s.ax + s.th, s.bx + s.th); y1 = Math.max(y1, s.ay + s.th, s.by + s.th); } return [x0, y0, x1, y1]; }
@@ -59,7 +79,7 @@ export function rules2(L) {
 const reach = (t) => (t.dir ? [...new Set([t.dir, 'l', 'r'])] : [undefined]);
 const STEP_EVENTS = new Set(['press', 'seesaw', 'topple', 'fire']);
 export function stepsOf(s) { const k = new Set(); for (const e of s.events) if (STEP_EVENTS.has(e.type)) k.add(e.type + ':' + e.k); return k; }
-const placedOf = (L, sol) => sol.map((q) => ({ ...L.tray[q.ti], dir: q.dir || L.tray[q.ti].dir, px: q.px, py: q.py, ti: q.ti }));
+const placedOf = (L, sol) => sol.map((q) => ({ ...asPart(L.tray[q.ti]), dir: q.dir || L.tray[q.ti].dir, px: q.px, py: q.py, ti: q.ti }));
 function fairness(L, sol) {
   const R = rules2(L); const parts = placedOf(L, sol); let ok = 0, tot = 0;
   parts.forEach((p, i) => {
@@ -90,10 +110,12 @@ function trace(L, placed) {
 const sameSet = (a, b) => a.size === b.size && [...a].every((k) => b.has(k));
 const TRAY_KINDS = [{ t: 'ramp', dir: 'l' }, { t: 'ramp', dir: 'r' }, { t: 'ramp', dir: 'l' }, { t: 'ramp', dir: 'r' }, { t: 'spring' }, { t: 'spring' }, { t: 'belt', dir: 'l' }, { t: 'belt', dir: 'r' }, { t: 'bumper' }, { t: 'bumper' }, { t: 'fan', dir: 'u' }, { t: 'fan', dir: 'l' }, { t: 'fan', dir: 'r' }, { t: 'pipe', dir: 'l' }, { t: 'pipe', dir: 'r' }, { t: 'magnet' }];
 const cap = (t) => (t === 'ramp' ? 2 : 1);
+const cap3 = (t) => (t === 'ramp' ? 3 : t === 'magnet' ? 1 : 2);
 
 /* ---------- the builder ---------- */
-export function build2(seed, band) {
-  const B = BAND2[band]; if (!B) return null;
+export function build2(seed, band, gen = GEN2) {
+  const v3 = gen === GEN3, B = bandOf(band, gen); if (!B) return null;
+  const capOf = v3 ? cap3 : cap;
   const N = B.links, sunday = band === 'sunday';
   const rng = mulberry(seed);
   const R = (a, b) => a + Math.floor(rng() * (b - a + 1));
@@ -225,6 +247,43 @@ export function build2(seed, band) {
     return null;
   }
 
+  // v3: the tray as stacks. One stack per part the machine uses (its copies), then decoy
+  // stacks and spare copies, shuffled; a stored part's ti is its stack.
+  function finish3() {
+    if (!Object.values(used).some((n) => n >= 2)) return null; // every v3 machine uses a part twice
+    const stacks = [];
+    for (const p of sol) {
+      let s = stacks.find((q) => q.t === p.t);
+      if (!s) { s = { t: p.t, qty: 0 }; stacks.push(s); }
+      s.qty++;
+      if (p.t === 'fan') { if (p.dir === 'u' || !s.dir) s.dir = p.dir; } // an upward fan flips to l and r, not back
+      else if (p.dir && !s.dir) s.dir = pick(['l', 'r']);
+    }
+    const pool = ['ramp', 'spring', 'belt', 'bumper', 'fan', 'glue', 'gate', 'pipe', 'magnet', 'glue', 'gate'];
+    const nStacks = R(B.tray[0], B.tray[1]), nParts = R(B.parts[0], B.parts[1]);
+    for (let g = 0; stacks.length < nStacks && g < 500; g++) {
+      const t = pick(pool); if (t === 'magnet' && !balls.some((b) => b.kind === 'steel')) continue;
+      if (stacks.some((q) => q.t === t)) continue;
+      const e = { t, qty: 1 }; if (['ramp', 'belt', 'pipe', 'gate'].includes(t)) e.dir = pick(['l', 'r']); if (t === 'fan') e.dir = pick(['l', 'r', 'u']); stacks.push(e);
+    }
+    if (stacks.length < nStacks) return null;
+    const total = () => stacks.reduce((a, q) => a + q.qty, 0);
+    for (let g = 0; total() < nParts && g < 200; g++) { const s = pick(stacks); if (s.t !== 'magnet' && s.qty < 4) s.qty++; }
+    if (total() <= sol.length) return null; // a spare, as ever
+    const tray = stacks.map((q) => { const { qty, ...e } = q; return qty > 1 ? { ...e, qty } : e; });
+    const order = shuffle(tray.map((_, i) => i), rng);
+    const tray2 = order.map((i) => tray[i]);
+    let stored = sol.map((p) => ({ ti: order.indexOf(stacks.findIndex((q) => q.t === p.t)), px: p.px, py: p.py, ...(p.dir ? { dir: p.dir } : {}) }));
+    let L = { w: W, h: H, pieces, balls, goal, tray: tray2 };
+    if (rng() < 0.5) {
+      const M = mirror2(L), f = (d) => (d === 'l' ? 'r' : d === 'r' ? 'l' : d);
+      const ms = stored.map((q) => ({ ...q, px: W * C - q.px - C, ...(q.dir ? { dir: f(q.dir) } : {}) }));
+      const RM = rules2(M), mp = placedOf(M, ms);
+      if (mp.every((p, i) => RM.fits(p, mp.filter((_, j2) => j2 !== i))) && run(M, mp, MAXT).won) { L = M; stored = ms; }
+    }
+    return { L, sol: stored };
+  }
+
   let base0 = new Set();
   const sol = [], used = {}; let cur = 0;
   for (let link = 1; link <= N; link++) {
@@ -232,10 +291,11 @@ export function build2(seed, band) {
     base0 = base.all;
     if (!base.cells[cur].size) return null;
     const RR = rules2(LV()); let done = false;
-    const kindsTry = shuffle(TRAY_KINDS.slice(), rng);
+    let kindsTry = shuffle(TRAY_KINDS.slice(), rng);
+    if (v3) kindsTry = kindsTry.filter((k) => used[k.t]).concat(kindsTry.filter((k) => !used[k.t])); // a part already in the machine first
     const pref = shuffle(['seesaw', 'seesaw', 'domino', 'domino', 'up', 'side'], rng).filter((k, i, a) => a.indexOf(k) === i);
     outer: for (const k of kindsTry) {
-      if ((used[k.t] || 0) >= cap(k.t)) continue;
+      if ((used[k.t] || 0) >= capOf(k.t)) continue;
       if (k.t === 'magnet' && balls[cur].kind !== 'steel') continue;
       const spots = shuffle(spotsFor(LV(), RR, k, base.cells[cur], sol), rng).slice(0, 10);
       for (const p of spots) {
@@ -258,6 +318,7 @@ export function build2(seed, band) {
     if (!done) return null;
   }
   if (goal.type === 'pending') return null;
+  if (v3) return finish3();
   // the tray: the parts the machine uses, plus decoys, shuffled
   const tray = sol.map((p) => (p.dir ? { t: p.t, dir: p.t === 'fan' ? p.dir : pick(['l', 'r']) } : { t: p.t }));
   const pool = ['ramp', 'spring', 'belt', 'bumper', 'fan', 'glue', 'gate', 'pipe', 'magnet', 'glue', 'gate'];
@@ -315,7 +376,7 @@ function candsExact(L, R, V, others, STEP) {
     if (usedTi.has(ti)) return;
     for (const d of reach(t)) {
       const sig = t.t + (d || ''); if (seen.has(sig)) continue; seen.add(sig);
-      const k = d ? { ...t, dir: d, ti } : { ...t, ti };
+      const k = d ? { ...asPart(t), dir: d, ti } : { ...asPart(t), ti };
       for (let py = 0; py <= L.h * C - C; py += STEP) for (let px = 0; px <= L.w * C - C; px += STEP) {
         const p = { ...k, px, py }; if (!R.fits(p, others)) continue; if (touches(R, p, cb)) out.push(p);
       }
@@ -331,11 +392,15 @@ function mirror2(L) {
 }
 
 /* ---------- board sense (no physics) ---------- */
-export function sense2(L, band) {
-  const B = BAND2[band]; if (!B) return `band ${band} has no v2 recipe`;
+export function sense2(L, band, gen = GEN2) {
+  const B = bandOf(band, gen); if (!B) return `band ${band} has no ${gen} recipe`;
   if (L.goal.ball) { const g = L.balls.find((b) => b.id === L.goal.ball); if (!g) return 'goal ball missing'; if (L.balls.some((b) => b !== g && b.kind === g.kind)) return 'two balls of the goal kind'; }
   if (L.balls.length < B.links) return `a ${band} v2 board carries ${B.links} balls`;
   if (L.tray.length < B.tray[0] || L.tray.length > B.tray[1]) return 'tray size';
+  if (gen === GEN3) {
+    const n = trayParts(L); if (n < B.parts[0] || n > B.parts[1]) return `${n} parts in the tray, a ${band} v3 board carries ${B.parts[0]} to ${B.parts[1]}`;
+    if (!L.tray.some((t) => qtyOf(t) >= 2)) return 'a v3 tray has a stack';
+  } else if (L.tray.some((t) => t.qty)) return 'only a v3 board has stacks';
   return null;
 }
 
@@ -391,7 +456,7 @@ export function gridParts(L, R, others, STEP) { // every tray part not yet used,
     if (usedTi.has(ti)) return;
     for (const d of reach(t)) {
       const sig = t.t + (d || ''); if (seen.has(sig)) continue; seen.add(sig);
-      const k = d ? { ...t, dir: d, ti } : { ...t, ti };
+      const k = d ? { ...asPart(t), dir: d, ti } : { ...asPart(t), ti };
       for (let py = 0; py <= L.h * C - C; py += STEP) for (let px = 0; px <= L.w * C - C; px += STEP) { const p = { ...k, px, py }; if (R.fits(p, others)) out.push(p); }
     }
   });
@@ -427,7 +492,7 @@ export function twoPartWin(L, STEP = 30, steppingOnly = false, STEP2 = STEP) {
     if (steppingOnly && stepsOf(r.s).size <= n0) continue; // the quick 30px pass: first parts that set something off
     const pb = R.box(p);
     for (const q of seconds) {
-      if (q.ti === p.ti || R.hits(R.box(q), pb)) continue;
+      if ((q.ti === p.ti && qtyOf(L.tray[p.ti]) < 2) || R.hits(R.box(q), pb)) continue; // two copies of one stack are a pair too
       const j = idx.get(kk(q)); if (!steppingOnly && j !== undefined && j < i) continue; // that pair was run with q first
       const at = nearAt(q, r.pts); if (at < 0) continue;
       sims++;
@@ -439,8 +504,11 @@ export function twoPartWin(L, STEP = 30, steppingOnly = false, STEP2 = STEP) {
 
 /* ---------- the checks a v2 board must pass ---------- */
 // cheap: everything but the 10px single-part sweep and the pair sweep
-export function check2cheap(L, band, sol) {
-  const B = BAND2[band]; const why = sense2(L, band); if (why) return { why };
+export function check2cheap(L, band, sol, gen = GEN2) {
+  const B = bandOf(band, gen); const why = sense2(L, band, gen); if (why) return { why };
+  const useOf = (ti) => sol.filter((q) => q.ti === ti).length;
+  if (L.tray.some((t, i) => useOf(i) > qtyOf(t))) return { why: 'the stored machine uses more copies than a stack holds' };
+  if (gen === GEN3 && !L.tray.some((t, i) => useOf(i) >= 2)) return { why: 'a v3 machine uses one part twice' };
   const R = rules2(L), parts = placedOf(L, sol);
   if (parts.length !== B.links) return { why: `stored machine has ${parts.length} parts, the band wants ${B.links}` };
   if (!parts.every((p, i) => R.fits(p, parts.filter((_, j) => j !== i)))) return { why: 'a stored part does not fit' };
@@ -448,18 +516,19 @@ export function check2cheap(L, band, sol) {
   const s = run(L, parts, MAXT); if (!s.won) return { why: 'the stored machine does not win' };
   const steps = stepsOf(s).size; if (steps < B.links - 1) return { why: `the winning run shows ${steps} step(s), needs ${B.links - 1}` };
   for (let i = 0; i < parts.length; i++) if (run(L, parts.filter((_, j) => j !== i), MAXT).won) return { why: `the machine still wins without part ${i}` };
-  if (L.tray.every((t, i) => sol.some((q) => q.ti === i))) return { why: 'no spare part' };
+  if (L.tray.every((t, i) => useOf(i) >= qtyOf(t))) return { why: 'no spare part' };
   const fair = fairness(L, sol); if (fair < B.fair) return { why: `fairness ${fair.toFixed(2)} under ${B.fair}` };
   return { ok: true, fair, steps };
 }
-export function check2(L, band, sol) {
-  const c = check2cheap(L, band, sol); if (!c.ok) return c;
+export function check2(L, band, sol, gen = GEN2) {
+  const c = check2cheap(L, band, sol, gen); if (!c.ok) return c;
   if (skipScan(L, sol)) return { why: 'one part skips a link' };
   // every pair on the 60px grid, then on the 30px grid every pair whose first part sets off a
   // link on its own (the pairs a real shortcut is made of). The full 30px sweep is 20 to 30
   // minutes a board; verify-machine --deep runs it.
-  if (twoPartWin(L, 60)) return { why: 'two parts win (60px)' };
-  if (twoPartWin(L, 30, true, band === 'sunday' ? 60 : 30)) return { why: 'two parts win' }; // the 18 x 12 board: second parts on the 60px grid, or one board is an hour
+  // (a two-link v3 board IS a two-part machine, so the pair rule starts at three links)
+  if (bandOf(band, gen).links >= 3 && twoPartWin(L, 60)) return { why: 'two parts win (60px)' };
+  if (bandOf(band, gen).links >= 3 && twoPartWin(L, 30, true, band === 'sunday' ? 60 : 30)) return { why: 'two parts win' }; // the 18 x 12 board: second parts on the 60px grid, or one board is an hour
   if (onePartWin(L, 10)) return { why: 'one part wins at 10px' };
   return c;
 }

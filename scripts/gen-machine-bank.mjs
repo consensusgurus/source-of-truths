@@ -7,6 +7,10 @@
 //   node scripts/gen-machine-bank.mjs --replace 2026-11-22,2026-11-29  rebuild future boards in place
 //   node scripts/gen-machine-bank.mjs --replace D --pin D=SEED       rebuild a board from its recorded seed
 //   node scripts/gen-machine-bank.mjs --one 2026-11-22                one date, JSON to stdout
+//   node scripts/gen-machine-bank.mjs --insert 2026-11-22,2026-11-28  new boards for those dates; every
+//       future board from the first date on moves later by the same number of days (whole weeks, so
+//       each keeps its weekday), its line otherwise untouched (owner, 2026-11-21: "Use existing
+//       inventory to fill farther out dates and build new multi item puzzles to fill")
 //
 // What it does, and the guards that make it safe to rerun:
 //   * Appends one board per missing date after the bank's last board, through
@@ -49,7 +53,7 @@ import os from 'os';
 import { fileURLToPath } from 'url';
 import { spawn, spawnSync } from 'child_process';
 import { run, makeState, pieceSegs, C } from '../lib/machine-engine.js';
-import { GEN2, build2, check2, goalText2, titlePools2 } from './gen-machine-v2.mjs';
+import { GEN2, GEN3, build2, check2, goalText2, titlePools2, asPart } from './gen-machine-v2.mjs';
 
 const GEN = 'v1';
 export const FAIR_MIN = 0.25;
@@ -90,7 +94,7 @@ function cands(L, R, V, others, STEP, pad) {
   }
   return out;
 }
-const placed = (L, sol) => sol.map((q) => ({ ...L.tray[q.ti], dir: q.dir || L.tray[q.ti].dir, px: q.px, py: q.py, ti: q.ti }));
+const placed = (L, sol) => sol.map((q) => ({ ...asPart(L.tray[q.ti]), dir: q.dir || L.tray[q.ti].dir, px: q.px, py: q.py, ti: q.ti }));
 
 // Fairness: nudge one part at a time by 10px in each of 8 directions; the share that still wins.
 export function fairness(L, sol) {
@@ -234,7 +238,7 @@ export function check(L, band) {
 /* ---------- names ---------- */
 const BALL_NAME = { bowling: 'bowling ball', basket: 'basketball', tennis: 'tennis ball', steel: 'steel ball' };
 function goalText(L, gen) {
-  if (gen === GEN2) return goalText2(L);
+  if (gen === GEN2 || gen === GEN3) return goalText2(L);
   const g = L.goal; const b = g.ball && L.balls.find((x) => x.id === g.ball);
   if (g.type === 'hoop') return `Sink the ${BALL_NAME[b.kind]} in the hoop`;
   if (g.type === 'bucket') return `Drop the ${BALL_NAME[b.kind]} in the bucket`;
@@ -242,9 +246,10 @@ function goalText(L, gen) {
   return 'Pop the balloon';
 }
 function titleFor(L, used, seed, gen) {
-  if (gen === GEN2) {
-    const rng = mulberry(seed);
-    for (const pool of titlePools2(L)) for (const t of shuffle(pool.slice(), rng)) if (!used.has(t)) { used.add(t); return t; }
+  if (gen === GEN2 || gen === GEN3) {
+    const rng = mulberry(seed), pools = titlePools2(L);
+    if (gen === GEN3) pools.unshift(L.tray.some((t) => (t.qty || 0) >= 3) ? ['Hat Trick', 'Third Time Lucky', 'Three of a Kind', 'The Triple', 'In Triplicate'] : ['Two of a Kind', 'Seeing Double', 'Double Up', 'The Pair', 'Twice Over', 'Spare Parts', 'In Bulk', 'Second Helping']);
+    for (const pool of pools) for (const t of shuffle(pool.slice(), rng)) if (!used.has(t)) { used.add(t); return t; }
     let i = 2; while (used.has(`The Contraption ${i}`)) i++; used.add(`The Contraption ${i}`); return `The Contraption ${i}`;
   }
   const has = (t) => L.pieces.some((p) => p.t === t);
@@ -275,17 +280,25 @@ const bandFor = (iso) => ['sunday', 'gentle', 'gentle', 'moderate', 'moderate', 
 // up: Monday is built to the old Wednesday recipe and Tuesday to the old Friday one (v1, two parts),
 // and Wednesday to Sunday are v2 chains (three parts midweek, four on Friday, Saturday and Sunday).
 // `lay` is the recipe a board was built to; it is stored on the board when it differs from `band`.
-export const recipeFor = (iso) => [
+export const recipeV2 = (iso) => [
   { gen: GEN2, lay: 'sunday' }, { gen: GEN, lay: 'moderate' }, { gen: GEN, lay: 'tough' },
   { gen: GEN2, lay: 'moderate' }, { gen: GEN2, lay: 'moderate' }, { gen: GEN2, lay: 'tough' }, { gen: GEN2, lay: 'tough' },
 ][dow(iso)];
+// STACKS (owner, 2026-11-21: "Change the generator. Use existing inventory to fill farther out dates and
+// build new multi item puzzles to fill"): from STACKS_FROM every new board is a v3 chain whose tray holds
+// stacks (Ramp x2, Spring x3), on every weekday: Mon/Tue a two-link chain, Wed/Thu three links,
+// Fri/Sat/Sun four. Boards built before then that were moved out to later dates keep their own recipe,
+// so a date from STACKS_FROM accepts either (recipesFor).
+export const STACKS_FROM = '2026-11-22';
+export const recipeFor = (iso) => (iso >= STACKS_FROM ? { gen: GEN3, lay: bandFor(iso) } : recipeV2(iso));
+export const recipesFor = (iso) => (iso >= STACKS_FROM ? [recipeFor(iso), recipeV2(iso)] : [recipeV2(iso)]);
 const todayNY = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York' }).format(new Date());
 const label = (iso) => new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 
 export function buildDate(iso, maxTries = 4000, pin) {
   const band = bandFor(iso), { gen, lay } = recipeFor(iso); const base = hash(`machine:${gen}:${iso}`) * 1000;
   const one = (seed) => {
-    if (gen === GEN2) { const b = build2(seed, lay); if (!b) return { why: 'no board' }; const r = check2(b.L, lay, b.sol); return r.ok ? { ok: true, L: b.L, sol: b.sol, fair: r.fair } : r; }
+    if (gen === GEN2 || gen === GEN3) { const b = build2(seed, lay, gen); if (!b) return { why: 'no board' }; const r = check2(b.L, lay, b.sol, gen); return r.ok ? { ok: true, L: b.L, sol: b.sol, fair: r.fair } : r; }
     const L = layout(seed, lay); if (!L) return { why: 'no layout' }; const r = check(L, lay); return r.ok ? { ok: true, L, sol: r.sol, fair: r.fair } : r;
   };
   if (pin) { // rebuild from a recorded seed: that seed and nothing else
@@ -320,14 +333,21 @@ if (process.argv[1] && process.argv[1].endsWith('gen-machine-bank.mjs')) {
     process.exit(0);
   }
   const replace = (opt('--replace') || '').split(',').filter(Boolean);
+  const insert = (opt('--insert') || '').split(',').filter(Boolean);
   const pins = Object.fromEntries((opt('--pin') || '').split(',').filter(Boolean).map((x) => x.split('=')));
-  const through = opt('--through'); if (!replace.length && !/^\d{4}-\d{2}-\d{2}$/.test(through || '')) { console.error('usage: --through YYYY-MM-DD | --replace D1,D2 [--dry] [--jobs N]'); process.exit(2); }
+  const through = opt('--through'); if (!replace.length && !insert.length && !/^\d{4}-\d{2}-\d{2}$/.test(through || '')) { console.error('usage: --through YYYY-MM-DD | --replace D1,D2 [--dry] [--jobs N]'); process.exit(2); }
   const jobs = +(opt('--jobs') || Math.max(1, Math.min(4, os.cpus().length)));
   const { PUZZLES } = await import(BANK + `?t=${Date.now()}`);
   const last = PUZZLES[PUZZLES.length - 1];
   const today = todayNY();
   const dates = [];
   if (replace.length) { for (const d of replace) { if (!PUZZLES.some((p) => p.live === d)) { console.error(`--replace ${d}: no board on that date`); process.exit(1); } dates.push(d); } }
+  else if (insert.length) {
+    if (insert.length !== 2) { console.error('--insert FROM,TO'); process.exit(2); }
+    for (let d = insert[0]; d <= insert[1]; d = nextDay(d)) dates.push(d);
+    if (dates.length % 7) { console.error('--insert takes whole weeks, so every moved board keeps its weekday'); process.exit(2); }
+    if (insert[0] > nextDay(last.live)) { console.error('--insert starts after the bank ends; use --through'); process.exit(2); }
+  }
   else for (let d = nextDay(last.live); d <= through; d = nextDay(d)) dates.push(d);
   if (!dates.length) { console.log(`bank already runs through ${last.live}; nothing to add`); process.exit(0); }
   const early = dates.filter((d) => d <= today); if (early.length) { console.error(`refusing: ${early.join(', ')} is not after today (${today}); a live day cannot get a new board`); process.exit(1); }
@@ -353,8 +373,31 @@ if (process.argv[1] && process.argv[1].endsWith('gen-machine-bank.mjs')) {
     next();
   });
   // names and rows, in date order, titles unique across the whole bank
-  const used = new Set(PUZZLES.filter((p) => !dates.includes(p.live)).map((p) => p.title));
+  const used = new Set(PUZZLES.filter((p) => insert.length || !dates.includes(p.live)).map((p) => p.title));
   let num = last.num; const rows = [];
+  if (insert.length) {
+    const span = dates.length, first = PUZZLES.find((p) => p.live >= dates[0]);
+    const add = (iso, n) => { const d = new Date(`${iso}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+    let n0 = first ? first.num : last.num + 1;
+    const fresh = dates.map((d, i) => rowFor(results[d], n0 + i, used));
+    const moved = PUZZLES.filter((p) => p.live >= dates[0]).map((p) => {
+      const iso = add(p.live, span), [y, m, dd] = iso.split('-').map(Number);
+      return { ...p, num: p.num + span, quizId: `machine-${m}-${dd}-${String(y).slice(2)}`, live: iso, dateLabel: label(iso) };
+    });
+    if (args.includes('--dry')) { for (const r of fresh) console.log(JSON.stringify(r)); process.exit(0); }
+    const src = fs.readFileSync(BANK, 'utf8'), head = src.indexOf('export const PUZZLES = [\n') + 'export const PUZZLES = [\n'.length, end = src.lastIndexOf('\n];');
+    const lines = src.slice(head, end).split('\n'), keepN = PUZZLES.filter((p) => p.live < dates[0]).length;
+    if (lines.length !== PUZZLES.length) { console.error('the bank is not one board a line; stopped'); process.exit(1); }
+    const body = lines.slice(0, keepN).map((l) => l.replace(/,$/, '')).concat(fresh.concat(moved).map((r) => '  ' + JSON.stringify(r)));
+    const next = src.slice(0, head) + body.join(',\n') + src.slice(end);
+    if (!next.startsWith(src.slice(0, head) + lines.slice(0, keepN).join('\n').replace(/,$/, ''))) { console.error('insert would change a board before the first date; stopped'); process.exit(1); }
+    const tmp = BANK + '.new'; fs.writeFileSync(tmp, next);
+    const backup = BANK + '.bak'; fs.copyFileSync(BANK, backup); fs.renameSync(tmp, BANK);
+    console.log(`inserted ${span} board(s) from ${dates[0]}, moved ${moved.length} later by ${span} days; verifying the whole bank`);
+    const v = spawnSync(process.execPath, [path.join(ROOT, 'scripts/verify-machine.mjs')], { stdio: 'inherit' });
+    if (v.status !== 0) { fs.renameSync(backup, BANK); console.error('verify-machine failed; the bank was put back as it was'); process.exit(1); }
+    fs.unlinkSync(backup); console.log(`Machine bank now runs through ${moved.length ? moved[moved.length - 1].live : dates[dates.length - 1]}.`); process.exit(0);
+  }
   for (const d of dates) {
     const r = results[d]; const old = PUZZLES.find((p) => p.live === d); num = old ? old.num : num + 1;
     const row = rowFor(r, num, used);

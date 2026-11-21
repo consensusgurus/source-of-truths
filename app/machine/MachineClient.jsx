@@ -77,16 +77,17 @@ export function Board({ P, s, setS, active, done, onStage }) {
 
 function partsOk(P, parts) {
   if (!Array.isArray(parts)) return false;
-  const seen = new Set();
+  const seen = new Map(); // a stack (qty) can be placed up to qty times
   for (const p of parts) {
-    if (!p || !Number.isInteger(p.ti) || p.ti < 0 || p.ti >= P.tray.length || seen.has(p.ti)) return false;
+    if (!p || !Number.isInteger(p.ti) || p.ti < 0 || p.ti >= P.tray.length || (seen.get(p.ti) || 0) >= (P.tray[p.ti].qty || 1)) return false;
     if (!Number.isFinite(p.px) || !Number.isFinite(p.py)) return false;
     if (p.dir != null && p.dir !== 'l' && p.dir !== 'r') return false;
-    seen.add(p.ti);
+    seen.set(p.ti, (seen.get(p.ti) || 0) + 1);
   }
   return true;
 }
-const partsFor = (P, parts) => parts.map((q) => ({ ...P.tray[q.ti], dir: q.dir || P.tray[q.ti].dir, px: q.px, py: q.py }));
+const partOfTray = (t) => { const { qty, ...p } = t; return p; };
+const partsFor = (P, parts) => parts.map((q) => ({ ...partOfTray(P.tray[q.ti]), dir: q.dir || P.tray[q.ti].dir, px: q.px, py: q.py }));
 
 export const GAME = {
   key: 'machine', name: 'Machine', cat: 'Visual', miss: 'Runs', missOne: 'run', wide: true,
@@ -100,7 +101,7 @@ export const GAME = {
   result: (P, s, won) => ({ score: won ? 10 : 0, total: 10, correct: won ? 1 : 0, guessesUsed: s.runs || 0 }),
   Board,
   eyebrow: (P, s, { sundayLabel }) => `${sundayLabel || BAND[P.band]} · ${P.title} · No. ${P.num}`,
-  foot: (P, s) => `${runsOf(s.runs || 0)} · ${(s.parts || []).length} of ${P.tray.length} parts placed`,
+  foot: (P, s) => `${runsOf(s.runs || 0)} · ${(s.parts || []).length} of ${P.tray.reduce((a, t) => a + (t.qty || 1), 0)} parts placed`,
   frac: (P, s) => (s.won ? 1 : 0),
   sundayLabel: () => 'Sunday Edition',
   gateTitle: (P) => `Today: ${P.goalText}`,
@@ -109,10 +110,11 @@ export const GAME = {
     lead: 'Combine simple machines and tools into a solution.',
     steps: [
       <><b>Drag</b> a part from the tray onto the board, or <b>tap</b> it and then tap the spot where it goes. Drag a placed part to move it, or tap it and tap a new spot. Tap it to flip it or put it back, or drag it off the board.</>,
+      <>The number on a tray part is how many you have. Some days you get two, three or four of the same part, and the machine may need more than one of them.</>,
       <>Press <b>Run</b>. The balls have real weight and momentum: they arc off ledges, speed up down ramps, bounce off springs and bumpers, and knock each other along.</>,
       <>If it misses, the paths stay drawn so you can see what happened. <b>Reset</b>, move parts, and run again.</>,
       <>A red button works whatever its wire runs to: it opens a trapdoor or fires a cannon. Dominoes topple into whatever is in front of them, and a ball dropped on the high end of a seesaw throws the ball on the low end. Not every part in the tray is needed.</>,
-      <>From midweek the machine is a <b>chain</b>: each ball sets off the next, and the goal names the ball that has to finish the job.</>,
+      <>Most days the machine is a <b>chain</b>: each ball sets off the next, and the goal names the ball that has to finish the job.</>,
     ],
     knack: 'Work out where the first ball goes on its own. Then fix one link at a time.',
     footer: 'A working machine ranks on runs, fewest first, then the clock. Giving up scores nothing. Once the day is over, Show the answer runs a machine that works.',

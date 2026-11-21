@@ -2996,6 +2996,10 @@ Visual, skills Spatial and Planning, on `app/SimpleDaily.jsx`. Wired by `scripts
   cages and face-up buttons (seesaws and dominoes are offered by the builder but none has passed the checks yet),
   and their goal names the ball that has to finish the job. Full rules:
   daily-authoring.md, "The Machine ladder". Never schedule a two-part board from Wednesday on again.
+- **STACKS (owner, 2026-11-21).** From 2026-11-22 new boards are v3: the tray can hold two, three or four of the
+  same part (`qty` on the tray entry), shown as the count on the chip that used to read 1; it counts down as copies
+  go on the board, and each copy flips on its own. Saves may name a stack's `ti` up to `qty` times (`partsOk`).
+  Rules and the `--insert` reschedule: daily-authoring.md, "STACKS, v3".
 - **Restocking: never by hand.** `node scripts/gen-machine-bank.mjs --through YYYY-MM-DD` builds, checks and appends
   boards (see daily-authoring.md, "Bank runway and the Machine restock"). Boards from 2026-11-20 carry `gen` and
   `seed` and must pass the fairness rule in verify-machine.
