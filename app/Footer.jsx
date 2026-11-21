@@ -44,7 +44,7 @@ export const FOOTER_COLS = [
       // finds the other fourteen.
       { label: 'Runs', href: '/circuits' },
       // The trivia IQ tests. /iq is linked from nowhere else, so this is its crawl path.
-      { label: 'Trivia IQ Tests', href: '/iq' },
+      { label: 'IQ and School Tests', href: '/tests' },
       { label: 'Stat Hub', href: '/quizzes/hub' },
       { label: 'Request a Quiz', href: '/request' },
       // The kids track. Nothing inside /kids links back out except its own

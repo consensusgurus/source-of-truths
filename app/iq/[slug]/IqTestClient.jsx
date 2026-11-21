@@ -478,7 +478,7 @@ export default function IqTestClient({ test, pool, model, bankSize, measured }) 
                       style={{ '--oc': `var(--iq-r${t.ramp})` }}>{t.name}</a>
                   ))}
                 </div>
-                <a className="iqt-all" href="/iq">All IQ tests</a>
+                <a className="iqt-all" href="/tests">All tests</a>
               </div>
             </section>
 

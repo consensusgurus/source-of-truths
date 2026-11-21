@@ -81,7 +81,7 @@ export default function ExamQuizClient({ examKey }) {
         <Grain />
         <div style={{ position: 'relative', zIndex: 2, padding: 48, textAlign: 'center' }}>
           <p style={{ color: COLORS.faded }}>That exam could not be found.</p>
-          <button onClick={() => router.push('/exams')} style={{ marginTop: 16, background: COLORS.ink, color: COLORS.cream, border: 'none', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontFamily: FONT, fontWeight: 700 }}>All exams</button>
+          <button onClick={() => router.push('/tests#school-tests')} style={{ marginTop: 16, background: COLORS.ink, color: COLORS.cream, border: 'none', borderRadius: 8, padding: '10px 20px', cursor: 'pointer', fontFamily: FONT, fontWeight: 700 }}>All tests</button>
         </div>
         <Footer />
       </div>
@@ -177,7 +177,7 @@ export default function ExamQuizClient({ examKey }) {
 
       <div style={{ position: 'relative', zIndex: 2, maxWidth: 760, margin: '0 auto', padding: '22px 22px 80px' }}>
         {/* Header */}
-        <a href="/exams" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, textDecoration: 'none', color: COLORS.ember, fontFamily: FONT, fontSize: 12.5, fontWeight: 600, marginBottom: 18 }}>
+        <a href="/tests#school-tests" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, textDecoration: 'none', color: COLORS.ember, fontFamily: FONT, fontSize: 12.5, fontWeight: 600, marginBottom: 18 }}>
           <ArrowLeft size={13} strokeWidth={2.5} /> All practice tests
         </a>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
@@ -348,7 +348,7 @@ export default function ExamQuizClient({ examKey }) {
               <button onClick={restart} style={{ fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '0 28px', lineHeight: '48px', border: 'none', borderRadius: 10, background: COLORS.ember, color: T.white, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 <RotateCcw size={14} strokeWidth={2.5} /> Take it again
               </button>
-              <button onClick={() => router.push('/exams')} style={{ fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '0 28px', lineHeight: '48px', border: `1.5px solid ${COLORS.ink}`, borderRadius: 10, background: COLORS.cream, color: COLORS.ink, cursor: 'pointer' }}>
+              <button onClick={() => router.push('/tests#school-tests')} style={{ fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '0 28px', lineHeight: '48px', border: `1.5px solid ${COLORS.ink}`, borderRadius: 10, background: COLORS.cream, color: COLORS.ink, cursor: 'pointer' }}>
                 Other tests
               </button>
               <button onClick={share} style={{ fontSize: 13, letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700, padding: '0 28px', lineHeight: '48px', border: `1.5px solid ${COLORS.ink}`, borderRadius: 10, background: COLORS.cream, color: COLORS.ink, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>

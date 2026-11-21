@@ -3056,3 +3056,12 @@ fixed basis (`flex:0 0 calc((100% - gaps) / N)`), which centres any leftover row
 grid needs `:last-child:nth-child(odd){grid-column:1/-1;justify-self:center;width:calc(50% - gap/2)}`
 for two columns. Applied first to the phone Everything Else (option C: Talk, Play, Study, You and
 Mind Loft, three tiles to a row) and the question databases' topic and lane grids (app/QdbPortal.jsx).
+
+## Tests: one button, one page (owner, 2026-11-21)
+
+"On homepage we can combine tests to one button - need to rework school test and iq tests to be on
+same page." The home's IQ Tests and School Tests buttons are one **Tests** button (desktop index,
+phone Study list, nav rail); its pane is IQ_ID (`#sty-iq`) holding both lists under small IQ Tests
+and School Tests heads. An old `#sty-exams` link opens the same pane. The page is **/tests**
+(app/tests/page.js): the trivia IQ tests, then the six school practice tests and the LSAT logic
+games. /iq and /exams 308 there (next.config.js); /iq/<slug> and /<exam> test pages are unchanged.

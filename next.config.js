@@ -101,6 +101,9 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // IQ Tests and School Tests share one page, /tests (owner, 2026-11-21).
+      { source: '/iq', destination: '/tests', permanent: true },
+      { source: '/exams', destination: '/tests#school-tests', permanent: true },
       // The Trivia Database's Words topic became the English Database (owner, 2026-11-21).
       { source: '/trivia-questions/words', destination: '/english-questions', permanent: true },
       // The consensus Sports Rankings pages were removed (owner, 2026-11-17).

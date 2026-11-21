@@ -2860,9 +2860,9 @@ export default function QuizHomeClient({ variant = 'current', sourceCount = 0, s
               rows={businessNewsRows.map((q) => ({ q, href: `/quiz/${q.id}`, right: <PlaysRight id={q.id} plays={plays} leader={leader} leaderKey={leaderKey} color="#4d6b8a" hidePlays /> }))}
               cta="View all" ctaHref="/quizzes/business-news" />
             <BrowseColumn label="Standardized Tests" eyebrow="Admissions" Icon={GraduationCap} color="#2f6f9f" tint="#e4eef6"
-              heroUrl={PROMO_HERO.tests} heroHref="/exams" heroCta="Start" heroTitle="Where will you get in?"
+              heroUrl={PROMO_HERO.tests} heroHref="/tests#school-tests" heroCta="Start" heroTitle="Where will you get in?"
               rows={EXAM_TILE_ROWS.map((e) => ({ q: { id: e.id, title: e.title, rawTitle: e.title }, href: e.href }))}
-              cta="View all" ctaHref="/exams" />
+              cta="View all" ctaHref="/tests#school-tests" />
             <BrowseColumn label="Kids Corner" eyebrow="For kids" Icon={Blocks} color="#3ea0e0" tint="#e4f2fc"
               heroUrl={PROMO_HERO.kids} heroHref="/kids" heroCta="Play" heroTitle="Tap-and-play games for kids"
               rows={KIDS_GAMES.slice(0, 6).map((g) => ({ q: { id: g.id, title: g.title, rawTitle: g.title }, href: g.href }))}

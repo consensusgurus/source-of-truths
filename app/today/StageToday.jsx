@@ -556,7 +556,9 @@ const IX_GLYPHS = {
   'sk:speed': <><circle cx="12" cy="12" r="8" /><circle cx="12" cy="12" r="4" /></>,
   'sk:ppl': <><circle cx="9" cy="8" r="3" /><circle cx="16.5" cy="9.5" r="2.5" /><path d="M3.5 19c.6-3.3 2.8-5 5.5-5s4.9 1.7 5.5 5M14.5 14.2c2.6-.5 5 1 5.5 4.8" /></>,
 };
-const INFO_PANES = [QUIZ_ID, BOARD_ID, IQ_ID, COMM_ID, EXAM_ID];
+// TESTS (owner, 2026-11-21: "combine tests to one button"): IQ Tests and School
+// Tests are one pane, IQ_ID, labelled Tests; an old #sty-exams link opens it too.
+const INFO_PANES = [QUIZ_ID, BOARD_ID, IQ_ID, COMM_ID];
 // The six standardized tests, written out: app/exams/examData.js carries every
 // question and is far too heavy to pull into the home for six names.
 const EXAM_TILES = [
@@ -1374,7 +1376,7 @@ export default function StageToday({ seed = null } = {}) {
         try { window.scrollTo(0, 0); } catch (er) {}
       }
     } catch (e) {}
-    try { const h = String(window.location.hash || '').slice(1); if (INFO_PANES.includes(h) || STAT_ANCHORS.includes(h)) { setPane(STAT_ANCHORS.includes(h) ? BOARD_ID : h); setPicked(true); } } catch (e) {}
+    try { const h = String(window.location.hash || '').slice(1); if (h === EXAM_ID) { setPane(IQ_ID); setPicked(true); } else if (INFO_PANES.includes(h) || STAT_ANCHORS.includes(h)) { setPane(STAT_ANCHORS.includes(h) ? BOARD_ID : h); setPicked(true); } } catch (e) {}
     // /#cat=<Category> OPENS THAT CATEGORY (owner, 2026-10-26: the ending's
     // category chips "should take users to main page with the category
     // selected", not the old category pages). Shown under Categories, for this
@@ -2788,7 +2790,7 @@ export default function StageToday({ seed = null } = {}) {
     [ALL_ID, MINE_ID],
     lensCats.map((c) => c.cat),
     [CIRC_ID, QUIZ_ID],
-    [IQ_ID, EXAM_ID, 'kids', 'lists'],
+    [IQ_ID, 'kids', 'lists'],
   ];
   const fillFor = (id) => {
     const run = ixRuns.find((r) => r.includes(id));
@@ -3035,8 +3037,7 @@ export default function StageToday({ seed = null } = {}) {
       <a className="sty-ixb sty-ixmv sty-ixar" href={withTq('/science-questions')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('Trivia', null)}<span>Science Database</span></a>
       {ixBtn(BOARD_ID, 'Leaderboards + Stats', 'var(--stg-mute)', 'wide')}
       <span className="sty-ixsep sty-ixmv" aria-hidden="true" />
-      {ixBtn(IQ_ID, 'IQ Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
-      {ixBtn(EXAM_ID, 'School Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
+      {ixBtn(IQ_ID, 'Tests', 'var(--stg-mute)', 'sty-ixmv sty-ixm4')}
       {/* Kids and the lists are doors, not panes: each goes to its own home. */}
       <a className={'sty-ixb sty-ixmv sty-ixm4' + fillFor('kids')} href="/kids" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('kids', null)}<span>Kids</span></a>
       <a className={'sty-ixb sty-ixmv sty-ixm4' + fillFor('lists')} href={withTq('/lists')} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('lists', null)}<span>Top 10 Lists</span></a>
@@ -5235,8 +5236,7 @@ export default function StageToday({ seed = null } = {}) {
                   <a href={withTq('/math-questions')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5" /><path d="M8 8h8M8.5 13h2M13.5 13h2M8.5 16.5h2M13.5 16.5h2" /></svg><b>Math Database</b></a>
                   <a href={withTq('/english-questions')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5z" /><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5z" /></svg><b>English Database</b></a>
                   <a href={withTq('/science-questions')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5.5 9.5A1.5 1.5 0 0 0 5.8 21h12.4a1.5 1.5 0 0 0 1.3-2.5L14 9V3" /><path d="M7.5 15h9" /></svg><b>Science Database</b></a>
-                  <button type="button" onClick={() => goPane(IQ_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4h6M10 4v5l-5 9a1.5 1.5 0 0 0 1.3 2h11.4a1.5 1.5 0 0 0 1.3-2l-5-9V4" /></svg><b>IQ Tests</b></button>
-                  <button type="button" onClick={() => goPane(EXAM_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 6h16v13H4z" /><path d="M8 10h8M8 14h5" /></svg><b>School Tests</b></button>
+                  <button type="button" onClick={() => goPane(IQ_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 4h6M10 4v5l-5 9a1.5 1.5 0 0 0 1.3 2h11.4a1.5 1.5 0 0 0 1.3-2l-5-9V4" /></svg><b>Tests</b></button>
                   <a href={withTq('/lists')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11" /><path d="M4 6h.01M4 12h.01M4 18h.01" /></svg><b>Top 10 Lists</b></a>
                 </div>
                 <div className="mph-eeg">You and Mind Loft</div>
@@ -5660,8 +5660,9 @@ export default function StageToday({ seed = null } = {}) {
             it is the only one of the page's sections that had none. */}
         <section id="sty-iq" className={'sty-cat sty-iqsec' + (paneOn !== IQ_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
           <div className="sty-cathead">
-            <h2><a href={withTq('/iq')}>IQ Tests</a></h2>
+            <h2><a href={withTq('/tests')}>Tests</a></h2>
           </div>
+          <p className="sty-ixe sty-iqh">IQ Tests</p>
           <div className="sty-games">
             {IQ_TESTS.map((t) => (
               <a key={t.slug} className="sty-g" href={withTq(`/iq/${t.slug}`)} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[t.ramp % 10], '--cci': (light ? IQ_LIGHT : IQ_DARK)[t.ramp % 10] }}>
@@ -5674,11 +5675,7 @@ export default function StageToday({ seed = null } = {}) {
             ))}
           </div>
           <p className="sty-ixe sty-iqn">One adaptive test per trivia category, about eight minutes each. 100 is the typical Mind Loft player.</p>
-        </section>
-        <section id="sty-exams" className={'sty-cat sty-iqsec' + (paneOn !== EXAM_ID ? ' sty-ixoff' : '')} style={{ '--cc': 'var(--stg-ink2)', '--cci': 'var(--stg-ink2)' }}>
-          <div className="sty-cathead">
-            <h2><a href={withTq('/exams')}>School Tests</a></h2>
-          </div>
+          <p className="sty-ixe sty-iqh">School Tests</p>
           <div className="sty-games">
             {EXAM_TILES.map(([slug, nm, tag], i) => (
               <a key={slug} className="sty-g" href={withTq(`/${slug}`)} style={{ '--cc': (light ? IQ_LIGHT : IQ_DARK)[i], '--cci': (light ? IQ_LIGHT : IQ_DARK)[i] }}>
@@ -7444,6 +7441,8 @@ html[data-stage-color=mono] .sty :is(.sty-games,.sty-rcards){filter:grayscale(1)
 .sty-ixn a.sty-ixb{text-decoration:none;}
 .sty-iqd{flex:none;width:11px;height:11px;border-radius:3px;border:2.2px solid var(--cci, var(--cc));box-sizing:border-box;}
 .sty-iqn,.sty-cmn{margin:14px 0 0;}
+.sty-iqh{margin:22px 0 10px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-ink);}
+.sty-iqh:first-of-type{margin-top:4px;}
 .sty-cmn{margin:0 0 16px;}
 .sty-cmn a{color:var(--stg-acc-ink,var(--stg-acc));font-weight:800;}
 .sty-cm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px 26px;align-items:start;}

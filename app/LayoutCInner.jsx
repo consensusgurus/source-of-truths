@@ -900,8 +900,7 @@ export default function LayoutCInner({ gameKey }) {
             {ixDoor('/science-questions', 'Science Database')}
             {ixHash('sty-board', 'Leaderboards + Stats')}
             <span className="lc-eecut" aria-hidden="true" />
-            {ixHash('sty-iq', 'IQ Tests')}
-            {ixHash('sty-exams', 'School Tests')}
+            {ixHash('sty-iq', 'Tests')}
             {ixDoor('/kids', 'Kids')}
             {ixDoor('/lists', 'Top 10 Lists')}
             <span className="lc-eecut" aria-hidden="true" />

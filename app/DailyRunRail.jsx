@@ -66,7 +66,7 @@ export default function DailyRunRail({ gameKey }) {
           ) : allDone ? (
             <>
               <span className="drr-bt"><b>Run complete</b><small>{keys.length} games played</small></span>
-              <a className="drr-go" href="/iq">IQ tests</a>
+              <a className="drr-go" href="/tests">IQ tests</a>
               <a className="drr-go alt" href="/">Home</a>
             </>
           ) : next ? (
