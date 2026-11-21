@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { resolvePlayerKeys } from '@/lib/quiz-identity';
 import { DAILY_KEYS } from '@/lib/daily-combined';
+import { DISPLAY_CIRCUITS, circuitKeysFor } from '@/lib/circuits';
 
 // PLAY VOLUME PER DAILY (owner, 2026-10-07). The home's "Your favorites" block
 // under a short category: how many times this reader has played each daily,
@@ -34,7 +35,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const anonId = (searchParams.get('anonId') || '').trim() || null;
   const email = (searchParams.get('email') || '').trim() || null;
-  const empty = { mine: {}, site: {}, week: {}, uniq: {}, days: DAYS };
+  const empty = { mine: {}, site: {}, week: {}, uniq: {}, runs: {}, days: DAYS };
   try {
     let myKeys = new Set();
     if (anonId || email) {
@@ -57,6 +58,27 @@ export async function GET(request) {
     // playing a game a hundred times counts once. Feeds the phone home's Top
     // Puzzles row; `week` stays the count of plays.
     const seen = new Map();
+    // UNIQUE PLAYERS PER RUN (owner, 2026-11-21, "why is Encore showing as most
+    // popular when Gauntlet is?"). The door's Top Run used to average each run's
+    // games' unique players, but the trivia banks swap between the Gauntlet and
+    // the Encore every day, so each bank's week mixed both runs' players, and the
+    // Gauntlet's own Streak and Deep pulled its average down. A run now counts
+    // the people who played any of the games it dealt on the day they played.
+    const runSeen = new Map();
+    const dayRuns = new Map();
+    const runsOn = (iso, key) => {
+      let byKey = dayRuns.get(iso);
+      if (!byKey) {
+        byKey = new Map();
+        for (const c of DISPLAY_CIRCUITS) {
+          let keys = [];
+          try { keys = circuitKeysFor(c.id, iso) || []; } catch (e) { keys = []; }
+          for (const k of keys) { const a = byKey.get(k) || []; a.push(c.id); byKey.set(k, a); }
+        }
+        dayRuns.set(iso, byKey);
+      }
+      return byKey.get(key) || [];
+    };
     const mine = {};
     for (const r of (data || [])) {
       const m = r && r.quiz_id ? String(r.quiz_id).match(RE) : null;
@@ -67,7 +89,12 @@ export async function GET(request) {
       if (wi !== undefined && wi >= DAYS - WEEK) {
         week[key] = (week[key] || 0) + 1;
         const pid = r.user_id ? `u:${r.user_id}` : r.anon_id ? `a:${r.anon_id}` : null;
-        if (pid) { let st = seen.get(key); if (!st) { st = new Set(); seen.set(key, st); } st.add(pid); }
+        if (pid) {
+          let st = seen.get(key); if (!st) { st = new Set(); seen.set(key, st); } st.add(pid);
+          // The run that held this game ON THE DAY it was played gets the player.
+          const iso = `20${m[4].padStart(2, '0')}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+          for (const id of runsOn(iso, key)) { let rs = runSeen.get(id); if (!rs) { rs = new Set(); runSeen.set(id, rs); } rs.add(pid); }
+        }
       }
       if (!myKeys.size) continue;
       const isMine = (r.user_id && myKeys.has(`u:${r.user_id}`)) || (r.anon_id && myKeys.has(`a:${r.anon_id}`));
@@ -104,7 +131,9 @@ export async function GET(request) {
     }
     const uniq = {};
     for (const [k, st] of seen) uniq[k] = st.size;
-    return NextResponse.json({ mine, site, week, uniq, days: DAYS }, { headers: { 'Cache-Control': 'private, max-age=60' } });
+    const runs = {};
+    for (const [k, st] of runSeen) runs[k] = st.size;
+    return NextResponse.json({ mine, site, week, uniq, runs, days: DAYS }, { headers: { 'Cache-Control': 'private, max-age=60' } });
   } catch (e) {
     return NextResponse.json(empty, { headers: { 'Cache-Control': 'no-store' } });
   }

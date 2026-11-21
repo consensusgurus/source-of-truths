@@ -88,6 +88,7 @@ const LINES = ['Sharpen Your Mind', 'Gain IQ Points', 'Elevate Your Thinking'];
 const TIER_C = { gentle: CATEGORY_RAMP[1], steady: CATEGORY_RAMP[3], tough: CATEGORY_RAMP[5], any: CATEGORY_RAMP[0] };
 // A run's one-line pitch on its tile. Falls back to the circuit's blurb.
 const PICK_WAIT_MS = 1200;
+const BIG_CATS = ['Word', 'Logic', 'Visual', 'Trivia'];   // the four wide chips, most played first (owner, 2026-11-21)
 const START_WAIT_MS = 1200;   // how long the phone's two start tiles wait for the week's counts
 const RUN_TAG = {
   deduction: 'Five logic cases, one law school verdict',
@@ -184,10 +185,23 @@ export default function EntryDoor({ onPick }) {
       cat, name: cat === 'Word' ? 'Words' : cat, short: cat === 'Crowd Psychology' ? 'Crowd' : null,
       n: live.filter((k) => DAILY_GAME_MAP[k] && DAILY_GAME_MAP[k].cat === cat).length,
     })).filter((x) => x.n);
-    const n = list.length; const rows = Math.ceil(n / 3) || 1; const base = Math.floor(n / rows); const extra = n % rows;
-    let at = 0;
-    for (let r = 0; r < rows; r += 1) { const sz = base + (r < extra ? 1 : 0); for (let q = 0; q < sz; q += 1) list[at + q].span = Math.round(6 / sz); at += sz; }
-    return list;
+    // THE BIG FOUR (owner, 2026-11-21): the wide two-across chips are the most
+    // played categories, Words, Logic, Visual and Trivia, and they lead. The
+    // rest follow three across in ramp order. An odd number of big ones left
+    // live falls back to dealing the whole list evenly.
+    const deal = (arr) => {
+      const n = arr.length; const rows = Math.ceil(n / 3) || 1; const base = Math.floor(n / rows); const extra = n % rows;
+      let at = 0;
+      for (let r = 0; r < rows; r += 1) { const sz = base + (r < extra ? 1 : 0); for (let q = 0; q < sz; q += 1) arr[at + q].span = Math.round(6 / sz); at += sz; }
+      return arr;
+    };
+    const big = BIG_CATS.map((c) => list.find((x) => x.cat === c)).filter(Boolean);
+    if (big.length && big.length % 2 === 0) {
+      const rest = list.filter((x) => !BIG_CATS.includes(x.cat));
+      for (const x of big) x.span = 3;
+      return big.concat(deal(rest));
+    }
+    return deal(list);
   }, [phase, today]);
   const counts = useMemo(() => {
     if (!phase) return {};
@@ -267,6 +281,7 @@ export default function EntryDoor({ onPick }) {
         ratings: (d && d.ratings) || {},
         week: (p && p.week) || {},
         uniq: p && p.uniq && Object.keys(p.uniq).length ? p.uniq : null,
+        runs: p && p.runs && Object.keys(p.runs).length ? p.runs : null,
         monday: m && m.boards && Object.keys(m.boards).length ? m : null,
       });
     });
@@ -361,7 +376,8 @@ export default function EntryDoor({ onPick }) {
   //   counts once), and it must be in NO run today and in the Featured pool
   //   (lib/featured.js). If no Featured puzzle qualifies, the best puzzle that
   //   is in no run stands in.
-  //   TOP RUN: the run whose games average the most unique players.
+  //   TOP RUN: the run with the most unique players over seven days (anyone who
+  //   played a game the run dealt that day; 2026-11-21, was the games' average).
   // The pick is made once, when the page shows: with the counts if they are in,
   // else after START_WAIT_MS in the pools' own order. It never changes after.
   const [stReady, setStReady] = useState(false);
@@ -377,6 +393,7 @@ export default function EntryDoor({ onPick }) {
     try {
       const uq = data ? (data.uniq || data.week || {}) : {};
       const n = (k) => uq[k] || 0;
+      const rq = data && data.runs ? data.runs : null;
       const inRun = new Set(RUN_GAMES);
       let run = null; let rn = -1;
       for (const c of DISPLAY_CIRCUITS) {
@@ -385,7 +402,9 @@ export default function EntryDoor({ onPick }) {
         keys = keys.filter((k) => DAILY_GAME_MAP[k]);
         if (!keys.length) continue;
         for (const k of keys) inRun.add(k);
-        const avg = keys.reduce((t2, k) => t2 + n(k), 0) / keys.length;
+        // A run's own unique players when the API has them (2026-11-21); the
+        // average of its games' players only as the fallback.
+        const avg = rq ? (rq[c.id] || 0) : keys.reduce((t2, k) => t2 + n(k), 0) / keys.length;
         if (avg > rn) { rn = avg; run = { id: c.id, name: c.name, tag: RUN_TAG[c.id] || c.blurb || '', cat: DAILY_GAME_MAP[keys[0]].cat, href: runHref(c.id) }; }
       }
       const open = liveDailyKeys(today).filter((k) => DAILY_GAME_MAP[k] && !inRun.has(k));
@@ -487,9 +506,12 @@ export default function EntryDoor({ onPick }) {
           {/* THE PHONE'S OPENING (owner, 2026-11-15, mockup A): the name, what the
               site is, and two things to play right now. Hidden above 760px. */}
           <div className="ent-m">
+            {/* The mark sits right beside its own "Mind Loft" span, so
+                MindLoftMark finds the wordmark, sizes the house to the M's cap
+                height and sets its feet on the baseline (owner, 2026-11-21). */}
             <div className="ent-m-brand">
-              <span className="ent-mk"><MindLoftMark size="1em" ink="#08222e" accent="#7dd3fc" title="" /></span>
-              Mind Loft
+              <MindLoftMark size={22} ink="#08222e" accent="#7dd3fc" title="" />
+              <span>Mind Loft</span>
             </div>
             <p className="ent-m-h">{liveN ? `${liveN} free puzzles, new every day.` : 'Free puzzles, new every day.'}</p>
             <p className="ent-m-sub">No sign-up. Start with the most popular.</p>
@@ -847,7 +869,7 @@ const CSS = `
   .ent-ask-d{display:none}
   .ent-ask-m{display:inline}
   .ent-m{display:flex;flex-direction:column}
-  .ent-m-brand{display:flex;align-items:center;font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.2;color:#08222e}
+  .ent-m-brand{display:flex;align-items:center;gap:.4em;font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.2;color:#08222e}
   .ent-pg.rise .ent-m{animation:ent-up .55s cubic-bezier(.2,.7,.2,1) both}
   .ent-pg.rise .ent-m .ent-mk{animation:none}
   .ent-m-h{margin:20px 0 0;font-size:clamp(26px,7.9vw,31px);line-height:1.12;font-weight:800;letter-spacing:-.03em;color:#08222e;text-wrap:balance;padding-bottom:.06em}
