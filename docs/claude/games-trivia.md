@@ -830,7 +830,17 @@ and English ... same SEO, same style" added two more. One engine, three database
   Mixed (climbs the five tiers), Gentle (tiers 1-2), Moderate (3), Tough (4-5). An old saved setup
   maps over (`cleanSetup`). Records are per database in the browser (`storeKey`; trivia keeps
   `sot_trivia_practice`). Nothing posts or scores.
-- **Sets** come from `/api/trivia/set?db=`(`t`, `l`, `lv`=ramp|g|m|t, `n`, `s` seed), edge-cached.
+- **Sets**: a new set is a POST to `/api/trivia/set` (`db`, `t`, `l` lanes array, `lv`=ramp|g|m|t,
+  `n`, `s` seed, `seen`); Retry My Misses is a GET by `ids`. **Oldest first, unseen first** (owner:
+  "make the oldest questions first so that users dont play gauntlet and then immediately get served
+  the same questions"): the browser keeps every answered key (`s` in its record, newest first, up
+  to 4,000) and sends it; `pickSet` deals those last, the rest oldest day first, round robin over
+  the topics (a whole-database mix) or the lanes (one topic) so a mix stays mixed.
+- **The start bar** (owner: "very hard to understand you have to scroll down to start"; picked
+  option B of the "Database Start Fix" canvas): a bar sticky at the foot of the screen on every
+  database page names what Start plays and the settings, with Change opening a sheet of the three
+  settings. A hub plays a Mixed Bag of every topic; a topic page plays the whole topic, or the one
+  or several parts picked, mixed. The settings no longer sit in the page.
 - **SEO** (`app/QdbPages.jsx`): hub CollectionPage + BreadcrumbList + FAQPage; topic Quiz with a
   dozen weekly sample Questions (acceptedAnswer + suggestedAnswer) printed with answers, plus FAQ.
   Sitemap: hubs 0.8, topics 0.7. Share cards `public/og/{trivia,math,english}-questions.png`.

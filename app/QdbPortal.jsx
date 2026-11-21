@@ -44,10 +44,11 @@ const pct = (a) => (a && a[0] ? Math.round((a[1] / a[0]) * 100) : 0);
 export const laneLabel = (s) => String(s || '').replace(/, ([^,&]+) & /, ', $1, and ').replace(/ & /g, ' and ');
 const LEGACY_LEVEL = { 1: 'g', 2: 'g', 3: 'm', 4: 't', 5: 't' };
 const DIFF_KEYS = DIFFICULTY.map(([k]) => k);
+const SEEN_CAP = 4000;
 
 function readStore(db) {
-  try { const s = JSON.parse(localStorage.getItem(storeKey(db)) || 'null'); if (s && typeof s === 'object') return { t: s.t || {}, l: s.l || {}, b: s.b || {}, m: Array.isArray(s.m) ? s.m : [] }; } catch (e) {}
-  return { t: {}, l: {}, b: {}, m: [] };
+  try { const s = JSON.parse(localStorage.getItem(storeKey(db)) || 'null'); if (s && typeof s === 'object') return { t: s.t || {}, l: s.l || {}, b: s.b || {}, m: Array.isArray(s.m) ? s.m : [], s: Array.isArray(s.s) ? s.s : [] }; } catch (e) {}
+  return { t: {}, l: {}, b: {}, m: [], s: [] };
 }
 function writeStore(db, s) { try { localStorage.setItem(storeKey(db), JSON.stringify(s)); } catch (e) {} }
 // A saved setup from the first day (four modes, five levels) maps onto today's.
@@ -73,7 +74,8 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
   const tileFor = (c) => (look === 'color' || look === 'tint' ? softGround(c) : look === 'darktint' ? `color-mix(in srgb, ${softGround(c)} 34%, ${pal.bg})` : null);
 
   const [setup, setSetup] = useState({ mode: 'practice', level: 'ramp', n: 10 });
-  const [store, setStore] = useState({ t: {}, l: {}, b: {}, m: [] });
+  const [store, setStore] = useState({ t: {}, l: {}, b: {}, m: [], s: [] });
+  const [sheet, setSheet] = useState(false);
   const [lanes, setLanes] = useState(() => new Set());
   const [hydrated, setHydrated] = useState(false);
   const [game, setGame] = useState(null);
@@ -99,19 +101,14 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
     const mode = opts.mode || setup.mode;
     const n = mode === 'sprint' || (mode === 'gauntlet' && setup.n === 0 && !opts.mode) ? ENDLESS_N : (opts.n || setup.n || 10);
     const endless = mode === 'gauntlet' && n === ENDLESS_N;
-    const params = new URLSearchParams();
-    params.set('db', dbKey);
-    if (opts.ids) params.set('ids', opts.ids.join(','));
-    else {
-      params.set('t', slug);
-      if (opts.lanes && opts.lanes.length) params.set('l', opts.lanes.join('|'));
-      params.set('lv', endless || mode === 'sprint' ? 'ramp' : setup.level);
-      params.set('n', String(n));
-      params.set('s', String(Math.floor(Math.random() * 1000)));
-    }
     setLoading(true); setErr('');
     try {
-      const r = await fetch(`/api/trivia/set?${params.toString()}`);
+      // A retry is a GET by keys; a new set is a POST that carries this browser's
+      // seen keys, so the deal is oldest first and never straight back to them.
+      const r = opts.ids
+        ? await fetch(`/api/trivia/set?db=${dbKey}&ids=${encodeURIComponent(opts.ids.join(','))}`)
+        : await fetch('/api/trivia/set', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ db: dbKey, t: slug, l: opts.lanes || [], lv: endless || mode === 'sprint' ? 'ramp' : setup.level, n, s: Math.floor(Math.random() * 1000), seen: (readStore(dbKey).s || []).slice(0, SEEN_CAP) }) });
       const d = await r.json();
       if (!d || !Array.isArray(d.qs) || !d.qs.length) throw new Error('empty');
       setGame({ qs: d.qs, mode, endless, title: opts.title || t.label, color: t.color, slug, key: `${slug}|${mode}|${mode === 'sprint' || endless ? 0 : n}`, lanes: opts.lanes || [], retry: !!opts.ids, level: setup.level });
@@ -123,7 +120,8 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
 
   const onAnswer = useCallback((q, right) => {
     setStore((s0) => {
-      const s = { t: { ...s0.t }, l: { ...s0.l }, b: s0.b, m: s0.m };
+      // Every answered key joins `s` (newest first, SEEN_CAP): the server deals those last.
+      const s = { t: { ...s0.t }, l: { ...s0.l }, b: s0.b, m: s0.m, s: [q.k, ...(s0.s || []).filter((k) => k !== q.k)].slice(0, SEEN_CAP) };
       const tk = q.t || (topic && topic.slug) || 'mix';
       const a = s.t[tk] || [0, 0]; s.t[tk] = [a[0] + 1, a[1] + (right ? 1 : 0)];
       const lk = `${tk}|${q.lane}`; const b = s.l[lk] || [0, 0]; s.l[lk] = [b[0] + 1, b[1] + (right ? 1 : 0)];
@@ -181,14 +179,6 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
     </div>
   );
 
-  const bigGo = (name, sub, onGo, big = false) => (
-    <button type="button" className={`qd-go${big ? ' big' : ''}`} onClick={onGo} disabled={loading}>
-      <span className="qd-gname">{name}</span>
-      <span className="qd-gsub">{sub}</span>
-      <span className="qd-play"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg><span>{loading ? 'Loading' : 'Start'}</span></span>
-    </button>
-  );
-
   const others = QDB_KEYS.filter((k) => k !== dbKey).map((k) => QDBS[k]);
   const showLanes = topic ? topic.lanes.filter(([l]) => !laneQ || l.toLowerCase().includes(laneQ.toLowerCase())) : [];
   const manyLanes = topic && topic.lanes.length > 12;
@@ -223,9 +213,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
                 );
               })}
             </ul>
-            {controls}
             {err ? <p className="qd-err" role="alert">{err}</p> : null}
-            {bigGo(db.mix, `${lengthLine} from all ${topics.length} topics · ${diffLine}`, () => start('mix'))}
             <div className="qd-mine">
               <button type="button" className="qd-tile sm" disabled={!store.m.length || loading} onClick={() => start('mix', { mode: 'practice', n: 25, ids: store.m.slice(0, 25), title: 'Your missed ' + db.many })}>
                 <span className="qd-tname">Retry My Misses</span>
@@ -269,9 +257,8 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
                 );
               })}
             </div>
-            {controls}
+            <p className="qd-hint">{manyLanes ? 'Pick one or more quizzes to mix, or play them all.' : 'Pick one part, or several to mix them. Then press Start below.'}</p>
             {err ? <p className="qd-err" role="alert">{err}</p> : null}
-            {bigGo(lanes.size === 1 ? laneLabel([...lanes][0]) : topic.label, `${modeName} · ${lengthLine} · ${diffLine}${lanes.size > 1 ? ` · ${lanes.size} picked` : ''}`, () => start(topic.slug, { lanes: [...lanes] }), true)}
             <p className="qd-rec">
               {hydrated && store.t[topic.slug] ? `Your record here: ${fmt(store.t[topic.slug][0])} answered, ${pct(store.t[topic.slug])}% right.` : 'Your record stays in this browser.'}
               {hydrated ? MODES.map((m) => {
@@ -339,6 +326,35 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
           </nav>
         </div>
       </section>
+      {/* THE START BAR (owner, 2026-11-21, option B of the "Database Start Fix"
+          canvas: "it is very hard to understand you have to scroll down to start").
+          Pinned to the foot of the screen on every database page, so Start is never
+          a scroll away: a Mixed Bag of every topic on a hub, of the whole topic on a
+          topic page, or of whichever parts are picked. Change opens the settings. */}
+      <div className="qd-bar" role="region" aria-label="Start a game">
+        <div className="qd-bt">
+          <b>{!topic ? `${db.mix}: All ${topics.length} Topics` : !lanes.size ? `${topic.label} Mixed Bag` : lanes.size === 1 ? laneLabel([...lanes][0]) : `${lanes.size} ${manyLanes ? 'Quizzes' : 'Parts'} of ${topic.label}, Mixed`}</b>
+          <small>{modeName} · {setup.mode === 'sprint' ? '60 seconds' : endlessOn ? 'Endless' : `${setup.n} ${db.many}`}{setup.mode === 'sprint' || endlessOn ? '' : ` · ${diffName}`} · <button type="button" className="qd-chg" onClick={() => setSheet(true)}>Change</button></small>
+        </div>
+        <button type="button" className="qd-bgo" disabled={loading} onClick={() => (topic ? start(topic.slug, { lanes: [...lanes], title: lanes.size === 1 ? `${topic.label}: ${laneLabel([...lanes][0])}` : topic.label }) : start('mix'))}>
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg>{loading ? 'Loading' : 'Start'}
+        </button>
+      </div>
+      {sheet ? (
+        <div className="qd-sheet" role="dialog" aria-modal="true" aria-label="Game settings" onClick={(e) => { if (e.target === e.currentTarget) setSheet(false); }}>
+          <div className="qd-sin">
+            <span className="qd-grab" aria-hidden="true" />
+            <p className="qd-stitle">How do you want to play?</p>
+            {controls}
+            <div className="qd-srow">
+              <button type="button" className="qd-tile sm" onClick={() => setSheet(false)}><span className="qd-tname">Done</span></button>
+              <button type="button" className="qd-bgo" disabled={loading} onClick={() => { setSheet(false); if (topic) start(topic.slug, { lanes: [...lanes] }); else start('mix'); }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg>Start
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <StageFooter />
 
       {game ? <Player key={game.key + game.qs[0].k} db={db} dbKey={dbKey} game={game} onAnswer={onAnswer} onDone={onDone} onExit={() => setGame(null)}
@@ -586,6 +602,27 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 .qd-end .qd-go .qd-gname{font-size:clamp(40px, 11vw, 60px);}
 .qd-endrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
 .qd-endrow .qd-tile{min-height:64px;}
+/* The start bar: sticky at the foot of the screen until the site footer. */
+.qd-bar{position:sticky;bottom:max(12px, env(safe-area-inset-bottom));z-index:20;display:flex;align-items:center;gap:14px;width:min(760px, calc(100% - 24px));box-sizing:border-box;margin:26px auto 0;padding:12px 12px 12px 22px;border-radius:24px;background:var(--qd-ink);box-shadow:0 12px 34px rgba(0,0,0,.28);}
+.qd-bar,.qd-bar *{color:var(--qd-bg);}
+.qd-bt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
+.qd-bt b{font-size:19px;font-weight:800;line-height:1.25;padding-bottom:.06em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.qd-bt small{font-size:13px;font-weight:700;opacity:.85;}
+.qd-chg{font:inherit;font-weight:800;background:none;border:0;padding:0;text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+.qd-bgo{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:58px;padding:0 26px;border:0;border-radius:18px;background:var(--qd-bg);font:inherit;font-size:19px;font-weight:800;cursor:pointer;}
+.qd-bgo,.qd-bgo *{color:var(--qd-ink) !important;}
+.qd-bgo:disabled{opacity:.7;cursor:progress;}
+@media(hover:hover){.qd-bgo:hover{filter:brightness(.95);}}
+.qd-hint{margin:-12px 0 0;text-align:center;font-size:13.5px;font-weight:700;opacity:.75;}
+.qd-sheet{position:fixed;inset:0;z-index:95;background:rgba(8,34,46,.55);display:flex;align-items:center;justify-content:center;}
+.qd-sin{width:min(560px, 100%);box-sizing:border-box;background:var(--qd-bg);border-radius:26px;padding:16px 20px 22px;display:flex;flex-direction:column;align-items:stretch;gap:18px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.qd-grab{align-self:center;width:44px;height:5px;border-radius:3px;background:var(--qd-ink);opacity:.3;}
+.qd-stitle{margin:0;text-align:center;font-size:24px;font-weight:800;letter-spacing:-0.01em;}
+.qd-sin .qd-setup{flex-direction:column;align-items:center;flex-wrap:nowrap;gap:14px;}
+.qd-srow{display:flex;gap:10px;}
+.qd-srow .qd-tile{flex:1;min-height:58px;}
+.qd-srow .qd-bgo{flex:1;background:var(--qd-ink);}
+.qd-srow .qd-bgo,.qd-srow .qd-bgo *{color:var(--qd-bg) !important;}
 @media(min-width:900px){
   .qd-col{gap:34px;padding-top:34px;}
   .qd-q{font-size:48px;}
@@ -613,6 +650,12 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
   .qd-mine{grid-template-columns:1fr;}
   .qd-qr{grid-template-columns:1fr;gap:4px;}
   .qd-fold{padding:36px 14px 48px;}
+  .qd-bar{padding:10px 10px 10px 16px;gap:10px;border-radius:20px;}
+  .qd-bt b{font-size:16px;}
+  .qd-bt small{font-size:12px;}
+  .qd-bgo{height:52px;padding:0 18px;font-size:17px;}
+  .qd-sheet{align-items:flex-end;}
+  .qd-sin{border-radius:26px 26px 0 0;padding-bottom:max(22px, env(safe-area-inset-bottom));}
 }
 @media (prefers-reduced-motion: reduce){.qd-tile,.qd-go{transition:none}}
 `;
