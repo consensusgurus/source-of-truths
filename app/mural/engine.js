@@ -479,7 +479,7 @@ function attempt(id,sx,sy,from){
   const ex=M.loose.find(l=>l.id===id);
   let lp=ex;if(ex){ex.x=sx;ex.y=sy;}else{lp={id,x:sx,y:sy,g:id};M.loose.push(lp);if(from!==null&&from!==undefined)M.hand[from]=null;}
   const joined=snapJoin(lp.g);
-  saveLoose();sel=null;setMsg(joined?'Joined. Pieces that fit together stay together; move the group to its spot to score it.':'Not there. It stays on the board until you move it home. No penalty.');renderHand();req();return false;
+  saveLoose();sel=null;setMsg(joined?'Joined. Pieces that fit together stay together; move the group to its spot to score it.':'Not there. It stays on the board until you move it home, or drag it back to the tray. No penalty.');renderHand();req();return false;
 }
 /* PIECES CLICK TOGETHER OFF THE BOARD (owner, 2026-11-19: "can pieces click together without clicking
    into correct spot on board? ... they shouldn't count for player until in correct spot"). A loose piece
@@ -514,7 +514,7 @@ function dropGroup(l){
     return;
   }
   const joined=snapJoin(l.g);saveLoose();
-  setMsg(joined?'Joined. Move the group to its spot to score it.':(members.length>1?'Not there yet. The group stays together until you move it home.':'Not there. It stays on the board until you move it home. No penalty.'));req();
+  setMsg(joined?'Joined. Move the group to its spot to score it.':(members.length>1?'Not there yet. The group stays together until you move it home.':'Not there. It stays on the board until you move it home, or drag it back to the tray. No penalty.'));req();
 }
 function finish(){
   M.done=true;
@@ -683,18 +683,35 @@ cv.addEventListener('pointermove',e=>{
   if(!gest.moved&&Math.hypot(x-gest.x0,y-gest.y0)>6)gest.moved=true;
   if(!gest.moved)return;
   hot();
-  if(gest.loose){const s=toSrc(x,y),ax=s[0]+gest.ox,ay=s[1]+gest.oy;for(const o of gest.mem){o.q.x=ax+o.dx;o.q.y=ay+o.dy;}req();}
+  if(gest.loose){const s=toSrc(x,y),ax=s[0]+gest.ox,ay=s[1]+gest.oy;for(const o of gest.mem){o.q.x=ax+o.dx;o.q.y=ay+o.dy;}trayHover(overTray(e.clientX,e.clientY));req();}
   else{cv.classList.add('pan');view.tx=gest.tx+x-gest.x0;view.ty=gest.ty+y-gest.y0;clampView();req();}
 });
 function up(e){
   if(!ptrs.has(e.pointerId))return;const p=ptrs.get(e.pointerId);ptrs.delete(e.pointerId);cv.classList.remove('pan');
   if(gest&&!gest.pinch&&ptrs.size===0){
-    if(gest.loose){if(gest.moved)dropGroup(gest.loose);}
+    if(gest.loose){trayHover(false);if(gest.moved){if(overTray(e.clientX,e.clientY))toTray(gest.loose);else dropGroup(gest.loose);}}
     else if(!gest.moved&&sel!==null&&M.hand[sel]!==null){const s=toSrc(p.x,p.y);if(s[0]>=0&&s[0]<=W&&s[1]>=0&&s[1]<=H)attempt(M.hand[sel],s[0],s[1],sel);}
   }
   if(ptrs.size===0)gest=null;
 }
-cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',e=>{trayHover(false);up(e);});
+/* BACK TO THE TRAY (owner, 2026-11-20: "need ability to take pieces back to tray"). Drag a loose piece,
+   or a joined group, off the board and drop it on the tray: it leaves the board and goes back in your
+   tray. Empty slots fill first; if the tray is full, the returned pieces bump other tray pieces back to
+   the open pile so every row stays full. A group bigger than the tray sends the extras to the pile. */
+function overTray(cx,cy){const t=root.querySelector('.tray');if(!t)return false;const r=t.getBoundingClientRect();return cx>=r.left&&cx<=r.right&&cy>=r.top&&cy<=r.bottom;}
+function trayHover(on){const t=root.querySelector('.tray');if(t)t.classList.toggle('drop',!!on);}
+function toTray(l){
+  if(M.done||!l)return;const ids=grp(l.g).map(q=>q.id).filter(id=>!has(id));
+  M.loose=M.loose.filter(q=>q.g!==l.g);saveLoose();if(gest&&gest.loose)gest=null;
+  const back=ids.slice(0,HANDN);
+  for(const id of back){let k=M.hand.findIndex(x=>x===null||x===undefined);
+    if(k<0){const keep=new Set(back);k=-1;for(let j=M.hand.length-1;j>=0;j--){if(!keep.has(M.hand[j])){k=j;break;}}if(k<0)break;}
+    M.hand[k]=id;}
+  sel=null;
+  renderHand();ui();req();
+  setMsg(ids.length===1?'Back in your tray.':(back.length===ids.length?ids.length+' pieces back in your tray.':back.length+' pieces back in your tray, '+(ids.length-back.length)+' back to the pile.'));
+}
 cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();zoomAt(e.clientX-r.left,e.clientY-r.top,Math.exp(-e.deltaY*.0016));},{passive:false});
 $('zIn').onclick=()=>zoomAt(view.cw/2,view.ch/2,1.6);$('zOut').onclick=()=>zoomAt(view.cw/2,view.ch/2,1/1.6);$('zFit').onclick=fit;
 /* ---------- tray drag ---------- */
