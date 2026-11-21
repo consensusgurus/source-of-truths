@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { muralTableMissing } from '@/lib/mural';
-import { parseMuralId } from '@/lib/mural-shared';
+import { parseMuralId, muralWhoKey } from '@/lib/mural-shared';
 
 // GET /api/mural/state?id=<mural id>
 //
@@ -26,13 +26,24 @@ export async function GET(request) {
   }
   // Active players: distinct players with a placement in the last 15 minutes. Read here, not in
   // mural_state(), so it needs no migration; the response is edge-cached for two minutes anyway.
-  let active = 0;
+  // WHO (owner, 2026-11-20: the update note "should also show who is placing them"): the same read
+  // also gives each player's first placements in that window, as times, so a page can count what each
+  // player added between its last snapshot and this one. k is muralWhoKey(player); n the name, or
+  // null for a guest.
+  let active = 0, who = [];
   try {
     const since = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    const { data: rec } = await supabaseAdmin.from('mural_places').select('player').eq('mural_id', id).gte('placed_at', since).limit(10000);
-    active = new Set((rec || []).map((x) => x.player)).size;
-  } catch (e) { active = 0; }
-  return NextResponse.json({ ...(data || {}), active, at: Date.now() }, {
+    const { data: rec } = await supabaseAdmin.from('mural_places').select('player, username, first, placed_at').eq('mural_id', id).gte('placed_at', since).limit(10000);
+    const by = new Map();
+    for (const x of rec || []) {
+      let p = by.get(x.player);
+      if (!p) { p = { k: muralWhoKey(x.player), n: (x.player || '').startsWith('u:') ? (x.username || 'Player') : null, t: [] }; by.set(x.player, p); }
+      if (x.first) p.t.push(Math.floor(Date.parse(x.placed_at) / 1000));
+    }
+    active = by.size;
+    who = [...by.values()].filter((p) => p.t.length);
+  } catch (e) { active = 0; who = []; }
+  return NextResponse.json({ ...(data || {}), active, who, at: Date.now() }, {
     headers: { 'Cache-Control': 'public, max-age=30, s-maxage=120, stale-while-revalidate=60' },
   });
 }

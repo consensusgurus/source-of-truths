@@ -13,7 +13,7 @@
 // not counted. Nothing here pops up over the board mid game.
 
 import {
-  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, gradeAt, pieceValue, muralLaunched, muralHeld, muralFirstOpens, parseMuralId, MURAL_MIN_MS, muralDateLabel, privateMuralId,
+  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, gradeAt, pieceValue, muralWhoKey, muralLaunched, muralHeld, muralFirstOpens, parseMuralId, MURAL_MIN_MS, muralDateLabel, privateMuralId,
 } from '@/lib/mural-shared';
 import { openMemorial } from './memorial';
 import { holdThemeColor } from '@/lib/theme-color-hold';
@@ -531,7 +531,7 @@ function applyState(s){
 }
 function applyMe(j){
   if(!j||!Array.isArray(j.pieces))return;
-  M.name=j.name||null;M.rank=j.rank||null;
+  M.name=j.name||null;M.rank=j.rank||null;if(j.player)meKey=muralWhoKey(j.player);
   for(const id of j.pieces)if(Number.isInteger(id)&&id>=0&&id<TOTAL&&!M.mine.has(id)){M.mine.add(id);drawPiece(mctx,id);}
   if(typeof j.points==='number'&&!pending){M.pts=j.points;M.firsts=j.firsts||0;}
 }
@@ -554,10 +554,21 @@ const onHide=()=>{if(document.visibilityState==='hidden')creditLeave();};
 document.addEventListener('visibilitychange',onHide);window.addEventListener('pagehide',creditLeave);
 cleanups.push(()=>{document.removeEventListener('visibilitychange',onHide);window.removeEventListener('pagehide',creditLeave);clearTimeout(creditT);});
 function saveSolo(){try{localStorage.setItem('mural_solo_'+env.id,JSON.stringify({pieces:[...M.mine]}));}catch(e){}}
-function send(id,val,tries){
+/* ONE AT A TIME (owner, 2026-11-20: "why did i get a -1 on an update when i'm the only active
+   player?"). A piece's value drops 20% for each neighbor already in place. Sent all at once, a
+   quick run of placements (or a group dropped home) could reach the server out of order, so it
+   counted a neighbor the page had not, scored the piece a point lower, and the page showed the
+   difference as a loss. Placements now go to the server in the order they were made. */
+let sendQ=Promise.resolve();
+function send(id,val){
   if(SOLO){setTimeout(saveSolo,0);return;}
-  if(!tries)pending++;
-  fetch('/api/mural/place',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:env.id,piece:id,total:TOTAL,anonId:env.anon,email:env.email||undefined})})
+  pending++;sendQ=sendQ.then(()=>sendOne(id,val,0)).catch(()=>{});
+}
+function sendOne(id,val,tries){
+  /* a stalled request must not hold up the queue: give up after 12s and retry (a retry of a saved piece comes back as a repeat with its real score) */
+  const ac=typeof AbortController!=='undefined'?new AbortController():null,tm=ac?setTimeout(()=>ac.abort(),12000):0;
+  return fetch('/api/mural/place',{method:'POST',headers:{'Content-Type':'application/json'},signal:ac?ac.signal:undefined,body:JSON.stringify({id:env.id,piece:id,total:TOTAL,anonId:env.anon,email:env.email||undefined})})
+    .finally(()=>clearTimeout(tm))
     .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})))
     .then(o=>{
       if(dead)return;
@@ -568,7 +579,7 @@ function send(id,val,tries){
           setMsg('Someone else placed that piece first, so it scores nothing.');renderHand();ui();req();return;
         }
         if(o.j.points!==val.v||o.j.first!==val.first){
-          M.pts+=o.j.points-val.v;UPD.pts+=o.j.points-val.v;if(o.j.points<val.v){UPD.lost+=val.v-o.j.points;UPD.ov++;}{const pp=pops.find(p=>p.id===id);if(pp){pp.v=o.j.points;pp.first=!!o.j.first;}}
+          M.pts+=o.j.points-val.v;UPD.pts+=o.j.points-val.v;if(o.j.points<val.v){if(val.first&&!o.j.first){UPD.lost+=val.v-o.j.points;UPD.ov++;}else{UPD.nb+=val.v-o.j.points;UPD.nbn++;}}{const pp=pops.find(p=>p.id===id);if(pp){pp.v=o.j.points;pp.first=!!o.j.first;}}
           if(val.first&&!o.j.first){M.firsts--;M.crowd.add(id);drawPiece(cctx,id);setMsg('Someone got there first. '+o.j.points+(o.j.points===1?' point.':' points.'));}
           else if(!val.first&&o.j.first)M.firsts++;
           valDirty=true;renderHand();ui();req();
@@ -577,7 +588,7 @@ function send(id,val,tries){
       else if(o.status===403){pending--;setMsg('Only members of '+((PRIV&&PRIV.group)||'this group')+' can place pieces here. Join the group to play.');}
       else throw new Error('place');
     })
-    .catch(()=>{if(dead)return;if(tries<3)setTimeout(()=>send(id,val,tries+1),1500*(tries+1));else{pending--;setMsg('That piece did not save. Check your connection.');}});
+    .catch(()=>{if(dead)return;if(tries<3)return new Promise(r=>setTimeout(r,1500*(tries+1))).then(()=>sendOne(id,val,tries+1));else{pending--;setMsg('That piece did not save. Check your connection.');}});
 }
 let flashUntil=0,lastPoll=Date.now(),polling=false;
 /* What the last refresh brought sits beside the site total until the next one. */
@@ -587,23 +598,33 @@ function flashUpdate(n){$('sNew').textContent=n>0?'+'+n.toLocaleString():'';}
    Each refresh compares the crowd's tallies with the last ones: who added pieces (members by name,
    guests together, since the snapshot does not name them), and what this player scored since the last
    refresh, less anything lost to a piece someone else placed first. Tap to close; it fades on its own. */
-const UPD={pts:0,lost:0,ov:0,n:0,swapped:0};let updT=0;
+const UPD={pts:0,lost:0,ov:0,nb:0,nbn:0,n:0,swapped:0};let updT=0;
+let lastAt=+(STATE&&STATE.at)||Date.now(),meKey=null;
+function meLabel(){return M.name||(meKey?'Guest '+meKey:null);}
+/* Who added pieces between the last snapshot and this one, by name, a guest as "Guest" plus a
+   short code (owner, 2026-11-20: guests are never lumped together). Read from the snapshot's `who`
+   (first placements in the last 15 minutes, with times). */
+function whoSince(st,from){if(!st||!Array.isArray(st.who))return null;const to=+st.at||Date.now(),out=[];
+  for(const p of st.who){if(!p||!Array.isArray(p.t))continue;let d=0;const f0=Math.floor(from/1000),t0=Math.floor(to/1000);for(const t of p.t)if(t>f0&&t<=t0)d++;if(d>0)out.push([p.n||('Guest '+p.k),d]);}
+  return out;}
 const tallyOf=(st)=>{const m=new Map();for(const r of (st&&st.contrib)||[])if(r&&r.name)m.set(r.name,(m.get(r.name)||0)+(r.firsts||0));return {m,g:(st&&st.guests&&st.guests.firsts)||0};};
 function showUpdNote(before,after,fresh){
   const el=$('updo');if(!el||SOLO)return;
-  const who=[];for(const [n,f] of after.m){const d=f-(before.m.get(n)||0);if(d>0)who.push([n,d]);}
-  who.sort((a,b)=>b[1]-a[1]);const gd=Math.max(0,after.g-before.g);
-  const mine=UPD.n>0||UPD.lost>0;if(!fresh&&!mine){UPD.pts=0;UPD.lost=0;UPD.ov=0;UPD.n=0;UPD.swapped=0;return;}
+  let who=[],gd=0;
+  if(after.ev){who=after.ev;}else{for(const [n,f] of after.m){const d=f-(before.m.get(n)||0);if(d>0)who.push([n,d]);}gd=Math.max(0,after.g-before.g);}
+  who.sort((a,b)=>b[1]-a[1]);
+  const mine=UPD.n>0||UPD.lost>0||UPD.nb>0;if(!fresh&&!mine){UPD.pts=0;UPD.lost=0;UPD.ov=0;UPD.nb=0;UPD.nbn=0;UPD.n=0;UPD.swapped=0;return;}
   el.textContent='';const line=(cls)=>{const d=document.createElement('div');d.className=cls;el.appendChild(d);return d;};
   const add=(d,t,b)=>{const x=document.createElement(b?'b':'span');x.textContent=t;d.appendChild(x);return x;};
   const a=line('ul');add(a,'Update',1);add(a,' \u00b7 '+fresh.toLocaleString()+(fresh===1?' new piece':' new pieces'));
-  if(who.length||gd){const b=line('uw');const list=who.slice(0,6).map(([n,d])=>[n===M.name?'You':n,d]);if(gd)list.push(['Guests',gd]);
+  if(who.length||gd){const b=line('uw');const list=who.slice(0,6).map(([n,d])=>[n===M.name||n===meLabel()?'You':n,d]);if(gd)list.push(['Guests',gd]);
     list.forEach(([n,d],i)=>{if(i)add(b,', ');add(b,n,1);add(b,' '+d.toLocaleString());});
     if(who.length>6){const r=who.slice(6).reduce((x,y)=>x+y[1],0);add(b,', '+(who.length-6)+' more '+r.toLocaleString());}}
   if(mine){const c=line('um');add(c,'You',1);add(c,' '+(UPD.pts>=0?'+':'\u2212')+Math.abs(UPD.pts).toLocaleString()+(Math.abs(UPD.pts)===1?' point':' points'));
-    if(UPD.lost>0){const x=add(c,' \u00b7 \u2212'+UPD.lost.toLocaleString()+' lost on '+UPD.ov+(UPD.ov===1?' piece':' pieces')+' placed first by someone else');x.className='neg';}}
+    if(UPD.lost>0){const x=add(c,' \u00b7 \u2212'+UPD.lost.toLocaleString()+' lost on '+UPD.ov+(UPD.ov===1?' piece':' pieces')+' placed first by someone else');x.className='neg';}
+    if(UPD.nb>0){const x=add(c,' \u00b7 \u2212'+UPD.nb.toLocaleString()+' on '+UPD.nbn+(UPD.nbn===1?' piece':' pieces')+' where someone had just placed a neighbor');x.className='neg';}}
   if(UPD.swapped){const c=line('um');add(c,UPD.swapped+(UPD.swapped===1?' tray piece was':' tray pieces were')+' placed by someone else and swapped.');}
-  UPD.pts=0;UPD.lost=0;UPD.ov=0;UPD.n=0;UPD.swapped=0;
+  UPD.pts=0;UPD.lost=0;UPD.ov=0;UPD.nb=0;UPD.nbn=0;UPD.n=0;UPD.swapped=0;
   el.classList.add('show');clearTimeout(updT);updT=setTimeout(()=>el.classList.remove('show'),9000);
 }
 async function poll(){
@@ -616,7 +637,7 @@ async function poll(){
     if(me.ok)applyMe(me.j);
     let note=null;
     if(st.ok){
-      const tb=tallyOf(STATE),add=applyState(st.j),t0=performance.now(),fresh=add.filter(id=>!M.mine.has(id));note=[tb,tallyOf(st.j),fresh.length];
+      const tb=tallyOf(STATE),from=lastAt,add=applyState(st.j),t0=performance.now(),fresh=add.filter(id=>!M.mine.has(id)),ta=tallyOf(st.j),ev=whoSince(st.j,from);if(+st.j.at>lastAt)lastAt=+st.j.at;if(ev)ta.ev=ev;note=[tb,ta,ev?ev.reduce((x,y)=>x+y[1],0):fresh.length];
       add.forEach(id=>drawPiece(cctx,id));fresh.forEach(id=>pulses.push({id,t:t0,nw:true}));
       if(!fresh.length)flashUpdate(0);
       if(fresh.length){
