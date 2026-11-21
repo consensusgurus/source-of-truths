@@ -929,3 +929,16 @@ and private-mural pages (`?tab=murals`). Their labels now read "Jigsaw Puzzles".
   six-question FAQPage; topic links (above section) and the sitemap at priority 0.8. The
   `/jig?p=N` and `/saw?p=N` descriptions now say "at any size from 24 to 4,000 pieces".
 - `/api/jig/img` and `/api/saw/img` also accept `w=1920` and `w=3840` for the big board.
+
+
+### The puzzle table look (owner, 2026-11-21)
+
+From the "Jigsaw Portal Mockup (the puzzle table)" canvas ("both should be more unique, ok to
+break from main theme"; then "default dark but also light dark toggle"). The portal leaves
+CircuitFrame and wears its own table: dark walnut by default, paper in Light, the reader's pick in
+`sot_jigsaw_look` (toggle in the tab row and the phone top bar). The root sets the `--stg-*` tokens
+from TABLE, so every part, the footer included, follows. The newest past photo is the full-width
+hero (today's photos still never leave the server) with the daily's cut drawn on it; the size
+ladder is sticky and its cells draw a finer grid as the size grows; every playable card wears the
+chosen size's cut lines (finer up to 500, then held); a card that cannot do the size goes grey and
+dark with "Up to N".

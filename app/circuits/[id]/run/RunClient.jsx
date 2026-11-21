@@ -79,6 +79,8 @@ import GauntletStage, { MISS_MS, REVEAL_DELAY } from '../../../GauntletStage';
 // other miss, not cut short).
 const FINAL_MS = 3800;
 import { GauntletGate, GauntletBetween, GauntletEndStage, GauntletCover } from '../../../GauntletScreens';
+// The multiple choice runs end with a link to their question database (owner, 2026-11-21).
+import { QDBS, RUN_DB } from '@/lib/qdb';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const MONO = "'Manrope', ui-monospace, 'SFMono-Regular', monospace";
@@ -1220,6 +1222,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       {TOWERS && hydrated && done && !curtain && endOpen && !reveal ? (
         <GauntletEndStage
           runId={!r.practice ? circuitId : null}
+          dbLink={RUN_DB[circuitId] ? { href: QDBS[RUN_DB[circuitId]].base, label: QDBS[RUN_DB[circuitId]].name } : null}
           circuitName={circuitName}
           dateLabel={dateLabel}
           sections={sections}

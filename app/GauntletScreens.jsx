@@ -602,6 +602,9 @@ export function GauntletEndStage({
   // five multiple choice runs) and the whole day, as a beat at the end of the
   // finale and a card on this page.
   runId = null,
+  // THE QUESTION DATABASES (owner, 2026-11-21): the Trivia, Math or English
+  // Database for the multiple choice runs, { href, label }, beside Practice replay.
+  dbLink = null,
 }) {
   const [openRow, setOpenRow] = useState(-1);
   const Climb = climbStyle === 'flask' ? FlaskClimb : TitleClimb;
@@ -934,6 +937,7 @@ export function GauntletEndStage({
           {onShare ? <button type="button" className="gsx-ib" onClick={onShare}>{copied ? 'Copied' : 'Share Your Score'}</button> : null}
           <a className="gsx-ob" href="/build-a-run">Build Your Own Run</a>
           {onPractice ? <button type="button" className="gsx-ob" onClick={onPractice}>Practice replay</button> : null}
+          {dbLink ? <a className="gsx-ob" href={dbLink.href}>{dbLink.label}</a> : null}
         </div>
       </div>
       {sheet}

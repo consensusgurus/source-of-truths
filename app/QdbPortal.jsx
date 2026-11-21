@@ -1,0 +1,588 @@
+'use client';
+
+// THE QUESTION DATABASES' PAGES (owner, 2026-11-21). One client for the hub and
+// every topic page of the Trivia Database (/trivia-questions), the Math
+// Database (/math-questions) and the English Database (/english-questions).
+// Config and rulings: lib/qdb.js. Questions: lib/qdb-library.js (server only),
+// served one set at a time by /api/trivia/set.
+//
+// THE PAGE IS A GAUNTLET STAGE (owner: "ideally trivia ends up looking like the
+// gauntlet play pages"; design: the "Trivia Portal Mockup (gauntlet stage
+// look)" canvas). A pastel ground and one dark ink, a tag pill, one big
+// question in the stage's type, and the topics (or a topic's lanes) as answer
+// tiles. The stage's own look switch (Color, Plain, Dark ...) applies here as it
+// does on every gauntlet, and a game plays on the real GauntletStage.
+//
+// Three modes, a Difficulty and a length:
+//   Practice  no clock, no lives; a miss shows the answer and play goes on
+//   Gauntlet  the clock on every question, one miss ends it; Endless runs until then
+//   Sprint    as many as you can in 60 seconds; a miss costs time, not the game
+// Nothing posts to the server or counts toward points; the record (seen, right,
+// bests, missed questions) is this browser's (lib/qdb.js storeKey).
+//
+// SERVER HTML IS THE CRAWL PATH: topic tiles are real links to their pages, and
+// the sample questions print with their answers in the page.
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import GauntletStage, { MISS_MS } from './GauntletStage';
+import StageTopBar from './StageTopBar';
+import StageFooter from './StageFooter';
+import { useGauntletLook, stagePalette, useStageChrome } from './GauntletScreens';
+import { nextLook } from '@/lib/stage-look';
+import { softGround, RAMP_INK } from '@/lib/category-ramp';
+import { mathText } from './MathText';
+import { QDBS, QDB_KEYS, MODES, DIFFICULTY, COUNTS, ENDLESS_N, SPRINT_SECONDS, storeKey, setupKey, MISS_CAP } from '@/lib/qdb';
+
+const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+const pct = (a) => (a && a[0] ? Math.round((a[1] / a[0]) * 100) : 0);
+// Lane names keep the banks' ampersands as keys; readers get "and", with the
+// Oxford comma where a list has three (site style, 2026-11-18).
+export const laneLabel = (s) => String(s || '').replace(/, ([^,&]+) & /, ', $1, and ').replace(/ & /g, ' and ');
+const LEGACY_LEVEL = { 1: 'g', 2: 'g', 3: 'm', 4: 't', 5: 't' };
+const DIFF_KEYS = DIFFICULTY.map(([k]) => k);
+
+function readStore(db) {
+  try { const s = JSON.parse(localStorage.getItem(storeKey(db)) || 'null'); if (s && typeof s === 'object') return { t: s.t || {}, l: s.l || {}, b: s.b || {}, m: Array.isArray(s.m) ? s.m : [] }; } catch (e) {}
+  return { t: {}, l: {}, b: {}, m: [] };
+}
+function writeStore(db, s) { try { localStorage.setItem(storeKey(db), JSON.stringify(s)); } catch (e) {} }
+// A saved setup from the first day (four modes, five levels) maps onto today's.
+function cleanSetup(s) {
+  const out = { mode: 'practice', level: 'ramp', n: 10 };
+  if (!s || typeof s !== 'object') return out;
+  if (s.mode === 'streak') { out.mode = 'gauntlet'; out.n = 0; }
+  else if (MODES.some((m) => m.key === s.mode)) out.mode = s.mode;
+  if (DIFF_KEYS.includes(s.level)) out.level = s.level;
+  else if (LEGACY_LEVEL[s.level]) out.level = LEGACY_LEVEL[s.level];
+  if (s.mode !== 'streak' && COUNTS.includes(s.n)) out.n = s.n;
+  if (out.n === 0 && out.mode !== 'gauntlet') out.n = 10;
+  return out;
+}
+
+export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, samples = [], showcase = [], faq = [], total = 0, crumbs = [] }) {
+  const db = QDBS[dbKey];
+  const [look, setLook] = useGauntletLook();
+  const ground = topic ? topic.color : db.ground;
+  const pal = stagePalette(ground, look);
+  useStageChrome(pal.bg);
+  const dark = look === 'dark' || look === 'darktint';
+  const tileFor = (c) => (look === 'color' || look === 'tint' ? softGround(c) : look === 'darktint' ? `color-mix(in srgb, ${softGround(c)} 34%, ${pal.bg})` : null);
+
+  const [setup, setSetup] = useState({ mode: 'practice', level: 'ramp', n: 10 });
+  const [store, setStore] = useState({ t: {}, l: {}, b: {}, m: [] });
+  const [lanes, setLanes] = useState(() => new Set());
+  const [hydrated, setHydrated] = useState(false);
+  const [game, setGame] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
+  const [laneQ, setLaneQ] = useState('');
+
+  useEffect(() => {
+    try { setSetup(cleanSetup(JSON.parse(localStorage.getItem(setupKey(dbKey)) || 'null'))); } catch (e) {}
+    setStore(readStore(dbKey));
+    setHydrated(true);
+  }, [dbKey]);
+  const pick = (k, v) => setSetup((s) => {
+    const n2 = { ...s, [k]: v };
+    if (k === 'mode' && v !== 'gauntlet' && n2.n === 0) n2.n = 10;
+    try { localStorage.setItem(setupKey(dbKey), JSON.stringify(n2)); } catch (e) {}
+    return n2;
+  });
+
+  const start = useCallback(async (slug, opts = {}) => {
+    const t = slug === 'mix' ? { slug: 'mix', label: db.mix, color: db.ground } : topics.find((x) => x.slug === slug);
+    if (!t) return;
+    const mode = opts.mode || setup.mode;
+    const n = mode === 'sprint' || (mode === 'gauntlet' && setup.n === 0 && !opts.mode) ? ENDLESS_N : (opts.n || setup.n || 10);
+    const endless = mode === 'gauntlet' && n === ENDLESS_N;
+    const params = new URLSearchParams();
+    params.set('db', dbKey);
+    if (opts.ids) params.set('ids', opts.ids.join(','));
+    else {
+      params.set('t', slug);
+      if (opts.lanes && opts.lanes.length) params.set('l', opts.lanes.join('|'));
+      params.set('lv', endless || mode === 'sprint' ? 'ramp' : setup.level);
+      params.set('n', String(n));
+      params.set('s', String(Math.floor(Math.random() * 1000)));
+    }
+    setLoading(true); setErr('');
+    try {
+      const r = await fetch(`/api/trivia/set?${params.toString()}`);
+      const d = await r.json();
+      if (!d || !Array.isArray(d.qs) || !d.qs.length) throw new Error('empty');
+      setGame({ qs: d.qs, mode, endless, title: opts.title || t.label, color: t.color, slug, key: `${slug}|${mode}|${mode === 'sprint' || endless ? 0 : n}`, lanes: opts.lanes || [], retry: !!opts.ids, level: setup.level });
+    } catch (e) {
+      setErr(`Those ${db.many} could not be loaded. Try again in a moment.`);
+    }
+    setLoading(false);
+  }, [setup, topics, db, dbKey]);
+
+  const onAnswer = useCallback((q, right) => {
+    setStore((s0) => {
+      const s = { t: { ...s0.t }, l: { ...s0.l }, b: s0.b, m: s0.m };
+      const tk = q.t || (topic && topic.slug) || 'mix';
+      const a = s.t[tk] || [0, 0]; s.t[tk] = [a[0] + 1, a[1] + (right ? 1 : 0)];
+      const lk = `${tk}|${q.lane}`; const b = s.l[lk] || [0, 0]; s.l[lk] = [b[0] + 1, b[1] + (right ? 1 : 0)];
+      s.m = right ? s0.m.filter((k) => k !== q.k) : [q.k, ...s0.m.filter((k) => k !== q.k)].slice(0, MISS_CAP);
+      writeStore(dbKey, s);
+      return s;
+    });
+  }, [topic, dbKey]);
+  const onDone = useCallback((key, score) => {
+    setStore((s0) => {
+      if ((s0.b[key] || 0) >= score) return s0;
+      const s = { ...s0, b: { ...s0.b, [key]: score } };
+      writeStore(dbKey, s);
+      return s;
+    });
+  }, [dbKey]);
+
+  // Weakest lane with at least twelve answers.
+  const weak = useMemo(() => {
+    let best = null;
+    for (const [k, v] of Object.entries(store.l)) {
+      if (!v || v[0] < 12 || k.startsWith('mix|')) continue;
+      const p = v[1] / v[0];
+      if (!best || p < best.p) best = { k, p, n: v[0] };
+    }
+    if (!best) return null;
+    const [slug, lane] = best.k.split('|');
+    const t = topics.find((x) => x.slug === slug);
+    return t ? { slug, lane, label: t.label, p: Math.round(best.p * 100) } : null;
+  }, [store, topics]);
+
+  const diffName = (DIFFICULTY.find(([k]) => k === setup.level) || DIFFICULTY[0])[1];
+  const endlessOn = setup.mode === 'gauntlet' && setup.n === 0;
+  const lengthLine = setup.mode === 'sprint' ? '60 seconds' : endlessOn ? 'Endless, until you miss' : `${setup.n} ${db.many}`;
+  const diffLine = setup.mode === 'sprint' || endlessOn ? 'gentle to tough' : setup.level === 'ramp' ? 'Mixed, gentle to tough' : diffName;
+  const modeName = MODES.find((m) => m.key === setup.mode).label;
+
+  const seg = (label, id, items, cur, onPick, disabledFor = () => false) => (
+    <div className="qd-grp">
+      <span className="qd-lab" id={id}>{label}</span>
+      <div className="qd-seg" role="group" aria-labelledby={id}>
+        {items.map(([k, lab]) => (
+          <button key={String(k)} type="button" className={cur === k ? 'on' : ''} aria-pressed={cur === k} disabled={disabledFor(k)} onClick={() => onPick(k)}>{lab}</button>
+        ))}
+      </div>
+    </div>
+  );
+  const controls = (
+    <div className="qd-setup" aria-label="Game settings">
+      {seg('Play It As', 'qd-lm', MODES.map((m) => [m.key, m.label]), setup.mode, (k) => pick('mode', k))}
+      {setup.mode !== 'sprint' && !endlessOn ? seg('Difficulty', 'qd-ld', DIFFICULTY, setup.level, (k) => pick('level', k)) : null}
+      {setup.mode !== 'sprint' ? seg(db.many.charAt(0).toUpperCase() + db.many.slice(1), 'qd-ln',
+        COUNTS.filter((c) => c || setup.mode === 'gauntlet').map((c) => [c, c ? String(c) : 'Endless']), setup.n, (k) => pick('n', k)) : null}
+      <p className="qd-note">{MODES.find((m) => m.key === setup.mode).sub}.{setup.mode === 'sprint' ? ' A miss costs time, not the game.' : endlessOn ? ' No finish line: it climbs from gentle to tough until you miss.' : ''}</p>
+    </div>
+  );
+
+  const bigGo = (name, sub, onGo, big = false) => (
+    <button type="button" className={`qd-go${big ? ' big' : ''}`} onClick={onGo} disabled={loading}>
+      <span className="qd-gname">{name}</span>
+      <span className="qd-gsub">{sub}</span>
+      <span className="qd-play"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg><span>{loading ? 'Loading' : 'Start'}</span></span>
+    </button>
+  );
+
+  const others = QDB_KEYS.filter((k) => k !== dbKey).map((k) => QDBS[k]);
+  const showLanes = topic ? topic.lanes.filter(([l]) => !laneQ || l.toLowerCase().includes(laneQ.toLowerCase())) : [];
+  const manyLanes = topic && topic.lanes.length > 12;
+
+  return (
+    <div className={`qd${dark ? ' dk' : ''}`} style={{ '--qd-bg': pal.bg, '--qd-ink': pal.ink, '--qd-tile': pal.tile || `color-mix(in srgb, ${pal.ink} 8%, transparent)` }}>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <div className="qd-top"><StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} href="/" allLooks share /></div>
+      <main className="qd-col">
+        <nav className="qd-crumb" aria-label="Breadcrumb">
+          {crumbs.map((c, i) => (i < crumbs.length - 1
+            ? <span key={c.label}><a href={c.href}>{c.label}</a><span aria-hidden="true"> / </span></span>
+            : <span key={c.label} aria-current="page">{c.label}</span>))}
+        </nav>
+        {!topic ? (
+          <>
+            <h1 className="qd-kick">{db.name} · {fmt(total)} {db.noun} and answers</h1>
+            <p className="qd-q">{db.ask}</p>
+            <ul className="qd-grid">
+              {topics.map((t, i) => {
+                const me = hydrated ? store.t[t.slug] : null;
+                const bg = tileFor(t.color);
+                return (
+                  <li key={t.slug}>
+                    <a className="qd-tile" href={`${db.base}/${t.slug}`} style={bg ? { background: bg, '--qd-tink': look === 'darktint' ? pal.ink : RAMP_INK } : null}>
+                      <span className="qd-num">{String(i + 1).padStart(2, '0')}</span>
+                      <span className="qd-tname">{t.label}</span>
+                      <span className="qd-tsub">{fmt(t.n)} {db.many}{me && me[0] ? ` · ${pct(me)}% right` : ''}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+            {controls}
+            {err ? <p className="qd-err" role="alert">{err}</p> : null}
+            {bigGo(db.mix, `${lengthLine} from all ${topics.length} topics · ${diffLine}`, () => start('mix'))}
+            <div className="qd-mine">
+              <button type="button" className="qd-tile sm" disabled={!store.m.length || loading} onClick={() => start('mix', { mode: 'practice', n: 25, ids: store.m.slice(0, 25), title: 'Your missed ' + db.many })}>
+                <span className="qd-tname">Retry My Misses</span>
+                <span className="qd-tsub">{hydrated && store.m.length ? `${fmt(store.m.length)} saved from your games` : 'Every miss comes back here'}</span>
+              </button>
+              <button type="button" className="qd-tile sm" disabled={!weak || loading} onClick={() => weak && start(weak.slug, { mode: 'practice', lanes: [weak.lane], title: `${weak.label}: ${laneLabel(weak.lane)}` })}>
+                <span className="qd-tname">{weak ? `Your Weak Spot: ${laneLabel(weak.lane)}` : 'Your Weak Spot'}</span>
+                <span className="qd-tsub">{weak ? `You get ${weak.p} percent right. Practice it.` : 'Shows up after a dozen answers in one lane'}</span>
+              </button>
+              {db.today.map((d) => (
+                <a key={d.href} className="qd-tile sm" href={d.href}>
+                  <span className="qd-tname">Today&apos;s {d.name}</span>
+                  <span className="qd-tsub">{d.sub}</span>
+                </a>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 className="qd-kick">{topic.h1} · {fmt(topic.n)} past {db.many}</h1>
+            <p className="qd-q">{manyLanes ? 'Pick a quiz, or play them all' : db.key === 'trivia' ? `Which part of ${topic.label.toLowerCase()}?` : `Which kind of ${db.one}?`}</p>
+            {manyLanes ? (
+              <label className="qd-search"><input type="search" value={laneQ} onChange={(e) => setLaneQ(e.target.value)} placeholder="Find a topic: Rome, volcanoes, jazz" aria-label="Find a quiz topic" /></label>
+            ) : null}
+            <div className={`qd-lanes${manyLanes ? ' many' : ''}`} role="group" aria-label="Lanes">
+              {!laneQ ? (
+                <button type="button" className={`qd-tile${lanes.size ? '' : ' ok'}`} aria-pressed={!lanes.size} onClick={() => setLanes(new Set())}>
+                  <span className="qd-tname">All of {topic.label}</span>
+                  <span className="qd-tsub">{fmt(topic.n)} {db.many}</span>
+                </button>
+              ) : null}
+              {showLanes.map(([l, n]) => {
+                const me = hydrated ? store.l[`${topic.slug}|${l}`] : null;
+                const on = lanes.has(l);
+                return (
+                  <button key={l} type="button" className={`qd-tile${on ? ' ok' : ''}`} aria-pressed={on}
+                    onClick={() => setLanes((s) => { const n2 = new Set(s); if (n2.has(l)) n2.delete(l); else n2.add(l); return n2; })}>
+                    <span className="qd-tname">{laneLabel(l)}</span>
+                    <span className="qd-tsub">{fmt(n)} {db.many}{me && me[0] ? ` · ${pct(me)}% right` : ''}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {controls}
+            {err ? <p className="qd-err" role="alert">{err}</p> : null}
+            {bigGo(lanes.size === 1 ? laneLabel([...lanes][0]) : topic.label, `${modeName} · ${lengthLine} · ${diffLine}${lanes.size > 1 ? ` · ${lanes.size} picked` : ''}`, () => start(topic.slug, { lanes: [...lanes] }), true)}
+            <p className="qd-rec">
+              {hydrated && store.t[topic.slug] ? `Your record here: ${fmt(store.t[topic.slug][0])} answered, ${pct(store.t[topic.slug])}% right.` : 'Your record stays in this browser.'}
+              {hydrated ? MODES.map((m) => {
+                const k = Object.keys(store.b).filter((x) => x.startsWith(`${topic.slug}|${m.key}|`));
+                const v = k.length ? Math.max(...k.map((x) => store.b[x])) : 0;
+                return v ? <span key={m.key}> {m.label} best: {v}{m.key === 'sprint' ? ' in 60 seconds' : ' right'}.</span> : null;
+              }) : null}
+              {topic.daily ? <> New ones every day in <a href={topic.daily.href}>{topic.daily.name}</a>.</> : null}
+            </p>
+          </>
+        )}
+      </main>
+
+      <section className="qd-fold">
+        <div className="qd-in">
+          {!topic ? (
+            <>
+              <h2>Free {db.noun} and answers</h2>
+              <p className="qd-lede">Every {db.one} here has already run in a Mind Loft daily, so nothing spoils a future board. Pick a topic, a difficulty, and a length, and play on the same full-screen stage as the daily gauntlets. No signup, no download.</p>
+              {showcase.length ? (
+                <div className="qd-mini">
+                  {showcase.map((q) => {
+                    const t = topics.find((x) => x.slug === q.t);
+                    const bg = t ? (tileFor(t.color) || null) : null;
+                    return (
+                      <div key={q.k} className="qd-ms" style={bg ? { background: bg, '--qd-tink': look === 'darktint' ? pal.ink : RAMP_INK } : null}>
+                        <span className="qd-pill">{t ? t.label : ''} · {laneLabel(q.lane)}</span>
+                        <p className="qd-msq">{dbKey === 'math' ? mathText(q.q) : q.q}{q.p ? <span>{q.p}</span> : null}</p>
+                        <div className="qd-msc">{q.c.map((c, i) => <span key={i} className={i === q.a ? 'ok' : ''}>{dbKey === 'math' ? mathText(c) : c}</span>)}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </>
+          ) : samples.length ? (
+            <>
+              <h2>{topic.h1} with answers</h2>
+              <div className="qd-qa">
+                {samples.map((q) => (
+                  <div key={q.k} className="qd-qr">
+                    <span className="qd-ql">{laneLabel(q.lane)}</span>
+                    <div>
+                      <b>{dbKey === 'math' ? mathText(q.q) : q.q}{q.p ? ` (${q.p.toLowerCase()})` : ''}</b>
+                      <span className="qd-ans">Answer: {dbKey === 'math' ? mathText(q.c[q.a]) : q.c[q.a]}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="qd-lede sm">Every {db.one} here has already run as a Mind Loft daily, so replaying it never spoils a future one. These samples change every week.</p>
+            </>
+          ) : null}
+
+          {faq.length ? (
+            <div className="qd-faq">
+              {faq.map((f) => <div key={f.q}><h2>{f.q}</h2><p>{f.a}</p></div>)}
+            </div>
+          ) : null}
+
+          <nav className="qd-links" aria-label={`${db.name} topics`}>
+            {topic ? <a href={db.base}>{db.name}</a> : null}
+            {topics.filter((t) => !topic || t.slug !== topic.slug).map((t) => <a key={t.slug} href={`${db.base}/${t.slug}`}>{t.label} {db.many}</a>)}
+            {db.today.map((d) => <a key={d.href} href={d.href}>Today&apos;s {d.name}</a>)}
+            {others.map((o) => <a key={o.key} href={o.base}>{o.name}</a>)}
+          </nav>
+        </div>
+      </section>
+      <StageFooter />
+
+      {game ? <Player key={game.key + game.qs[0].k} db={db} dbKey={dbKey} game={game} onAnswer={onAnswer} onDone={onDone} onExit={() => setGame(null)}
+        onAgain={() => start(game.slug, { mode: game.mode, lanes: game.lanes, title: game.title, n: game.endless ? undefined : game.qs.length, ids: game.retry ? store.m.slice(0, 25) : undefined })} /> : null}
+    </div>
+  );
+}
+
+// ---- one game, on the gauntlet stage ----
+function Player({ db, dbKey, game, onAnswer, onDone, onExit, onAgain }) {
+  const { qs, mode } = game;
+  const timed = mode === 'gauntlet';
+  const Q_MS = db.qSeconds * 1000;
+  const mt = (x) => (dbKey === 'math' ? mathText(x) : x);
+  const [look] = useGauntletLook();
+  const [i, setI] = useState(0);
+  const [right, setRight] = useState(0);
+  const [lock, setLock] = useState(null);
+  const [miss, setMiss] = useState(null);
+  const [over, setOver] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
+  const qStart = useRef(Date.now());
+  const sprintEnd = useRef(mode === 'sprint' ? Date.now() + SPRINT_SECONDS * 1000 : 0);
+  const busy = lock != null || miss != null || !!over;
+  const q = qs[i];
+
+  useEffect(() => {
+    if (over) return undefined;
+    const iv = setInterval(() => setNow(Date.now()), 200);
+    return () => clearInterval(iv);
+  }, [over]);
+  const finish = useCallback((why, score) => { setOver({ why, score }); onDone(game.key, score); }, [game.key, onDone]);
+  const next = useCallback((score) => {
+    if (i + 1 >= qs.length) { finish('all', score); return; }
+    // The next question's clock starts now, before the render that shows it,
+    // so a stale clock can never read zero and time it out.
+    qStart.current = Date.now();
+    setNow(qStart.current);
+    setI(i + 1);
+  }, [i, qs.length, finish]);
+
+  const answer = useCallback((k) => {
+    if (busy || !q) return;
+    const ok = k === q.a;
+    onAnswer(q, ok);
+    if (ok) {
+      const sc = right + 1;
+      setRight(sc);
+      setLock(q.a);
+      setTimeout(() => { setLock(null); next(sc); }, 650);
+      return;
+    }
+    setMiss({ pick: k });
+    const hold = mode === 'sprint' ? 900 : MISS_MS + (mode === 'practice' ? 600 : 0);
+    setTimeout(() => {
+      setMiss(null);
+      if (mode === 'gauntlet') finish('miss', right);
+      else next(right);
+    }, hold);
+  }, [busy, q, right, mode, next, finish, onAnswer]);
+
+  const qLeft = timed ? Math.max(0, Q_MS - (now - qStart.current)) : null;
+  const sLeft = mode === 'sprint' ? Math.max(0, sprintEnd.current - now) : null;
+  useEffect(() => {
+    if (busy) return;
+    if (timed && qLeft === 0) answer(-1);
+    if (mode === 'sprint' && sLeft === 0) finish('time', right);
+  }, [qLeft, sLeft, busy, timed, mode, answer, finish, right]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') { onExit(); return; }
+      if (over) return;
+      const n = parseInt(e.key, 10);
+      if (n >= 1 && n <= 4) answer(n - 1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [answer, onExit, over]);
+  useEffect(() => { const o = document.body.style.overflow; document.body.style.overflow = 'hidden'; return () => { document.body.style.overflow = o; }; }, []);
+
+  const endPal = stagePalette(game.color, look);
+  useStageChrome(over ? endPal.bg : null);
+
+  if (over) {
+    const sc = over.score;
+    const big = mode === 'sprint' ? `${sc} right` : game.endless ? `${sc} in a row` : `${sc} of ${qs.length}`;
+    const sub = over.why === 'miss' ? `The gauntlet ended on ${db.one} ${i + 1}.` : over.why === 'time' ? 'The clock ran out.' : 'That is the whole set.';
+    const diff = mode === 'sprint' || game.endless ? 'Gentle to Tough' : (DIFFICULTY.find(([k]) => k === game.level) || DIFFICULTY[0])[1];
+    return (
+      <div className="qd-end" role="dialog" aria-label="Game over" style={{ '--qd-bg': endPal.bg, '--qd-ink': endPal.ink, '--qd-tile': endPal.tile || `color-mix(in srgb, ${endPal.ink} 8%, transparent)` }}>
+        <style dangerouslySetInnerHTML={{ __html: CSS }} />
+        <div className="qd-endin">
+          <span className="qd-eye">{game.title} · {MODES.find((m) => m.key === mode).label} · {diff}</span>
+          <span className="qd-score">{big}</span>
+          <span className="qd-endsub">{sub} {game.retry ? '' : 'Your misses are saved to Retry My Misses.'} Nothing here counts toward your Mind Loft points.</span>
+          <button type="button" className="qd-go" onClick={onAgain}>
+            <span className="qd-gname">Play Again</span>
+            <span className="qd-gsub">{game.title} · a new set</span>
+            <span className="qd-play"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg><span>Start</span></span>
+          </button>
+          <div className="qd-endrow">
+            <button type="button" className="qd-tile sm" onClick={onExit}><span className="qd-tname">Change Topic or Mode</span></button>
+            {db.today.slice(0, 1).map((d) => <a key={d.href} className="qd-tile sm" href={d.href}><span className="qd-tname">Today&apos;s {d.name}</span></a>)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (!q) return null;
+  const frac = mode === 'sprint' ? sLeft / (SPRINT_SECONDS * 1000) : timed ? qLeft / Q_MS : null;
+  const count = mode === 'sprint' ? `${right} right · ${Math.ceil(sLeft / 1000)}s` : game.endless ? `In a row: ${right}` : `${db.one.charAt(0).toUpperCase() + db.one.slice(1)} ${i + 1} of ${qs.length} · ${right} right`;
+  return (
+    <GauntletStage
+      bg={game.color}
+      qKey={`${i}-${q.k}`}
+      label={count}
+      kicker={laneLabel(q.lane)}
+      question={<h2>{mt(q.q)}{q.p ? <span className="gst-sub">{q.p}</span> : null}</h2>}
+      choices={q.c.map(mt)}
+      onPick={answer}
+      lockIdx={lock}
+      missRight={miss ? q.a : null}
+      missPick={miss && miss.pick >= 0 ? miss.pick : null}
+      disabled={busy}
+      frac={frac}
+      hot={frac != null && frac < 0.25}
+      footer={<>{count} · <button type="button" className="qd-leave" onClick={onExit}>Leave</button></>}
+    />
+  );
+}
+
+// Plain CSS; no backticks inside.
+const CSS = `
+.qd{background:var(--qd-bg);color:var(--qd-ink);min-height:100vh;font-family:'Manrope',system-ui,sans-serif;}
+.qd a,.qd button{color:inherit;}
+.qd-top{padding:max(12px, var(--safe-top, 0px)) 14px 0;}
+html.lc-on:not(.lc-focus) .qd-top{display:none;}
+.qd-col{max-width:1080px;margin:0 auto;box-sizing:border-box;padding:26px 20px 10px;display:flex;flex-direction:column;align-items:stretch;gap:28px;}
+.qd-crumb{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:12.5px;font-weight:700;opacity:.75;margin-bottom:-14px;}
+.qd-crumb a{text-decoration:none;}
+.qd-crumb a:hover{text-decoration:underline;}
+.qd-kick{align-self:center;display:inline-flex;align-items:center;gap:8px;max-width:100%;margin:0;padding:6px 14px 6px 11px;border:1px solid var(--qd-ink);border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;line-height:1.3;text-align:center;}
+.qd-kick::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--qd-ink);}
+.qd-q{margin:-6px 0 0;text-align:center;font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-0.02em;padding-bottom:.06em;}
+.qd-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.qd-grid li{display:flex;}
+.qd-tile{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:118px;width:100%;box-sizing:border-box;padding:16px 14px;border:1px solid var(--qd-ink);border-radius:18px;background:var(--qd-tile);color:var(--qd-tink, var(--qd-ink)) !important;font-family:inherit;text-align:center;text-decoration:none;cursor:pointer;transition:background .15s, transform .1s;}
+.qd-tile *{color:var(--qd-tink, var(--qd-ink));}
+.qd-tile:active{transform:scale(.99);}
+@media(hover:hover){.qd-tile:hover{filter:brightness(.97);}}
+.qd.dk .qd-tile:hover{filter:brightness(1.15);}
+.qd-tile:disabled{cursor:default;opacity:.6;}
+.qd-tile.ok{background:var(--qd-ink);border-color:var(--qd-ink);}
+.qd-tile.ok,.qd-tile.ok *{color:var(--qd-bg) !important;}
+.qd-num{position:absolute;top:11px;left:13px;font-size:11.5px;font-weight:800;opacity:.55;}
+.qd-tname{font-size:21px;font-weight:800;line-height:1.18;letter-spacing:-0.01em;padding-bottom:.06em;}
+.qd-tsub{font-size:13px;font-weight:700;opacity:.75;line-height:1.35;}
+.qd-tile.sm{min-height:84px;}
+.qd-tile.sm .qd-tname{font-size:17px;}
+.qd-lanes{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+.qd-lanes .qd-tile{min-height:104px;}
+.qd-lanes.many{max-height:520px;overflow-y:auto;padding:2px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;}
+.qd-lanes.many .qd-tile{min-height:70px;padding:10px;}
+.qd-lanes.many .qd-tname{font-size:16px;}
+.qd-search{display:flex;justify-content:center;margin-bottom:-12px;}
+.qd-search input{width:min(420px,100%);height:44px;box-sizing:border-box;padding:0 16px;border:1px solid var(--qd-ink);border-radius:999px;background:var(--qd-tile);color:var(--qd-ink);font:inherit;font-size:15px;font-weight:700;}
+.qd-setup{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:16px 26px;}
+.qd-grp{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.qd-lab{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.72;}
+.qd-seg{display:inline-flex;flex:none;max-width:100%;border:1px solid var(--qd-ink);border-radius:999px;overflow:hidden;}
+.qd-seg button{flex:none;white-space:nowrap;font:inherit;font-size:13.5px;font-weight:800;height:38px;padding:0 15px;border:0;border-left:1px solid var(--qd-ink);border-radius:0;background:transparent;color:var(--qd-ink);cursor:pointer;}
+.qd-seg button:first-child{border-left:0;}
+.qd-seg button.on{background:var(--qd-ink);color:var(--qd-bg);}
+.qd-note{flex-basis:100%;margin:-4px 0 0;text-align:center;font-size:13px;font-weight:700;opacity:.72;}
+.qd-err{margin:-10px 0 0;text-align:center;font-weight:800;}
+.qd-go{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;min-height:150px;box-sizing:border-box;padding:22px 20px;border:0;border-radius:26px;background:var(--qd-ink);font-family:inherit;cursor:pointer;}
+.qd-go,.qd-go *{color:var(--qd-bg) !important;}
+.qd-go.big{min-height:230px;}
+.qd-go:active{transform:scale(.985);}
+@media(hover:hover){.qd-go:hover{filter:brightness(1.12);}}
+.qd-go:disabled{cursor:progress;opacity:.85;}
+.qd-gname{font-size:clamp(36px, 8vw, 56px);font-weight:800;letter-spacing:-0.025em;line-height:1.12;padding-bottom:.06em;text-align:center;overflow-wrap:break-word;max-width:100%;}
+.qd-go.big .qd-gname{font-size:clamp(40px, 10vw, 76px);}
+.qd-gsub{font-size:15px;font-weight:700;opacity:.82;text-align:center;line-height:1.4;}
+.qd-play{display:inline-flex;align-items:center;gap:9px;margin-top:4px;font-size:19px;font-weight:800;}
+.qd-mine{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+.qd-rec{margin:-8px 0 0;text-align:center;font-size:13.5px;font-weight:700;opacity:.78;line-height:1.5;}
+.qd-rec a{font-weight:800;}
+.qd-fold{margin-top:54px;border-top:1px solid color-mix(in srgb, var(--qd-ink) 22%, transparent);padding:46px 20px 60px;}
+.qd-in{max-width:1080px;margin:0 auto;}
+.qd-fold h2{margin:0 0 8px;font-size:26px;font-weight:800;letter-spacing:-0.02em;line-height:1.25;}
+.qd-lede{margin:0 0 24px;max-width:760px;font-size:16px;font-weight:600;line-height:1.55;opacity:.85;}
+.qd-lede.sm{font-size:14px;margin-top:18px;}
+.qd-mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;}
+.qd-ms{display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 20px;border:1px solid var(--qd-ink);border-radius:22px;background:var(--qd-tile);}
+.qd-ms *{color:var(--qd-tink, var(--qd-ink));}
+.qd-pill{display:inline-flex;padding:4px 11px;border:1px solid currentColor;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;}
+.qd-msq{margin:0;text-align:center;font-size:20px;font-weight:800;line-height:1.25;}
+.qd-msq span{display:block;margin-top:6px;font-size:14px;font-weight:700;opacity:.8;}
+.qd-msc{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;}
+.qd-msc span{display:flex;align-items:center;justify-content:center;text-align:center;min-height:54px;padding:6px 8px;border:1px solid var(--qd-tink, var(--qd-ink));border-radius:14px;font-size:15px;font-weight:800;}
+.qd-msc span.ok{background:var(--qd-tink, var(--qd-ink));color:var(--qd-bg);}
+.qd-qa{border-top:1px solid color-mix(in srgb, var(--qd-ink) 18%, transparent);}
+.qd-qr{display:grid;grid-template-columns:170px 1fr;gap:16px;padding:15px 0;border-bottom:1px solid color-mix(in srgb, var(--qd-ink) 18%, transparent);}
+.qd-ql{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.65;padding-top:4px;}
+.qd-qr b{display:block;font-size:17px;line-height:1.4;}
+.qd-ans{display:inline-flex;margin-top:8px;padding:4px 11px;border-radius:999px;background:var(--qd-ink);color:var(--qd-bg) !important;font-size:13.5px;font-weight:800;}
+.qd-faq{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 40px;margin-top:40px;}
+.qd-faq div{padding:16px 0;border-top:1px solid color-mix(in srgb, var(--qd-ink) 18%, transparent);}
+.qd-faq h2{font-size:16px;margin:0 0 6px;letter-spacing:0;}
+.qd-faq p{margin:0;font-size:14.5px;font-weight:600;line-height:1.55;opacity:.84;}
+.qd-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:34px;}
+.qd-links a{padding:8px 14px;border:1px solid var(--qd-ink);border-radius:999px;font-size:13.5px;font-weight:800;text-decoration:none;}
+.qd-links a:hover{background:var(--qd-tile);}
+.qd-leave{font:inherit;font-weight:800;background:none;border:0;padding:0;text-decoration:underline;cursor:pointer;color:inherit;}
+.qd-end{position:fixed;inset:0;z-index:90;background:var(--qd-bg);color:var(--qd-ink);display:flex;align-items:center;justify-content:center;overflow-y:auto;font-family:'Manrope',system-ui,sans-serif;}
+.qd-end *{color:var(--qd-ink);}
+.qd-endin{width:100%;max-width:560px;box-sizing:border-box;padding:40px 20px;display:flex;flex-direction:column;align-items:stretch;gap:16px;text-align:center;}
+.qd-eye{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.75;}
+.qd-score{font-size:clamp(64px, 18vw, 104px);font-weight:800;letter-spacing:-0.04em;line-height:1.02;padding-bottom:.06em;}
+.qd-endsub{font-size:16px;font-weight:700;line-height:1.5;opacity:.82;}
+.qd-end .qd-go{min-height:220px;margin-top:8px;}
+.qd-end .qd-go .qd-gname{font-size:clamp(40px, 11vw, 60px);}
+.qd-endrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+.qd-endrow .qd-tile{min-height:64px;}
+@media(min-width:900px){
+  .qd-col{gap:34px;padding-top:34px;}
+  .qd-q{font-size:48px;}
+  .qd-tname{font-size:23px;}
+  .qd-grid .qd-tile{min-height:140px;}
+}
+@media(max-width:560px){
+  .qd-col{padding:18px 14px 10px;gap:22px;}
+  .qd-q{font-size:28px;}
+  .qd-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .qd-grid .qd-tile{min-height:92px;padding:12px 10px;}
+  .qd-num{display:none;}
+  .qd-tname{font-size:17px;}
+  .qd-tsub{font-size:12px;}
+  .qd-lanes{grid-template-columns:1fr 1fr;gap:10px;}
+  .qd-lanes .qd-tile{min-height:84px;padding:10px;}
+  .qd-setup{flex-direction:column;align-items:center;flex-wrap:nowrap;gap:12px;}
+  .qd-note{margin-top:0;}
+  .qd-seg button{font-size:12.5px;padding:0 11px;height:36px;}
+  .qd-go{min-height:140px;}
+  .qd-go.big{min-height:180px;}
+  .qd-mine{grid-template-columns:1fr;}
+  .qd-qr{grid-template-columns:1fr;gap:4px;}
+  .qd-fold{padding:36px 14px 48px;}
+}
+@media (prefers-reduced-motion: reduce){.qd-tile,.qd-go{transition:none}}
+`;

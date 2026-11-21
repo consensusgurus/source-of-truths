@@ -39,7 +39,7 @@ import { gameFaq, gameFaqJsonLd, relatedGames, gameCategory } from '@/lib/game-s
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { runPageOf, runFaq, runFaqJsonLd, otherRuns } from '@/lib/run-seo';
 import StageFooter from './StageFooter';
-import { BANK_TOPIC, topicBySlug as triviaTopic } from '@/lib/trivia-topics';
+import { BANK_DB } from '@/lib/qdb';
 import LayoutC from './LayoutC';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -99,10 +99,10 @@ export default function StageTail({ self, stage = true, run = null, theme: force
                 {cat ? <a href={cat.href} className="stq-all">All {cat.label.toLowerCase()}</a> : null}
               </nav>
             ) : null}
-            {/* THE TRIVIA PORTAL (owner, 2026-11-21): a gauntlet daily points at its
+            {/* THE QUESTION DATABASES (owner, 2026-11-21): a gauntlet daily points at its
                 topic's page, where every past question of the bank plays again. */}
-            {!runPage && BANK_TOPIC[self] ? (
-              <p className="stq-tp"><a href={`/trivia-questions/${BANK_TOPIC[self]}`}>Play past {triviaTopic(BANK_TOPIC[self]).label.toLowerCase()} trivia questions</a>, or browse <a href="/trivia-questions">every trivia topic</a>.</p>
+            {!runPage && BANK_DB[self] ? (
+              <p className="stq-tp"><a href={`${BANK_DB[self].base}/${BANK_DB[self].slug}`}>Play every past {BANK_DB[self].label.toLowerCase()} {BANK_DB[self].db === 'math' ? 'problem' : 'question'}</a> in the <a href={BANK_DB[self].base}>{BANK_DB[self].name}</a>.</p>
             ) : null}
           </div>
         </section>

@@ -86,7 +86,7 @@ export default function EndFirst({
   gamePill = null, groupPill = null, dayPill = null, board = null,
   sim = null, run = null, gear = null, retry = null,
   chal = null, onFull, allHref = '/#all', homeHref = '/',
-  replay = null, onBack = null, backLabel = 'Show board', archiveHref = null, archiveLabel = 'Past puzzles', shelfHref = null,
+  replay = null, onBack = null, backLabel = 'Show board', archiveHref = null, archiveLabel = 'Past puzzles', shelfHref = null, shelfLabel = 'All jigsaw puzzles',
   talk = null,
 }) {
   const [open, setOpen] = useState(false);
@@ -108,7 +108,7 @@ export default function EndFirst({
           <span>All Puzzles</span>
         </a>
         <span className="ef-tr">
-          {shelfHref ? <a className="ef-tl" href={shelfHref}>All jigsaw puzzles</a> : null}
+          {shelfHref ? <a className="ef-tl" href={shelfHref}>{shelfLabel}</a> : null}
           {replayNode}
           {onBack ? <button type="button" className="ef-tl" onClick={onBack}>{backLabel}</button> : null}
           {archiveHref && !phone ? <a className="ef-tl" href={archiveHref}>{archiveLabel}</a> : null}

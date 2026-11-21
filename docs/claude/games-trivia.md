@@ -799,29 +799,43 @@ stored, no IQ Points move, no gauntlet board changes.
 - Local legs read `sot_run_<id>_<day>` (phase 'done', results[].score summed), so the meter and the
   home card draw instantly; the rank waits on `resultPostsSettled()` then a fresh read.
 
-## The trivia portal: /trivia-questions (owner, 2026-11-21)
+## The question databases: Trivia, Math, and English (owner, 2026-11-21)
 
-Owner, 2026-11-21: "make the site the top spot for multiple choice trivia ... maybe users can play
-old questions by topic in same format", then "with same SEO" as the jigsaw portal. Built from the
-"Trivia Portal Mockup" canvas at a NEW address (`/trivia` stays the Trivia Gauntlet's door and
-`/trivia-games` the category page).
+Owner, 2026-11-21: "make the site the top spot for multiple choice trivia ... play old questions by
+topic in same format"; the same day "Trivia Database" became its name, and "similar pages for math
+and English ... same SEO, same style" added two more. One engine, three databases (`lib/qdb.js`):
 
-- **Only questions that already ran.** `lib/trivia-library.js` (server only) reads all 21 gauntlet
-  banks and keeps a question once its day is before today, Eastern: 23,035 on 2026-11-21. A new
-  gauntlet bank must be added to its BANKS table and to a topic in `lib/trivia-topics.js`.
-- **Topics and lanes** (`lib/trivia-topics.js`): 12 topics over the banks; lanes are each bank's
-  `cat`, remapped by LANE_MAP (the Science Gauntlet banks fold into Science's five lanes, the five
-  English banks become Words' lanes), Deep Cuts' lanes are its day topics.
-- **Play** (`TriviaPortal.jsx` Player) on the same GauntletStage as the dailies, topic colour as
-  ground: Gauntlet (one life, 20 s a question, ramp), Practice (no lives, no clock, spotlight then
-  on), Sprint (60 s), Streak (one life, no end). Keys 1 to 4, Escape leaves. Nothing posts or
-  scores; the record (seen/right per topic and lane, bests, missed keys up to 300) is
-  `sot_trivia_practice` in the browser. Retry my misses replays missed keys (`?ids=`).
-- **Sets** come from `/api/trivia/set` (`t`, `l`, `lv`, `n`, `s` seed 0..999): same URL, same set
-  for the day, edge-cached an hour.
-- **SEO**: hub has CollectionPage (topics as Quiz parts), BreadcrumbList and a six-question FAQPage;
-  each topic page has a Quiz with a dozen sample Questions (acceptedAnswer + suggestedAnswer),
-  printed in the page with their answers and rotating weekly, plus its own FAQ. Sitemap: hub 0.8,
-  topics 0.7. Share card `public/og/trivia-questions.png`.
-- **Links**: footer, home Everything Else (LayoutCInner + both StageToday lists), and every gauntlet
-  daily's StageTail ("Play past <topic> trivia questions", via BANK_TOPIC).
+| Database | Address | Banks | Topics |
+|---|---|---|---|
+| Trivia Database | `/trivia-questions` | the 16 trivia banks | 11 (`lib/trivia-topics.js`) |
+| Math Database | `/math-questions` | blitz, blitzed, gap, series, back | 5, one per bank |
+| English Database | `/english-questions` | gram, vocab, spell, origin, idiom | 5, one per bank |
+
+- **Only questions that already ran.** `lib/qdb-library.js` (server only; was trivia-library.js)
+  reads every bank and keeps a question once its day is before today, Eastern. A new gauntlet bank
+  goes in its BANKS table and in a topic in `lib/qdb.js` / `lib/trivia-topics.js`.
+- **Lanes**: trivia lanes are each bank's `cat` (LANE_MAP remaps Science's); English lanes are the
+  banks' two cats; math lanes come from each problem's `sig` (`mathLane`: Addition ... Order of
+  Operations, Percentages, Powers and Roots; Series has its own pattern lanes). Math problems get a
+  prompt (`p`: "Find the missing number", "What comes next?"; Back becomes "Which one makes N?").
+  Readers see "&" as "and" (`laneLabel`). Trivia's old Words topic moved to English; its URL 308s.
+- **The look** (owner: "ideally trivia ends up looking like the gauntlet play pages"; canvas "Trivia
+  Portal Mockup (gauntlet stage look)"): `app/QdbPortal.jsx` paints the page as a gauntlet stage, the
+  pastel ground and one ink, the stage look switch, the topics (or a topic's lanes) as answer tiles,
+  the hand-off's big ink start button. Games play on the real GauntletStage; the end screen is the
+  same ground with a big Play Again.
+- **Setup**: three modes (owner: Streak merged into Gauntlet): Practice (no clock, answer shown),
+  Gauntlet (clock per question, 20 s trivia and English, 15 s math, one miss ends it; length
+  Endless plays until then), Sprint (60 s). **Difficulty** (owner: "Should be difficulty setting"):
+  Mixed (climbs the five tiers), Gentle (tiers 1-2), Moderate (3), Tough (4-5). An old saved setup
+  maps over (`cleanSetup`). Records are per database in the browser (`storeKey`; trivia keeps
+  `sot_trivia_practice`). Nothing posts or scores.
+- **Sets** come from `/api/trivia/set?db=`(`t`, `l`, `lv`=ramp|g|m|t, `n`, `s` seed), edge-cached.
+- **SEO** (`app/QdbPages.jsx`): hub CollectionPage + BreadcrumbList + FAQPage; topic Quiz with a
+  dozen weekly sample Questions (acceptedAnswer + suggestedAnswer) printed with answers, plus FAQ.
+  Sitemap: hubs 0.8, topics 0.7. Share cards `public/og/{trivia,math,english}-questions.png`.
+- **Links** (owner: "Trivia Database in the navigation rail and footer and on end game for trivia
+  puzzles and runs"): footer and rail (LayoutCInner) and both StageToday lists name all three
+  databases; a gauntlet daily's end card (EndFirst via StageStick, `BANK_DB`) and its StageTail
+  line point at its topic; the Trivia Gauntlet, Trivia Encore, Science, English and Math runs end
+  with a button to their database (GauntletEndStage `dbLink`, RunClient `RUN_DB`).

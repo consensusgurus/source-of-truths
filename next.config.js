@@ -101,6 +101,8 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // The Trivia Database's Words topic became the English Database (owner, 2026-11-21).
+      { source: '/trivia-questions/words', destination: '/english-questions', permanent: true },
       // The consensus Sports Rankings pages were removed (owner, 2026-11-17).
       // Duels were retired 2026-11-19 (Challenges replaced them): old duel links land on Challenges.
       { source: '/duel', destination: '/challenges', permanent: true },
