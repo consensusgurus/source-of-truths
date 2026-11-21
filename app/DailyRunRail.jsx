@@ -11,7 +11,7 @@
 // in StageChrome, which puts it on every daily.
 import React, { useEffect, useState } from 'react';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { readDailyRun, dailyRunHref, playedToday, readRunMeta, builtRunHref } from '@/lib/daily-run';
+import { readDailyRun, dailyRunHref, playedToday, readRunMeta, builtRunHref, isDayMeta } from '@/lib/daily-run';
 
 export default function DailyRunRail({ gameKey }) {
   const [keys, setKeys] = useState([]);
@@ -44,24 +44,24 @@ export default function DailyRunRail({ gameKey }) {
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="drr" role="navigation" aria-label="Your run">
-        <span className="drr-eb">{meta && meta.name ? meta.name : 'Your run'} · {at + 1} of {keys.length}</span>
-        <span className="drr-chips">
+        <span className="drr-eb">{meta && meta.name ? meta.name : 'Your run'} · {isDayMeta(meta) ? 'Page ' : ''}{at + 1} of {keys.length}</span>
+        <span className={'drr-chips' + (keys.length > 8 ? ' drr-long' : '')}>
           {keys.map((k) => (
             <a key={k} href={dailyRunHref(k, keys, meta)} className={'drr-c' + (k === gameKey ? ' now' : '') + (played[k] ? ' done' : '')}>
               {played[k] ? '✓ ' : ''}{(DAILY_GAME_MAP[k] || {}).name || k}
             </a>
           ))}
         </span>
-        {meta ? <a className="drr-x" href={builtRunHref(keys, meta)}>Run page</a> : null}
-        <a className={meta ? 'drr-x drr-x2' : 'drr-x'} href={(DAILY_GAME_MAP[gameKey] || {}).href || '/'}>Leave run</a>
+        {meta ? <a className="drr-x" href={builtRunHref(keys, meta)}>{isDayMeta(meta) ? 'Front Page' : 'Run page'}</a> : null}
+        <a className={meta ? 'drr-x drr-x2' : 'drr-x'} href={(DAILY_GAME_MAP[gameKey] || {}).href || '/'}>{isDayMeta(meta) ? 'Leave' : 'Leave run'}</a>
       </div>
       {thisDone ? (
         <div className="drr-bar" role="region" aria-label="Next in your run">
           {allDone && meta ? (
             /* A built run ends on its own page: the head-to-head and the board. */
             <>
-              <span className="drr-bt"><b>Run complete</b><small>{meta.by ? `See how you did against ${meta.by}` : 'See how you did'}</small></span>
-              <a className="drr-go" href={builtRunHref(keys, meta)}>See Results</a>
+              <span className="drr-bt"><b>{isDayMeta(meta) ? 'Paper complete' : 'Run complete'}</b><small>{isDayMeta(meta) ? 'Every page read' : meta.by ? `See how you did against ${meta.by}` : 'See how you did'}</small></span>
+              <a className="drr-go" href={builtRunHref(keys, meta)}>{isDayMeta(meta) ? 'See the Back Page' : 'See Results'}</a>
             </>
           ) : allDone ? (
             <>
@@ -86,6 +86,9 @@ const CSS = `
   font-family:'Manrope',system-ui,sans-serif;font-size:12px;}
 .drr-eb{font-family:'Manrope',ui-monospace,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute,#8a93a6);}
 .drr-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.drr-chips.drr-long{flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none;}
+.drr-chips.drr-long::-webkit-scrollbar{display:none;}
+.drr-long .drr-c{flex:none;}
 .drr-c{padding:3px 9px;border-radius:999px;border:1px solid var(--stg-line,rgba(127,127,127,.3));color:var(--stg-ink2,inherit);
   text-decoration:none;font-weight:700;}
 .drr-c.now{border-color:var(--stg-acc-ink, var(--stg-acc));color:var(--stg-acc-ink,var(--stg-acc));}

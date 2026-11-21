@@ -26,7 +26,7 @@ export default function MyRunsStrip() {
           <span className={'mrs-s' + (r.played === r.keys.length ? ' done' : '')}>{r.played === r.keys.length ? 'Played' : r.played ? `${r.played} of ${r.keys.length}` : 'Play'}</span>
         </a>
       ))}
-      <a className="mrs-b" href="/build-a-run">+ Build a Run</a>
+      <a className="mrs-b" href="/build-a-run">+ Build Your Day</a>
     </div>
   );
 }

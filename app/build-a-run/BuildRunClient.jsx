@@ -1,27 +1,33 @@
 'use client';
 
-// THE RUN BUILDER (owner, 2026-11-07). Name the run, pick 2 to 8 of today's
-// dailies, order them, then Review and Share hands the maker to the run's own
-// page with the link ready to send. Nothing is saved on the server: the link
-// is the run (lib/daily-run.js), and this browser remembers it for My Puzzles.
+// BUILD YOUR DAY (owner, 2026-11-21: "Instead of Build Your Run, the site
+// replaces that with Build Your Day ... should use the old build your run
+// wiring and replace it"). The run builder of 2026-11-07, now picking the
+// puzzles for MIND LOFT DAILY: any number (RUN_MAX is only the board's
+// ceiling), in order, no name. Save My Day keeps them in this browser
+// (lib/daily-run.js saveMyDay) and opens the paper at /my-day. Nothing is
+// saved on the server. ?g=a,b prefills it; with no ?g it opens on the saved day.
 import { useEffect, useMemo, useState } from 'react';
 import CircuitFrame from '../circuits/CircuitFrame';
 import GameGlyph from '../GameGlyph';
-import { RUN_MAX, BUILT_MIN, cleanRunName, builtRunHref, rememberRun } from '@/lib/daily-run';
-import { savedIdentity } from '@/lib/saved-identity';
+import { RUN_MAX, BUILT_MIN, getMyDay, saveMyDay, countDayEvent } from '@/lib/daily-run';
 import { catWord, hueVars, CSS as RUN_CSS } from '../run/RunPageClient';
 
 // Category order as the home's index reads it.
 const CAT_ORDER = ['Word', 'Numbers', 'Logic', 'Visual', 'Sudoku', 'Trivia', 'Geography', 'Table Games', 'Crowd Psychology', 'Arcade'];
 
-export default function BuildRunClient({ games = [], start = [], startName = '' }) {
+export default function BuildRunClient({ games = [], start = [] }) {
   const byKey = useMemo(() => Object.fromEntries(games.map((g) => [g.key, g])), [games]);
   const [picked, setPicked] = useState(start);
-  const [name, setName] = useState(startName);
   const [cat, setCat] = useState('All');
   const [q, setQ] = useState('');
-  const [maker, setMaker] = useState('');
-  useEffect(() => { setMaker(savedIdentity().username || ''); }, []);
+  const [had, setHad] = useState(false);
+  // No ?g: open on the day this browser already keeps, so Edit is the same page.
+  useEffect(() => {
+    const mine = getMyDay().filter((k) => byKey[k]);
+    if (mine.length) setHad(true);
+    if (!start.length && mine.length) setPicked(mine);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cats = useMemo(() => {
     const have = new Set(games.map((g) => g.cat));
@@ -46,30 +52,24 @@ export default function BuildRunClient({ games = [], start = [], startName = '' 
   const full = picked.length >= RUN_MAX;
   const go = () => {
     if (!ready) return;
-    const meta = { name: cleanRunName(name) || 'My Run', by: maker };
-    rememberRun(picked, meta, true);
-    window.location.href = builtRunHref(picked, meta) + '&new=1';
+    saveMyDay(picked);
+    countDayEvent(had ? 'my-day-edited' : 'my-day-saved');
+    window.location.href = '/my-day';
   };
 
   return (
-    <CircuitFrame label="Build a Run" bar={{ title: 'Build a Run', sub: 'Runs' }}>
+    <CircuitFrame label="Build Your Day" bar={{ title: 'Build Your Day', sub: 'Mind Loft Daily' }}>
       <style dangerouslySetInnerHTML={{ __html: RUN_CSS + CSS }} />
       <div className="br">
         <div className="br-head">
           {/* The header carries the page's name; no second title under it. */}
-          <p className="br-sub">Pick {BUILT_MIN} to {RUN_MAX} of today&rsquo;s puzzles, put them in order and send the link.</p>
+          <p className="br-sub">Pick the puzzles you want, as many as you like. They arrive every day as one paper, in this order.</p>
         </div>
 
-        <div className="bb-field">
-          <label htmlFor="bb-name">Run Name</label>
-          <input id="bb-name" value={name} maxLength={28} placeholder="My Run" autoComplete="off"
-            onChange={(e) => setName(e.target.value)} />
-        </div>
-
-        <section aria-label="Your run, in order">
-          <div className="bb-lab"><span>Your Run, In Order</span><span>{picked.length === 1 ? '1 Game' : `${picked.length} Games`} · Up to {RUN_MAX}</span></div>
+        <section aria-label="Your day, in order">
+          <div className="bb-lab"><span>Your Day, In Order</span><span>{picked.length === 1 ? '1 Puzzle' : `${picked.length} Puzzles`}{full ? '' : ' · No Limit'}</span></div>
           <div className="br-card bb-tray">
-            {!picked.length ? <div className="br-msg">Tap games below to add them.</div> : null}
+            {!picked.length ? <div className="br-msg">Tap puzzles below to add them.</div> : null}
             {picked.map((k, i) => {
               const g = byKey[k];
               if (!g) return null;
@@ -93,19 +93,19 @@ export default function BuildRunClient({ games = [], start = [], startName = '' 
           </div>
         </section>
 
-        <section aria-label="Add games">
-          <div className="bb-lab"><span>Add Games</span>{full ? <span>Your run is full</span> : null}</div>
+        <section aria-label="Add puzzles">
+          <div className="bb-lab"><span>Add Puzzles</span>{full ? <span>That is every puzzle a day can hold</span> : null}</div>
           <div className="bb-chips">
             {cats.map((c) => (
               <button key={c} type="button" className={'bb-chip' + (cat === c ? ' on' : '')} aria-pressed={cat === c} onClick={() => setCat(c)}>{c === 'All' ? 'All' : catWord(c)}</button>
             ))}
           </div>
           <div className="bb-search">
-            <label htmlFor="bb-q" className="bb-sr">Search games</label>
-            <input id="bb-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search games" autoComplete="off" />
+            <label htmlFor="bb-q" className="bb-sr">Search puzzles</label>
+            <input id="bb-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search puzzles" autoComplete="off" />
           </div>
           <div className="br-card bb-list">
-            {!list.length ? <div className="br-msg">No games match.</div> : null}
+            {!list.length ? <div className="br-msg">No puzzles match.</div> : null}
             {list.map((g) => {
               const on = picked.includes(g.key);
               return (
@@ -125,8 +125,8 @@ export default function BuildRunClient({ games = [], start = [], startName = '' 
         </section>
 
         <div className="bb-bar">
-          {!maker ? <p className="br-tiny bb-anon">Play under a name and your results become the ones your friends try to beat. <a href="/?signup=1">Choose a Name</a></p> : null}
-          <button type="button" className="br-go" onClick={go} disabled={!ready}>{ready ? 'Review and Share' : `Pick at least ${BUILT_MIN} games`}</button>
+          <p className="br-tiny bb-anon">Your day is kept on this device and waits for you every day. Change it any time.</p>
+          <button type="button" className="br-go" onClick={go} disabled={!ready}>{ready ? 'Save My Day' : `Pick at least ${BUILT_MIN} puzzles`}</button>
         </div>
       </div>
     </CircuitFrame>

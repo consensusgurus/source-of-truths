@@ -24,7 +24,7 @@ export async function generateMetadata({ searchParams }) {
   const title = `${name}${by ? `, a run by ${by}` : ''} | Mind Loft`;
   const description = keys.length >= 2
     ? `${keys.length} free daily puzzles back to back: ${games}. Play the run and see how you stack up.`
-    : 'Build a run of daily puzzles on Mind Loft and share it with friends.';
+    : 'Play a run of daily puzzles on Mind Loft, back to back.';
   const q = new URLSearchParams({ g: keys.join(','), n: name, ...(by ? { by } : {}) }).toString();
   const img = `/run/card?${q}`;
   return {

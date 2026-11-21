@@ -52,7 +52,7 @@ import GamePreview, { GP_CSS } from '../GamePreview';
 import { SHARE_TILE } from '@/lib/share-tile';
 import { MuralBand, loadMuralProgress, MURAL_PROGRESS_CSS } from './MuralProgress';
 import { MURAL_KINDS, muralHeld } from '@/lib/mural-shared';
-import RunGateTile, { RGT_CSS, MoreRunsTile, BuildRunTile } from './RunGateTile';
+import RunGateTile, { RGT_CSS, MoreRunsTile, DailyTile } from './RunGateTile';
 import { gameFacts, FACT_ICONS } from '@/lib/game-facts';
 import CircuitArt from '../CircuitArt';
 import { softGround, gameColor, RAMP_ORDER, migrateCatOrder, categoryColor, categoryColorLight, categoryAccentInkLight, categoryOnrampLight, RAMP_INK } from '@/lib/category-ramp';
@@ -3075,7 +3075,7 @@ export default function StageToday({ seed = null } = {}) {
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)', 'sty-ixq')}
       {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)', 'sty-ixe1')}
       {/* BUILD A RUN SITS RIGHT UNDER RUNS (owner, 2026-11-07). A door, not a pane. */}
-      <a className="sty-ixb sty-ixbr" href="/build-a-run" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('buildrun', null)}<span>Build a Run</span></a>
+      <a className="sty-ixb sty-ixbr" href="/build-a-run" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('buildrun', null)}<span>Build Your Day</span></a>
       {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
           and Leaderboards + Stats are one group; the tests, Kids and the lists
           are their own group below; Most Appreciated comes last. The phone
@@ -4474,7 +4474,9 @@ export default function StageToday({ seed = null } = {}) {
     const open = others.filter((c) => !runFull(c)).sort((a, b) => pl(b) - pl(a));
     const done = others.filter((c) => runFull(c)).sort((a, b) => pl(b) - pl(a));
     const all = [...folds, ...open, ...done];
-    const cols = Math.max(1, tileCols);
+    // MIND LOFT DAILY TAKES THE FIRST CELL of the Details row (owner,
+    // 2026-11-21), so the runs get one fewer.
+    const cols = Math.max(1, tileCols - (viewOf(paneOn) === 'det' ? 1 : 0));
     if (all.length <= cols) return { leads: all, rest: [], deck: false };
     const leads = all.slice(0, Math.max(1, cols - 1));
     return { leads, rest: runs.filter((c) => !leads.includes(c)), deck: true };
@@ -4527,6 +4529,7 @@ export default function StageToday({ seed = null } = {}) {
     const lead = leads[0] || null;
     const rest = onCat ? [] : top.rest;
     const cells = [];
+    if (!onCat && viewOf(paneOn) === 'det') cells.push(<DailyTile key="rl-day" className="sty-grgt" />);
     for (const c of leads) {
       const st = runStat[c.id];
       const rc = runCatOf(c);
@@ -4564,7 +4567,6 @@ export default function StageToday({ seed = null } = {}) {
             plain={!!dTintCat && !!rc && categoryColor(rc) === categoryColor(dTintCat)}
             lead={st && st.lead} plays={st && st.players} fin={runFull(c)} rank={circStand[c.id] && circStand[c.id].rank} done={done} />);
         }
-        cells.push(<BuildRunTile key="ru-build" />);
       }
     } else if (!onCat && top.deck) {
       cells.push(
@@ -4576,7 +4578,7 @@ export default function StageToday({ seed = null } = {}) {
           data-fk="rdeck" style={{ '--cfull': 'var(--stg-ink)', '--cc': 'var(--stg-ink)' }} onClick={() => setRunsOpen((v) => !v)}>
           <span className="sty-gn">{rest.length ? <>{lead ? 'More Runs' : 'Runs'} <em>{rest.length}</em></> : 'Runs'}</span>
           {rest.slice(0, 3).map((c, ri) => <span key={c.id} className={'sty-gdl' + (ri ? ' sty-gdx' : '') + (ri > 1 ? ' sty-gd3' : '')}><b>{c.name}</b><i>{runFull(c) ? 'Played' : c.n ? `${c.n} of ${c.games.length}` : fmtN((runStat[c.id] || {}).players)}</i></span>)}
-          <a className="sty-gdl sty-gdb" href="/build-a-run" onClick={(e) => e.stopPropagation()}><b>+ Build a Run</b><i>&rarr;</i></a>
+          <a className="sty-gdl sty-gdb" href="/build-a-run" onClick={(e) => e.stopPropagation()}><b>+ Build Your Day</b><i>&rarr;</i></a>
           <button type="button" className="sty-gpl sty-gcs sty-gdt" aria-expanded={runsOpen} aria-controls="sty-runsu"
             onClick={(e) => { e.stopPropagation(); setRunsOpen((v) => !v); }}>
             <span className="ld"><b>{runsOpen ? 'Fold runs' : 'Show all'}</b></span><span className="ct" aria-hidden="true">{runsOpen ? '\u25b4' : '\u25be'}</span>
@@ -4589,7 +4591,7 @@ export default function StageToday({ seed = null } = {}) {
             <div className="sty-rt3s">
               {rest.map((c) => runTile(c, cat))}
               <div key="rt-build" className="sty-rt3 sty-rt3b">
-                <span className="tx"><b>Build a Run</b><small>One link to share</small></span>
+                <span className="tx"><b>Build Your Day</b><small>Your own daily paper</small></span>
                 <a className="go play" href="/build-a-run">Build</a>
               </div>
             </div>
@@ -5217,6 +5219,7 @@ export default function StageToday({ seed = null } = {}) {
                       {mine.length ? sec('My Puzzles', `All ${mine.length}`, () => mOpen(MINE_ID), <div className="mph-gg det mph-hrow">{mine.map(hCard)}</div>) : null}
                       {topRuns.length ? sec('Top Runs', `All ${topRuns.length} Runs`, () => mOpen(CIRC_ID), (
                         <div className="mph-rgts">
+                          <DailyTile />
                           {topRuns.filter((c) => !c.poly).map((c) => {
                             const st = runStat[c.id] || (circStand[c.id] ? { players: circStand[c.id].field, rank: circStand[c.id].rank } : null);
                             return <RunGateTile key={c.id} c={c} href={withTq(circuitEntryHref(c.id))} cat={runCatOf(c)}
@@ -5279,7 +5282,7 @@ export default function StageToday({ seed = null } = {}) {
                 <div className="mph-list mt m3">
                   <button type="button" onClick={() => goPane(QUIZ_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5" /><path d="M12 17h.01" /></svg><b>Quizzes</b></button>
                   <button type="button" onClick={() => mOpen(CIRC_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 4v16" /><path d="M5 5h11l-2 4 2 4H5" /></svg><b>Runs<em>{circuits.filter(runFull).length} of {circuits.length}</em></b></button>
-                  <a href="/build-a-run"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><b>Build a Run</b></a>
+                  <a href="/build-a-run"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><b>Build Your Day</b></a>
                   <a href={withTq('/jig/shelf')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 9h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v3H4z" /><path d="M4 4h16" /></svg><b>Jigsaw Puzzles</b></a>
                   <a href={withTq('/archive')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="1" /><path d="M5 9v10h14V9M10 13h4" /></svg><b>Puzzle Archive</b></a>
                   <a href="/kids"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /></svg><b>Kids</b></a>
@@ -5665,7 +5668,7 @@ export default function StageToday({ seed = null } = {}) {
             <div className={'sty-games sty-rpgrid' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
               {(allCircs || circPane ? [...circuits].sort((a, b) => (runFullO(a) - runFullO(b)) || (runD(b) - runD(a))) : circLead).map((c) => runPaneTile(c))}
               <a key="rp-build" className="sty-g mx sty-gbuild" href="/build-a-run" data-fk="rp:build">
-                <span className="sty-gn">+ Build a Run</span>
+                <span className="sty-gn">+ Build Your Day</span>
                 <span className="sty-gt">Pick your own games and share one link. Friends play the same set and race you.</span>
                 <span className="sty-gpl sty-gcs"><span className="ld"><b>Make your own</b></span><span className="ct" aria-hidden="true">&rarr;</span></span>
               </a>
@@ -9171,6 +9174,11 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
   .sty-mph .mph-gg.det.mph-hrow{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;overflow-anchor:none;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:1px 1px 3px;margin:-1px -1px -3px;}
   .sty-mph .mph-gg.det.mph-hrow::-webkit-scrollbar{display:none;}
   .sty-mph .mph-gg.det.mph-hrow > .mph-g{flex:0 0 80%;min-width:0;box-sizing:border-box;}
+  /* ONE TILE WIDTH ACROSS THE HOME'S SIDEWAYS ROWS (owner, 2026-11-21: the Top
+     Runs tiles ran wider than the My Puzzles and Top Puzzles cards). The run
+     row takes the puzzle rows' box and the same 80% (44% on a wide phone). */
+  .sty-mph .mph-rgts{gap:8px;margin:-1px -1px -3px;padding:1px 1px 3px;scroll-padding-left:1px;}
+  .sty-mph .mph-rgts > .rgt{flex:0 0 80%;min-width:0;}
   /* No scroll snap on the home's runs row: the runs re-sort as their counts land
      and a snapped row follows its old first tile, so it opened part scrolled. */
   .sty-mph .mph-fold.m2 .mph-rgts{padding-bottom:3px;scroll-snap-type:none;overflow-anchor:none;}
@@ -9204,6 +9212,7 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
 }
 @media (max-width:900px) and (min-width:600px){
   .sty-mph .mph-gg.det.mph-hrow > .mph-g{flex-basis:44%;}
+  .sty-mph .mph-rgts > .rgt{flex-basis:44%;}
 }
 @media (max-width:599px){
   .sty-mph .mph-grid{--mcols:3;}

@@ -47,7 +47,7 @@ function clock(s) {
 }
 // One game's result as the boards print it: the deciding stat, plus the clock
 // where the game is solve-or-not (Solved 2:14).
-function resultText(key, p) {
+export function resultText(key, p) {
   if (!p) return null;
   if (p.abandoned) return 'Fail';
   const t = scoreText(key, p.score, p.total);
@@ -148,7 +148,7 @@ export default function RunPageClient({ keys = [], name = 'A Mind Loft Run', by 
             <h1 className="br-h1">This run link is incomplete</h1>
             <p className="br-sub">A run needs at least two of today&rsquo;s puzzles. You can build one in under a minute.</p>
           </div>
-          <a className="br-go" href="/build-a-run">Build a Run</a>
+          <a className="br-go" href="/build-a-run">Build Your Day</a>
         </div>
       </CircuitFrame>
     );
@@ -330,7 +330,7 @@ export default function RunPageClient({ keys = [], name = 'A Mind Loft Run', by 
             <button type="button" className="br-btn" onClick={() => share('invite')}>{copied === 'invite' ? 'Copied' : 'Share the Run'}</button>
           ) : null}
           {isMaker ? <a className="br-btn" href={editHref}>Edit This Run</a> : null}
-          <a className="br-btn" href="/build-a-run">{isMaker ? 'Build Another Run' : 'Build Your Own Run'}</a>
+          <a className="br-btn" href="/build-a-run">Build Your Day</a>
           {!allDone ? <p className="br-tiny">No sign up needed. Each game also counts on its own daily board, first try only.</p> : null}
         </div>
       </div>

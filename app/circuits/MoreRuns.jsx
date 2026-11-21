@@ -110,7 +110,7 @@ export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = '
       {/* BUILD YOUR OWN RUN (owner, 2026-11-07): the last thing on every run
           ending, below Share Your Score. Someone who just finished a run is
           the likeliest person to build one. */}
-      <a className="mr-share mr-build" href="/build-a-run">Build Your Own Run</a>
+      <a className="mr-share mr-build" href="/build-a-run">Build Your Day</a>
     </div>
   );
 }

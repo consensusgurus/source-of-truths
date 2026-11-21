@@ -11,7 +11,10 @@
 // reads as a quiz gauntlet, "Five Quizzes. One Life in Each."), AND ITS
 // DRAWING TO EMBLEM below.
 
+import { useEffect, useState } from 'react';
 import { categoryColor, softGround } from '@/lib/category-ramp';
+import { DAILY_GAME_MAP } from '@/lib/daily-games';
+import { getMyDay, playedToday, editionNow } from '@/lib/daily-run';
 import { rampFor, daySpectrumSlots } from '@/lib/circuits';
 
 const WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
@@ -64,6 +67,7 @@ const EMBLEM = {
   passport: <><rect className="f1" x="11" y="6" width="26" height="36" rx="3" /><circle className="f2" cx="24" cy="21" r="7" /><path d="M17 21h14M24 14c-3 4-3 10 0 14M24 14c3 4 3 10 0 14M18 35h12" /></>,
   more: <><rect className="f2" x="15" y="8" width="24" height="30" rx="3" /><rect className="f1" x="11" y="12" width="24" height="30" rx="3" /><rect className="f2" x="7" y="16" width="24" height="26" rx="3" /><path d="M19 25v8M15 29h8" /></>,
   build: <><rect className="f1" x="7" y="25" width="15" height="15" rx="2" /><rect className="f2" x="26" y="25" width="15" height="15" rx="2" /><rect className="f2" x="16.5" y="6" width="15" height="15" rx="2" /><path d="M24 10v7M20.5 13.5h7" /></>,
+  daily: <><rect className="f2" x="6" y="9" width="32" height="30" rx="2" /><path className="f1" d="M38 15h4v21a3 3 0 0 1-3 3h-1z" /><rect className="f1" x="11" y="14" width="22" height="6" /><path d="M11 25h9M11 30h9M11 35h9M24 25h9M24 30h9M24 35h6" /></>,
   flag: <><path className="f1" d="M12 8h24l-6 7 6 7H12z" /><path d="M12 42V7" /></>,
 };
 function RunEmblem({ id }) {
@@ -156,31 +160,69 @@ export function MoreRunsTile({ rest, open, onToggle, players, colorOf }) {
         ))}
       </span>
       <a className="rgt-cs rgt-build" href="/build-a-run" onClick={(e) => e.stopPropagation()}>
-        <span className="ld"><b>+ Build a Run</b></span><span className="ct">One link to share &rarr;</span>
+        <span className="ld"><b>+ Build Your Day</b></span><span className="ct">Your own paper &rarr;</span>
       </a>
     </div>
   );
 }
 
-// BUILD A RUN, closing the unfolded runs in the same shape (no band: it has
-// no legs yet).
-export function BuildRunTile() {
+// MIND LOFT DAILY ON THE RUNS ROW (owner, 2026-11-21: "Instead of Build Your
+// Run, the site replaces that with Build Your Day. Even up in 'runs' line").
+// A run tile in shape, coloured by the reader's edition (Morning, Afternoon,
+// Evening, Night). With a day saved it opens the paper and its band is the
+// day's puzzles, ticked as they are read; without one it is the invite to
+// Build Your Day. Read from this browser after mount, so the first paint is
+// the invite in the default edition colour.
+const DAY_LEGS = 6;
+export function DailyTile({ className = '' }) {
+  const [st, setSt] = useState(null);
+  useEffect(() => {
+    const read = () => {
+      const keys = getMyDay().filter((k) => DAILY_GAME_MAP[k]);
+      setSt({ keys, played: new Set(keys.filter((k) => playedToday(k))), ed: editionNow() });
+    };
+    read();
+    const vis = () => { if (document.visibilityState === 'visible') read(); };
+    document.addEventListener('visibilitychange', vis);
+    return () => document.removeEventListener('visibilitychange', vis);
+  }, []);
+  const keys = st && st.keys.length >= 2 ? st.keys : null;
+  const hue = st ? st.ed.colour : '#7dd3fc';
+  const n = keys ? keys.length : 0;
+  const doneN = keys ? keys.filter((k) => st.played.has(k)).length : 0;
+  const go = !keys ? 'Build Your Day' : doneN === n ? 'See the Back Page' : doneN ? 'Keep Reading' : 'Open the Paper';
+  const shown = keys ? keys.slice(0, n > DAY_LEGS ? DAY_LEGS - 1 : DAY_LEGS) : [];
   return (
-    <a className="rgt rgt-more" href="/build-a-run">
+    <a className={'rgt rgt-day' + (className ? ' ' + className : '')} href={keys ? '/my-day' : '/build-a-run'}
+      style={{ '--rgc': hue, '--rgg': softGround(hue) }} aria-label={`Mind Loft Daily: ${go}`}>
       <span className="rgt-body">
         <span className="rgt-hd">
           <span className="rgt-tx">
-            <b className="rgt-name">Build a Run</b>
-            <span className="rgt-hl">Your Puzzles. One Link.</span>
+            <b className="rgt-name">Mind Loft Daily</b>
+            <span className="rgt-hl">{keys ? `${st.ed.name} Edition \u00b7 ${doneN} of ${n} Read` : 'Your Puzzles. One Paper. Every Day.'}</span>
           </span>
-          <RunEmblem id="build" />
+          <RunEmblem id="daily" />
         </span>
-        <span className="rgt-go">Build a Run</span>
+        <span className="rgt-go">{go}</span>
       </span>
-      <span className="rgt-cs"><span className="ld">Shared with friends</span><span className="ct">One board</span></span>
+      {keys ? (
+        <span className={'rgt-legs' + (shown.length > 5 ? ' many' : '')} aria-hidden="true">
+          {shown.map((k) => (
+            <span key={k} className={'rgt-leg' + (st.played.has(k) ? ' on' : '')} style={{ '--lc': softGround(hue, 0.45) }}>{LEG_SHORT[k] || DAILY_GAME_MAP[k].name}</span>
+          ))}
+          {n > shown.length ? <span className="rgt-leg" style={{ '--lc': softGround(hue, 0.45) }}>+{n - shown.length}</span> : null}
+        </span>
+      ) : null}
+      <span className="rgt-cs">
+        <span className="ld">{keys ? <b>{n} Pages</b> : 'Pick your puzzles once'}</span>
+        <span className="ct">{keys ? 'Edit any time' : 'Every day'}</span>
+      </span>
     </a>
   );
 }
+// The old Build a Run tile's name, kept for the run end shelves: it is the
+// Mind Loft Daily tile now.
+export const BuildRunTile = DailyTile;
 
 export const RGT_CSS = `
 .rgt{display:flex;flex-direction:column;text-decoration:none;color:#0b1b2b;background:#fff;border:1px solid #0b1b2b;border-radius:12px;overflow:hidden;min-width:0;box-sizing:border-box;

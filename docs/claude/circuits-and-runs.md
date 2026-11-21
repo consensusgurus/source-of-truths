@@ -711,6 +711,9 @@ Stand". New runs: pass `runId` on GauntletEndStage.
 
 ## Built runs: Build a Run and the shared /run link (owner, 2026-11-07)
 
+> **Superseded in the UI on 2026-11-21 by Mind Loft Daily (next section).** `/build-a-run` is now
+> Build Your Day. Old `/run?g=` links still play and still rank; nothing links to building one.
+
 A player picks 2 to 8 of today's dailies at **`/build-a-run`**, orders and names them, and
 shares **`/run?g=deep,strata,sums&n=Morning+Coffee&by=Gator85`**. Placement (owner, same
 day): run endings, the end of a built run, and My Puzzles. Not the Runs shelf (designed runs
@@ -1025,3 +1028,31 @@ and the two duel trophies) was removed. Challenges (`/vs`, `/challenges`, `lib/c
 replaced it. `/duel` and `/duel/*` redirect to `/challenges` in next.config.js. The
 `quiz_duels` tables were left in Supabase untouched (history), and the admin rename/merge
 routes still keep names on those rows in sync. Do not re-add duel entry points.
+
+## Mind Loft Daily and Build Your Day (owner, 2026-11-21)
+
+The daily ritual. It REPLACES Build a Run everywhere a player is offered one ("Instead of Build
+Your Run, the site replaces that with Build Your Day. Even up in 'runs' line"), on the old wiring.
+
+- **Build Your Day** is `/build-a-run` (route name kept so old links land). No name, no maker,
+  no cap the player sees: as many puzzles as they like (`RUN_MAX` 40, the daily-combined key
+  limit), at least 2. Saving writes `ml_my_day` in localStorage (`saveMyDay` in
+  `lib/daily-run.js`) and goes to `/my-day`. Nothing is stored server side.
+- **The paper** is `/my-day` (`app/my-day/DayClient.jsx`). Masthead "Mind Loft Daily" with the
+  edition rule, the date, "<Edition> Edition", a greeting, "N Pages". **No time estimates anywhere**
+  (owner). The edition follows the reader's LOCAL clock: Morning from 5, Afternoon from 12,
+  Evening from 17, Night from 21 (`EDITIONS` / `editionNow`); the puzzles and date stay on the ET day.
+- Each page is the game's own daily opened as a built run whose meta name is `DAY_NAME`
+  (`DAY_META`). `builtRunHref` sends a day run to `/my-day`, and DailyRunRail reads "Page n of N",
+  "Front Page", "Leave", "Paper complete", "See the Back Page".
+- **The back page** (all read): results with ranks from `/api/quiz/daily-combined`, then three
+  newspaper columns, What's New (LAUNCHED dates), What's Popular (my-plays `week`), What's
+  Similar (the day's categories). Never a puzzle already in the paper or played today. Each item
+  has "+ Add to My Day".
+- **Where it is advertised:** the Mind Loft Daily tile (`DailyTile` in `app/today/RunGateTile.jsx`)
+  leads the phone Top Runs row and takes the first cell of the desktop Details runs row (the
+  runs get one fewer column there); every old "Build a Run" label reads "Build Your Day".
+- **Stats:** page-view ids `build-a-run`, `my-day`, and once-per-ET-day events `my-day-saved`,
+  `my-day-edited`, `my-day-opened`, `my-day-finished` (`countDayEvent`), labelled in
+  `lib/admin-quiz-titles.js`. A dedicated admin tab is a follow-up.
+- Saved built runs were not converted; old `/run` links keep working.

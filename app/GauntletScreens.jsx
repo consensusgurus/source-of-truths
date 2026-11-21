@@ -935,7 +935,7 @@ export function GauntletEndStage({
         {phone ? chalCard : null}
         <div className="gsx-rise rbe-foot" style={d('1.9s')}>
           {onShare ? <button type="button" className="gsx-ib" onClick={onShare}>{copied ? 'Copied' : 'Share Your Score'}</button> : null}
-          <a className="gsx-ob" href="/build-a-run">Build Your Own Run</a>
+          <a className="gsx-ob" href="/build-a-run">Build Your Day</a>
           {onPractice ? <button type="button" className="gsx-ob" onClick={onPractice}>Practice replay</button> : null}
           {dbLink ? <a className="gsx-ob" href={dbLink.href}>{dbLink.label}</a> : null}
         </div>

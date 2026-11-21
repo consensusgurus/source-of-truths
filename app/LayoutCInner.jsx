@@ -888,7 +888,7 @@ export default function LayoutCInner({ gameKey }) {
             {ixDoor('/community/peers', 'Puzzle Peers')}
             {ixHash('sty-quizzes', 'Quizzes')}
             {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
-            {ixDoor('/build-a-run', 'Build a Run')}
+            {ixDoor('/build-a-run', 'Build Your Day')}
             {ixDoor('/archive', 'Puzzle Archive')}
             {/* Jigsaw Puzzles (the old Jigsaw Puzzle Shelf, renamed with the 2026-11-21 portal), under the archive (owner, 2026-11-18). Keep in step with StageToday. */}
             {ixDoor('/jig/shelf', 'Jigsaw Puzzles')}
