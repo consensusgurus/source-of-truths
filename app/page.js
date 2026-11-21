@@ -6,6 +6,8 @@ import { onrampMap } from '@/lib/home-snapshot-onramp';
 import { QUIZZES } from '@/lib/quizzes';
 import { getAllSources } from '@/lib/sources';
 import { homeFaqLd } from '@/lib/home-about';
+import { cookies } from 'next/headers';
+import { homeSeed, DONE_COOKIE } from '@/lib/home-seed';
 
 const SOURCE_COUNT = getAllSources().length;
 
@@ -87,9 +89,16 @@ setTimeout(function(){h.removeAttribute('data-entry-wait')},5000);
 }catch(x){}})();`;
 const ENTRY_WAIT_CSS = 'html[data-entry-wait]::after{content:"";position:fixed;inset:0;z-index:5999;background:#ffffff;}';
 
-export default function HomePage({ searchParams }) {
+export default async function HomePage({ searchParams }) {
   const sp = searchParams || {};
   const stageDefault = String(sp.stage ?? '') !== '0';
+  // THE ORDER IS IN THE HTML (owner, 2026-11-21): today's plays off the prebuilt
+  // board and the reader's finished games off their cookie, so the tiles paint
+  // in their final order and never reshuffle as the reads land (lib/home-seed.js).
+  let seed = null;
+  if (stageDefault) {
+    try { seed = await homeSeed((cookies().get(DONE_COOKIE) || {}).value); } catch (e) { seed = null; }
+  }
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: ENTRY_WAIT_CSS }} />
@@ -112,7 +121,7 @@ export default function HomePage({ searchParams }) {
           <script dangerouslySetInnerHTML={{ __html: SNAP_JS + "window.__sotSnap('pre');" }} />
           <div className="sot-home">
             <div className="sot-live">
-              <HomeSwitch stage sourceCount={SOURCE_COUNT} />
+              <HomeSwitch stage sourceCount={SOURCE_COUNT} seed={seed} />
             </div>
             <HomeSnapBox />
             <script dangerouslySetInnerHTML={{ __html: `window.__sotSnap&&window.__sotSnap('fill',${JSON.stringify(onrampMap())});` }} />

@@ -666,6 +666,8 @@ function MemberLadder({ cats, keys, hueFor, inkFor = hueFor }) {
 
 const VIEW_KEY = 'sot_home_view2';
 const SORT_KEY = 'sot_home_sort2';
+// The order the snapshot was painted in (see ordPlays in StageToday).
+const ORD_KEY = 'sot_home_ord';
 const VIEWS = ['tile', 'det', 'list'];
 const RAIL_MQ = '(min-width: 1280px) and (hover: hover) and (pointer: fine)';
 
@@ -1076,7 +1078,7 @@ function mixHex(a, b, p) {
   return '#' + c(16) + c(8) + c(0);
 }
 
-export default function StageToday() {
+export default function StageToday({ seed = null } = {}) {
   const [stageTheme, setStageTheme] = useStageTheme();
   const tq = useThemeQs();
   const intro = useThemeIntro();  // and, once per browser, the switch played for them
@@ -1265,8 +1267,49 @@ export default function StageToday() {
     document.addEventListener('pointerover', over, { passive: true });
     return () => document.removeEventListener('pointerover', over);
   }, []);
-  const [done, setDone] = useState(() => new Set());
+  const [done, setDone] = useState(() => new Set((seed && seed.done) || []));
   const [inprog, setInprog] = useState(() => new Set());
+  // THE ORDER IS FIXED FOR THE VISIT (owner, 2026-11-21: "very hard to click to
+  // the page you want because items move around so much while loading"). Two
+  // inputs decide where a tile sits, and both used to arrive late: Popular
+  // waited on the day board (1 to 6s) and played-to-the-foot waited on
+  // daily-status. The server now puts both in the HTML (lib/home-seed.js):
+  //   ordPlays   today's plays per game, off the prebuilt overall board
+  //   orderDone  what the reader had finished at their last home visit (sot_dn)
+  // Every sort, split and row below orders by these two and NEVER by the live
+  // reads, so the first paint is the final order. The live `done` still draws
+  // the played styling (check, fill), so a game finished elsewhere shows as
+  // played in place and drops to the foot on the next visit, not mid-tap.
+  // Without a seed (prebuilt board missing or stale) ordPlays is taken once,
+  // from the first board read, and frozen there.
+  const [ordPlays, setOrdPlays] = useState(() => (seed && seed.plays) || null);
+  const [orderDone, setOrderDone] = useState(() => new Set((seed && seed.done) || []));
+  // Each run's finishes in 24 hours and players today, for the runs row's order
+  // (same terms as done24 and runStat below, frozen for the visit).
+  const [ordRuns, setOrdRuns] = useState(() => (seed && seed.runs) || null);
+  // UNDER THE SNAPSHOT (lib/home-snapshot.js) the reader is looking at the order
+  // their last visit painted, not the server's. The live page is hidden until
+  // release, so here it quietly takes that same order (plays and finished set
+  // saved beside the snapshot, plus anything FILL moved to the foot from its
+  // breadcrumb), and the release swaps in a page whose tiles are where the
+  // snapshot had them.
+  useIsoLayoutEffect(() => {
+    try {
+      if (!document.documentElement.hasAttribute('data-sot-snap')) return;
+      const o = JSON.parse(localStorage.getItem(ORD_KEY) || 'null');
+      const today = etToday();
+      if (!o || o.day !== today) return;
+      const dn = new Set(Array.isArray(o.done) ? o.done : []);
+      for (const g of ALL_DAILY_GAMES) {
+        let c = null;
+        try { c = JSON.parse(localStorage.getItem('sot_' + g.key + '_day') || 'null'); } catch (e) { c = null; }
+        if (c && c.d === today && c.done) dn.add(g.key);
+      }
+      if (o.plays && typeof o.plays === 'object') setOrdPlays(o.plays);
+      if (o.runs && typeof o.runs === 'object') setOrdRuns(o.runs);
+      setOrderDone(dn);
+    } catch (e) { /* storage off: keep the server's order */ }
+  }, []);
   // Whether daily-status has ANSWERED, which is a different question from
   // whether `done` has anything in it: an empty `done` means "nothing finished"
   // once the answer is in and "we do not know yet" before it. The unfinished
@@ -1278,7 +1321,9 @@ export default function StageToday() {
   // up from the latter. Both empty until the status lands.
   const [newDone, setNewDone] = useState(() => new Set());
   const [seenCount, setSeenCount] = useState(null);
-  const [day, setDay] = useState('');
+  // Seeded by the server (lib/home-seed.js) so the runs row is in the first
+  // paint instead of arriving after it and pushing every tile down.
+  const [day, setDay] = useState(() => (seed && seed.today) || '');
   // Seventeen circuit cards is a wall on a page whose job is today's puzzles,
   // so the shelf opens on its lead three and the rest are one tap away (owner,
   // 2026-08-31). The three are DISPLAY_CIRCUITS' own lead order, which is
@@ -1662,7 +1707,17 @@ export default function StageToday() {
     // produces the string `dailyBoardQuery` produces, which is what makes the
     // two the same key rather than two questions that happen to have one answer.
     fetchDailyBoard(identityQs())
-      .then((d) => { if (alive && d && Array.isArray(d.overall)) setBoard(d); })
+      .then((d) => {
+        if (!(alive && d && Array.isArray(d.overall))) return;
+        setBoard(d);
+        // No seed: the order is taken from this first read, once.
+        setOrdPlays((cur) => {
+          if (cur || !Array.isArray(d.games)) return cur;
+          const m = {};
+          for (const g of d.games) if (g && g.key) m[g.key] = Number(g.plays) || 0;
+          return m;
+        });
+      })
       .catch(() => {})
       .finally(() => { if (alive) setBoardIn(true); });
     return () => { alive = false; };
@@ -1698,6 +1753,8 @@ export default function StageToday() {
       setDone(d);
       setInprog(p);
       setStatusIn(true);
+      // The next visit's order (see ordPlays above): the server reads this.
+      try { document.cookie = `sot_dn=${M}-${D}-${yy}${[...d].map((k) => '.' + k).join('')}; path=/; max-age=93600; samesite=lax`; } catch (e) { /* cookies off */ }
       // WHAT IS NEW SINCE THE READER LAST LOOKED (motion pass, 2026-09-16). The
       // ladder stamps the rungs that lit since the last visit and the count
       // rolls up from what it read then, so coming back from a game shows the
@@ -2079,10 +2136,13 @@ export default function StageToday() {
       // the shelf leads with what the site is actually playing rather than a
       // fixed editorial order. Summed, not averaged: a circuit of five busy
       // games IS a busier circuit than one of two.
-      const pop = games.reduce((t, g) => t + (playsBy.get(g.key) || 0), 0);
+      const pop = games.reduce((t, g) => t + (ordPlays ? Number(ordPlays[g.key]) || 0 : (playsBy.get(g.key) || 0)), 0);
+      // The order's own count of finished legs: the visit's frozen set, not the
+      // live one, so a run never jumps along the row while the page loads.
+      const nO = games.filter((g) => orderDone.has(g.key)).length;
       // A circuit spans categories, so it wears its LEAD game's step rather
       // than inventing a tenth colour.
-      return { id: c.id, name: c.name, blurb: c.blurb || '', unit: c.unit || '', games, n, pop, hue: hueFor(games[0].cat), ink: inkFor(games[0].cat) };
+      return { id: c.id, name: c.name, blurb: c.blurb || '', unit: c.unit || '', games, n, nO, pop, hue: hueFor(games[0].cat), ink: inkFor(games[0].cat) };
     }).filter(Boolean)
       // THE ORDER (owner, 2026-08-31), in four terms:
       //
@@ -2100,16 +2160,16 @@ export default function StageToday() {
       .map((c, i) => [c, i])
       .sort((a, b) => {
         const A = a[0], B = b[0];
-        const doneA = A.n === A.games.length ? 1 : 0;
-        const doneB = B.n === B.games.length ? 1 : 0;
+        const doneA = A.nO === A.games.length ? 1 : 0;
+        const doneB = B.nO === B.games.length ? 1 : 0;
         return (doneA - doneB)
           || (leadRankOf(A.id) - leadRankOf(B.id))
-          || (B.n - A.n)
+          || (B.nO - A.nO)
           || (B.pop - A.pop)
           || (a[1] - b[1]);
       })
       .map(([c]) => c);
-  }, [day, done, light, playsBy]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [day, done, light, playsBy, ordPlays, orderDone]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   // THE TWO CIRCUITS ON THE NEWCOMER ROW, read out of the shelf's own memo so
   // the name, the blurb and the hue cannot disagree with the shelf below, and so
@@ -2432,9 +2492,9 @@ export default function StageToday() {
       games: Object.keys(x.games)
         .filter((k) => LIVE_KEYS.has(k) && DAILY_GAME_MAP[k] && (x.games[k] || []).length)
         .map((k) => DAILY_GAME_MAP[k])
-        .sort((g1, g2) => (done.has(g1.key) - done.has(g2.key)) || g1.name.localeCompare(g2.name)),
+        .sort((g1, g2) => (orderDone.has(g1.key) - orderDone.has(g2.key)) || g1.name.localeCompare(g2.name)),
     })).filter((x) => x.games.length);
-  }, [grp, done]);
+  }, [grp, orderDone]);
   const mineTot = pinned.length + pinnedCircs.length;
   const mineDone = pinned.filter((g) => done.has(g.key)).length
     + pinnedCircs.filter((c) => c.n === c.games.length).length;
@@ -2664,7 +2724,12 @@ export default function StageToday() {
   useEffect(() => {
     if (!settled) return undefined;
     const r = setTimeout(() => releaseHomeSnap(snapRef.current), 700);
-    const s = setTimeout(() => saveHomeSnap(snapRef.current), 2400);
+    const s = setTimeout(() => {
+      saveHomeSnap(snapRef.current);
+      // The order this page is painted in, so the next snapshot visit's live
+      // page can take the same one under cover (see ordPlays).
+      try { localStorage.setItem(ORD_KEY, JSON.stringify({ day: etToday(), plays: ordPlays, runs: ordRuns, done: [...orderDone] })); } catch (e) { /* storage off */ }
+    }, 2400);
     return () => { clearTimeout(r); clearTimeout(s); };
   }, [settled]);
 
@@ -2760,8 +2825,12 @@ export default function StageToday() {
   // A TO Z IS THE DEFAULT AGAIN (owner, 2026-11-08). The stored key moved to
   // sot_home_sort2 so every earlier Popular / Easy to Hard pick starts over on
   // A to Z; a pick made now holds.
-  const [sortBy, setSortBy] = useState('az');
-  useEffect(() => {
+  // Starts on Popular because the first pane is All Puzzles, which opens on
+  // Popular (2026-11-17); the stored pick is applied in a LAYOUT effect, before
+  // the hydrated page paints, so the server's order is never painted and then
+  // swapped (owner, 2026-11-21).
+  const [sortBy, setSortBy] = useState('pop');
+  useIsoLayoutEffect(() => {
     try { const v = localStorage.getItem(SORT_KEY); if (SORTS_KEPT.has(v)) setSortBy(v); } catch (e) { /* storage off */ }
   }, []);
   // EASY TO HARD (owner, 2026-10-18): each game's rating for the week, 1 to 5,
@@ -2832,7 +2901,8 @@ export default function StageToday() {
   // sort or view inside the skill still applies and is remembered as usual.
   // A skill pane no longer forces Popular (owner, 2026-11-08: A to Z is the
   // default page view): it takes the reader's stored sort like every pane.
-  useEffect(() => {
+  // A layout effect (owner, 2026-11-21): the pane's sort lands before paint.
+  useIsoLayoutEffect(() => {
     if (isSkillId(paneOn)) {
       try { const sv = localStorage.getItem(SORT_KEY); setSortBy(SORTS_KEPT.has(sv) ? sv : 'az'); } catch (e) { /* storage off */ }
       let vv = null; try { vv = localStorage.getItem(VIEW_KEY); } catch (e) { /* storage off */ }
@@ -3273,14 +3343,16 @@ export default function StageToday() {
   const featFor = (n) => {
     if (n < 1) return [];
     const out = []; const seen = new Set(['mural', 'muraltoo']);
-    const add = (g) => { if (g && !seen.has(g.key) && (FEATURED_STAYS.has(g.key) || !done.has(g.key)) && out.length < n) { seen.add(g.key); out.push(g); } };
+    const add = (g) => { if (g && !seen.has(g.key) && (FEATURED_STAYS.has(g.key) || !orderDone.has(g.key)) && out.length < n) { seen.add(g.key); out.push(g); } };
     const lead = muralFeat && alpha.find((g) => g.key === muralFeat);
     if (lead) out.push(lead);
     for (const k of FEATURED_KEYS) add(alpha.find((g) => g.key === k));
     const inRun = new Set(RUN_GAMES);
     for (const c of circuits) for (const g of c.games) inRun.add(g.key);
-    const wk = fav && !fav.failed ? ((fav.uniq && Object.keys(fav.uniq).length) ? fav.uniq : (fav.week || {})) : {};
-    const cnt = (g) => (wk[g.key] || 0) * 1e4 + (playsBy.get(g.key) || 0);
+    // The visit's frozen plays (ordPlays) when there are any: the week's counts
+    // land seconds later, and ranking by them refilled the row under the reader.
+    const wk = !ordPlays && fav && !fav.failed ? ((fav.uniq && Object.keys(fav.uniq).length) ? fav.uniq : (fav.week || {})) : {};
+    const cnt = (g) => (wk[g.key] || 0) * 1e4 + (ordPlays ? Number(ordPlays[g.key]) || 0 : (playsBy.get(g.key) || 0));
     const recent = alpha.filter((g) => LAUNCHED[g.key])
       .sort((a, b) => String(LAUNCHED[b.key]).localeCompare(String(LAUNCHED[a.key])) || a.name.localeCompare(b.name));
     const pop = alpha.filter((g) => !inRun.has(g.key)).sort((a, b) => (cnt(b) - cnt(a)) || a.name.localeCompare(b.name));
@@ -3396,9 +3468,13 @@ export default function StageToday() {
     }
     // POPULAR IS TODAY'S PLAYS (owner, 2026-10-26), off the day board the
     // tiles already read; the week's plays only break a tie.
-    if (sortBy !== 'pop' || !board) return list;
-    const w = (fav && fav.week) || {};
-    const raw = (g) => Number((boardBy[g.key] || {}).plays) || 0;
+    // Ordered by the visit's frozen plays (ordPlays), never the live board, so
+    // nothing reshuffles when that read lands (owner, 2026-11-21). The week no
+    // longer breaks ties: it arrives later still, and every tie it broke was a
+    // second reshuffle.
+    if (sortBy !== 'pop' || !ordPlays) return list;
+    const w = {};
+    const raw = (g) => Number(ordPlays[g.key]) || 0;
     // A RUN'S PLAYS COUNT ONCE, ON THE RUN (owner, 2026-11-20, the home cleanup
     // mockup: Popular led with six Trivia Gauntlet legs under the gauntlet's own
     // tile). A puzzle that is a leg of a run ranks by its plays OUTSIDE the run,
@@ -3588,8 +3664,8 @@ export default function StageToday() {
   // then what is done, A to Z inside each.
   const mineLedger = () => {
     const az = [...pinned].sort((a, b) => a.name.localeCompare(b.name));
-    const left = az.filter((g) => !done.has(g.key));
-    const fin = az.filter((g) => done.has(g.key));
+    const left = az.filter((g) => !orderDone.has(g.key));
+    const fin = az.filter((g) => orderDone.has(g.key));
     return (
       <div className={'sty-led' + (isOpen(MINE_ID) ? '' : ' shut')}>
         {left.length ? <>{ledgerHead('To play today', left.length)}{ledgerRows(left, 'mine', true)}</> : null}
@@ -3814,6 +3890,12 @@ export default function StageToday() {
   // the site board and in your group.
   const RUN_SHORT = { gauntlet: 'Trivia', triviaencore: 'Encore', english: 'English', science: 'Science', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', dojocolor: 'Color Dojo', crossed: 'Crossed Up', spacecadet: 'Space Cadet', duediligence: 'Diligence', eagleeye: 'Eagle Eye', oddjobs: 'Odd Jobs', room: 'Room' };
   const runFull = (c) => c.games.length > 0 && c.n === c.games.length;
+  // THE RUNS' ORDER, frozen for the visit (owner, 2026-11-21): finished last by
+  // the visit's finished set, then finishes in 24 hours, then players today, off
+  // the server's seed. Without a seed it is the live figures, as before.
+  const runFullO = (c) => (c.poly ? runFull(c) : c.games.length > 0 && (c.nO != null ? c.nO : c.n) === c.games.length);
+  const runD = (c) => (ordRuns ? ((ordRuns[c.id] || {}).d || 0) : done24(c));
+  const runP = (c) => (ordRuns ? ((ordRuns[c.id] || {}).p || 0) : ((runStat[c.id] || {}).players || 0));
   const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
   const runLook = (c, cat) => {
     const pc = pillCat(c, cat);
@@ -4075,9 +4157,9 @@ export default function StageToday() {
     // the puzzles; the runs lead with what is being played, as ruled 2026-11-08
     // (finishes in 24 hours, then players today). Easy to Hard still applies.
     const by = sortBy === 'diff' ? (a, b) => (diff ? df(a) - df(b) : 0) || base(a, b)
-        : (a, b) => (done24(b) - done24(a)) || (((runStat[b.id] || {}).players || 0) - ((runStat[a.id] || {}).players || 0)) || (w ? wk(b) - wk(a) : 0) || base(a, b);
+        : (a, b) => (runD(b) - runD(a)) || (runP(b) - runP(a)) || (w && !ordRuns ? wk(b) - wk(a) : 0) || base(a, b);
     if (polyRun && list.some((c) => polyRun.legs.some((l) => l.id === c.id))) list.push(polyRun);
-    return list.sort((a, b) => ((runFull(a) ? 1 : 0) - (runFull(b) ? 1 : 0)) || by(a, b));
+    return list.sort((a, b) => ((runFullO(a) ? 1 : 0) - (runFullO(b) ? 1 : 0)) || by(a, b));
   };
   const deckTile = (c, cat, i) => {
     const fin = runFull(c);
@@ -4354,7 +4436,7 @@ export default function StageToday() {
   // the old popular filter, don't push the run puzzles to the bottom anymore").
   // Run components sort with everything else by popularity, finished games
   // last. Supersedes the 2026-11-08 run-puzzles-last split.
-  const allOrder = (list) => playedLast(list, done);
+  const allOrder = (list) => playedLast(list, orderDone);
   // HOISTED (2026-11-08 hotfix): runCells and the run tiles read dTintCat during
   // render, so these must be defined before them or the home throws a TDZ error.
   const mph = !picked || paneOn === ALL_ID || paneOn === MINE_ID || paneOn === CIRC_ID || !!paneCat(paneOn);
@@ -4972,7 +5054,7 @@ export default function StageToday() {
                     2026-11-15), so the row is always 25 things still to play
                     while the order has that many left. */}
                 {(() => {
-                  const topRuns = [...circuits].sort((a, b) => (runFull(a) - runFull(b)) || (done24(b) - done24(a)) || (((runStat[b.id] || {}).players || 0) - ((runStat[a.id] || {}).players || 0)) || ((b.pop || 0) - (a.pop || 0)));
+                  const topRuns = [...circuits].sort((a, b) => (runFullO(a) - runFullO(b)) || (runD(b) - runD(a)) || (runP(b) - runP(a)) || ((b.pop || 0) - (a.pop || 0)));
                   // The order is FIXED for the visit only once the week's counts
                   // are in hand. Until then (a slow server, after TOP_WAIT_MS) the
                   // row shows a provisional order on today's plays, and settles
@@ -4981,7 +5063,7 @@ export default function StageToday() {
                   const rankTop = (uq) => {
                     const inRun = new Set(RUN_GAMES);
                     for (const c of circuits) for (const g of c.games) inRun.add(g.key);
-                    const cnt = (g) => (uq ? uq[g.key] || 0 : playsBy.get(g.key) || 0);
+                    const cnt = (g) => (uq ? uq[g.key] || 0 : ordPlays ? Number(ordPlays[g.key]) || 0 : playsBy.get(g.key) || 0);
                     const by = (a, b) => (cnt(b) - cnt(a)) || a.name.localeCompare(b.name);
                     const pool = alpha.filter((g) => !inRun.has(g.key));
                     const any = pool.some((g) => cnt(g) > 0);
@@ -4992,11 +5074,14 @@ export default function StageToday() {
                     return [...lead, ...dealByCat(rest)].map((g) => g.key);
                   };
                   const topOk = !!day && circuits.length > 0;
+                  // With the visit's plays in hand the order is fixed at once and
+                  // never re-ranked when the week's counts land (owner, 2026-11-21).
+                  if (!topOrder.current && topOk && ordPlays) topOrder.current = rankTop(null);
                   if (!topOrder.current && topOk && fav && !fav.failed) {
                     topOrder.current = rankTop(fav.uniq && Object.keys(fav.uniq).length ? fav.uniq : fav.week);
                   }
                   const order = topOrder.current || (topOk && (fav || !topWait) ? rankTop(null) : []);
-                  const topPz = order.filter((k) => !done.has(k)).slice(0, TOP_PUZZLES).map((k) => alpha.find((g) => g.key === k)).filter(Boolean);
+                  const topPz = order.filter((k) => !orderDone.has(k)).slice(0, TOP_PUZZLES).map((k) => alpha.find((g) => g.key === k)).filter(Boolean);
                   // M2 (owner, 2026-11-15): the categories are chips that fill their rows,
                   // then sideways rows of full cards: My Puzzles (when there are any,
                   // first since 2026-11-15), Top Runs, Top Puzzles, Newest. Newest always shows.
@@ -5011,8 +5096,8 @@ export default function StageToday() {
                   // and taken out the same morning so the chips make even rows of four.
                   const chips = [{ id: ALL_ID, all: true, label: `All ${alpha.length}` }, { id: MINE_ID, plain: true, label: 'My Puzzles', go: () => mOpen(MINE_ID) },
                     ...orderedCats.map((c) => ({ id: c.cat, label: catShortLabel(c.cat) || catLabel(c.cat) }))];
-                  const mine = [...pinned].sort((a, b) => (done.has(a.key) - done.has(b.key)) || a.name.localeCompare(b.name));
-                  const newest = alpha.filter((g) => LAUNCHED[g.key] && !done.has(g.key))
+                  const mine = [...pinned].sort((a, b) => (orderDone.has(a.key) - orderDone.has(b.key)) || a.name.localeCompare(b.name));
+                  const newest = alpha.filter((g) => LAUNCHED[g.key] && !orderDone.has(g.key))
                     .sort((a, b) => String(LAUNCHED[b.key]).localeCompare(String(LAUNCHED[a.key])) || a.name.localeCompare(b.name)).slice(0, NEWEST_ROW);
                   const hCard = (g) => {
                     const isDone = done.has(g.key);
@@ -5159,7 +5244,7 @@ export default function StageToday() {
               const pc = !isAll && !isMine && !isRuns ? paneCat(paneOn) : null;
               const games = isAll ? alpha : isMine ? pinned : pc ? pc.games : [];
               const sorted = isMine ? [...games].sort((a, b) => a.name.localeCompare(b.name)) : isAll ? allOrder(sortGames(games)) : sortGames(games);
-              const runs = (isMine ? pinnedCircs : isRuns ? [...circuits] : mRunsFor(isAll ? null : paneOn)).slice().sort((a, b) => (runFull(a) - runFull(b)) || (done24(b) - done24(a)) || (((runStat[b.id] || {}).players || 0) - ((runStat[a.id] || {}).players || 0)));
+              const runs = (isMine ? pinnedCircs : isRuns ? [...circuits] : mRunsFor(isAll ? null : paneOn)).slice().sort((a, b) => (runFullO(a) - runFullO(b)) || (runD(b) - runD(a)) || (runP(b) - runP(a)));
               const nDone = games.filter((g) => done.has(g.key)).length;
               const s = pc ? skillOfId(paneOn) : null;
               const title = isAll ? 'All puzzles' : isMine ? 'My puzzles' : isRuns ? 'Runs' : catLabel(paneOn);
@@ -5170,8 +5255,8 @@ export default function StageToday() {
               // replacing the N3 category groups and Jump To): Popular by default,
               // and a tapped category chip re-sorts so its puzzles lead.
               const lead = (list) => (isAll && mAllCat ? [...list.filter((g) => g.cat === mAllCat), ...list.filter((g) => g.cat !== mAllCat)] : list);
-              const openG = lead(sorted.filter((g) => !done.has(g.key)));
-              const playedG = lead(sorted.filter((g) => done.has(g.key)));
+              const openG = lead(sorted.filter((g) => !orderDone.has(g.key)));
+              const playedG = lead(sorted.filter((g) => orderDone.has(g.key)));
               const mGroups = [];
               if (openG.length) mGroups.push({ id: 'open', cat: null, games: openG });
               if (playedG.length) mGroups.push({ id: 'played', played: true, games: playedG });
@@ -5405,7 +5490,7 @@ export default function StageToday() {
             {pinned.length && !(mid && viewOf(MINE_ID) === 'list') ? (
               <div className={'sty-games' + (isOpen(MINE_ID) ? '' : ' shut')}>
                 {/* ON A PHONE MY GAMES IS ALPHABETICAL (owner, 2026-10-03); desktop keeps played-last. */}
-                {(narrow ? [...pinned].sort((a, b) => a.name.localeCompare(b.name)) : playedLast(pinned, done)).map((g, i) => (
+                {(narrow ? [...pinned].sort((a, b) => a.name.localeCompare(b.name)) : playedLast(pinned, orderDone)).map((g, i) => (
                   <GameCard key={g.key} g={g} done={done} inprog={inprog} tq={tq} day={board ? (boardBy[g.key] || { board: [], plays: 0 }) : null}
                     canPin={canPin} favorites={favorites} toggleFavorite={toggleFavorite}
                     hue={hueFor(g.cat)} res={standBy[g.key]} dotsFor={dotsL} light={light} i={i} fk={'mine:' + g.key} />
@@ -5515,7 +5600,7 @@ export default function StageToday() {
             {/* EVERY RUN IS A PUZZLE-STYLE TILE (owner, 2026-11-07), replacing the
                 drawn cards with Play buttons; Build a Run is the last tile. */}
             <div className={'sty-games sty-rpgrid' + (isOpen(CIRC_ID) ? '' : ' shut')} ref={circRef}>
-              {(allCircs || circPane ? [...circuits].sort((a, b) => (runFull(a) - runFull(b)) || (done24(b) - done24(a))) : circLead).map((c) => runPaneTile(c))}
+              {(allCircs || circPane ? [...circuits].sort((a, b) => (runFullO(a) - runFullO(b)) || (runD(b) - runD(a))) : circLead).map((c) => runPaneTile(c))}
               <a key="rp-build" className="sty-g mx sty-gbuild" href="/build-a-run" data-fk="rp:build">
                 <span className="sty-gn">+ Build a Run</span>
                 <span className="sty-gt">Pick your own games and share one link. Friends play the same set and race you.</span>

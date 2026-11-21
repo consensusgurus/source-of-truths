@@ -26,12 +26,12 @@ import HomeViewPing from './HomeViewPing';
 // needs: the 'home' row in the per-quiz view analytics.
 const QuizHomeClient = dynamic(() => import('./quizzes/QuizHomeClient'));
 
-export default function HomeSwitch({ stage = true, sourceCount = 0 }) {
+export default function HomeSwitch({ stage = true, sourceCount = 0, seed = null }) {
   if (!stage) return <QuizHomeClient variant="v3" sourceCount={sourceCount} stageDefault={false} />;
   return (
     <>
       <HomeViewPing />
-      <StageToday />
+      <StageToday seed={seed} />
     </>
   );
 }

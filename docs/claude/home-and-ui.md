@@ -3019,3 +3019,30 @@ Owner approved the cohesion mockup and said "implement all of those". What it se
 - **Reorder is the category list's last row** on desktop, joined to the foot of the box.
 - **The group switch sits by the name chip** from 1261px up (`.sty-grpt`); below that the text toggle in the tools row stays.
 - **Menu rows are square.** `.nmm-r` states `border-radius:0`: the global button radius made the Log out row's fill a pill.
+
+## The home's order is in the HTML and never reshuffles (owner, 2026-11-21)
+
+Owner report: "very hard to click to the page you want because items move around so much while
+loading", on the home and its category panes. Cause: Popular, the runs row, Top Puzzles and
+Featured ordered off reads that land 1 to 6s after paint (the day board, each run's
+daily-combined, my-plays), and played games sank to the foot when daily-status landed, so tiles
+moved under the reader's thumb once per read. The runs row also only appeared after an effect set
+`day`, pushing everything down.
+
+- **`lib/home-seed.js` (server, `app/page.js`)** passes `seed` to StageToday: `plays` (today's plays
+  per game off prebuilt `boards-v1/overall`), `runs` (`{d: finishes in 24h, p: players}` per run off
+  `circuit-<id>`), `done` (the `sot_dn` cookie StageToday writes when daily-status answers:
+  `M-D-YY.key.key`), and `today` (seeds `day`, so runs render in the server HTML). One memoized read
+  set per instance per minute, capped at 350ms on the page path; no seed just means the old path.
+- **Every ORDER reads the frozen inputs, never the live reads:** `ordPlays`, `ordRuns`, `orderDone`.
+  Popular, playedLast, the phone open/played split, My Puzzles, Featured, Top Puzzles, the runs row
+  and the circuits memo all use them. The live `done`, `board` and `runStat` still draw figures and
+  the played styling, so a game finished elsewhere shows as played IN PLACE and moves on the next
+  visit. Without a seed, ordPlays is taken once from the first board read and frozen.
+- **Under the snapshot**, the live page takes the order the snapshot was painted in
+  (`sot_home_ord`, saved beside it, plus FILL's breadcrumb moves) in a layout effect, so the
+  release does not reorder.
+- The sort pick is applied in layout effects (initial state `pop`, All Puzzles' default), not effects.
+- Trade-offs accepted: the week's plays no longer break Popular ties, and Top Puzzles / Featured rank
+  by today's plays when the seed is present (the week's unique counts arrived seconds after paint).
+- **Do not add an order term that reads a late fetch.** If a new term is needed, put it in the seed.
