@@ -9181,8 +9181,8 @@ html[data-stage-color=full] .sty-deck.done{opacity:1;background:color-mix(in srg
      icon over name. Flex wrap with justify-content:center so a short last row sits centred
      at the same tile width (the odd-tile rule). */
   .sty-mph .mph-eeg{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-mute);margin-top:6px;}
-  .sty-mph .mph-list.mt.m3{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;}
-  .sty-mph .mph-list.mt.m3 > *{flex:0 0 calc((100% - 16px) / 3);flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  .sty-mph .mph-list.mt.m3{display:flex;flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;}
+  .sty-mph .mph-list.mt.m3 > *{flex:0 0 calc((100% - 16px) / 3);width:calc((100% - 16px) / 3);max-width:calc((100% - 16px) / 3);flex-direction:column;align-items:center;justify-content:center;gap:6px;
     min-height:82px;padding:10px 6px;text-align:center;font-size:13px;}
   .sty-mph .mph-list.mt.m3 > * > svg{width:22px;height:22px;}
   .sty-mph .mph-list.mt.m3 > * > b{align-items:center;}
