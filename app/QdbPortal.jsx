@@ -189,15 +189,12 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="qd-top"><StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} href="/" allLooks share /></div>
       <main className="qd-col">
-        <nav className="qd-crumb" aria-label="Breadcrumb">
-          {crumbs.map((c, i) => (i < crumbs.length - 1
-            ? <span key={c.label}><a href={c.href}>{c.label}</a><span aria-hidden="true"> / </span></span>
-            : <span key={c.label} aria-current="page">{c.label}</span>))}
-        </nav>
+        {/* No breadcrumb row (owner, 2026-11-21: "get rid of the text above"); the BreadcrumbList data stays in the page head (QdbPages.jsx). */}
         {!topic ? (
           <>
-            <h1 className="qd-kick">{db.name} · {fmt(total)} {db.noun} and answers</h1>
+            <h1 className="qd-kick">{db.name} · {fmt(total)} {db.many}</h1>
             <p className="qd-q">{db.ask}</p>
+            {controls}
             <ul className="qd-grid">
               {topics.map((t, i) => {
                 const me = hydrated ? store.t[t.slug] : null;
@@ -233,8 +230,9 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
           </>
         ) : (
           <>
-            <h1 className="qd-kick">{topic.h1} · {fmt(topic.n)} past {db.many}</h1>
+            <h1 className="qd-kick">{topic.label} · {fmt(topic.n)} {db.many}</h1>
             <p className="qd-q">{manyLanes ? 'Pick a quiz, or play them all' : db.key === 'trivia' ? `Which part of ${topic.label.toLowerCase()}?` : `Which kind of ${db.one}?`}</p>
+            {controls}
             {manyLanes ? (
               <label className="qd-search"><input type="search" value={laneQ} onChange={(e) => setLaneQ(e.target.value)} placeholder="Find a topic: Rome, volcanoes, jazz" aria-label="Find a quiz topic" /></label>
             ) : null}
@@ -514,7 +512,7 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 .qd-crumb{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:12.5px;font-weight:700;opacity:.75;margin-bottom:-14px;}
 .qd-crumb a{text-decoration:none;}
 .qd-crumb a:hover{text-decoration:underline;}
-.qd-kick{align-self:center;display:inline-flex;align-items:center;gap:8px;max-width:100%;margin:0;padding:6px 14px 6px 11px;border:1px solid var(--qd-ink);border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;line-height:1.3;text-align:center;}
+.qd-kick{align-self:center;display:inline-flex;align-items:center;gap:8px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0;padding:6px 14px 6px 11px;border:1px solid var(--qd-ink);border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;line-height:1.3;text-align:center;}
 .qd-kick::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--qd-ink);}
 .qd-q{margin:-6px 0 0;text-align:center;font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-0.02em;padding-bottom:.06em;}
 /* THE ODD-TILE RULE (owner, 2026-11-21): a short last row is centred at the same
