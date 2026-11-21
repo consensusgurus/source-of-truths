@@ -131,7 +131,7 @@ export default function PrivateMuralClient() {
           </a>
           <span className="sp" />
           <a className="pm-txt" href="/mural">Mural</a>
-          <a className="pm-txt" href="/jig/shelf?tab=murals">Puzzle Shelf</a>
+          <a className="pm-txt" href="/jig/shelf?tab=murals">Jigsaw Puzzles</a>
         </div>
 
         <h1>Private Mural</h1>

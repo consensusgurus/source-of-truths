@@ -5,8 +5,14 @@ import { PUZZLES as SAW } from '../../saw/puzzles';
 import { SITE_URL } from '@/lib/site';
 import { gameCategory } from '@/lib/game-seo';
 import { topicCounts } from '@/lib/jigsaw-library';
+import { topicOf } from '@/lib/jigsaw-topics';
 
-// /jig/shelf: THE JIGSAW PUZZLE SHELF (owner, 2026-10-16; Saw added and the
+// /jig/shelf: THE JIGSAW PUZZLES PORTAL (owner, 2026-11-21), which replaced the
+// wooden Jigsaw Puzzle Shelf at the same URL so every link and its search
+// standing carry over. A grid of every past photo, playable at 24 to 4,000
+// pieces (ShelfClient.jsx). The history below is the shelf's.
+//
+// THE JIGSAW PUZZLE SHELF (owner, 2026-10-16; Saw added and the
 // shelf renamed from "Jig Puzzle Shelf" 2026-11-11, same URL so it keeps its
 // search standing). Every Jig AND Saw board so far, a Jig plank and (from
 // Saw's first week) a Saw plank per week. Originally every Jig board so far,
@@ -25,18 +31,17 @@ import { topicCounts } from '@/lib/jigsaw-library';
 // fetched either.
 
 export const metadata = {
-  // THE JIGSAW HUB (owner, 2026-11-19: "we have a jigsaw hub page, the jigsaw
-  // shelf. use that as the place to build or add language"). The search title
-  // and description now aim at "free online jigsaw puzzles"; the share copy
-  // below and the page's own heading are unchanged.
-  title: 'Free Online Jigsaw Puzzles: Daily Jigsaws and Archive | Mind Loft',
+  // THE JIGSAW HUB (owner, 2026-11-19 and 2026-11-21: make it the top place for
+  // jigsaws online). The title leads with the search ("free online jigsaw
+  // puzzles") and the thing no other daily has: any picture at any size.
+  title: 'Free Online Jigsaw Puzzles: 24 to 4,000 Pieces, No Download | Mind Loft',
   description:
-    'Free online jigsaw puzzles, no download: a new wide and tall photo jigsaw every day, every past one to replay, and 4,000 piece jigsaws built together.',
+    'Free online jigsaw puzzles from real photos: play any picture at 24 to 4,000 pieces, plus a new daily jigsaw and a 4,000 piece jigsaw built together.',
   alternates: { canonical: '/jig/shelf' },
   openGraph: {
-    images: [{ url: '/og/jig-shelf.png', width: 1200, height: 630, alt: 'The Jigsaw Puzzle Shelf: past daily jigsaw photos on wooden shelves, today a question mark' }],
-    title: 'The Jigsaw Puzzle Shelf',
-    description: 'Every Jig and Saw daily jigsaw so far. Pick a box and play it free.',
+    images: [{ url: '/og/jig-shelf.png', width: 1200, height: 630, alt: 'Mind Loft jigsaw puzzles: free photo jigsaws at 24 to 4,000 pieces' }],
+    title: 'Free Online Jigsaw Puzzles, 24 to 4,000 Pieces',
+    description: 'Every picture, any size. Free photo jigsaws in your browser, with a new one every day.',
     url: '/jig/shelf',
     type: 'website',
     siteName: 'Mind Loft',
@@ -44,8 +49,8 @@ export const metadata = {
   twitter: {
     images: ['/og/jig-shelf.png'],
     card: 'summary_large_image',
-    title: 'The Jigsaw Puzzle Shelf',
-    description: 'Every Jig and Saw daily jigsaw so far. Pick a box and play it free.',
+    title: 'Free Online Jigsaw Puzzles, 24 to 4,000 Pieces',
+    description: 'Every picture, any size. Free photo jigsaws in your browser, with a new one every day.',
   },
 };
 
@@ -66,33 +71,33 @@ function licenceUrl(lic) {
 }
 const commonsPage = (t) => `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(t.replace(/ /g, '_'))}`;
 
-// The first three answer the hub searches (2026-11-19); they print in the
-// Questions block at the foot of the page, under the shelves, where the
-// existing three already sit.
+// The questions print at the foot of the portal and as FAQPage data. They
+// answer the searches the hub is built for (2026-11-19, 2026-11-21): free
+// online jigsaws, choosing the piece count, saving a big one, playing with friends.
 const FAQ = [
   {
     q: 'Are these jigsaw puzzles free to play online?',
-    a: 'Yes. Every jigsaw on Mind Loft is free in your browser, on a phone or a computer, with no download, no app and no signup. A new Jig and a new Saw open every day at midnight Eastern, and every past puzzle on this shelf stays free to replay.',
+    a: 'Yes. Every jigsaw on Mind Loft is free in your browser, on a phone, a tablet or a computer, with no download, no app and no signup. A new Jig and a new Saw open every day at midnight Eastern, and every past picture stays free to play.',
+  },
+  {
+    q: 'Can I choose how many pieces my jigsaw has?',
+    a: 'Yes. Pick 24, 48, 80, 150, 300, 500, 1,000, 2,000 or 4,000 pieces at the top of the page and every picture opens at that size. A picture without enough detail or resolution for a very big size is greyed out and shows the biggest size it can do.',
+  },
+  {
+    q: 'Is my progress saved on a big jigsaw?',
+    a: 'Yes. A free-play jigsaw keeps every piece you place in this browser, so you can close the page and come back to a 2,000 or 4,000 piece puzzle later. There is no clock and nothing is scored, so take as long as you like.',
   },
   {
     q: 'What kinds of jigsaw puzzles are there?',
-    a: 'Jig is a daily 80 piece jigsaw of a wide photo. Saw is a daily tall jigsaw of 77 or 80 pieces. Mural and MuralToo are 4,000 piece jigsaws that everyone on the site builds together, and Mind Loft Kids has the same photos in 6 to 30 pieces.',
+    a: 'Jig is a daily 80 piece jigsaw of a wide photo and Saw a daily tall one whose pieces lock to each other. Mural and MuralToo are 4,000 piece jigsaws that everyone on the site builds together, and Mind Loft Kids has the same photos in 6 to 30 pieces.',
   },
   {
     q: 'Can I do a big jigsaw puzzle with friends?',
-    a: 'Yes. Mural and MuralToo are 4,000 piece multiplayer jigsaws the whole site builds at once, and a Private Mural is the same giant jigsaw for just your group or anyone you send the link to. Finished murals come back to this shelf to build alone.',
+    a: 'Yes. Mural and MuralToo are 4,000 piece multiplayer jigsaws the whole site builds at once, and a Private Mural is the same giant jigsaw for just your group or anyone you send the link to. Finished murals come back to the Murals tab to build alone.',
   },
   {
-    q: 'What is the Jigsaw Puzzle Shelf?',
-    a: 'It is every Jig and Saw daily jigsaw so far, one box per puzzle per day, a week to a shelf: Jig on top, the tall Saw below it. Each box shows that day’s photograph and its piece count. Pick any past box to play that puzzle free from the archive.',
-  },
-  {
-    q: 'How many pieces is each puzzle?',
-    a: 'Every Jig is 80 pieces of a wide photo; boards before October 30, 2026 grew through the week, from 48 on a Monday to an 80-piece Sunday Edition. Every Saw is a tall photo cut 7 by 11 or 8 by 10, so 77 or 80 pieces, and its pieces lock to each other on a loose table.',
-  },
-  {
-    q: 'Why are today’s boxes question marks?',
-    a: 'Today’s photographs are the surprise, so the shelf keeps them covered. Finish today’s Jig or Saw and its box shows the picture on this device.',
+    q: 'Where do the jigsaw pictures come from?',
+    a: 'Every picture is a featured photograph from Wikimedia Commons: animals, landscapes, cities and landmarks, flowers and food from around the world. The photographer and licence are credited when you finish the puzzle.',
   },
 ];
 
@@ -107,7 +112,7 @@ export default function JigShelfPage() {
     const todays = live.length ? live[live.length - 1] : null;
     return live.map((p) => (p === todays && p.live === today
       ? { g, k: `${g}-${p.num}`, n: p.num, d: p.live, l: p.dateLabel, s: p.sunday ? 1 : 0, c: p.cols, r: p.rows, today: 1 }
-      : { g, k: `${g}-${p.num}`, n: p.num, d: p.live, l: p.dateLabel, s: p.sunday ? 1 : 0, c: p.cols, r: p.rows, name: p.name, by: p.by, lic: p.lic, src: commonsPage(p.t), t: p.t }));
+      : { g, k: `${g}-${p.num}`, n: p.num, d: p.live, l: p.dateLabel, s: p.sunday ? 1 : 0, c: p.cols, r: p.rows, name: p.name, by: p.by, lic: p.lic, src: commonsPage(p.t), t: p.t, topic: topicOf(p.name) }));
   };
   const all = [...rows('jig', PUZZLES), ...rows('saw', SAW)]
     .sort((a, b) => (a.d === b.d ? (a.g === 'jig' ? -1 : 1) : a.d < b.d ? 1 : -1));
@@ -119,7 +124,8 @@ export default function JigShelfPage() {
   const collectionJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: 'Jigsaw Puzzle Shelf',
+    name: 'Free Online Jigsaw Puzzles',
+    alternateName: 'Jigsaw Puzzle Shelf',
     description: metadata.description,
     url: `${SITE_URL}/jig/shelf`,
     isPartOf: { '@type': 'WebSite', name: 'Mind Loft', url: SITE_URL },
@@ -135,7 +141,7 @@ export default function JigShelfPage() {
     ].map(([name, href]) => ({ '@type': 'WebPage', name, url: `${SITE_URL}${href}` })),
     mainEntity: {
       '@type': 'ItemList',
-      name: 'Jig and Saw daily jigsaw puzzles',
+      name: 'Photo jigsaw puzzles, 24 to 4,000 pieces',
       numberOfItems: past.length,
       itemListOrder: 'https://schema.org/ItemListOrderDescending',
       itemListElement: past.map((b, i) => {
@@ -146,7 +152,7 @@ export default function JigShelfPage() {
           url: `${SITE_URL}/${b.g}?p=${b.n}`,
           item: {
             '@type': 'ImageObject',
-            name: `${GNAME[b.g]} No. ${b.n}: ${b.name}`,
+            name: `${b.name}: a free jigsaw puzzle`,
             caption: b.name,
             contentUrl: `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(titleOf.get(b.k) || '')}`,
             acquireLicensePage: b.src,
@@ -167,7 +173,7 @@ export default function JigShelfPage() {
       cat
         ? { '@type': 'ListItem', position: 2, name: cat.label, item: `${SITE_URL}${cat.href}` }
         : { '@type': 'ListItem', position: 2, name: 'Puzzle Archive', item: `${SITE_URL}/archive` },
-      { '@type': 'ListItem', position: 3, name: 'Jigsaw Puzzle Shelf' },
+      { '@type': 'ListItem', position: 3, name: 'Jigsaw Puzzles' },
     ],
   };
   const faqJsonLd = {
@@ -182,7 +188,8 @@ export default function JigShelfPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <PageViewBeacon id="jig-shelf" />
-      <ShelfClient boards={boards} today={today} crumb={cat ? { label: cat.label, href: cat.href } : null} faq={FAQ} topics={topicCounts(today).filter((t) => t.indexed)} />
+      <ShelfClient boards={boards} today={today} crumb={cat ? { label: cat.label, href: cat.href } : null} faq={FAQ} topics={topicCounts(today).filter((t) => t.indexed)}
+        allTopics={topicCounts(today).sort((a, b) => b.count - a.count).map((t) => ({ slug: t.slug, label: t.label }))} />
     </>
   );
 }

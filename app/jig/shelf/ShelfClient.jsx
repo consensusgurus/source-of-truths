@@ -1,524 +1,521 @@
 'use client';
 
-// THE JIGSAW PUZZLE SHELF, the client half of /jig/shelf (owner, 2026-10-16;
-// Saw joined and the shelf was renamed and recoloured 2026-11-11).
+// THE JIGSAW PUZZLES PORTAL, the client half of /jig/shelf (owner, 2026-11-21:
+// "make the site the top destination for jigsaw puzzles ... maybe it's more of
+// a grid of available images", then "can't we have the piece selector be
+// shared on page", "why can't piece count go higher up to mural count", and
+// "if it doesn't work on larger sizes, make it unavailable ... Greyed").
+// It replaced the wooden Jigsaw Puzzle Shelf at the same URL, so every link to
+// the shelf (footer, home lists, the Jig, Saw and Mural pages) lands here.
+// Design: the "Jigsaw Portal Mockup" canvas.
 //
-// Every board is a small box: a lid with its number, the photograph, and a
-// sticker with its piece count, standing on a wooden plank, a week to a shelf,
-// newest week first. Each week has a Jig plank and, from Saw's first week, a
-// Saw plank under it (Saw boxes are tall, like its photos). Today's boxes are
-// question marks. Picking a box opens it in the side panel (below the shelf on
-// a phone), which says what it is, who took the photo, and plays it.
+// ALL PUZZLES: every past Jig and Saw photo as a big picture. One shared size
+// bar (lib/jigsaw-sizes.js) sets the size every picture opens at; a picture
+// that cannot do that size (lib/jigsaw-fit.js, read through /api/jigsaw/fit)
+// is greyed with the biggest size it can do. The daily's own size opens the
+// ordinary archived board; any other size opens the free-play board (/jig/big).
+// DAILY ARCHIVE: the dailies as they ran, numbered and dated, with this
+// device's solved marks. MURALS: finished Murals to build alone. KIDS: a door.
 //
-// The boxes are real links to /jig?p=N or /saw?p=N in the server HTML, so a
-// crawler walks the whole archive. In the browser a click SELECTS instead.
+// SERVER HTML IS THE CRAWL PATH: the first render is the All Puzzles grid at
+// the default size, every picture a real link to its own page (/jig?p=N,
+// /saw?p=N) with alt text naming the photo. Nothing that needs this device
+// (saved sizes, marks, greying) changes a link until after hydration.
 //
-// Solved and played marks: this device's saves first (sot_jig_N, sot_saw_N),
-// then the server's history merged in through the shared day-status client.
-// A today box shows its picture only once this device has finished it.
-//
-// COLOUR (2026-11-11): everything that is not a photo or the wooden plank
-// reads the page's own tokens. The lids, the today box, the selected ring, the
-// Sunday mark and the filter chips all wear the Logic accent (--stg-acc with
-// --stg-onramp ink), the same as the call to action, so the shelf matches its
-// page in both registers. The old navy lids and gold Sunday lids were the
-// pre-ramp palette and are gone; do not bring back a literal hue here.
+// TODAY'S PHOTOS NEVER LEAVE THE SERVER: today's boards arrive as a number and
+// a cut only, and the library holds past photos alone.
 import { useEffect, useMemo, useState } from 'react';
 import CircuitFrame from '../../circuits/CircuitFrame';
 import { fetchDayStatus } from '../../useDayStats';
 import { migrateJigSaves } from '@/lib/jig-renum';
 import { gameColor, softGround } from '@/lib/category-ramp';
+import {
+  JIGSAW_SIZES, PHONE_SIZES, ALWAYS_OK, DEFAULT_SIZE, SIZE_KEY, DONE_KEY,
+  sizeLabel, shortSize, cutFor, ownSize, playHref, freeId,
+} from '@/lib/jigsaw-sizes';
 
-// THE SHELF WEARS THE SITE'S SOFT PASTEL (owner, 2026-11-12: "the colors on the
-// jigsaw shelf page... none match new styling"). Its accents used --stg-acc,
-// which on this CircuitFrame page is the raw deep Logic rose; the site's own
-// pastel is the category step softened 40% toward white (softGround), the tone
-// the home tiles wear, carrying near-black ink in light and dark alike.
 const JIG_HUE = softGround(gameColor('jig'));
-
+const GNAME = { jig: 'Jig', saw: 'Saw' };
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DAY_MS = 86400000;
-const GAMES = ['jig', 'saw'];
-const GNAME = { jig: 'Jig', saw: 'Saw' };
-const GBLURB = { jig: 'wide, 80 pieces', saw: 'tall, loose table' };
-
 const atNoon = (iso) => new Date(iso + 'T12:00:00Z');
-const isoOf = (d) => d.toISOString().slice(0, 10);
 const shortDate = (iso) => { const d = atNoon(iso); return `${DOW[d.getUTCDay()]}, ${MON[d.getUTCMonth()]} ${d.getUTCDate()}`; };
 const quizIdOf = (g, iso) => { const d = atNoon(iso); return `${g}-${d.getUTCMonth() + 1}-${d.getUTCDate()}-${String(d.getUTCFullYear()).slice(2)}`; };
-// The Monday of the week holding `iso`.
-const mondayOf = (iso) => { const d = atNoon(iso); return isoOf(new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * DAY_MS)); };
 const thumb = (b, w) => `/api/${b.g}/img?n=${b.n}&w=${w}`;
-const hrefOf = (b) => (b.today ? `/${b.g}` : `/${b.g}?p=${b.n}`);
+const fold = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const readJSON = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
 
-export default function ShelfClient({ boards, today, crumb, faq, topics = [] }) {
-  const byDay = useMemo(() => new Map(boards.map((b) => [`${b.g}|${b.d}`, b])), [boards]);
-  const firstOf = useMemo(() => {
-    const f = {};
-    for (const b of boards) if (!f[b.g] || b.d < f[b.g]) f[b.g] = b.d;
-    return f;
-  }, [boards]);
+const TABS = [['all', 'All Puzzles'], ['daily', 'Daily Archive'], ['murals', 'Murals'], ['kids', 'Kids']];
+
+export default function ShelfClient({ boards, today, crumb, faq, topics = [], allTopics = [] }) {
   const todays = boards.filter((b) => b.today);
-  const total = boards.length;
-  const per = (g) => boards.filter((b) => b.g === g).length;
+  const past = useMemo(() => boards.filter((b) => !b.today), [boards]);
 
-  // The shelves: one per Monday-to-Sunday week, from today's week back to the
-  // week of the first board. Each week holds a plank per game that had begun
-  // by that week. A day after today is a locked box; a day before that game's
-  // first board is an empty slot.
-  const weeks = useMemo(() => {
-    if (!boards.length) return [];
-    const first = boards.reduce((m, b) => (b.d < m ? b.d : m), boards[0].d);
-    const out = [];
-    const thisMon = mondayOf(today);
-    for (let mon = thisMon; mon >= mondayOf(first); mon = isoOf(new Date(atNoon(mon).getTime() - 7 * DAY_MS))) {
-      const sun = isoOf(new Date(atNoon(mon).getTime() + 6 * DAY_MS));
-      const rows = [];
-      for (const g of GAMES) {
-        if (!firstOf[g] || firstOf[g] > sun) continue;
-        const days = [];
-        for (let k = 0; k < 7; k++) {
-          const iso = isoOf(new Date(atNoon(mon).getTime() + k * DAY_MS));
-          const b = byDay.get(`${g}|${iso}`);
-          days.push(b ? { kind: 'box', b } : { kind: iso > today ? 'locked' : 'empty', iso });
-        }
-        rows.push({ g, days });
-      }
-      const ago = Math.round((atNoon(thisMon) - atNoon(mon)) / (7 * DAY_MS));
-      const label = ago === 0 ? 'This week' : ago === 1 ? 'Last week' : `Week of ${MON[atNoon(mon).getUTCMonth()]} ${atNoon(mon).getUTCDate()}`;
-      out.push({ mon, label, rows });
-    }
-    return out;
-  }, [boards, byDay, firstOf, today]);
-
-  // Marks, keyed by board key ('jig-12'). This device's saves, then the
-  // server history merged over them.
+  const [tab, setTab] = useState('all');
+  const [size, setSize] = useState(DEFAULT_SIZE);
+  const [shape, setShape] = useState('both');
+  const [topic, setTopic] = useState('all');
+  const [query, setQuery] = useState('');
+  const [sort, setSort] = useState('new');
+  const [hideOff, setHideOff] = useState(false);
+  const [dailyFilter, setDailyFilter] = useState('all');
+  const [fit, setFit] = useState(null);       // { 'jig-12': 2000 } once measured
+  const [hydrated, setHydrated] = useState(false);
+  const [store, setStore] = useState({ done: {}, saves: {} });
   const [marks, setMarks] = useState({ solved: new Set(), played: new Set(), open: new Set(), ready: false });
+  const [murals, setMurals] = useState(null);
+
+  // The reader's size, and the links that land on a tab (?g=saw from Saw's
+  // board, ?tab=murals from a finished Mural). Read after mount so the server
+  // HTML and the first client render agree.
+  useEffect(() => {
+    let s = Number(readJSON(SIZE_KEY));
+    if (!JIGSAW_SIZES.includes(s)) s = DEFAULT_SIZE;
+    try { if (window.matchMedia('(max-width: 640px)').matches && !PHONE_SIZES.includes(s)) s = PHONE_SIZES.reduce((a, x) => (Math.abs(x - s) < Math.abs(a - s) ? x : a), PHONE_SIZES[0]); } catch (e) {}
+    setSize(s);
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const g = sp.get('g'), t = sp.get('tab');
+      if (g === 'saw' || g === 'jig') { setTab('daily'); setDailyFilter(g); }
+      if (t && TABS.some(([k]) => k === t)) setTab(t);
+    } catch (e) {}
+    setHydrated(true);
+  }, []);
+  const pickSize = (s) => { setSize(s); try { localStorage.setItem(SIZE_KEY, JSON.stringify(s)); } catch (e) {} };
+  const pickTab = (t) => {
+    setTab(t);
+    try { const u = new URL(window.location.href); if (t === 'all') u.searchParams.delete('tab'); else u.searchParams.set('tab', t); u.searchParams.delete('g'); window.history.replaceState(null, '', u.toString()); } catch (e) {}
+  };
+
+  // Which sizes each photo can do.
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/jigsaw/fit').then((r) => r.json()).then((d) => { if (alive && d && d.max) setFit(d.max); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
+  // This device's free-play saves and finished sizes, and the dailies' saves.
   useEffect(() => {
     migrateJigSaves();
-    let alive = true;
-    const solved = new Set();
-    const played = new Set();
-    const open = new Set();
+    const done = readJSON(DONE_KEY) || {};
+    const saves = {};
+    const solved = new Set(), played = new Set(), open = new Set();
     for (const b of boards) {
-      let sv = null;
-      try { sv = JSON.parse(localStorage.getItem(`sot_${b.g}_${b.n}`) || 'null'); } catch (e) { sv = null; }
-      if (!sv || typeof sv !== 'object') continue;
-      if (sv.status === 'won') { solved.add(b.k); played.add(b.k); }
-      else if (sv.status && sv.status !== 'playing') played.add(b.k);
-      if (b.today && sv.status && sv.status !== 'playing') open.add(b.k);
+      const sv = readJSON(`sot_${b.g}_${b.n}`);
+      if (sv && typeof sv === 'object') {
+        if (sv.status === 'won') { solved.add(b.k); played.add(b.k); }
+        else if (sv.status && sv.status !== 'playing') played.add(b.k);
+        else if (sv.t0) saves[`${b.k}-own`] = 1;
+        if (b.today && sv.status && sv.status !== 'playing') open.add(b.k);
+      }
+      if (b.today) continue;
+      for (const s of JIGSAW_SIZES) {
+        const fs = readJSON(`mural_solo_${freeId(b.g, b.n, s)}`);
+        if (fs && Array.isArray(fs.pieces) && fs.pieces.length) {
+          const cut = cutFor(s, b.c, b.r);
+          saves[`${b.k}-${s}`] = Math.min(99, Math.max(1, Math.floor((fs.pieces.length / (cut.cols * cut.rows)) * 100)));
+        }
+      }
     }
+    setStore({ done, saves });
     setMarks({ solved, played, open, ready: true });
     const byQuiz = new Map(boards.map((b) => [quizIdOf(b.g, b.d), b.k]));
+    let alive = true;
     fetchDayStatus().then((d) => {
       if (!alive || !d) return;
-      const s2 = new Set(solved);
-      const p2 = new Set(played);
+      const s2 = new Set(solved), p2 = new Set(played);
       const take = (list, set) => { for (const q of list || []) { const k = byQuiz.get(q); if (k) set.add(k); } };
-      take(d.played, p2);
-      take(d.completed, p2);
-      take(d.completed, s2);
+      take(d.played, p2); take(d.completed, p2); take(d.completed, s2);
       setMarks({ solved: s2, played: p2, open, ready: true });
     }).catch(() => {});
     return () => { alive = false; };
   }, [boards]);
 
-  const [filter, setFilter] = useState('all');
   useEffect(() => {
-    // ?g=saw (the link under Saw's board) opens on Saw. Read after mount so
-    // the server HTML and the first client render agree.
-    try { const g = new URLSearchParams(window.location.search).get('g'); if (g === 'saw' || g === 'jig') setFilter(g); } catch (e) {}
-    // ?tab=murals (the link on a finished Mural's closing screen) opens on Murals.
-    try { if (new URLSearchParams(window.location.search).get('tab') === 'murals') setFilter('murals'); } catch (e) {}
-  }, []);
-  // THE MURALS TAB (owner, 2026-11-19: "these huge puzzles should also show up
-  // in puzzle shelf on a different tab maybe, toggled", and "It will be
-  // available to play on the puzzle shelf"). Every Mural and MuralToo that is
-  // complete or has closed, newest first, from /api/mural/shelf. A box opens
-  // the mural as a shelf copy (?solo=<id>): built alone, no points, the pieces
-  // kept in this browser. The open murals are linked above the list.
-  const [murals, setMurals] = useState(null);
-  useEffect(() => {
+    if (tab !== 'murals' || murals) return undefined;
     let alive = true;
     fetch('/api/mural/shelf').then((r) => r.json())
       .then((d) => { if (alive) setMurals(Array.isArray(d && d.murals) ? d.murals : []); })
       .catch(() => { if (alive) setMurals([]); });
     return () => { alive = false; };
-  }, []);
-  const counts = {
-    all: total,
-    jig: per('jig'),
-    saw: per('saw'),
-    solved: boards.filter((b) => marks.solved.has(b.k)).length,
-    unplayed: boards.filter((b) => !marks.played.has(b.k)).length,
-    sun: boards.filter((b) => b.s).length,
-  };
-  // A game filter hides the other game's planks outright; the rest dim the
-  // boxes that do not match, so the week grid keeps its shape.
-  const rowShown = (g) => (filter === 'jig' || filter === 'saw' ? g === filter : true);
-  const shows = (b) => (filter === 'solved' ? marks.solved.has(b.k)
-    : filter === 'unplayed' ? !marks.played.has(b.k)
-      : filter === 'sun' ? !!b.s
-        : true);
+  }, [tab, murals]);
 
-  // The open box: the newest past board until the reader picks one.
-  const [sel, setSel] = useState(() => {
-    const p = boards.find((b) => !b.today);
-    return (p || boards[0] || {}).k || null;
-  });
-  useEffect(() => {
-    if (filter !== 'jig' && filter !== 'saw') return;
-    const curB = boards.find((b) => b.k === sel);
-    if (curB && curB.g === filter) return;
-    const p = boards.find((b) => b.g === filter && !b.today) || boards.find((b) => b.g === filter);
-    if (p) setSel(p.k);
-  }, [filter]); // eslint-disable-line react-hooks/exhaustive-deps
-  const cur = boards.find((b) => b.k === sel) || null;
-  const pick = (e, b) => {
-    e.preventDefault();
-    setSel(b.k);
-    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width: 900px)').matches) {
-      const el = document.getElementById('jsh-panel');
-      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
-    }
-  };
+  // ---- the library at the chosen size ----
+  const maxOf = (b) => (fit ? (fit[b.k] || ALWAYS_OK) : Infinity);
+  const canDo = (b, s) => s <= ALWAYS_OK || maxOf(b) >= s;
+  const isOwn = (b, s) => s === ownSize(b.c, b.r);
+  const doneAt = (b, s) => (isOwn(b, s) ? marks.solved.has(b.k) : !!store.done[`${b.k}-${s}`]);
+  const resumeAt = (b, s) => (isOwn(b, s) ? (store.saves[`${b.k}-own`] ? 'own' : 0) : (store.saves[`${b.k}-${s}`] || 0));
+
+  const filtered = useMemo(() => {
+    const q = fold(query.trim());
+    return past.filter((b) => (shape === 'both' || (shape === 'tall' ? b.g === 'saw' : b.g === 'jig'))
+      && (topic === 'all' || b.topic === topic)
+      && (!q || fold(b.name).includes(q)));
+  }, [past, shape, topic, query]);
+  const sorted = useMemo(() => {
+    const a = filtered.slice();
+    if (sort === 'old') a.reverse();
+    else if (sort === 'todo') a.sort((x, y) => (doneAt(x, size) === doneAt(y, size) ? 0 : doneAt(x, size) ? 1 : -1));
+    else if (sort === 'big') a.sort((x, y) => maxOf(y) - maxOf(x));
+    return a;
+  }, [filtered, sort, size, fit, store, marks]); // eslint-disable-line react-hooks/exhaustive-deps
+  const okCount = filtered.filter((b) => canDo(b, size)).length;
+  const shown = hideOff ? sorted.filter((b) => canDo(b, size)) : sorted;
+  const topicN = (slug) => past.filter((b) => (shape === 'both' || (shape === 'tall' ? b.g === 'saw' : b.g === 'jig')) && (slug === 'all' || b.topic === slug)).length;
+
+  const dailyList = useMemo(() => boards.filter((b) => (dailyFilter === 'jig' || dailyFilter === 'saw' ? b.g === dailyFilter
+    : dailyFilter === 'solved' ? marks.solved.has(b.k)
+      : dailyFilter === 'unplayed' ? !marks.played.has(b.k)
+        : dailyFilter === 'sun' ? !!b.s : true)), [boards, dailyFilter, marks]);
+
+  const clearFilters = () => { setShape('both'); setTopic('all'); setQuery(''); setHideOff(false); };
 
   return (
-    <CircuitFrame cat="Visual" label="Jigsaw shelf" wide bar={{ title: 'Jigsaw Shelf', sub: 'Every Jig and Saw', dot: JIG_HUE }}>
+    <CircuitFrame cat="Visual" label="Jigsaw puzzles" wide bar={{ title: 'Jigsaw Puzzles', sub: 'Free photo jigsaws', dot: JIG_HUE }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <nav className="jsh-crumb" aria-label="Breadcrumb">
+      <nav className="jp-crumb" aria-label="Breadcrumb">
         <a href="/">Home</a><span aria-hidden="true">/</span>
         {crumb ? <><a href={crumb.href}>{crumb.label}</a><span aria-hidden="true">/</span></> : null}
-        <span aria-current="page">Jigsaw Puzzle Shelf</span>
+        <span aria-current="page">Jigsaw Puzzles</span>
       </nav>
 
-      <header className="jsh-head">
-        <div>
-          <h1>Jigsaw Puzzle Shelf</h1>
-          <p className="jsh-lede">
-            Every daily jigsaw so far, newest week first: Jig on the top plank, the tall Saw below it.
-            Pick any past box to play it free from the archive. Today&apos;s boxes stay question marks until you finish them.
+      <header className="jp-head">
+        <div className="jp-htx">
+          <h1>Jigsaw Puzzles</h1>
+          <p className="jp-lede">
+            Free online jigsaw puzzles made from real photographs: {past.length} pictures so far, each one playable at 24 to 4,000 pieces.
+            Pick a size once, then pick a picture. No download, no signup, and a new Jig and Saw every day.
           </p>
         </div>
-        <div className="jsh-todays">
+        <div className="jp-today" aria-label="Today">
           {todays.map((b) => (
-            <a key={b.k} className="jsh-today" href={`/${b.g}`}>
-              <span>Today&apos;s {GNAME[b.g]}</span>
-              <small>{marks.solved.has(b.k) ? 'Solved ✓' : marks.played.has(b.k) ? 'Played' : 'Play now'}</small>
+            <a key={b.k} className="jp-tbtn" href={`/${b.g}`}>
+              <span className={`jp-tq${b.g === 'saw' ? ' tall' : ''}`} aria-hidden="true">?</span>
+              <span><b>Today&apos;s {GNAME[b.g]}</b><small>{marks.solved.has(b.k) ? 'Solved' : `Ranked, ${b.c * b.r} pieces`}</small></span>
             </a>
           ))}
+          <a className="jp-tbtn" href="/mural">
+            <span className="jp-tq jp-tm" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M3 15h18M9 3v18M15 3v18" /></svg></span>
+            <span><b>Mural</b><small>4,000 pieces, built together</small></span>
+          </a>
         </div>
       </header>
 
-      <div className="jsh-chips" role="group" aria-label="Show">
-        {[
-          ['all', 'All'],
-          ['jig', 'Jig'],
-          ['saw', 'Saw'],
-          ['solved', 'Solved'],
-          ['unplayed', 'Not played'],
-          ['sun', 'Sundays'],
-          ['murals', 'Murals'],
-        ].map(([k, lab]) => (
-          <button key={k} type="button" className={filter === k ? 'on' : ''} aria-pressed={filter === k} onClick={() => setFilter(k)}>
-            {lab} <b>{k === 'murals' ? (murals ? murals.length : '–') : marks.ready || k === 'all' || k === 'sun' || k === 'jig' || k === 'saw' ? counts[k] : '–'}</b>
-          </button>
+      <nav className="jp-tabs" aria-label="Jigsaw sections">
+        {TABS.map(([k, lab]) => (
+          <a key={k} href={k === 'all' ? '/jig/shelf' : `/jig/shelf?tab=${k}`} className={tab === k ? 'on' : ''} aria-current={tab === k ? 'page' : undefined}
+            onClick={(e) => { e.preventDefault(); pickTab(k); }}>
+            {lab}{k === 'all' ? <b>{past.length}</b> : k === 'daily' ? <b>{boards.length}</b> : null}
+          </a>
         ))}
-      </div>
+      </nav>
 
-      {filter === 'murals' ? (
-        <section className="jsh-murals" aria-label="Finished murals">
-          <p className="jsh-mlede">
-            Mural and MuralToo are 4,000 piece jigsaws the whole site builds together. Once one is finished or its day is over, it comes here to build alone: no points, no clock, and your pieces are kept on this device.
-            {' '}<a href="/mural">Play Mural</a> while it is open.
-          </p>
-          {/* PRIVATE MURALS (owner, 2026-11-19: "this will also exist on jigsaw puzzle shelf where the murals are"). */}
-          <p className="jsh-mlede">
-            Want one of your own? <a href="/mural/private">Start A Private Mural</a> to build with your group or anyone you send the link to. The ones you are in are listed there too.
-          </p>
-          {murals === null ? <p className="jsh-mnone">Loading the murals.</p> : !murals.length ? (
-            <p className="jsh-mnone">No mural has finished yet. The first one lands here when its last piece is placed.</p>
-          ) : (
-            <div className="jsh-mgrid">
-              {murals.map((m) => (
-                <a key={m.id} className="jsh-mcard" href={`${m.route}?solo=${m.id}`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/api/mural/img?id=${m.id}&w=960${m.pv ? `&v=${m.pv}` : ''}`} alt={m.title || `${m.name}, ${m.date}`} loading="lazy" />
-                  <span className="jsh-mname">{m.name} · {m.date}</span>
-                  <span className="jsh-msub">{m.title ? `${m.title}. ` : ''}{(m.total || 4000).toLocaleString()} pieces. {m.complete ? 'Finished by the crowd.' : `${m.placed.toLocaleString()} placed before it closed.`}</span>
-                  <span className="jsh-mgo">Build It Yourself</span>
-                </a>
-              ))}
+      {tab === 'all' ? (
+        <>
+          <div className="jp-ctl">
+            <div className="jp-grp">
+              <span className="jp-lab" id="jp-plab">Pieces</span>
+              <div className="jp-seg jp-sizes" role="group" aria-labelledby="jp-plab">
+                {JIGSAW_SIZES.map((s) => (
+                  <button key={s} type="button" className={`${size === s ? 'on' : ''}${PHONE_SIZES.includes(s) ? '' : ' jp-nophone'}`} aria-pressed={size === s}
+                    aria-label={`${sizeLabel(s)} pieces`} onClick={() => pickSize(s)}>
+                    <span className="jp-long">{sizeLabel(s)}</span><span className="jp-short">{shortSize(s)}</span>
+                  </button>
+                ))}
+              </div>
             </div>
+            <div className="jp-grp">
+              <span className="jp-lab" id="jp-slab">Shape</span>
+              <div className="jp-seg sm" role="group" aria-labelledby="jp-slab">
+                {[['both', 'Both'], ['wide', 'Wide'], ['tall', 'Tall']].map(([k, lab]) => (
+                  <button key={k} type="button" className={shape === k ? 'on' : ''} aria-pressed={shape === k} onClick={() => setShape(k)}>{lab}</button>
+                ))}
+              </div>
+            </div>
+            <span className="jp-sp" />
+            <select className="jp-sel" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort the pictures">
+              <option value="new">Newest</option>
+              <option value="old">Oldest</option>
+              <option value="todo">Not done at this size</option>
+              <option value="big">Best for big sizes</option>
+            </select>
+          </div>
+
+          <div className="jp-row2">
+          <div className="jp-topics" role="group" aria-label="Topic">
+            <button type="button" className={topic === 'all' ? 'on' : ''} aria-pressed={topic === 'all'} onClick={() => setTopic('all')}>All <b>{topicN('all')}</b></button>
+            {allTopics.map((t) => (
+              <button key={t.slug} type="button" className={topic === t.slug ? 'on' : ''} aria-pressed={topic === t.slug} onClick={() => setTopic(t.slug)}>{t.label} <b>{topicN(t.slug)}</b></button>
+            ))}
+          </div>
+            <span className="jp-sp" />
+            <label className="jp-search">
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="M11 11l3.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
+              <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Dogs, Venice, waterfalls" aria-label="Search the jigsaw pictures" />
+            </label>
+          </div>
+
+          {size > ALWAYS_OK ? (
+            <p className="jp-avail" aria-live="polite">
+              <span><b>{sizeLabel(size)} pieces:</b> {fit ? `${okCount} of these ${filtered.length} pictures have the detail for it. The rest show the biggest size they can do.` : 'Checking which pictures have the detail for it.'}</span>
+              <label className="jp-chk"><input type="checkbox" checked={hideOff} onChange={(e) => setHideOff(e.target.checked)} />Hide pictures that can&apos;t</label>
+            </p>
+          ) : null}
+
+          {shown.length ? (
+            <ul className="jp-grid" aria-label={`Jigsaw puzzles at ${sizeLabel(size)} pieces`}>
+              {shown.map((b, i) => {
+                const ok = canDo(b, size);
+                const done = hydrated && doneAt(b, size);
+                const res = hydrated && !done ? resumeAt(b, size) : 0;
+                const inner = (
+                  <>
+                    <span className="jp-ph">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={thumb(b, 500)} alt={`${b.name}, ${b.g === 'saw' ? 'tall ' : ''}jigsaw puzzle`} width="500" height="333"
+                        loading={i < 6 ? 'eager' : 'lazy'} decoding="async" />
+                      {b.g === 'saw' ? <span className="jp-bd tall">Tall</span> : null}
+                      {!ok ? <span className="jp-bd max">Up to {sizeLabel(maxOf(b))}</span>
+                        : done ? <span className="jp-bd done"><svg width="13" height="13" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.2l2.3 2.3 4.7-4.8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>Done at {sizeLabel(size)}</span>
+                          : res ? <span className="jp-bd res">{res === 'own' ? 'In progress' : `Resume ${res}%`}</span> : null}
+                    </span>
+                    <span className="jp-cap">{b.name}</span>
+                  </>
+                );
+                return (
+                  <li key={b.k}>
+                    {ok ? (
+                      <a className="jp-card" href={hydrated ? playHref(b, size) : `/${b.g}?p=${b.n}`}
+                        aria-label={`${b.name}: play it as a ${sizeLabel(size)} piece jigsaw${done ? ', done at this size' : ''}`}>{inner}</a>
+                    ) : (
+                      <div className="jp-card off" aria-disabled="true" title={`This picture goes up to ${sizeLabel(maxOf(b))} pieces`}>{inner}</div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="jp-none">
+              <p>No pictures match. Try another word or topic.</p>
+              <button type="button" onClick={clearFilters}>Clear filters</button>
+            </div>
+          )}
+          <p className="jp-note">
+            Every size is free play. The daily&apos;s own size opens that day&apos;s board; any other size opens on the big table, where your progress is saved in this browser. Today&apos;s pictures join the library tomorrow.
+          </p>
+        </>
+      ) : null}
+
+      {tab === 'daily' ? (
+        <section aria-label="Every daily jigsaw">
+          <p className="jp-mlede">Every Jig and Saw as it ran: Jig is an 80 piece wide photo, Saw a tall one whose pieces lock to each other. Today&apos;s two stay a surprise until you play them.</p>
+          <div className="jp-topics" role="group" aria-label="Show">
+            {[['all', 'All'], ['jig', 'Jig'], ['saw', 'Saw'], ['solved', 'Solved'], ['unplayed', 'Not played'], ['sun', 'Sundays']].map(([k, lab]) => (
+              <button key={k} type="button" className={dailyFilter === k ? 'on' : ''} aria-pressed={dailyFilter === k} onClick={() => setDailyFilter(k)}>{lab}</button>
+            ))}
+          </div>
+          <ul className="jp-grid daily">
+            {dailyList.map((b) => {
+              const solved = marks.solved.has(b.k);
+              const shut = b.today && !marks.open.has(b.k);
+              return (
+                <li key={b.k}>
+                  <a className="jp-card" href={b.today ? `/${b.g}` : `/${b.g}?p=${b.n}`}>
+                    <span className="jp-ph">
+                      {shut ? <span className="jp-q">?</span>
+                        // eslint-disable-next-line @next/next/no-img-element
+                        : <img src={thumb(b, 500)} alt={b.today ? `Today's ${GNAME[b.g]}` : `${b.name}, ${GNAME[b.g]} No. ${b.n}`} width="500" height="333" loading="lazy" decoding="async" />}
+                      {solved ? <span className="jp-bd done">Solved</span> : b.today ? <span className="jp-bd res">Today</span> : null}
+                    </span>
+                    <span className="jp-cap">{b.today ? `Today's ${GNAME[b.g]}` : b.name}</span>
+                    <span className="jp-sub">{GNAME[b.g]} No. {b.n} · {shortDate(b.d)} · {b.c * b.r} pieces{b.s ? ' · Sunday' : ''}</span>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+
+      {tab === 'murals' ? (
+        <section aria-label="Finished murals">
+          <p className="jp-mlede">
+            Mural and MuralToo are 4,000 piece jigsaws the whole site builds together. Once one is finished or its day is over, it comes here to build alone: no points, no clock, and your pieces are kept on this device.
+            {' '}<a href="/mural">Play Mural</a> while it is open, or <a href="/mural/private">start a Private Mural</a> for your group.
+          </p>
+          {murals === null ? <p className="jp-mnone">Loading the murals.</p> : !murals.length ? (
+            <p className="jp-mnone">No mural has finished yet. The first one lands here when its last piece is placed.</p>
+          ) : (
+            <ul className="jp-grid">
+              {murals.map((m) => (
+                <li key={m.id}>
+                  <a className="jp-card" href={`${m.route}?solo=${m.id}`}>
+                    <span className="jp-ph">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={`/api/mural/img?id=${m.id}&w=960${m.pv ? `&v=${m.pv}` : ''}`} alt={m.title || `${m.name}, ${m.date}`} loading="lazy" />
+                      <span className="jp-bd res">{(m.total || 4000).toLocaleString('en-US')}</span>
+                    </span>
+                    <span className="jp-cap">{m.title || m.name}</span>
+                    <span className="jp-sub">{m.name} · {m.date} · {m.complete ? 'Finished by the crowd' : `${m.placed.toLocaleString('en-US')} placed before it closed`}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
       ) : null}
 
-      <div className="jsh-grid" style={filter === 'murals' ? { display: 'none' } : undefined}>
-        <section className="jsh-shelves" aria-label="The shelf, a week to a row">
-          <div className="jsh-dow" aria-hidden="true">
-            <span />
-            <div className="jsh-dowr">{['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => <span key={i}>{d}</span>)}</div>
-          </div>
-          {weeks.map((w) => {
-            const rows = w.rows.filter((r) => rowShown(r.g));
-            if (!rows.length) return null;
-            return (
-              <div className="jsh-week" key={w.mon}>
-                <div className="jsh-wlab">{w.label}</div>
-                {rows.map((row) => (
-                  <div className={`jsh-line ${row.g}`} key={row.g}>
-                    <div className="jsh-glab"><b>{GNAME[row.g]}</b><span>{GBLURB[row.g]}</span></div>
-                    <div className="jsh-row">
-                      <div className="jsh-plank" aria-hidden="true" />
-                      {row.days.map((s, i) => {
-                        if (s.kind !== 'box') return <span key={i} className={`jsh-slot ${s.kind}`} aria-hidden="true" />;
-                        const b = s.b;
-                        const solved = marks.solved.has(b.k);
-                        const shut = b.today && !marks.open.has(b.k);
-                        const cls = ['jsh-box', b.s ? 'sun' : '', b.today ? 'today' : '', solved ? 'solved' : '',
-                          sel === b.k ? 'sel' : '', shows(b) ? '' : 'off'].filter(Boolean).join(' ');
-                        const nm = GNAME[b.g];
-                        return (
-                          <a key={i} className={cls} href={hrefOf(b)} onClick={(e) => pick(e, b)} title={b.today ? `Today's ${nm}` : b.name}
-                            aria-label={b.today ? `Today's ${nm}, No. ${b.n}, ${b.c * b.r} pieces` : `${nm} No. ${b.n}, ${shortDate(b.d)}: ${b.name}, ${b.c * b.r} pieces${solved ? ', solved' : ''}`}>
-                            <span className="jsh-lid"><span><span className="jsh-no">No. </span>{b.n}</span>{b.s ? <em>SUN</em> : null}</span>
-                            <span className="jsh-pic">
-                              {shut
-                                ? <span className="jsh-q">?</span>
-                                : <img src={thumb(b, 330)} alt={b.today ? '' : b.name} loading="lazy" decoding="async" />}
-                            </span>
-                            <span className="jsh-pc">{b.c * b.r}</span>
-                            {solved ? <span className="jsh-tick" aria-hidden="true">{'✓'}</span> : null}
-                          </a>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            );
-          })}
+      {tab === 'kids' ? (
+        <section aria-label="Kids jigsaws" className="jp-kids">
+          <p className="jp-mlede">The same photographs for younger players, cut into 6 to 30 big pieces that snap into place. Nothing is scored.</p>
+          <a className="jp-kbtn" href="/kids/jigsaw">Open the kids jigsaws</a>
         </section>
+      ) : null}
 
-        <aside className="jsh-panel" id="jsh-panel" aria-live="polite">
-          {cur ? <Panel b={cur} solved={marks.solved.has(cur.k)} played={marks.played.has(cur.k)} todayOpen={marks.open.has(cur.k)} /> : null}
-        </aside>
-      </div>
+      {topics.length ? (
+        <nav className="jp-more" aria-label="Jigsaw puzzles by topic">
+          <h2>Jigsaw puzzles by topic</h2>
+          <div>
+            {topics.map((t) => <a key={t.slug} href={t.href}>{t.label} jigsaw puzzles <b>{t.count}</b></a>)}
+            <a href="/mural">4,000 piece Mural</a>
+            <a href="/kids/jigsaw">Kids jigsaws</a>
+          </div>
+        </nav>
+      ) : null}
 
-      <section className="jsh-faq" aria-label="Questions">
+      <section className="jp-faq" aria-label="Questions">
         {faq.map((f) => (
-          <div className="jsh-qa" key={f.q}>
+          <div className="jp-qa" key={f.q}>
             <h2>{f.q}</h2>
             <p>{f.a}</p>
           </div>
         ))}
       </section>
 
-      {topics.length ? (
-        <nav className="jsh-topics" aria-label="Jigsaw puzzles by topic">
-          <h2>Jigsaw puzzles by topic</h2>
-          <div>
-            {topics.map((t) => <a key={t.slug} href={t.href}>{t.label} <b>{t.count}</b></a>)}
-          </div>
-        </nav>
-      ) : null}
-
-      <p className="jsh-foot">
-        {total} puzzles so far ({counts.jig} Jig, {counts.saw} Saw), a new photograph for each every day at midnight Eastern.
-        Every photo is a featured picture from <a href="https://commons.wikimedia.org/" rel="noopener">Wikimedia Commons</a>, credited on its box.
-        Playing with a kid? The same photos are on <a href="/kids/jigsaw">Mind Loft Kids</a> in 6 to 30 pieces.
+      <p className="jp-foot">
+        {past.length} jigsaw pictures so far, with a new Jig and a new Saw every day at midnight Eastern.
+        Every photo is a featured picture from <a href="https://commons.wikimedia.org/" rel="noopener">Wikimedia Commons</a>, credited when you finish it.
         Looking for another game? The <a href="/archive">puzzle archive</a> has every past board of every daily.
       </p>
     </CircuitFrame>
   );
 }
 
-function Panel({ b, solved, played, todayOpen }) {
-  const pieces = b.c * b.r;
-  const nm = GNAME[b.g];
-  const tall = b.g === 'saw';
-  if (b.today) {
-    return (
-      <div className="jsh-card">
-        {todayOpen
-          ? <img className={`jsh-big${tall ? ' tall' : ''}`} src={thumb(b, 960)} alt={`Today's ${nm} picture`} />
-          : <div className={`jsh-big jsh-bigq${tall ? ' tall' : ''}`} aria-hidden="true">?</div>}
-        <div className="jsh-meta">
-          <div className="jsh-eye">{nm} No. {b.n} · Today{b.s ? ' · Sunday Edition' : ''}</div>
-          <h2>{todayOpen ? 'Today’s picture' : 'Today’s picture is a surprise'}</h2>
-          <p className="jsh-sub">{pieces} pieces · {b.c} × {b.r} cut</p>
-          <p className="jsh-note">
-            {todayOpen
-              ? 'You finished it on this device, so its box shows the photo.'
-              : 'The shelf keeps today covered. Finish it and the box shows the photograph.'}
-          </p>
-          <a className="jsh-cta" href={`/${b.g}`}>{todayOpen ? `Back to today’s ${nm}` : `Play today’s ${nm}`}</a>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="jsh-card">
-      <img className={`jsh-big${tall ? ' tall' : ''}`} src={thumb(b, 960)} alt={b.name} />
-      <div className="jsh-meta">
-        <div className="jsh-eye">{nm} No. {b.n} · {shortDate(b.d)}{b.s ? ' · Sunday Edition' : ''}</div>
-        <h2>{b.name}</h2>
-        <p className="jsh-credit">
-          Photo: {b.by} · {b.lic} · <a href={b.src} rel="noopener" target="_blank">Wikimedia Commons</a>
-        </p>
-        <dl className="jsh-facts">
-          <div><dt>Pieces</dt><dd>{pieces}</dd></div>
-          <div><dt>Cut</dt><dd>{b.c} × {b.r}</dd></div>
-          <div><dt>You</dt><dd className={solved ? 'good' : ''}>{solved ? 'Solved' : played ? 'Played' : 'Not played'}</dd></div>
-        </dl>
-        <a className="jsh-cta" href={`/${b.g}?p=${b.n}`}>{solved || played ? 'Play it again' : 'Play from the archive'}</a>
-      </div>
-    </div>
-  );
-}
-
-// A JS template literal: no backticks inside, and no apostrophes either, since
-// a quote in a stylesheet rendered by a server page is the escaping trap
-// CircuitFrame describes. Every colour below is a token or a mix of tokens,
-// except the photographs and the wooden plank (an object, like a chess board).
+// A JS template literal: no backticks inside, and no apostrophes either (the
+// escaping trap CircuitFrame describes). Colours are page tokens, plus the
+// site pastel for the selected state, which carries near-black ink in both
+// registers.
 const CSS = `
-:root{--jsh-hue:${JIG_HUE};--jsh-ink:#0b0d12;}
-.jsh-crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;font-weight:700;color:var(--stg-mute);margin-bottom:14px;}
-.jsh-crumb a{color:var(--stg-ink2);text-decoration:none;}
-.jsh-crumb a:hover{color:var(--stg-ink);text-decoration:underline;}
-.jsh-crumb span[aria-current]{color:var(--stg-ink);}
-
-.jsh-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:16px;}
-.jsh-head h1{margin:0;font-size:32px;line-height:1.08;font-weight:800;letter-spacing:-0.02em;color:var(--stg-ink);}
-.jsh-lede{margin:8px 0 0;max-width:640px;font-size:15px;line-height:1.5;font-weight:600;color:var(--stg-ink2);}
-.jsh-todays{flex:none;display:flex;gap:10px;}
-.jsh-today{display:flex;flex-direction:column;align-items:center;gap:1px;text-decoration:none;font-size:14px;font-weight:800;padding:10px 18px;border-radius:10px;
-  background:var(--jsh-hue);color:var(--jsh-ink);line-height:1.2;}
-.jsh-today small{font-size:11px;font-weight:700;opacity:.85;}
-.jsh-today:hover{filter:brightness(1.06);}
-
-.jsh-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
-.jsh-chips button{font:inherit;font-size:13px;font-weight:800;padding:8px 13px;border-radius:999px;cursor:pointer;
-  background:var(--stg-surf);color:var(--stg-ink2);border:1px solid var(--stg-line);}
-.jsh-chips button:hover{border-color:var(--stg-ink);color:var(--stg-ink);}
-.jsh-chips button b{font-weight:800;color:var(--stg-mute);margin-left:3px;}
-.jsh-chips button.on{background:var(--jsh-hue);color:var(--jsh-ink);border-color:var(--jsh-hue);}
-.jsh-chips button.on b{color:var(--jsh-ink);opacity:.75;}
-.jsh-mlede{max-width:760px;margin:0 0 18px;font-size:15px;line-height:1.55;color:var(--stg-mute);font-weight:500;}
-.jsh-mlede a{color:var(--stg-ink);font-weight:800;}
-.jsh-mnone{font-size:15px;font-weight:700;color:var(--stg-mute);padding:24px 0;}
-.jsh-mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
-.jsh-mcard{display:flex;flex-direction:column;gap:6px;padding:10px 10px 14px;border:1px solid var(--stg-ink);border-radius:14px;background:var(--stg-card,transparent);color:var(--stg-ink);text-decoration:none;}
-.jsh-mcard img{width:100%;aspect-ratio:25/16;object-fit:cover;border-radius:8px;border:1px solid var(--stg-ink);display:block;}
-.jsh-mname{font-size:16px;font-weight:800;line-height:1.35;}
-.jsh-msub{font-size:13px;line-height:1.5;color:var(--stg-mute);font-weight:500;}
-.jsh-mgo{align-self:flex-start;margin-top:4px;font-size:13px;font-weight:800;padding:8px 14px;border-radius:999px;background:var(--jsh-hue);color:var(--jsh-ink);}
-
-.jsh-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:26px;align-items:start;}
-.jsh-shelves{min-width:0;padding:14px 16px 6px;border-radius:14px;background:var(--stg-surf);border:1px solid var(--stg-line);}
-.jsh-dow,.jsh-line{display:grid;grid-template-columns:88px minmax(0,1fr);gap:12px;align-items:end;}
-.jsh-dow{margin-bottom:6px;}
-.jsh-dowr{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;}
-.jsh-dowr span{text-align:center;font-size:11px;font-weight:800;letter-spacing:.1em;color:var(--stg-mute);}
-.jsh-week{margin-bottom:20px;padding-top:4px;}
-.jsh-week + .jsh-week{border-top:1px solid var(--stg-line);padding-top:12px;}
-.jsh-wlab{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-ink);margin:0 0 8px;}
-.jsh-line + .jsh-line{margin-top:16px;}
-.jsh-glab{display:flex;flex-direction:column;gap:1px;padding-bottom:16px;line-height:1.2;}
-.jsh-glab b{font-size:14px;font-weight:800;color:var(--stg-ink);}
-.jsh-glab span{font-size:11px;font-weight:700;color:var(--stg-mute);}
-.jsh-row{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;align-items:end;padding-bottom:10px;}
-.jsh-plank{position:absolute;left:-8px;right:-8px;bottom:0;height:10px;border-radius:3px;
-  background:linear-gradient(#b8875a,#8f633d);border-top:2px solid #cfa071;box-shadow:0 4px 6px -2px rgba(0,0,0,.35);}
-
-.jsh-slot{display:block;aspect-ratio:3/2.5;border-radius:5px;}
-.jsh-line.saw .jsh-slot{aspect-ratio:4/5.7;}
-.jsh-slot.locked{border:1.5px dashed transparent;background:color-mix(in srgb, var(--stg-line) 45%, transparent);}
-.jsh-box{position:relative;display:flex;flex-direction:column;text-decoration:none;border-radius:5px;overflow:hidden;
-  background:var(--stg-surf2);box-shadow:0 2px 0 color-mix(in srgb, var(--stg-ink) 22%, transparent), 0 6px 12px -6px rgba(0,0,0,.45);
-  transition:transform .15s ease, opacity .15s ease, box-shadow .15s ease;}
-.jsh-box:hover{transform:translateY(-4px);box-shadow:0 2px 0 color-mix(in srgb, var(--stg-ink) 22%, transparent), 0 12px 18px -8px rgba(0,0,0,.5);}
-.jsh-box:focus-visible{outline:3px solid var(--stg-ink);outline-offset:3px;}
-.jsh-box.sel{outline:3px solid var(--stg-ink);outline-offset:2px;}
-.jsh-box.off{opacity:.22;}
-.jsh-lid{display:flex;align-items:center;justify-content:space-between;gap:4px;height:16px;padding:0 5px;
-  font-size:9.5px;font-weight:800;letter-spacing:.04em;background:var(--jsh-hue);color:var(--jsh-ink);white-space:nowrap;overflow:hidden;}
-.jsh-line.saw .jsh-lid{background:color-mix(in srgb, var(--jsh-hue) 18%, var(--stg-surf2));color:var(--stg-ink);box-shadow:inset 0 -2px 0 var(--jsh-hue);}
-.jsh-lid em{font-style:normal;letter-spacing:.08em;padding:0 4px;border-radius:3px;background:var(--jsh-ink);color:var(--jsh-hue);}
-.jsh-pic{display:block;position:relative;aspect-ratio:3/2;background:var(--stg-surf2);}
-.jsh-line.saw .jsh-pic{aspect-ratio:4/5;}
-.jsh-pic img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
-.jsh-q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;
-  color:var(--jsh-ink);background:var(--jsh-hue);
-  background-image:radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--jsh-ink) 14%, transparent), transparent 60%);}
-.jsh-box.today{box-shadow:0 0 0 2px var(--jsh-hue), 0 6px 14px -6px color-mix(in srgb, var(--jsh-hue) 70%, transparent);}
-.jsh-pc{position:absolute;right:4px;bottom:4px;font-size:9.5px;font-weight:800;padding:1px 5px;border-radius:7px;
-  background:rgba(10,12,18,.72);color:#ffffff;}
-.jsh-tick{position:absolute;left:4px;bottom:4px;width:15px;height:15px;border-radius:50%;display:flex;align-items:center;
-  justify-content:center;font-size:9.5px;font-weight:800;background:var(--stg-good,#1f9d63);color:#ffffff;box-shadow:0 0 0 1.5px rgba(255,255,255,.85);}
-
-.jsh-panel{position:sticky;top:16px;}
-.jsh-card{border-radius:14px;overflow:hidden;background:var(--stg-surf);border:1px solid var(--stg-line);}
-.jsh-big{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;background:var(--stg-surf2);}
-.jsh-big.tall{aspect-ratio:4/5;max-height:440px;}
-.jsh-bigq{display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:800;color:var(--jsh-ink);background:var(--jsh-hue);}
-.jsh-meta{padding:14px 16px 16px;}
-.jsh-eye{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--stg-ink);}
-.jsh-meta h2{margin:4px 0 0;font-size:20px;line-height:1.2;font-weight:800;color:var(--stg-ink);}
-.jsh-credit,.jsh-sub,.jsh-note{margin:6px 0 0;font-size:13px;line-height:1.45;font-weight:600;color:var(--stg-ink2);}
-.jsh-credit a{color:var(--stg-ink2);}
-.jsh-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 0;}
-.jsh-facts div{padding:8px 10px;border-radius:9px;background:var(--stg-surf2);}
-.jsh-facts dt{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--stg-mute);}
-.jsh-facts dd{margin:2px 0 0;font-size:15px;font-weight:800;color:var(--stg-ink);}
-.jsh-facts dd.good{color:var(--stg-good);}
-.jsh-cta{display:block;margin-top:14px;text-align:center;text-decoration:none;font-size:15px;font-weight:800;padding:13px;
-  border-radius:10px;background:var(--jsh-hue);color:var(--jsh-ink);}
-.jsh-cta:hover{filter:brightness(1.06);}
-
-.jsh-faq{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:30px;}
-.jsh-qa{padding:16px 18px;border-radius:12px;background:var(--stg-surf);border:1px solid var(--stg-line);}
-.jsh-qa h2{margin:0;font-size:16px;font-weight:800;color:var(--stg-ink);}
-.jsh-qa p{margin:6px 0 0;font-size:14px;line-height:1.5;font-weight:600;color:var(--stg-ink2);}
-.jsh-topics{margin-top:28px;}
-.jsh-topics h2{margin:0 0 10px;font-size:18px;font-weight:800;color:var(--stg-ink);}
-.jsh-topics div{display:flex;flex-wrap:wrap;gap:8px;}
-.jsh-topics a{font-size:13px;font-weight:800;padding:8px 13px;border-radius:999px;background:var(--stg-surf);color:var(--stg-ink2);border:1px solid var(--stg-line);text-decoration:none;}
-.jsh-topics a:hover{border-color:var(--stg-ink);color:var(--stg-ink);}
-.jsh-topics a b{font-weight:800;color:var(--stg-mute);margin-left:3px;}
-.jsh-foot{margin:22px 0 0;font-size:13.5px;line-height:1.55;font-weight:600;color:var(--stg-mute);max-width:760px;}
-.jsh-foot a{color:var(--stg-ink2);}
-
-@media (max-width:900px){
-  .jsh-grid{grid-template-columns:minmax(0,1fr);}
-  .jsh-panel{position:static;scroll-margin-top:12px;}
-  .jsh-faq{grid-template-columns:minmax(0,1fr);}
-  .jsh-big.tall{max-height:520px;}
-}
+:root{--jp-hue:${JIG_HUE};--jp-ink:#0b0d12;}
+.jp-crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;font-weight:700;color:var(--stg-mute);margin-bottom:12px;}
+.jp-crumb a{color:var(--stg-ink2);text-decoration:none;}
+.jp-crumb a:hover{color:var(--stg-ink);text-decoration:underline;}
+.jp-crumb span[aria-current]{color:var(--stg-ink);}
+.jp-head{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:18px;}
+.jp-htx{flex:1 1 420px;min-width:0;}
+.jp-head h1{margin:0;font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-0.02em;color:var(--stg-ink);}
+.jp-lede{margin:8px 0 0;max-width:640px;font-size:15px;line-height:1.55;font-weight:600;color:var(--stg-ink2);}
+.jp-today{display:flex;gap:10px;flex-wrap:wrap;}
+.jp-tbtn{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px;min-height:58px;box-sizing:border-box;border:1px solid var(--stg-ink);border-radius:12px;background:var(--stg-surf);color:var(--stg-ink);text-decoration:none;}
+.jp-tbtn:hover{background:var(--stg-surf2);}
+.jp-tbtn b{display:block;font-size:14px;font-weight:800;line-height:1.3;}
+.jp-tbtn small{display:block;font-size:12px;font-weight:700;line-height:1.35;color:var(--stg-mute);}
+.jp-tq{flex:none;width:54px;height:40px;border-radius:7px;background:var(--jp-hue);color:var(--jp-ink);border:1px solid var(--jp-ink);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;}
+.jp-tq.tall{width:32px;height:44px;}
+.jp-tabs{display:flex;gap:24px;border-bottom:1px solid var(--stg-line);margin-bottom:14px;overflow-x:auto;}
+.jp-tabs a{flex:none;display:flex;align-items:center;gap:6px;font-size:15px;font-weight:800;color:var(--stg-mute);text-decoration:none;padding:4px 0 11px;border-bottom:3px solid transparent;margin-bottom:-1px;}
+.jp-tabs a b{font-size:12px;font-weight:800;color:var(--stg-mute);}
+.jp-tabs a.on{color:var(--stg-ink);border-bottom-color:var(--stg-ink);}
+.jp-tabs a:hover{color:var(--stg-ink);}
+.jp-ctl{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:10px 0;margin-bottom:10px;background:var(--stg-ground);border-bottom:1px solid var(--stg-line);}
+.jp-grp{display:flex;align-items:center;gap:10px;}
+.jp-lab{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--stg-mute);}
+.jp-seg{display:flex;border:1px solid var(--stg-ink);border-radius:10px;overflow:hidden;background:var(--stg-surf);}
+.jp-seg button{font:inherit;font-size:14px;font-weight:800;padding:0 14px;height:44px;border:0;border-right:1px solid var(--stg-ink);border-radius:0;background:transparent;color:var(--stg-ink);cursor:pointer;}
+.jp-seg button:last-child{border-right:0;}
+.jp-seg button.on{background:var(--jp-hue);color:var(--jp-ink);}
+.jp-seg button:focus-visible{outline:3px solid var(--stg-ink);outline-offset:-3px;}
+.jp-seg.sm button{font-size:13px;height:40px;padding:0 12px;}
+.jp-short{display:none;}
+.jp-sp{flex:1;}
+.jp-search{display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border:1px solid var(--stg-line);border-radius:10px;background:var(--stg-surf);color:var(--stg-mute);width:240px;box-sizing:border-box;}
+.jp-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--stg-ink);}
+.jp-sel{font:inherit;font-size:13px;font-weight:800;height:40px;padding:0 10px;border:1px solid var(--stg-line);border-radius:10px;background:var(--stg-surf);color:var(--stg-ink);}
+.jp-row2{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 14px;}
+.jp-row2 .jp-topics{margin:0;}
+.jp-topics{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px;}
+.jp-topics button{font:inherit;font-size:13px;font-weight:800;padding:0 13px;height:36px;border-radius:999px;border:1px solid var(--stg-line);background:var(--stg-surf);color:var(--stg-ink2);cursor:pointer;}
+.jp-topics button b{font-weight:800;color:var(--stg-mute);margin-left:3px;}
+.jp-topics button:hover{border-color:var(--stg-ink);color:var(--stg-ink);}
+.jp-topics button.on{background:var(--stg-ink);color:var(--stg-ground);border-color:var(--stg-ink);}
+.jp-topics button.on b{color:inherit;opacity:.7;}
+.jp-avail{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;font-size:14px;line-height:1.5;font-weight:600;color:var(--stg-ink2);}
+.jp-avail b{font-weight:800;color:var(--stg-ink);}
+.jp-chk{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--stg-ink2);cursor:pointer;}
+.jp-chk input{width:18px;height:18px;accent-color:var(--stg-ink);}
+.jp-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px 20px;}
+.jp-card{display:flex;flex-direction:column;gap:8px;color:var(--stg-ink);text-decoration:none;height:100%;}
+.jp-ph{position:relative;display:block;aspect-ratio:3/2;border-radius:12px;overflow:hidden;border:1px solid var(--stg-ink);background:var(--stg-surf2);}
+.jp-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s ease;}
+a.jp-card:hover .jp-ph img{transform:scale(1.03);}
+a.jp-card:focus-visible{outline:3px solid var(--stg-ink);outline-offset:4px;border-radius:12px;}
+.jp-cap{font-size:15px;font-weight:700;line-height:1.45;padding:0 2px;}
+.jp-sub{font-size:12.5px;font-weight:700;line-height:1.4;color:var(--stg-mute);padding:0 2px;margin-top:-4px;}
+.jp-bd{position:absolute;display:flex;align-items:center;gap:4px;font-size:12px;font-weight:800;line-height:1.3;padding:5px 9px;border-radius:7px;border:1px solid var(--jp-ink);background:#ffffff;color:var(--jp-ink);}
+.jp-bd.done{right:10px;top:10px;background:var(--jp-hue);}
+.jp-bd.res{right:10px;top:10px;background:var(--jp-ink);color:#ffffff;}
+.jp-bd.tall{left:10px;top:10px;}
+.jp-bd.max{left:50%;top:50%;transform:translate(-50%,-50%);font-size:13px;padding:7px 12px;white-space:nowrap;}
+.jp-card.off{cursor:default;}
+.jp-card.off img{filter:grayscale(1);opacity:.4;}
+.jp-card.off .jp-cap{color:var(--stg-mute);}
+.jp-q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;color:var(--jp-ink);background:var(--jp-hue);}
+.jp-none{padding:30px 0;text-align:center;}
+.jp-none p{margin:0 0 12px;font-size:15px;font-weight:700;color:var(--stg-ink2);}
+.jp-none button,.jp-kbtn{font:inherit;font-size:14px;font-weight:800;min-height:44px;padding:0 22px;border-radius:12px;border:1px solid var(--stg-ink);background:var(--stg-surf);color:var(--stg-ink);cursor:pointer;display:inline-flex;align-items:center;text-decoration:none;}
+.jp-note{margin:20px 0 0;font-size:13.5px;line-height:1.55;font-weight:600;color:var(--stg-mute);max-width:760px;}
+.jp-mlede{max-width:760px;margin:0 0 16px;font-size:15px;line-height:1.55;font-weight:600;color:var(--stg-ink2);}
+.jp-mlede a{color:var(--stg-ink);font-weight:800;}
+.jp-mnone{font-size:15px;font-weight:700;color:var(--stg-mute);padding:24px 0;}
+.jp-kids{padding-bottom:8px;}
+.jp-more{margin-top:40px;padding-top:24px;border-top:1px solid var(--stg-line);}
+.jp-more h2{margin:0 0 10px;font-size:18px;font-weight:800;color:var(--stg-ink);}
+.jp-more div{display:flex;flex-wrap:wrap;gap:8px;}
+.jp-more a{font-size:13px;font-weight:800;padding:9px 13px;border-radius:999px;background:var(--stg-surf);color:var(--stg-ink2);border:1px solid var(--stg-line);text-decoration:none;}
+.jp-more a:hover{border-color:var(--stg-ink);color:var(--stg-ink);}
+.jp-more a b{font-weight:800;color:var(--stg-mute);margin-left:3px;}
+.jp-faq{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:26px;}
+.jp-qa{padding:16px 18px;border-radius:12px;background:var(--stg-surf);border:1px solid var(--stg-line);}
+.jp-qa h2{margin:0;font-size:16px;line-height:1.35;font-weight:800;color:var(--stg-ink);}
+.jp-qa p{margin:6px 0 0;font-size:14px;line-height:1.5;font-weight:600;color:var(--stg-ink2);}
+.jp-foot{margin:22px 0 0;font-size:13.5px;line-height:1.55;font-weight:600;color:var(--stg-mute);max-width:760px;}
+.jp-foot a{color:var(--stg-ink2);}
+@media (max-width:1100px){.jp-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.jp-faq{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media (max-width:900px){.jp-row2 .jp-search{width:100%;}.jp-row2 .jp-sp{display:none;}.jp-row2 .jp-topics{width:100%;}}
 @media (max-width:640px){
-  .jsh-head{flex-direction:column;align-items:stretch;}
-  .jsh-head h1{font-size:26px;}
-  .jsh-lede{font-size:14px;}
-  .jsh-todays > a{flex:1;}
-  .jsh-chips{gap:6px;}
-  .jsh-chips button{padding:7px 10px;font-size:12px;}
-  .jsh-shelves{padding:10px 8px 2px;}
-  .jsh-dow,.jsh-line{grid-template-columns:minmax(0,1fr);gap:4px;}
-  .jsh-dow > span{display:none;}
-  .jsh-dowr{gap:6px;}
-  .jsh-glab{flex-direction:row;gap:6px;align-items:baseline;padding-bottom:0;}
-  .jsh-glab b{font-size:12px;}
-  .jsh-glab span{font-size:10.5px;}
-  .jsh-row{gap:6px;padding-bottom:8px;}
-  .jsh-plank{left:-4px;right:-4px;height:7px;border-top-width:2px;}
-  .jsh-no{display:none;}
-  .jsh-lid{height:12px;font-size:8.5px;padding:0 3px;justify-content:center;}
-  .jsh-lid em{display:none;}
-  .jsh-pc{display:none;}
-  .jsh-tick{width:12px;height:12px;font-size:8px;left:2px;bottom:2px;}
-  .jsh-q{font-size:17px;}
+  .jp-head h1{font-size:26px;}
+  .jp-lede{font-size:14px;}
+  .jp-today{width:100%;}
+  .jp-tbtn{flex:1 1 0;flex-direction:column;gap:5px;padding:8px 4px;text-align:center;min-width:0;}
+  .jp-tbtn small{display:none;}
+  .jp-tbtn b{font-size:12.5px;}
+  .jp-tabs{gap:18px;}
+  .jp-tabs a{font-size:14px;}
+  .jp-ctl{gap:10px;}
+  .jp-grp{width:100%;}
+  .jp-seg{flex:1;}
+  .jp-seg button{flex:1;padding:0;font-size:14px;}
+  .jp-nophone{display:none;}
+  .jp-long{display:none;}
+  .jp-short{display:inline;}
+  .jp-sel{flex:1;}
+  .jp-topics{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;}
+  .jp-topics button{flex:none;}
+  .jp-grid{grid-template-columns:minmax(0,1fr);gap:18px;}
+  .jp-grid.daily{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px;}
+  .jp-grid.daily .jp-cap{font-size:13px;}
+  .jp-faq{grid-template-columns:minmax(0,1fr);}
 }
-@media (prefers-reduced-motion:reduce){.jsh-box{transition:none;}.jsh-box:hover{transform:none;}}
+@media (prefers-reduced-motion:reduce){.jp-ph img{transition:none;}a.jp-card:hover .jp-ph img{transform:none;}}
 `;

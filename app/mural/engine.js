@@ -79,9 +79,9 @@ export function bootMural(root, cfg) {
     + '@keyframes mrlBootSlide{0%{transform:translateX(-110%)}100%{transform:translateX(320%)}}'
     + '@media (prefers-reduced-motion:reduce){.mrlBoot .bBar i{animation:none;width:100%;opacity:.35}}'
     + '</style><div class="bIn">'
-    + '<div class="bEb">' + K.name + '</div>'
+    + '<div class="bEb">' + (cfg.photo ? 'Jigsaw Puzzle' : K.name) + '</div>'
     + '<h2 id="bootH">Loading</h2>'
-    + '<p id="bootP">This is a big page: one 4,000 piece picture the whole site builds together. It can take a few seconds.</p>'
+    + '<p id="bootP">' + (cfg.photo ? 'Cutting ' + cfg.photo.name + ' into ' + (cfg.photo.cols * cfg.photo.rows).toLocaleString('en-US') + ' pieces. A big puzzle can take a few seconds.' : 'This is a big page: one 4,000 piece picture the whole site builds together. It can take a few seconds.') + '</p>'
     + '<p class="bStep" id="bootStep"></p>'
     + '<div class="bBar"><i></i></div>'
     + '</div>';
@@ -148,6 +148,28 @@ export function bootMural(root, cfg) {
 
   (async () => {
     try {
+      // A FREE-PLAY JIGSAW (owner, 2026-11-21: the jigsaw portal plays any photo at
+      // any size, "up to mural count"). /jig/big hands over one past Jig or Saw
+      // photo and its cut; it is built alone like a shelf copy: nothing is sent to
+      // the server, nothing scores, and the pieces are kept in this browser.
+      if (cfg.photo) {
+        const P = cfg.photo;
+        const big = P.cols * P.rows > 1000 && !((navigator.deviceMemory || 8) <= 4);
+        const loadPhoto = (w) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('img')); i.src = `/api/${P.g}/img?n=${P.n}${w ? `&w=${w}` : ''}`; });
+        bootStep('Loading the picture.');
+        let img;
+        try { img = await loadPhoto(big ? 3840 : 1920); }
+        catch (e) { img = await loadPhoto(0); }
+        if (dead) return;
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem('mural_solo_' + P.id) || 'null'); } catch (e) { saved = null; }
+        bootStep('Setting out the pieces.');
+        await paint();
+        if (dead) return;
+        start({ id: P.id, board: { cols: P.cols, rows: P.rows, grades: '', opens: Date.now(), closes: Infinity, photo: { name: P.name, by: P.by, lic: P.lic } }, img, state: {}, me: { pieces: (saved && saved.pieces) || [], points: 0, firsts: 0 }, anon: null, email: '', q: '', solo: true, photo: P, crowd: {}, crowdMe: {}, wall: null });
+        hideBoot();
+        return;
+      }
       // A SHELF COPY (owner, 2026-11-19): ?solo=<id> opens a finished or closed
       // mural to build alone. Nothing is sent to the server and nothing scores;
       // the pieces placed are kept in this browser.
@@ -242,7 +264,9 @@ const COLS=env.board.cols||MURAL_COLS,ROWS=env.board.rows||MURAL_ROWS,TOTAL=COLS
 const img=env.img,want=COLS/ROWS;
 let cw0=img.naturalWidth,ch0=Math.round(cw0/want);if(ch0>img.naturalHeight){ch0=img.naturalHeight;cw0=Math.round(ch0*want);}
 const cx0=Math.floor((img.naturalWidth-cw0)/2),cy0=Math.floor((img.naturalHeight-ch0)/2);
-const PS=Math.max(6,Math.min(64,Math.floor(cw0/COLS))),W=COLS*PS,H=ROWS*PS,MARG=PS*.27;
+const PHOTO=env.photo||null;
+/* A small free-play jigsaw gets bigger source pieces and a closer zoom, or 24 pieces would draw from a few hundred pixels. */
+const PS=Math.max(6,Math.min(PHOTO?240:64,Math.floor(cw0/COLS))),W=COLS*PS,H=ROWS*PS,MARG=PS*.27;
 function rng32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function mk(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
 function hashId(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
@@ -318,7 +342,7 @@ let STATE=env.state||{};
 // fix this piece clarity, looks awful"). A piece is only PS source pixels wide
 // (30 from the 3840 photo), so the closest zoom stops at 64 CSS px a piece;
 // it used to go to 110 and the phone loaded the half-size photo on top of that.
-const view={s:1,tx:0,ty:0,cw:0,ch:0,min:.1,max:72/PS};
+const view={s:1,tx:0,ty:0,cw:0,ch:0,min:.1,max:(PHOTO?150:72)/PS};
 let valDirty=true,isPhone=false,C={},sel=null,refTab='pic',pulses=[],pops=[],needDraw=false,tick=UPDATE,HANDN=8,TSZ=68,HCOLS=8,TRAYR=2,finShown=false;
 try{const v=+localStorage.getItem('mural_tray_rows');if(v>=1&&v<=3)TRAYR=v;}catch(e){}
 function colors(){const cs=getComputedStyle(root);C={bd:cs.getPropertyValue('--bd').trim(),slot:cs.getPropertyValue('--slot').trim(),ink:cs.getPropertyValue('--ink').trim(),page:cs.getPropertyValue('--page').trim()};}
@@ -448,7 +472,7 @@ function renderHand(){
 }
 function setMsg(t){$('msg').textContent=t;}
 function ui(){
-  $('sPts').textContent=M.pts;$('menuBtn').textContent='Menu \u00b7 '+M.pts+' pts';$('sLeft').textContent=M.mine.size;
+  $('sPts').textContent=M.pts;$('menuBtn').textContent=PHOTO?'Menu':'Menu \u00b7 '+M.pts+' pts';$('sLeft').textContent=M.mine.size;
   /* THE SITE'S TOTAL, NOT FIRSTS (owner, 2026-11-19: "dont need to show 'firsts', instead also give total places along with %. and that number will have the '+5' or whatever on every refresh"). */
   const done=M.crowd.size+[...M.mine].filter(i=>!M.crowd.has(i)).length,pc=done/TOTAL*100;
   $('sAll').textContent=done.toLocaleString();$('sAllLab').textContent=(PRIV?'All Placed':'Site Total')+' \u00b7 '+(pc>0&&pc<10?pc.toFixed(1):Math.round(pc))+'%';
@@ -885,7 +909,7 @@ function openWall(mode,o){
   const done=env.board.completed||Date.parse(crowd.completed||'')||0;
   const hrs=done?Math.max(0,(done-env.board.opens)/3600000):Math.max(0,(Math.min(Date.now(),env.board.closes)-env.board.opens)/3600000);
   const fullPic=mode==='live'?complete:!!(done||(crowd.n||0)>=TOTAL);
-  const shelf={label:'Puzzle Shelf',href:'/jig/shelf?tab=murals'};
+  const shelf={label:'Jigsaw Puzzles',href:'/jig/shelf?tab=murals'};
   let primary=null,alts=[],top=[shelf],note='',next=null;
   if(mode==='visit'){
     const had=M.mine.size;
@@ -930,15 +954,15 @@ function reveal(then){
   const fx=document.createElement('div');fx.className='finFx';fx.style.setProperty('--fx',(bx+bw/2)+'px');fx.style.setProperty('--fy',(by+bh/2)+'px');
   fx.innerHTML='<div class="ring" style="left:'+bx+'px;top:'+by+'px;width:'+bw+'px;height:'+bh+'px"><i></i></div><div class="fill" style="background:'+(theme==='dark'?'#0b0f1a':'#f1affb')+'"></div>';
   root.appendChild(fx);
-  setMsg(SOLO?'That is every piece. You rebuilt it.':'The last piece is in. '+(PRIV?'Your mural':K.name)+' is complete.');
+  setMsg(PHOTO?'That is every piece. Puzzle finished.':SOLO?'That is every piece. You rebuilt it.':'The last piece is in. '+(PRIV?'Your mural':K.name)+' is complete.');
   setTimeout(()=>{if(!dead)fx.classList.add('go');},1500);
   setTimeout(()=>{if(dead)return;then(true);setTimeout(()=>fx.remove(),60);},2500);
 }
 let liveFinish=false;
 function showFinish(complete,closed){
-  const open=(swept)=>{if(dead)return;if(SOLO)openWall('rebuilt',{complete:true,sweep:!swept});else openWall('live',{complete,closed,confetti:complete,sweep:!swept});};
+  const open=(swept)=>{if(dead)return;if(PHOTO){photoFinish();return;}if(SOLO)openWall('rebuilt',{complete:true,sweep:!swept});else openWall('live',{complete,closed,confetti:complete,sweep:!swept});};
   const go=()=>{if(dead)return;if(complete)reveal(open);else open(false);};
-  if(wallAsked&&wallData){go();return;}
+  if(PHOTO||(wallAsked&&wallData)){go();return;}
   /* Who placed what, in order, for the build and the blocks. Without it the wall still opens, from the standings snapshot. */
   wallAsked=true;
   getJSON('/api/mural/wall?id='+env.id).then(w=>{if(w.ok&&w.j&&Array.isArray(w.j.order))wallData=w.j;}).catch(()=>{}).then(go);
@@ -979,7 +1003,7 @@ function creditLine(){const p=env.board.photo||{};return p.name?'Photo: '+p.name
 /* No wait on Shuffle (owner, 2026-11-19: "Remove the refresh limit"); the 10 second timer is gone.
    The button reads Shuffle (owner, 2026-11-20: "change 'swap' to shuffle"; it was Swap, and Refresh before that):
    "refresh" is the board's own two-minute update. */
-function coolTick(){const b=$('dealBtn'),w=!!(M&&M.done&&finShown);b.disabled=!!(M&&M.done)&&!w;b.textContent=w?'The Wall':'Shuffle';const cb=$('clearBtn');if(cb)cb.style.display=M&&M.done?'none':'';}
+function coolTick(){const b=$('dealBtn'),w=!!(M&&M.done&&finShown);b.disabled=!!(M&&M.done)&&!w;b.textContent=w?(PHOTO?'Finished':'The Wall'):'Shuffle';const cb=$('clearBtn');if(cb)cb.style.display=M&&M.done?'none':'';}
 function refreshSet(){if(M.done){if(finShown)showFinish(SOLO||!!STATE.completed||(STATE.n||0)>=TOTAL,!SOLO&&Date.now()>=env.board.closes);return;}dealAll();setMsg(M.hand.some(x=>x!==null)?'New set, from anywhere on the mural. Use the picture to find where each one goes.':'You have placed everything.');}
 $('dealBtn').onclick=refreshSet;
 /* CLEAR LOOSE PIECES (owner, 2026-11-20). It acts on the board, so it sits on the board beside the zoom
@@ -1027,6 +1051,40 @@ if(PRIV){
   if(hl)hl.textContent='A private mural: one picture, '+TOTAL.toLocaleString()+' pieces, built by '+(PRIV.group?'the members of '+PRIV.group:'everyone who has the invite link')+'. It stays open until every piece is placed. It scores on its own standings and does not count toward your Mind Loft points.';
   $('dOther').textContent='Play '+K.name;$('dOther').onclick=()=>{window.location.href=K.route;};
 }
+if(PHOTO){
+  /* A FREE-PLAY JIGSAW'S HEADER (2026-11-21): no Mural / MuralToo switch, no points, standings or
+     private murals. A tag names the size, and the pill that was Private Mural goes back to the
+     jigsaw portal. The picture panel keeps only Picture. */
+  const sg=$('muralSeg');if(sg){const tag=document.createElement('span');tag.className='privTag';tag.textContent=PHOTO.cols*PHOTO.rows>=1000?(PHOTO.cols*PHOTO.rows).toLocaleString('en-US')+' Pieces':(PHOTO.cols*PHOTO.rows)+' Pieces';sg.replaceWith(tag);}
+  const pts=$('sPts');if(pts&&pts.parentNode)pts.parentNode.style.display='none';
+  const pb=$('privBtn');if(pb){pb.textContent='All Jigsaws';pb.setAttribute('href','/jig/shelf');}
+  for(const q of ['#lbBtn','#dOther','#meta','#refSeg [data-r="crowd"]','#refSeg [data-r="val"]']){const x=root.querySelector(q);if(x)x.style.display='none';}
+  const hl=root.querySelector('#helpSheet .lead');
+  if(hl)hl.textContent=PHOTO.name+', cut into '+TOTAL.toLocaleString('en-US')+' pieces. Drag a piece from the tray onto its spot, or tap the piece and then the spot. Shuffle deals a new handful. Pieces can lock together anywhere, but a piece only counts once it is in its right spot. Nothing here scores, there is no clock, and your pieces are kept in this browser, so you can stop and come back.';
+}
+function photoFinish(){
+  try{const d=JSON.parse(localStorage.getItem('sot_jigsaw_done')||'{}');d[PHOTO.key]=1;localStorage.setItem('sot_jigsaw_done',JSON.stringify(d));}catch(e){}
+  const old=root.querySelector('.photoFin');if(old)old.remove();
+  const el=document.createElement('div');el.className='photoFin';el.setAttribute('role','dialog');el.setAttribute('aria-label','Jigsaw finished');
+  const n=TOTAL.toLocaleString('en-US'),esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  el.innerHTML='<style>.photoFin{position:fixed;inset:0;z-index:55;display:flex;align-items:center;justify-content:center;padding:20px;background:'+(theme==='dark'?'#0b0f1a':'#f1affb')+';color:#0b0d12;overflow:auto}'
+    +'.mrl[data-theme="dark"] .photoFin{color:#eef1f6}.photoFin .pfIn{max-width:560px;width:100%;text-align:center}'
+    +'.photoFin .pfEb{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:0 0 8px}'
+    +'.photoFin h2{font-size:clamp(26px,5vw,38px);line-height:1.15;margin:0 0 10px;font-weight:800}'
+    +'.photoFin p{font-size:16px;line-height:1.5;margin:0 0 16px;font-weight:600}'
+    +'.photoFin img{display:block;width:100%;height:auto;border-radius:12px;border:1px solid currentColor;margin:0 0 18px}'
+    +'.photoFin .pfB{display:flex;flex-direction:column;gap:10px}'
+    +'.photoFin a,.photoFin button{display:block;width:100%;box-sizing:border-box;font:inherit;font-size:16px;font-weight:800;padding:14px;border-radius:12px;border:1px solid currentColor;background:transparent;color:inherit;text-decoration:none;cursor:pointer}'
+    +'.photoFin .pfP{background:#0b0d12;color:#fff;border-color:#0b0d12}.mrl[data-theme="dark"] .photoFin .pfP{background:#eef1f6;color:#0b0d12;border-color:#eef1f6}'
+    +'.photoFin .pfC{font-size:12.5px;font-weight:600;margin:14px 0 0;opacity:.8}</style>'
+    +'<div class="pfIn"><p class="pfEb">Jigsaw Finished</p><h2>'+esc(PHOTO.name)+'</h2>'
+    +'<p>All '+n+' pieces, built on your own.</p>'
+    +'<img src="/api/'+PHOTO.g+'/img?n='+PHOTO.n+'&w=960" alt="'+esc(PHOTO.name)+', finished"/>'
+    +'<div class="pfB"><a class="pfP" href="/jig/shelf">Back to Jigsaw Puzzles</a><a href="/jig">Play Today\u2019s Jig</a><button type="button" data-close="1">See Your Finished Puzzle</button></div>'
+    +'<p class="pfC">'+esc(creditLine())+'</p></div>';
+  el.addEventListener('click',e=>{if(e.target.hasAttribute('data-close'))el.remove();});
+  root.appendChild(el);
+}
 /* THE OPENING VIEW (owner, 2026-11-20: "mural seems to work best when zoomed in... make that change").
    The whole board fitted to a desktop screen made each piece about 10 px, too small to match or drop.
    Both phone and desktop now open zoomed in (37 and 42 CSS px a piece), centred on the open edge of the
@@ -1036,12 +1094,12 @@ function openView(){fit();const px=isPhone?37:42;if(W*view.s/COLS>=px)return;vie
   const fx=n?(sx/n+.5)*PS:W*.5,fy=n?(sy/n+.5)*PS:H*.5;view.tx=view.cw/2-fx*view.s;view.ty=view.ch/2-fy*view.s;clampView();req();}
 openView();
 dealAll();
-setMsg(SOLO?'Shelf copy: build it alone, at your own pace. Nothing here scores, and your pieces are kept in this browser.':'Drag a piece onto the mural, or tap a piece and then tap its spot.');
+setMsg(PHOTO?'Build it at your own pace. Nothing here scores, and your pieces are kept in this browser.':SOLO?'Shelf copy: build it alone, at your own pace. Nothing here scores, and your pieces are kept in this browser.':'Drag a piece onto the mural, or tap a piece and then tap its spot.');
 ui();draw();
 ro=new ResizeObserver(()=>{const r=$('stage').getBoundingClientRect();if(Math.abs(r.width-view.cw)<1&&Math.abs(r.height-view.ch)<1)return;const wasFit=view.s<=view.min*1.001,hn=HANDN,ts=TSZ;resize();if(HANDN!==hn||TSZ!==ts)fitHand();if(wasFit)fit();else clampView();clampRef();req();});
 ro.observe($('stage'));
 /* A RETURN VISIT (shelf or archive) opens on the wall, before Replay. A copy already rebuilt does not fire the finish again. */
-if(SOLO){if(M.mine.size>=TOTAL){finShown=true;M.done=true;renderHand();ui();coolTick();}openWall('visit');}
+if(SOLO){if(M.mine.size>=TOTAL){finShown=true;M.done=true;renderHand();ui();coolTick();}if(!PHOTO)openWall('visit');}
 checkEnd();booted=true;
   }
 }

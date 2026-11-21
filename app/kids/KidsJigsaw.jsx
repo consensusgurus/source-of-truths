@@ -498,7 +498,7 @@ export default function KidsJigsaw({ game, dailyKeys = [], dayKey, dayLabel, day
         )}
         <KidsStrip selfKey={game.key} dayKey={dayKey} />
         <div className="kd-foot">
-          <span>Mind Loft Kids · free, no sign-up, no ads. Grown-ups: these are the same photos as the daily <Link href="/jig">Jig</Link> and <Link href="/saw">Saw</Link>, and every past one is on <Link href="/jig/shelf">the Jigsaw Puzzle Shelf</Link>.</span>
+          <span>Mind Loft Kids · free, no sign-up, no ads. Grown-ups: these are the same photos as the daily <Link href="/jig">Jig</Link> and <Link href="/saw">Saw</Link>, and every past one is on <Link href="/jig/shelf">the jigsaw puzzles page</Link> at 24 to 4,000 pieces.</span>
           <span>Puzzle #{dayNum} · {dayLabel}</span>
         </div>
       </div>

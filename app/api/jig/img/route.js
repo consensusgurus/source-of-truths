@@ -3,7 +3,8 @@ import { PUZZLES } from '@/app/jig/puzzles';
 // /api/jig/img?n=<puzzle number>[&w=330|500|960|1280]   (GET)
 //
 // `w` asks for a smaller picture, for the puzzle shelf (/jig/shelf), whose
-// boxes are thumbnails. Only Wikimedia's standard thumbnail widths are
+// boxes are thumbnails, or (1920, 3840: owner, 2026-11-21) a bigger one for
+// the free-play board at /jig/big, where up to 4,000 pieces need the detail. Only Wikimedia's standard thumbnail widths are
 // accepted (a non-standard width is rendered on demand and rate limited), and
 // anything else falls back to 1280, the size the game itself cuts.
 //
@@ -31,7 +32,7 @@ export async function GET(req) {
   const p = Number.isInteger(n) && n > 0 ? PUZZLES.find((x) => x.num === n) : null;
   if (!p || p.live > etToday()) return new Response('Not found', { status: 404 });
   const wq = Number(searchParams.get('w'));
-  const width = [330, 500, 960].includes(wq) ? wq : 1280;
+  const width = [330, 500, 960, 1920, 3840].includes(wq) ? wq : 1280;
   const src = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(p.t)}?width=${width}`;
   let up;
   try {

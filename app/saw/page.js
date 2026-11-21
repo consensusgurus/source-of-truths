@@ -56,7 +56,7 @@ export async function generateMetadata({ searchParams }) {
   const url = `/saw?p=${p.num}`;
   const img = `/api/saw/img?n=${p.num}&w=960`;
   const title = `Jigsaw Puzzle: ${p.name} | Saw No. ${p.num}, Mind Loft`;
-  const description = `${p.name}: a free ${pieces}-piece online jigsaw puzzle on a portrait photo, Saw No. ${p.num} from ${p.dateLabel}. A Wikimedia Commons featured photo by ${p.by}. Play it free, no app or signup.`;
+  const description = `${p.name}: a free ${pieces}-piece online jigsaw puzzle on a portrait photo, Saw No. ${p.num} from ${p.dateLabel}. A Wikimedia Commons featured photo by ${p.by}. Play it free at any size from 24 to 4,000 pieces.`;
   const short = `${p.name}, cut into ${pieces} pieces. Play this past daily jigsaw free.`;
   return {
     title,

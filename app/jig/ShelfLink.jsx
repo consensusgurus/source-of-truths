@@ -1,29 +1,28 @@
 'use client';
 
-// The door from the Jig and Saw pages to the Jigsaw Puzzle Shelf (/jig/shelf),
+// The door from the Jig and Saw pages to the jigsaw portal (/jig/shelf; the
+// Jigsaw Puzzle Shelf until 2026-11-21, when the grid of every photo at any
+// size replaced it and this link was renamed "Jigsaw puzzles"),
 // under the board above How to play and Report an issue (owner, 2026-10-16;
 // Saw joined the shelf and the link was renamed 2026-11-11). `game` picks
 // whose thumbnails it draws: each page only has its own bank in hand. It draws the last
-// four past boxes on a plank and today's question mark, so it looks like the
-// page it opens. Colours read the stage tokens with navy fallbacks, because the
+// four past photos and today's question mark. Colours read the stage tokens with navy fallbacks, because the
 // same client also renders on the older Loft page.
 export default function ShelfLink({ puzzles, todayNum, game = 'jig' }) {
   const thumb = (n) => `/api/${game}/img?n=${n}&w=330`;
   const past = (puzzles || []).filter((p) => p.num < todayNum).slice(-4);
-  const count = (puzzles || []).filter((p) => p.num <= todayNum).length;
   return (
     <a className={`jgs-link ${game}`} href={game === 'saw' ? '/jig/shelf?g=saw' : '/jig/shelf'}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <span className="jgs-shelf" aria-hidden="true">
-        <span className="jgs-plank" />
         {past.map((p) => (
           <span key={p.num} className="jgs-box"><img src={thumb(p.num)} alt="" loading="lazy" decoding="async" /></span>
         ))}
         <span className="jgs-box jgs-q">?</span>
       </span>
       <span className="jgs-txt">
-        <b>Jigsaw puzzle shelf</b>
-        <span>{count} {game === 'saw' ? 'Saw' : 'Jig'} photos so far, every Saw and Jig in one place. Play any past one.</span>
+        <b>Jigsaw puzzles</b>
+        <span>Every past Jig and Saw photo, playable at 24 to 4,000 pieces.</span>
       </span>
       <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
     </a>
@@ -36,8 +35,7 @@ const CSS = `
   color:var(--stg-ink,#ffffff);text-align:left;box-sizing:border-box;}
 .jgs-link:hover{background:var(--stg-surf2,rgba(255,255,255,.1));}
 .jgs-link svg{flex:none;color:var(--stg-acc-ink,var(--stg-acc,#9cc0ff));}
-.jgs-shelf{position:relative;flex:none;display:flex;gap:5px;align-items:flex-end;padding-bottom:7px;}
-.jgs-plank{position:absolute;left:-4px;right:-4px;bottom:0;height:7px;background:#8a6440;border-top:2px solid #a87d55;border-radius:1px;}
+.jgs-shelf{position:relative;flex:none;display:flex;gap:5px;align-items:flex-end;}
 .jgs-link.saw .jgs-box{width:26px;height:34px;}
 .jgs-box{position:relative;display:block;width:44px;height:30px;border-radius:2px;overflow:hidden;background:#1b2436;box-shadow:2px 2px 0 rgba(5,7,13,.55);}
 .jgs-box img{width:100%;height:100%;object-fit:cover;display:block;}

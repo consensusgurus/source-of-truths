@@ -8,7 +8,8 @@ import { PUZZLES } from '@/app/saw/puzzles';
 // `w` asks for a smaller picture, for the puzzle shelf (/jig/shelf), whose
 // boxes are thumbnails. Only Wikimedia's standard thumbnail widths are
 // accepted (a non-standard width is rendered on demand and rate limited), and
-// anything else falls back to 1280, the size the game itself cuts.
+// anything else falls back to 1280, the size the game itself cuts. 1920 and
+// 3840 (2026-11-21) serve the free-play board at /jig/big.
 //
 // The one place a Jig photo comes from, the same design as /api/focus/img: the
 // bank names a Wikimedia Commons file per day, and this route fetches the
@@ -34,7 +35,7 @@ export async function GET(req) {
   const p = Number.isInteger(n) && n > 0 ? PUZZLES.find((x) => x.num === n) : null;
   if (!p || p.live > etToday()) return new Response('Not found', { status: 404 });
   const wq = Number(searchParams.get('w'));
-  const width = [330, 500, 960].includes(wq) ? wq : 1280;
+  const width = [330, 500, 960, 1920, 3840].includes(wq) ? wq : 1280;
   const src = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(p.t)}?width=${width}`;
   let up;
   try {

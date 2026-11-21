@@ -56,7 +56,7 @@ export async function generateMetadata({ searchParams }) {
   const url = `/jig?p=${p.num}`;
   const img = `/api/jig/img?n=${p.num}&w=960`;
   const title = `Jigsaw Puzzle: ${p.name} | Jig No. ${p.num}, Mind Loft`;
-  const description = `${p.name}: a free ${pieces}-piece online jigsaw puzzle, Jig No. ${p.num} from ${p.dateLabel}. A Wikimedia Commons featured photo by ${p.by}. Play it free, no app or signup.`;
+  const description = `${p.name}: a free ${pieces}-piece online jigsaw puzzle, Jig No. ${p.num} from ${p.dateLabel}. A Wikimedia Commons featured photo by ${p.by}. Play it free at any size from 24 to 4,000 pieces.`;
   const short = `${p.name}, cut into ${pieces} pieces. Play this past daily jigsaw free.`;
   return {
     title,
@@ -88,7 +88,7 @@ function boardJsonLd(p) {
     creditText: `${p.by}, Wikimedia Commons`,
     creator: { '@type': 'Person', name: p.by },
     datePublished: p.live,
-    isPartOf: { '@type': 'CollectionPage', name: 'Jigsaw Puzzle Shelf', url: `${SITE_URL}/jig/shelf` },
+    isPartOf: { '@type': 'CollectionPage', name: 'Free Online Jigsaw Puzzles', url: `${SITE_URL}/jig/shelf` },
   };
 }
 
@@ -129,7 +129,7 @@ function boardCrumbs(p) {
     itemListElement: [
       ...breadcrumbJsonLd.itemListElement.slice(0, 2),
       { '@type': 'ListItem', position: 3, name: 'Jig', item: `${SITE_URL}/jig` },
-      { '@type': 'ListItem', position: 4, name: 'Puzzle shelf', item: `${SITE_URL}/jig/shelf` },
+      { '@type': 'ListItem', position: 4, name: 'Jigsaw Puzzles', item: `${SITE_URL}/jig/shelf` },
       { '@type': 'ListItem', position: 5, name: `No. ${p.num}: ${p.name}` },
     ],
   };

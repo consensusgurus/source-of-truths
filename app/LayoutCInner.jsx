@@ -890,8 +890,8 @@ export default function LayoutCInner({ gameKey }) {
             {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
             {ixDoor('/build-a-run', 'Build a Run')}
             {ixDoor('/archive', 'Puzzle Archive')}
-            {/* Jigsaw Puzzle Shelf, under the archive (owner, 2026-11-18). Keep in step with StageToday. */}
-            {ixDoor('/jig/shelf', 'Jigsaw Puzzle Shelf')}
+            {/* Jigsaw Puzzles (the old Jigsaw Puzzle Shelf, renamed with the 2026-11-21 portal), under the archive (owner, 2026-11-18). Keep in step with StageToday. */}
+            {ixDoor('/jig/shelf', 'Jigsaw Puzzles')}
             {ixHash('sty-board', 'Leaderboards + Stats')}
             <span className="lc-eecut" aria-hidden="true" />
             {ixHash('sty-iq', 'IQ Tests')}

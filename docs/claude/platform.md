@@ -896,3 +896,36 @@ Animals, Food, Flowers, Cities and Landmarks, Landscapes. Check a new photo batc
   pages' links. On 2026-11-21 Food (4) and Flowers (5) were under it; they join on their own.
 - The shelf's topic row sits under the shelves, above the FAQ (owner's 11-19 rule: no visible
   change on the first screen of the hub).
+
+## The jigsaw portal: /jig/shelf at any size (2026-11-21)
+
+Owner, 2026-11-21: make Mind Loft the top place for jigsaws online. The wooden Jigsaw Puzzle
+Shelf was replaced AT THE SAME URL by a grid of every past Jig and Saw photo (canvas "Jigsaw
+Portal Mockup"), so every link to it carries over: the footer, the home's Everything Else list
+(LayoutCInner + StageToday), the Jig and Saw pages (ShelfLink, EndFirst), and the Mural finish
+and private-mural pages (`?tab=murals`). Their labels now read "Jigsaw Puzzles".
+
+- **One shared size bar** (owner: "can't we have the piece selector be shared on page"):
+  24, 48, 80, 150, 300, 500, 1,000, 2,000, 4,000 (`lib/jigsaw-sizes.js`). Phones show
+  24, 48, 80, 300, 1K, 4K. The pick is kept in `sot_jigsaw_size`.
+- **Where a picture opens** (`playHref`): the daily's own size (the chip nearest its cut, so a
+  77-piece Saw is the 80 chip) opens the archived board, `/jig?p=N` or `/saw?p=N`, unchanged.
+  Every other size opens `/jig/big?g=&n=&pieces=`: the Mural board in PHOTO MODE
+  (`app/mural/engine.js`, `cfg.photo`), built alone, no server calls, no score, no clock,
+  saved as `mural_solo_photo-<g>-<n>-<size>`; finishing sets `sot_jigsaw_done[<g>-<n>-<size>]`
+  and shows a plain finish card (not the Mural wall). `/jig/big` is noindex and canonical to
+  the photo's own page; today's or future photos redirect to the portal.
+- **Greyed sizes** (owner: "If it doesn't work on larger sizes, make it unavailable ...
+  Greyed"): `/api/jigsaw/fit` -> `{ max: { 'jig-12': 2000 } }`, from `lib/jigsaw-fit.js`:
+  the Commons original must give MIN_PIECE_PX (40) source pixels a piece, and the 500 px
+  thumbnail's plain-piece share and biggest flat patch must stay under PLAIN_LIMIT and
+  FLAT_BLOCK_LIMIT for that size. Up to 300 is always allowed. A photo that cannot be measured
+  caps at 1,000 and the response is cached 10 minutes instead of a day. Greyed cards show
+  "Up to N"; a box hides them. Greyed is the default (owner's pick over hidden).
+- Tabs: All Puzzles (the grid), Daily Archive (the dailies as they ran, solved marks; `?g=saw`
+  lands here on Saw), Murals (finished murals, `?tab=murals`), Kids (door to /kids/jigsaw).
+- SEO: the server HTML is the All Puzzles grid at 80 pieces, every card a real link to the
+  photo's page with alt text; CollectionPage/ItemList of ImageObjects, BreadcrumbList and a
+  six-question FAQPage; topic links (above section) and the sitemap at priority 0.8. The
+  `/jig?p=N` and `/saw?p=N` descriptions now say "at any size from 24 to 4,000 pieces".
+- `/api/jig/img` and `/api/saw/img` also accept `w=1920` and `w=3840` for the big board.
