@@ -745,19 +745,29 @@ $('refSize').onclick=()=>setRef((refState+1)%3);
    mural, the board's view boxed; a click there jumps the board. The panel here tucks away meanwhile and
    comes back when that window closes. */
 let popW=null,popCv=null,popBase=null,popKey='',popTimer=0;
+/* THE POP-OUT ZOOMS (owner, 2026-11-20: "you need to be able to zoom in on the pop-out window for
+   mural"). PZ is the part of the picture the window shows: s times closer than fit, centred on
+   (cx, cy) in picture pixels. Wheel, pinch and the +/- buttons zoom; drag pans when zoomed; a tap
+   (no drag) still jumps the board there. Fit button (the zoom label) goes back to the whole mural. */
+const PZ={s:1,cx:W/2,cy:H/2,max:24};
+function pzClamp(){PZ.s=Math.max(1,Math.min(PZ.max,PZ.s));const sw=W/PZ.s,sh=H/PZ.s;PZ.cx=Math.max(sw/2,Math.min(W-sw/2,PZ.cx));PZ.cy=Math.max(sh/2,Math.min(H-sh/2,PZ.cy));}
+function pzAt(e){const r=popCv.getBoundingClientRect(),sw=W/PZ.s,sh=H/PZ.s;return [PZ.cx-sw/2+(e.clientX-r.left)/r.width*sw,PZ.cy-sh/2+(e.clientY-r.top)/r.height*sh];}
+function pzUi(){if(!popW||popW.closed)return;const d=popW.document,l=d.getElementById('pzLab'),o=d.getElementById('pzOut'),i=d.getElementById('pzIn');if(l)l.textContent=PZ.s<1.01?'Fit':((PZ.s<9.95?Math.round(PZ.s*10)/10:Math.round(PZ.s))+'x');if(o)o.disabled=PZ.s<=1.01;if(i)i.disabled=PZ.s>=PZ.max-.01;if(popCv)popCv.style.cursor=PZ.s>1.01?'grab':'crosshair';}
+function pzZoom(f,px,py){const s0=PZ.s,s1=Math.max(1,Math.min(PZ.max,s0*f));if(s1===s0)return;if(px===undefined){px=PZ.cx;py=PZ.cy;}PZ.cx=px+(PZ.cx-px)*s0/s1;PZ.cy=py+(PZ.cy-py)*s0/s1;PZ.s=s1;pzClamp();pzUi();popDraw();}
 function popDraw(){
   if(!popW||popW.closed||!popCv)return;
   const d=popW.document,ww=d.documentElement.clientWidth||600,wh=d.documentElement.clientHeight||400,dp=Math.min(2,popW.devicePixelRatio||1);
   const k0=Math.min(ww/W,wh/H),cw=Math.max(50,Math.floor(W*k0)),ch=Math.max(50,Math.floor(H*k0));
   if(popCv.width!==Math.round(cw*dp)||popCv.height!==Math.round(ch*dp)){popCv.width=Math.round(cw*dp);popCv.height=Math.round(ch*dp);popCv.style.width=cw+'px';popCv.style.height=ch+'px';popKey='';}
   const w=popCv.width,h=popCv.height,vm=refTab==='val'?valueMap():null;
-  const key=refTab+'|'+w+'x'+h+'|'+(refTab==='crowd'?layV:0)+'|'+(refTab==='val'?valGen:0)+'|'+C.slot;
+  const sw=W/PZ.s,sh=H/PZ.s,sx=Math.max(0,Math.min(W-sw,PZ.cx-sw/2)),sy=Math.max(0,Math.min(H-sh,PZ.cy-sh/2));
+  const key=refTab+'|'+w+'x'+h+'|'+sx+','+sy+','+sw+'|'+(refTab==='crowd'?layV:0)+'|'+(refTab==='val'?valGen:0)+'|'+C.slot;
   if(!popBase||popBase.width!==w||popBase.height!==h){popBase=mk(w,h);popKey='';}
-  if(key!==popKey){popKey=key;const b=popBase.getContext('2d');b.fillStyle=C.slot;b.fillRect(0,0,w,h);b.imageSmoothingQuality='high';
-    if(refTab==='pic')b.drawImage(src,0,0,W,H,0,0,w,h);else if(vm){b.imageSmoothingEnabled=false;b.drawImage(vm,0,0,COLS,ROWS,0,0,w,h);b.imageSmoothingEnabled=true;}else b.drawImage(crowdL,0,0,W,H,0,0,w,h);}
+  if(key!==popKey){popKey=key;const b=popBase.getContext('2d');b.fillStyle=C.slot;b.fillRect(0,0,w,h);b.imageSmoothingEnabled=true;b.imageSmoothingQuality='high';
+    if(refTab==='pic')b.drawImage(src,sx,sy,sw,sh,0,0,w,h);else if(vm){b.imageSmoothingEnabled=false;b.drawImage(vm,sx*COLS/W,sy*ROWS/H,sw*COLS/W,sh*ROWS/H,0,0,w,h);b.imageSmoothingEnabled=true;}else b.drawImage(crowdL,sx,sy,sw,sh,0,0,w,h);}
   const x=popCv.getContext('2d');x.setTransform(1,0,0,1,0,0);x.drawImage(popBase,0,0);
-  const k=w/W,a=Math.max(0,-view.tx/view.s)*k,c=Math.max(0,-view.ty/view.s)*k,a2=Math.min(W,(view.cw-view.tx)/view.s)*k,c2=Math.min(H,(view.ch-view.ty)/view.s)*k;
-  if(a2-a<w-2||c2-c<h-2){x.strokeStyle='#ffffff';x.lineWidth=6*dp;x.strokeRect(a,c,a2-a,c2-c);x.strokeStyle='#15171c';x.lineWidth=2.5*dp;x.strokeRect(a,c,a2-a,c2-c);}
+  const kx=w/sw,ky=h/sh,a=(Math.max(0,-view.tx/view.s)-sx)*kx,c=(Math.max(0,-view.ty/view.s)-sy)*ky,a2=(Math.min(W,(view.cw-view.tx)/view.s)-sx)*kx,c2=(Math.min(H,(view.ch-view.ty)/view.s)-sy)*ky;
+  if((a>1||c>1||a2<w-1||c2<h-1)&&a2>0&&c2>0&&a<w&&c<h){x.strokeStyle='#ffffff';x.lineWidth=6*dp;x.strokeRect(a,c,a2-a,c2-c);x.strokeStyle='#15171c';x.lineWidth=2.5*dp;x.strokeRect(a,c,a2-a,c2-c);}
 }
 function popClosed(){clearInterval(popTimer);popW=null;popCv=null;$('ref').classList.remove('popped');const b=$('refPop');if(b)b.title='Pop the picture out to its own window';req();}
 function popOut(){
@@ -765,13 +775,33 @@ function popOut(){
   const w=window.open('','mural_viewfinder','popup,width=760,height='+Math.round(760*H/W+40));
   if(!w){setMsg('Your browser blocked the window. Allow pop-ups for this site to pop the picture out.');return;}
   popW=w;const d=w.document;d.title=K.name+': Picture';
-  d.body.innerHTML='';d.body.style.cssText='margin:0;background:'+(C.bd||'#e9e7e1')+';display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden;cursor:crosshair';
-  popCv=d.createElement('canvas');d.body.appendChild(popCv);
-  popCv.addEventListener('pointerdown',(e)=>{const r=popCv.getBoundingClientRect(),sx=(e.clientX-r.left)/r.width*W,sy=(e.clientY-r.top)/r.height*H;hot();if(view.s<view.min*1.8)view.s=Math.min(view.max,view.min*3.2);view.tx=view.cw/2-sx*view.s;view.ty=view.ch/2-sy*view.s;clampView();req();});
+  PZ.s=Math.max(1,RZ.s);PZ.cx=RZ.cx;PZ.cy=RZ.cy;pzClamp();
+  d.body.innerHTML='';d.body.style.cssText='margin:0;background:'+(C.bd||'#e9e7e1')+';display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none';
+  popCv=d.createElement('canvas');popCv.style.touchAction='none';d.body.appendChild(popCv);
+  const bar=d.createElement('div');bar.style.cssText='position:fixed;right:12px;bottom:12px;display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(21,23,28,.82);box-shadow:0 4px 14px rgba(0,0,0,.25);font:600 14px Manrope,system-ui,sans-serif';
+  const bs='border:0;background:transparent;color:#fff;min-width:34px;height:34px;border-radius:999px;font:inherit;font-size:18px;cursor:pointer;padding:0 8px';
+  bar.innerHTML='<button id="pzOut" title="Zoom out" style="'+bs+'">−</button><button id="pzLab" title="Back to the whole mural" style="'+bs+';font-size:13px;min-width:46px">Fit</button><button id="pzIn" title="Zoom in" style="'+bs+'">+</button>';
+  d.body.appendChild(bar);
+  const st=d.createElement('style');st.textContent='#pzOut:disabled,#pzIn:disabled{opacity:.35;cursor:default}button:hover:not(:disabled){background:rgba(255,255,255,.14)!important}';d.head.appendChild(st);
+  d.getElementById('pzIn').onclick=()=>pzZoom(1.6);d.getElementById('pzOut').onclick=()=>pzZoom(1/1.6);d.getElementById('pzLab').onclick=()=>{PZ.s=1;pzClamp();pzUi();popDraw();};
+  const ptr=new Map();let g=null;
+  popCv.addEventListener('pointerdown',(e)=>{popCv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(ptr.size===2){const q=[...ptr.values()];g={pinch:true,d:Math.hypot(q[0].x-q[1].x,q[0].y-q[1].y)||1,s:PZ.s};return;}
+    g={x0:e.clientX,y0:e.clientY,cx:PZ.cx,cy:PZ.cy,moved:false};e.preventDefault();});
+  popCv.addEventListener('pointermove',(e)=>{if(!ptr.has(e.pointerId)||!g)return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(g.pinch){if(ptr.size<2)return;const q=[...ptr.values()],dd=Math.hypot(q[0].x-q[1].x,q[0].y-q[1].y)||1,p=pzAt({clientX:(q[0].x+q[1].x)/2,clientY:(q[0].y+q[1].y)/2});pzZoom((g.s*dd/g.d)/PZ.s,p[0],p[1]);return;}
+    if(!g.moved&&Math.hypot(e.clientX-g.x0,e.clientY-g.y0)<6)return;g.moved=true;if(PZ.s<=1.01)return;popCv.style.cursor='grabbing';
+    const r=popCv.getBoundingClientRect();PZ.cx=g.cx-(e.clientX-g.x0)/r.width*(W/PZ.s);PZ.cy=g.cy-(e.clientY-g.y0)/r.height*(H/PZ.s);pzClamp();popDraw();});
+  const up=(e)=>{const had=ptr.has(e.pointerId);ptr.delete(e.pointerId);const gg=g;if(ptr.size===0)g=null;else if(gg&&gg.pinch)g={pinch:false,moved:true};pzUi();
+    if(!had||!gg||gg.pinch||gg.moved||e.type==='pointercancel')return;
+    const p=pzAt(e);hot();if(view.s<view.min*1.8)view.s=Math.min(view.max,view.min*3.2);view.tx=view.cw/2-p[0]*view.s;view.ty=view.ch/2-p[1]*view.s;clampView();req();};
+  popCv.addEventListener('pointerup',up);popCv.addEventListener('pointercancel',up);
+  popCv.addEventListener('wheel',(e)=>{e.preventDefault();const p=pzAt(e);pzZoom(e.deltaY<0?1.25:1/1.25,p[0],p[1]);},{passive:false});
+  w.addEventListener('keydown',(e)=>{if(e.key==='+'||e.key==='=')pzZoom(1.6);else if(e.key==='-'||e.key==='_')pzZoom(1/1.6);else if(e.key==='0'){PZ.s=1;pzClamp();pzUi();popDraw();}});
   w.addEventListener('resize',()=>{popKey='';popDraw();});
   w.addEventListener('beforeunload',()=>setTimeout(popClosed,0));
   popTimer=setInterval(()=>{if(!popW||popW.closed)popClosed();},1000);
-  $('ref').classList.add('popped');$('refPop').title='Bring the picture back';popDraw();
+  $('ref').classList.add('popped');$('refPop').title='Bring the picture back';pzUi();popDraw();
 }
 $('refPop').onclick=popOut;
 $('updo').onclick=()=>{clearTimeout(updT);$('updo').classList.remove('show');};
