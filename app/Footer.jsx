@@ -31,6 +31,8 @@ export const FOOTER_COLS = [
       { label: 'Puzzle Archive', href: '/archive' },
       // Every Jig photo so far, a box a day (owner, 2026-10-16).
       { label: 'Jigsaw Puzzles', href: '/jig/shelf' },
+      // Every past gauntlet question, by topic (owner, 2026-11-21).
+      { label: 'Trivia Questions', href: '/trivia-questions' },
       // The full index. This link is the crawl path to the whole quiz catalogue, so it
       // must stay on a server-rendered surface: see lib/quiz-catalog.js.
       // Same job for the circuits: /circuits is the only crawlable path to the

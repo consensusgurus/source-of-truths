@@ -798,3 +798,30 @@ stored, no IQ Points move, no gauntlet board changes.
   OG image is `/polymath/card` with the same query (no query = the invite card). Names no question.
 - Local legs read `sot_run_<id>_<day>` (phase 'done', results[].score summed), so the meter and the
   home card draw instantly; the rank waits on `resultPostsSettled()` then a fresh read.
+
+## The trivia portal: /trivia-questions (owner, 2026-11-21)
+
+Owner, 2026-11-21: "make the site the top spot for multiple choice trivia ... maybe users can play
+old questions by topic in same format", then "with same SEO" as the jigsaw portal. Built from the
+"Trivia Portal Mockup" canvas at a NEW address (`/trivia` stays the Trivia Gauntlet's door and
+`/trivia-games` the category page).
+
+- **Only questions that already ran.** `lib/trivia-library.js` (server only) reads all 21 gauntlet
+  banks and keeps a question once its day is before today, Eastern: 23,035 on 2026-11-21. A new
+  gauntlet bank must be added to its BANKS table and to a topic in `lib/trivia-topics.js`.
+- **Topics and lanes** (`lib/trivia-topics.js`): 12 topics over the banks; lanes are each bank's
+  `cat`, remapped by LANE_MAP (the Science Gauntlet banks fold into Science's five lanes, the five
+  English banks become Words' lanes), Deep Cuts' lanes are its day topics.
+- **Play** (`TriviaPortal.jsx` Player) on the same GauntletStage as the dailies, topic colour as
+  ground: Gauntlet (one life, 20 s a question, ramp), Practice (no lives, no clock, spotlight then
+  on), Sprint (60 s), Streak (one life, no end). Keys 1 to 4, Escape leaves. Nothing posts or
+  scores; the record (seen/right per topic and lane, bests, missed keys up to 300) is
+  `sot_trivia_practice` in the browser. Retry my misses replays missed keys (`?ids=`).
+- **Sets** come from `/api/trivia/set` (`t`, `l`, `lv`, `n`, `s` seed 0..999): same URL, same set
+  for the day, edge-cached an hour.
+- **SEO**: hub has CollectionPage (topics as Quiz parts), BreadcrumbList and a six-question FAQPage;
+  each topic page has a Quiz with a dozen sample Questions (acceptedAnswer + suggestedAnswer),
+  printed in the page with their answers and rotating weekly, plus its own FAQ. Sitemap: hub 0.8,
+  topics 0.7. Share card `public/og/trivia-questions.png`.
+- **Links**: footer, home Everything Else (LayoutCInner + both StageToday lists), and every gauntlet
+  daily's StageTail ("Play past <topic> trivia questions", via BANK_TOPIC).

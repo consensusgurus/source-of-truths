@@ -39,6 +39,7 @@ import { gameFaq, gameFaqJsonLd, relatedGames, gameCategory } from '@/lib/game-s
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { runPageOf, runFaq, runFaqJsonLd, otherRuns } from '@/lib/run-seo';
 import StageFooter from './StageFooter';
+import { BANK_TOPIC, topicBySlug as triviaTopic } from '@/lib/trivia-topics';
 import LayoutC from './LayoutC';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -98,6 +99,11 @@ export default function StageTail({ self, stage = true, run = null, theme: force
                 {cat ? <a href={cat.href} className="stq-all">All {cat.label.toLowerCase()}</a> : null}
               </nav>
             ) : null}
+            {/* THE TRIVIA PORTAL (owner, 2026-11-21): a gauntlet daily points at its
+                topic's page, where every past question of the bank plays again. */}
+            {!runPage && BANK_TOPIC[self] ? (
+              <p className="stq-tp"><a href={`/trivia-questions/${BANK_TOPIC[self]}`}>Play past {triviaTopic(BANK_TOPIC[self]).label.toLowerCase()} trivia questions</a>, or browse <a href="/trivia-questions">every trivia topic</a>.</p>
+            ) : null}
           </div>
         </section>
       ) : null}
@@ -130,4 +136,6 @@ const CSS = `
 .stq-more a:focus-visible{outline:2px solid var(--stg-acc-ink, var(--stg-acc));outline-offset:3px;border-radius:4px;}
 .stq-more .stq-all{margin-left:auto;font-family:${MONO};font-size:9.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute);}
 .stq-more .stq-all:hover{color:var(--stg-ink);}
+.stq-tp{margin:14px 0 0;font-size:13.5px;font-weight:600;color:var(--stg-mute);}
+.stq-tp a{color:var(--stg-ink);font-weight:800;}
 `;

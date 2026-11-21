@@ -892,6 +892,8 @@ export default function LayoutCInner({ gameKey }) {
             {ixDoor('/archive', 'Puzzle Archive')}
             {/* Jigsaw Puzzles (the old Jigsaw Puzzle Shelf, renamed with the 2026-11-21 portal), under the archive (owner, 2026-11-18). Keep in step with StageToday. */}
             {ixDoor('/jig/shelf', 'Jigsaw Puzzles')}
+            {/* The trivia portal, beside the jigsaws (owner, 2026-11-21). Keep in step with StageToday. */}
+            {ixDoor('/trivia-questions', 'Trivia Questions')}
             {ixHash('sty-board', 'Leaderboards + Stats')}
             <span className="lc-eecut" aria-hidden="true" />
             {ixHash('sty-iq', 'IQ Tests')}
