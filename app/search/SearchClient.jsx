@@ -1,6 +1,6 @@
 'use client';
 
-// Trawl: the enormous daily word search (owner, 2026-11-20). One big topic a
+// Search: the enormous daily word search (owner, 2026-11-20). One big topic a
 // day and hundreds of entries hidden in one huge grid. Everyone gets the same
 // grid; the standings rank UNIQUE finds first (entries nobody else has found)
 // and total finds second. Finding an entry shows how many players have found
@@ -12,10 +12,10 @@
 // buttons to zoom, right drag to pan. Touch: drag to move around, pinch to
 // zoom, and tap a word's first letter and then its last to circle it. Any
 // stroke is graded from its letters alone (each entry is in the grid exactly
-// once, scripts/verify-trawl.mjs). No clock and no Give up, as on Mural.
+// once, scripts/verify-search.mjs). No clock and no Give up, as on Mural.
 
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { trawlCells, trawlIndex } from '@/lib/trawl';
+import { searchCells, searchIndex, searchValue, SEARCH_POT } from '@/lib/search';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 const HUES = [200, 145, 32, 280, 350, 95, 175, 255, 15, 60, 320, 120];
@@ -42,6 +42,14 @@ function msToMidnightET() {
   const next = new Date(et); next.setHours(24, 0, 0, 0);
   return next - et;
 }
+function whenText(t) {
+  try {
+    const d = new Date(t);
+    const day = d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/New_York' });
+    const tm = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' }).replace(':00', '').replace(' ', '').toLowerCase();
+    return `${day} ${tm} ET`;
+  } catch (e) { return ''; }
+}
 function fmtLeft(ms) {
   const m = Math.max(0, Math.floor(ms / 60000));
   const h = Math.floor(m / 60);
@@ -56,14 +64,17 @@ function ago(ms) {
 const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 const ord = (n) => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
 
-export default function TrawlClient({ puzzle, archive = false }) {
+export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
   const P = puzzle;
   const N = P.items.length;
   const SIZE = P.size;
-  const STORE = `sot_trawl_${P.num}`;
-  const VIEW = `sot_trawl_view_${P.num}`;
-  const live = !archive;
-  const index = useMemo(() => trawlIndex(P.items), [P]);
+  const STORE = `sot_search_${P.num}`;
+  const VIEW = `sot_search_view_${P.num}`;
+  const [closedNow, setClosedNow] = useState(false);
+  const closesAt = win && win.closes;
+  const live = !closedNow && !(closesAt && closesAt <= Date.now());
+  const isCurrent = P.num === currentNum;
+  const index = useMemo(() => searchIndex(P.items), [P]);
 
   const [theme, setTheme] = useState('light');
   const [found, setFound] = useState({}); // i -> [r0, c0, r1, c1, foundAtMs, syncedAtMs]
@@ -127,12 +138,15 @@ export default function TrawlClient({ puzzle, archive = false }) {
   const loadCrowd = useCallback(async (manual) => {
     if (manual) setRefreshing(true);
     try {
-      const r = await fetch(`/api/trawl?quizId=${encodeURIComponent(P.quizId)}${manual ? `&r=${Math.floor(Date.now() / 30000)}` : ''}`);
+      const r = await fetch(`/api/search?board=${P.num}${manual ? `&r=${Math.floor(Date.now() / 30000)}` : ''}`);
       const d = await r.json();
-      if (d && !d.error && Array.isArray(d.counts)) setCrowd(d);
+      if (d && !d.error && Array.isArray(d.counts)) {
+        setCrowd(d);
+        if (d.closed) setClosedNow(true);
+      }
     } catch (e) {}
     if (manual) setTimeout(() => setRefreshing(false), 400);
-  }, [P.quizId]);
+  }, [P.num]);
   useEffect(() => {
     loadCrowd(false);
     const iv = setInterval(() => { if (document.visibilityState !== 'hidden') loadCrowd(false); }, REFRESH_MS);
@@ -146,10 +160,10 @@ export default function TrawlClient({ puzzle, archive = false }) {
     const f = foundRef.current;
     const ids = Object.keys(f).map(Number);
     if (!ids.length && !force) return;
-    const body = JSON.stringify({ quizId: P.quizId, anonId: getAnonId(), email: getEmail(), found: ids, force: !!force });
+    const body = JSON.stringify({ board: P.num, anonId: getAnonId(), email: getEmail(), found: ids, force: !!force });
     const sentAt = Date.now();
     try {
-      const r = await fetch('/api/trawl', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body });
+      const r = await fetch('/api/search', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body });
       const d = await r.json();
       if (!d || d.error) return;
       dirty.current = false;
@@ -162,7 +176,7 @@ export default function TrawlClient({ puzzle, archive = false }) {
         return next;
       });
     } catch (e) {}
-  }, [live, P.quizId]);
+  }, [live, P.num]);
   useEffect(() => {
     if (!hydrated || !live) return undefined;
     sync(false);
@@ -184,14 +198,19 @@ export default function TrawlClient({ puzzle, archive = false }) {
 
   const mine = Object.keys(found).map(Number);
   const total = mine.length;
-  const unique = crowd ? mine.filter((i) => countOf(i) === 1).length : total;
+  const points = mine.reduce((a, i) => a + searchValue(countOf(i)), 0);
   const place = useMemo(() => {
     if (!crowd || !total) return null;
     let better = 0;
-    for (const [u, t] of crowd.field) if (u > unique || (u === unique && t > total)) better++;
+    for (const [pt, t] of crowd.field) if (pt > points || (pt === points && t > total)) better++;
     const inField = crowd.standings.some((s) => s.id === me);
     return { at: better + 1, of: Math.max(crowd.players + (inField ? 0 : 1), better + 1) };
-  }, [crowd, unique, total, me]);
+  }, [crowd, points, total, me]);
+  // The closing screen opens by itself, once, when a board is over.
+  const finalShown = useRef(false);
+  useEffect(() => {
+    if (!live && crowd && crowd.closed && !finalShown.current) { finalShown.current = true; setPanel('final'); }
+  }, [live, crowd]);
 
   function say(t) {
     setToast(t);
@@ -214,7 +233,7 @@ export default function TrawlClient({ puzzle, archive = false }) {
     const ctx = cv.getContext('2d');
     const C = colors();
     const { s, ox, oy } = view.current;
-    window.__trawlView = view.current; // read by the browser test harness
+    window.__searchView = view.current; // read by the browser test harness
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = C.card;
@@ -336,7 +355,7 @@ export default function TrawlClient({ puzzle, archive = false }) {
 
   // ---- grading a stroke --------------------------------------------------------
   function grade(a, b, c, d) {
-    const cells = trawlCells(a, b, c, d);
+    const cells = searchCells(a, b, c, d);
     if (!cells || cells.length < 4) { if (cells && cells.length >= 2) { miss.current = { r0: a, c0: b, r1: c, c1: d, t: performance.now() }; redraw(); } return; }
     const s = cells.map(([r, cc]) => P.grid[r][cc]).join('');
     const i = index.get(s);
@@ -351,10 +370,10 @@ export default function TrawlClient({ puzzle, archive = false }) {
     const others = crowd ? Math.max(0, (crowd.counts[i] || 0) - (prior && prior[5] && prior[5] < crowd.at ? 1 : 0)) : null;
     let line;
     if (prior) line = 'Found on your other device, now circled here';
-    else if (!live) line = others == null ? 'Archive board' : `${fmt(others)} ${others === 1 ? 'player' : 'players'} found it that day`;
+    else if (!live) line = others == null ? 'This board is closed: finds here are for fun' : (others === 0 ? 'Nobody found it while the board was open' : `${fmt(others)} ${others === 1 ? 'player' : 'players'} found it`);
     else if (others == null) line = 'Counting the crowd...';
-    else if (others === 0) line = 'Nobody else has found it yet: a unique find';
-    else line = `${fmt(others)} ${others === 1 ? 'other player has' : 'other players have'} found it. You are the ${ord(others + 1)}.`;
+    else if (others === 0) line = `Nobody else has it yet: all ${SEARCH_POT} points are yours, for now`;
+    else line = `${fmt(others)} ${others === 1 ? 'other player has' : 'other players have'} it. You are the ${ord(others + 1)}: ${fmt(searchValue(others + 1))} ${searchValue(others + 1) === 1 ? 'point' : 'points'} each, for now.`;
     say({ title: it.t, y: it.y, line, uniq: others === 0 && !prior && live });
   }
 
@@ -374,7 +393,7 @@ export default function TrawlClient({ puzzle, archive = false }) {
     return [r0 + dr * k, c0 + dc * k];
   }
   function lettersOf(a, b, c, d) {
-    const cells = trawlCells(a, b, c, d);
+    const cells = searchCells(a, b, c, d);
     return cells ? cells.map(([r, cc]) => P.grid[r][cc]).join('') : '';
   }
   function local(e) { const rect = cvRef.current.getBoundingClientRect(); return [e.clientX - rect.left, e.clientY - rect.top]; }
@@ -447,7 +466,7 @@ export default function TrawlClient({ puzzle, archive = false }) {
     if (!inGrid(r, c)) { setAnchor(null); setRead(''); redraw(); return; }
     const an = anchorRef.current;
     if (an && an.r === r && an.c === c) { setAnchor(null); setRead(''); return; }
-    if (an && trawlCells(an.r, an.c, r, c)) { setAnchor(null); setRead(''); grade(an.r, an.c, r, c); return; }
+    if (an && searchCells(an.r, an.c, r, c)) { setAnchor(null); setRead(''); grade(an.r, an.c, r, c); return; }
     setAnchor({ r, c }); setRead(P.grid[r][c] + '...');
   }
   function onCancel(e) { ptrs.current.delete(e.pointerId); gesture.current = null; dragSel.current = null; redraw(); }
@@ -480,10 +499,10 @@ export default function TrawlClient({ puzzle, archive = false }) {
   useEffect(() => {
     const pending = Object.entries(found).filter(([, at]) => at[0] < 0);
     if (!pending.length) return;
-    import('@/lib/trawl').then(({ trawlLocate }) => {
+    import('@/lib/search').then(({ searchLocate }) => {
       setFound((cur) => {
         const next = { ...cur };
-        for (const [k] of pending) { const at = trawlLocate(P.grid, P.items[k].w); if (at && next[k]) next[k] = [...at, next[k][4], next[k][5]]; }
+        for (const [k] of pending) { const at = searchLocate(P.grid, P.items[k].w); if (at && next[k]) next[k] = [...at, next[k][4], next[k][5]]; }
         return next;
       });
     });
@@ -507,7 +526,16 @@ export default function TrawlClient({ puzzle, archive = false }) {
     return rows;
   }, [P, found, listTab, q]);
 
-  const left = msToMidnightET();
+  // The board's window, in words: open until solved, between its 24 hour
+  // minimum and its 72 hour cap.
+  const W = crowd && crowd.opens ? crowd : win;
+  let windowText = '';
+  if (W && hydrated) {
+    if (!live) windowText = crowd && crowd.solvedAt ? 'Closed: solved by the crowd' : 'Closed';
+    else if (W.solvedAt) windowText = `Solved! Closes ${whenText(W.min)}`;
+    else if (P.num === currentNum && W.cap && W.min) windowText = Date.now() < W.min ? `Open until solved, ${whenText(W.min)} at the earliest, ${whenText(W.cap)} at the latest` : `Open until solved, ${whenText(W.cap)} at the latest`;
+  }
+  void msToMidnightET;
   void tick;
   const C = theme === 'dark';
 
@@ -572,6 +600,11 @@ export default function TrawlClient({ puzzle, archive = false }) {
 .trl tr.me td{background:var(--gold);color:var(--gold-ink)}
 .trl .help p{margin:0 0 10px;font-size:14px;line-height:1.6;font-weight:600}
 .trl .help b{font-weight:800}
+.trl .mwin{display:none}
+@media (max-width:719px){.trl .mwin{display:block;order:6;width:100%;font:700 12px/1.3 ${SANS};color:var(--mute)}}
+.trl .fh{margin:16px 0 4px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--mute)}
+.trl .note a,.trl .arch a{color:inherit;font-weight:800}
+.trl .lnk{border:0;background:none;padding:0;font:inherit;text-decoration:underline;cursor:pointer;color:inherit}
 .trl .note{font-size:12.5px;color:var(--mute);font-weight:700;margin:10px 0 0;line-height:1.5}
 @media (max-width:719px){
   .trl .top{padding:7px 10px;gap:6px 10px}
@@ -606,7 +639,7 @@ export default function TrawlClient({ puzzle, archive = false }) {
               <span className="dot" style={got ? { background: `hsl(${HUES[i % HUES.length]}, 72%, 62%)`, borderColor: 'transparent' } : undefined} />
               <span className="t">{it.t}{it.y ? <i>{it.y}</i> : null}</span>
               {got && found[i][0] >= 0 && <button className="go" onClick={() => { jumpTo(found[i][0], found[i][1]); if (narrow) setPanel(null); }}>Show</button>}
-              {n != null && (got || !live) && <span className={'n' + (got && n === 1 ? ' u' : '')} title="Players who have found it">{got && n === 1 ? 'Only you' : `${fmt(n)} found`}</span>}
+              {n != null && (got || !live) && <span className={'n' + (got && n === 1 ? ' u' : '')} title="Players who have found it, and what it pays each of them">{got && n === 1 ? `Only you · ${SEARCH_POT}` : `${fmt(n)} found${n ? ` · ${fmt(searchValue(n))}` : ''}`}</span>}
             </div>
           );
         })}
@@ -621,16 +654,16 @@ export default function TrawlClient({ puzzle, archive = false }) {
     <div className="sheet" role="dialog" aria-label="Standings">
       <div className="hd"><h3>Standings</h3><button className="x" onClick={() => setPanel(null)} aria-label="Close">&times;</button></div>
       <div className="body">
-        <p className="note" style={{ marginTop: 4 }}>Ranked on <b>unique finds</b> (ones nobody else has found), then on total finds. Refresh to see the latest; it settles at midnight Eastern.</p>
+        <p className="note" style={{ marginTop: 4 }}>Every entry is a pot of {SEARCH_POT} points split among everyone who found it. Ranked on <b>points</b>, then on total finds. Values move as the crowd catches up and lock when the board closes.</p>
         {!crowd ? <p className="note">Loading the standings...</p> : (
           <table>
-            <thead><tr><th>#</th><th>Player</th><th>Unique</th><th>Found</th></tr></thead>
+            <thead><tr><th>#</th><th>Player</th><th>Points</th><th>Found</th></tr></thead>
             <tbody>
               {crowd.standings.map((s) => (
-                <tr key={s.id} className={s.id === me ? 'me' : ''}><td>{s.place}</td><td>{s.name}</td><td>{fmt(s.unique)}</td><td>{fmt(s.total)}</td></tr>
+                <tr key={s.id} className={s.id === me ? 'me' : ''}><td>{s.place}</td><td>{s.name}</td><td>{fmt(s.points)}</td><td>{fmt(s.total)}</td></tr>
               ))}
               {!myRowIn && place && (
-                <tr className="me"><td>{place.at}</td><td>You</td><td>{fmt(unique)}</td><td>{fmt(total)}</td></tr>
+                <tr className="me"><td>{place.at}</td><td>You</td><td>{fmt(points)}</td><td>{fmt(total)}</td></tr>
               )}
             </tbody>
           </table>
@@ -641,16 +674,55 @@ export default function TrawlClient({ puzzle, archive = false }) {
     </div>
   );
 
+  // THE CLOSING SCREEN: the final standings, the finds only one player got, and
+  // what nobody found. Opens by itself once when the board is over.
+  const finalPanel = (() => {
+    const counts = crowd ? crowd.counts : [];
+    const solo = crowd && crowd.soloBy ? Object.entries(crowd.soloBy).map(([i, name]) => ({ i: Number(i), name })) : [];
+    const none = counts.map((c, i) => (c === 0 ? i : -1)).filter((i) => i >= 0);
+    return (
+      <div className="sheet" role="dialog" aria-label="Final results">
+        <div className="hd"><h3>{P.theme}: final results</h3><button className="x" onClick={() => setPanel(null)} aria-label="Close">&times;</button></div>
+        <div className="body">
+          {!crowd ? <p className="note">Loading the results...</p> : (
+            <>
+              <p className="note" style={{ marginTop: 4 }}>{crowd.solvedAt ? `The crowd found all ${fmt(N)}.` : `The crowd found ${fmt(crowd.crowdFound)} of ${fmt(N)} before the 72 hour cap.`} {fmt(crowd.players)} {crowd.players === 1 ? 'player' : 'players'} took part.{total ? ` You found ${fmt(total)} for ${fmt(points)} points${place ? `, ${ord(place.at)} of ${fmt(place.of)}` : ''}.` : ''}</p>
+              <table>
+                <thead><tr><th>#</th><th>Player</th><th>Points</th><th>Found</th></tr></thead>
+                <tbody>
+                  {crowd.standings.slice(0, 10).map((x) => (
+                    <tr key={x.id} className={x.id === me ? 'me' : ''}><td>{x.place}</td><td>{x.name}</td><td>{fmt(x.points)}</td><td>{fmt(x.total)}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+              {solo.length > 0 && (<>
+                <h4 className="fh">Found by one player only</h4>
+                {solo.slice(0, 60).map(({ i, name }) => <div key={i} className="row"><span className="t">{P.items[i].t}{P.items[i].y ? <i>{P.items[i].y}</i> : null}</span><span className="n u">{name}</span></div>)}
+              </>)}
+              {none.length > 0 && (<>
+                <h4 className="fh">Nobody found</h4>
+                <p className="note" style={{ marginTop: 0 }}>{none.map((i) => P.items[i].t).join(', ')}</p>
+              </>)}
+              {!isCurrent && <p className="note"><a href="/search">Play the open board &rarr;</a></p>}
+              {past.length > 0 && <p className="note">Other boards: {past.slice(0, 12).map((b, k) => <span key={b.num}>{k ? ', ' : ''}<a href={`/search?b=${b.num}`}>{b.theme}</a></span>)}</p>}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  })();
+
   const helpPanel = (
     <div className="sheet" role="dialog" aria-label="How to play">
-      <div className="hd"><h3>How Trawl works</h3><button className="x" onClick={() => setPanel(null)} aria-label="Close">&times;</button></div>
+      <div className="hd"><h3>How Search works</h3><button className="x" onClick={() => setPanel(null)} aria-label="Close">&times;</button></div>
       <div className="body help">
         <p>One enormous word search a day, on one big topic. Today it is <b>{fmt(N)} {P.theme.toLowerCase()}</b> hidden in a {SIZE} by {SIZE} grid. Each one runs in a straight line in any of the eight directions, backward too, with its spaces and punctuation dropped.</p>
         <p><b>To circle one:</b> drag across it with a mouse, or tap its first letter and then its last. A wrong line costs nothing.</p>
         <p><b>To move around:</b> scroll or drag with two fingers on a trackpad, drag with one finger on a phone, pinch or use the zoom buttons. The little map in the corner jumps you anywhere.</p>
         <p><b>The list</b> stays behind the List button. Open it any time to see what is hidden, or play without it.</p>
-        <p><b>Scoring:</b> everyone has the same grid. A <b>unique find</b> is one nobody else has found, and the standings rank unique finds first and total finds second. So the famous ones count, but the deep cuts win.</p>
-        <p>Each find tells you how many players found it before you. Refresh (or wait two minutes) to see the crowd's latest; the counts and the standings settle at midnight Eastern, when a new topic opens. No clock and no Give up.</p>
+        <p><b>Scoring:</b> everyone has the same grid, and every entry is a pot of <b>{SEARCH_POT} points</b> split evenly among the players who find it. Find one alone and you keep all {SEARCH_POT}; share it with one other player and you each get 50; a title forty players found pays 3. The standings rank points first and total finds second.</p>
+        <p>Each find tells you how many players found it before you. Values move as the crowd catches up: Refresh (or wait two minutes) to see the latest.</p>
+        <p><b>How long it runs:</b> a board stays open until the crowd has found every entry, at least 24 hours and at most 72. The next topic opens the moment it closes, and the values lock. Your points count toward the day you made each find. No clock and no Give up.</p>
       </div>
     </div>
   );
@@ -664,14 +736,15 @@ export default function TrawlClient({ puzzle, archive = false }) {
           <svg width="22" height="22" viewBox="0 0 26 26" aria-hidden="true"><path d="M3 22V11l10-8 10 8v11h-5v-8l-5 5-5-5v8z" fill="currentColor" /></svg>
           <span>Mind Loft</span>
         </a>
-        <div className="name"><b>Trawl</b><span>No. {P.num} · {P.theme}</span></div>
+        <div className="name"><b>Search</b><span>No. {P.num} · {P.theme}</span></div>
         <div className="stats">
           <div><b>{fmt(total)}</b>of {fmt(N)} found</div>
-          <div title="Your finds nobody else has found"><b>{fmt(unique)}</b>Unique</div>
+          <div title="Your points: each entry's 100 split among its finders"><b>{fmt(points)}</b>Points</div>
           <div title="Your place in today's standings"><b>{place ? `#${fmt(place.at)}` : '—'}</b>{place ? `of ${fmt(place.of)}` : 'Place'}</div>
         </div>
+        {windowText ? <div className="mwin">{windowText}</div> : null}
         <div className="sp" />
-        <div className="meta">{crowd ? `Updated ${ago(Date.now() - crowd.at)}` : 'Counting the crowd'}{live && hydrated ? <><br />New topic in {fmtLeft(left)}</> : null}</div>
+        <div className="meta">{crowd ? `Crowd has ${fmt(crowd.crowdFound)} of ${fmt(N)} · updated ${ago(Date.now() - crowd.at)}` : 'Counting the crowd'}{windowText ? <><br />{windowText}</> : null}</div>
         <div className="btns">
           <button className="pill" onClick={() => loadCrowd(true)} disabled={refreshing}>{refreshing ? 'Refreshing' : 'Refresh'}</button>
           <button className={'pill' + (panel === 'list' ? ' on' : '')} onClick={() => setPanel(panel === 'list' ? null : 'list')}>List</button>
@@ -698,12 +771,13 @@ export default function TrawlClient({ puzzle, archive = false }) {
           <button onClick={() => zoomBtn(1.35)} aria-label="Zoom in">+</button>
         </div>
         <div className="mini" onClick={onMini} title="Jump anywhere on the grid"><canvas ref={miniRef} /></div>
-        {archive && (
-          <div className="arch">Archive board from {P.dateLabel}: finds here are for fun. <a href="/trawl">Today&rsquo;s Trawl</a></div>
+        {!live && hydrated && (
+          <div className="arch">This board is closed: finds here are for fun. <button className="lnk" onClick={() => setPanel('final')}>Final results</button>{!isCurrent && <> · <a href="/search">The open board</a></>}</div>
         )}
         {panel === 'list' && listPanel}
         {panel === 'standings' && standingsPanel}
         {panel === 'help' && helpPanel}
+        {panel === 'final' && finalPanel}
       </div>
     </div>
   );

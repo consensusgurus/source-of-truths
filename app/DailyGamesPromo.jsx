@@ -26,7 +26,7 @@ export const DAILY_GAMES = [
   { key: 'origin', href: '/origin', name: 'Origin', tag: 'word origins, one life', store: 'sot_origin_day', accent: '#92400e', bg: '#fef3c7', border: 'rgba(146,64,14,0.4)' },
   { key: 'idiom', href: '/idiom', name: 'Idiom', tag: 'idioms, one life', store: 'sot_idiom_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)' },
   { key: 'scour', href: '/scour', name: 'Scour', tag: 'the daily word search', store: 'sot_scour_day', accent: '#0369a1', bg: '#e0f2fe', border: 'rgba(3,105,161,0.38)' },
-  { key: 'trawl', href: '/trawl', name: 'Trawl', tag: 'the giant word search', store: 'sot_trawl_day', accent: '#155e75', bg: '#e0f7fa', border: 'rgba(21,94,117,0.38)' },
+  { key: 'search', href: '/search', name: 'Search', tag: 'the giant word search', store: 'sot_search_day', accent: '#155e75', bg: '#e0f7fa', border: 'rgba(21,94,117,0.38)' },
   { key: 'links', href: '/links', name: 'Links', tag: 'sixteen words, four hidden groups', store: 'sot_links_day', accent: '#166534', bg: '#eefaf1', border: 'rgba(90,169,106,0.5)' },
   { key: 'span', href: '/span', name: 'Span', tag: 'cross the map, border by border', store: 'sot_span_day', accent: '#9d174d', bg: '#fdf0f6', border: 'rgba(217,99,153,0.45)' },
   { key: 'dating', href: '/dating', name: 'Dating', tag: 'put five moments in order', store: 'sot_dating_day', accent: '#6d28d9', bg: '#f5f0ff', border: 'rgba(124,58,237,0.4)' },

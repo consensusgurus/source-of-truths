@@ -3649,7 +3649,7 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
 - **Pop Out** (`#refPop`, desktop only): the viewfinder opens in its own window drawn by the page (same Picture / Crowd / Value tab, board view boxed, click jumps the board). The in-page panel tucks to its header until the window closes.
 - **The wall lists every guest on their own** ("Guest 1", "Guest 2", numbered by pieces) instead of one Guests block: `/api/mural/wall` returns guests inside `who` with `g: 1`, and `guests.f` is 0.
 
-## Trawl: the enormous daily word search (launched 2026-11-20)
+## Search: the enormous daily word search (launched 2026-11-20)
 
 Owner, 2026-11-20: "enormous, 700 movie titles for instance. scored based on unique finds most, total finds
 second. when you locate it, you see how many have found it, and you can press refresh later to see how many
@@ -3659,29 +3659,63 @@ month apart? or longer ideally."
 - **One big topic a day, hundreds of entries, one huge grid** (day one: 700 movie titles in 101x101). Every entry
   is its letters with spaces, punctuation and accents dropped, `&` read as AND, in any of the eight directions,
   and occurs EXACTLY once. No entry sits inside another or its reverse, so a stroke is graded from its letters.
-  Rules in `lib/trawl.js`, shared by the generator, the checker, the API and the page.
-- **Building a day:** `node scripts/gen-trawl.mjs <list.json> --date YYYY-MM-DD --theme "Movie Titles" --noun titles`
+  Rules in `lib/search.js`, shared by the generator, the checker, the API and the page.
+- **Building a board** (see the update below: boards are numbered now): `node scripts/gen-search.mjs <list.json> --theme "Movie Titles" --noun titles`
   (list = `[{ t, y? }]`, best known first; `y` is a year or note shown in the list). It keeps up to 700, builds,
-  repairs until clean, and appends to `app/trawl/puzzles.js`. It refuses an existing date without `--replace`
-  and never rewrites a live board. About two minutes a board. Checked by `scripts/verify-trawl.mjs`.
+  repairs until clean, and appends to `app/search/puzzles.js`. It refuses an existing date without `--replace`
+  and never rewrites a live board. About two minutes a board. Checked by `scripts/verify-search.mjs`.
 - **Topics:** pop culture and trivia only. A topic may come back no sooner than 30 days after its last use, as a
-  fresh grid (verify-trawl enforces the 30 days on the theme name). Sources used at launch: TMDB 10k films
+  fresh grid (verify-search enforces the 30 days on the theme name). Sources used at launch: TMDB 10k films
   (vote counts) plus recent films and pre-1960 classics by hand; TMDB casts for Movie Stars; the Billboard Hot
   100 history (utdata/rwd-billboard-data) for Top 10 Hits and Hit Makers, with a rude-word screen.
 - **Scoring:** standings rank UNIQUE finds (entries nobody else has found) first, total finds second
-  (`trawlRank`). Each find tells the player how many others found it before them; Refresh (and an automatic
+  (`searchRank`). Each find tells the player how many others found it before them; Refresh (and an automatic
   refresh every two minutes) shows the crowd's latest. The standings and counts settle at midnight Eastern.
-- **Storage, no new table:** one `outwit_picks` row per player per day under `trawl-M-D-YY` (as Poll does);
+- **Storage, no new table:** one `outwit_picks` row per player per day under `search-M-D-YY` (as Poll does);
   `anon_id` holds the player key (`u:<user id>` or `a:<anon id>`), `answers` is `{ f: [indices], t0 }`.
-  `GET /api/trawl?quizId=` is the crowd (counts, standings, every [unique, total]), edge cached 60s; `POST`
+  `GET /api/search?quizId=` is the crowd (counts, standings, every [unique, total]), edge cached 60s; `POST`
   merges finds (today's board only) and files the running TOTAL as a quiz_results row when it grows and ten
   minutes have passed, or when the page forces it on leaving, as Mural does. So the site boards and the home
-  tile read total finds (unit `finds`, `bestRun`); Trawl's own standings are the unique-first ranking.
+  tile read total finds (unit `finds`, `bestRun`); Search's own standings are the unique-first ranking.
   Public player ids are a hash of the key, never the anon id.
 - **The page** is a fixed full-screen canvas like Mural's: only the squares in view are drawn. Mouse drag
   circles a word; wheel pans, Ctrl + wheel zooms, right drag or Space + drag pans. Touch: one finger pans, pinch
   zooms, tap first letter then last to circle. Minimap jumps anywhere. List (with search, All / To find /
   Found and each found entry's count), Standings, Refresh, Dark, How to play. No clock, no Give up.
   `?p=<num>` opens a past board read-only for the crowd (finds there are for fun).
-- Wired by `scripts/wire-trawl.mjs` (Word, beside Scour). Tiles `scripts/gen-trawl-tile.py`; share card
-  `public/og/trawl.png` is hand baked (HAND_BAKED).
+- Wired by `scripts/wire-search.mjs` (Word, beside Scour). Tiles `scripts/gen-search-tile.py`; share card
+  `public/og/search.png` is hand baked (HAND_BAKED).
+
+### Search, same evening: the 100 point split, run until solved, Featured, Scour hands to Search (owner, 2026-11-20)
+
+Owner asked "should we make later finds worth more points? should this run until solved by the crowd, min 24
+hours?", was told no to a time bonus (it pays waiting; Mural's age bonus was taken out for the same reason) and
+offered the split pot and a 72 hour cap, and said "both sound good". This SUPERSEDES the unique-first ranking
+and the one-board-a-day schedule above:
+
+- **Points:** every entry is a pot of 100 split evenly among its finders (`searchValue`: 100, 50, 33 ... 3 at
+  forty). Standings rank points, then total finds (`searchRankPoints`). Values move as the crowd catches up and
+  lock when the board closes. Registry unit is now `points`.
+- **Schedule:** boards are NUMBERED, not dated (`app/search/boards.js`). Board 1 opened midnight ET 2026-11-20;
+  each runs until the crowd has every entry, at least 24h and at most 72h, and the next opens the moment it
+  closes (`searchWindows`). The last board in the bank never closes until another is added.
+  `app/search/puzzles.js` is now the SITE DAYS list (as Mural's), the days results are filed under.
+- **Storage:** finds row answers are `{ f, d, t0 }` (`d` = Eastern day number of each find). Markers on the
+  board key: `#solved` (stamped by the first crowd read that sees every entry found) and `#settled`.
+- **Filing:** one quiz_results row per player per site day = points from finds made that day at the current
+  split, updated in place (lib/search-server.js `searchFile`); refreshed when the player syncs (every 10 minutes
+  or on leaving) and once for everyone when the board closes (`searchSettle`).
+- **Page:** header shows Points, Found, Place, the crowd's progress and the window ("Open until solved, <24h
+  mark> at the earliest, <72h mark> at the latest"). A closed board opens a closing screen once: top ten, the
+  entries one player alone found and by whom, and what nobody found; `?b=<n>` opens a past board.
+- **Featured:** `lib/featured.js` FEATURED_KEYS leads with search, then machine and bot, the rest unchanged;
+  `FEATURED_STAYS` keeps Search in the row after it is played (as the mural).
+- **Scour hands to Search:** `NEXT_PINS` in lib/daily-games.js (`scour -> search`) takes the first hand-forward
+  slot every time, played or not: StageFinish's Up next door, the first finish tile and Play similar.
+- `gen-search.mjs` now appends the next numbered board (`--replace N` only for a board that cannot have opened).
+
+**Renamed Search (owner, 2026-11-20, launch night: "rename it Search everywhere. web address, copy materials,
+title... everywhere").** Route `/search` (`/trawl` redirects there), registry key `search`, quiz ids
+`search-M-D-YY`, board 1's key `search-11-20-26`, files `app/search/`, `app/api/search/`, `lib/search.js`,
+`lib/search-server.js`, `scripts/{gen,verify,wire}-search.mjs`, tiles `btn-search.png`, share card
+`public/og/search.png`. Finds made in the first hour under the old `trawl-` keys were not carried over.

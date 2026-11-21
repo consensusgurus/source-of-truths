@@ -1,35 +1,34 @@
-// scripts/gen-trawl.mjs: builds one Trawl board (the enormous daily word
-// search) from a topic list and appends it to app/trawl/puzzles.js.
+// scripts/gen-search.mjs: builds one Search board (the enormous daily word
+// search) from a topic list and appends it to app/search/puzzles.js.
 //
-//   node scripts/gen-trawl.mjs <list.json> --date 2026-11-21 --theme "Actors" \
-//        --noun "names" [--seed 7] [--replace]
+//   node scripts/gen-search.mjs <list.json> --theme "Actors" --noun "names" [--seed 7] [--replace N]
 //
 // <list.json> is an array of { t: 'Shown title', y?: 1994 } in the order to
-// keep (best known first). Entries are folded to letters (lib/trawl.js), and
+// keep (best known first). Entries are folded to letters (lib/search.js), and
 // any entry that is a palindrome, shorter than 4 or longer than 24 letters,
 // a duplicate, or inside another entry (or its reverse) is dropped, keeping
 // the earlier one. The rest are written into a square grid with as much
 // crossing as fits, the gaps are filled with letters, and the board is
 // repaired until every entry occurs exactly once in all eight directions.
-// Refuses a date that already has a board unless --replace, and refuses to
-// replace a board that is live (never rewrite a live board).
+// Appends the next board to app/search/boards.js. --replace N rebuilds board N,
+// and only a board that cannot have opened yet (each board runs at least 24
+// hours, so board N opens no sooner than N - 1 days after launch).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { trawlLetters, trawlLines, trawlCount, trawlQuizId, TRAWL_DIRS } from '../lib/trawl.js';
+import { searchLetters, searchLines, searchCount, SEARCH_DIRS, SEARCH_LAUNCH, SEARCH_MIN_MS } from '../lib/search.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const BANK = path.join(here, '..', 'app', 'trawl', 'puzzles.js');
+const BANK = path.join(here, '..', 'app', 'search', 'boards.js');
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const listFile = args[0];
-const date = opt('--date');
 const theme = opt('--theme');
 const noun = opt('--noun', 'entries');
 const maxN = Number(opt('--max', '700'));
 let seed = Number(opt('--seed', '1'));
-if (!listFile || !/^\d{4}-\d{2}-\d{2}$/.test(date || '') || !theme) {
-  console.error('usage: node scripts/gen-trawl.mjs <list.json> --date YYYY-MM-DD --theme "Movies" --noun titles');
+if (!listFile || !theme) {
+  console.error('usage: node scripts/gen-search.mjs <list.json> --theme "Movies" --noun titles [--replace N]');
   process.exit(1);
 }
 
@@ -43,7 +42,7 @@ const raw = JSON.parse(fs.readFileSync(listFile, 'utf8'));
 const items = [];
 const seen = new Set();
 for (const e of raw) {
-  const w = trawlLetters(e.t);
+  const w = searchLetters(e.t);
   if (w.length < 4 || w.length > 24) continue;
   const rw = w.split('').reverse().join('');
   if (w === rw || seen.has(w)) continue;
@@ -68,7 +67,7 @@ function build(n, rand) {
     const w = items[i].w, L = w.length;
     let best = null, bestScore = -1;
     for (let t = 0; t < 260; t++) {
-      const [dr, dc] = TRAWL_DIRS[Math.floor(rand() * 8)];
+      const [dr, dc] = SEARCH_DIRS[Math.floor(rand() * 8)];
       const r0 = Math.floor(rand() * n), c0 = Math.floor(rand() * n);
       const r1 = r0 + dr * (L - 1), c1 = c0 + dc * (L - 1);
       if (r1 < 0 || c1 < 0 || r1 >= n || c1 >= n) continue;
@@ -86,7 +85,7 @@ function build(n, rand) {
     if (!best) {
       // Crowded late in the fill: try every square and direction before giving up.
       for (let r0 = 0; r0 < n && !best; r0++) for (let c0 = 0; c0 < n; c0++) {
-        for (const [dr, dc] of TRAWL_DIRS) {
+        for (const [dr, dc] of SEARCH_DIRS) {
           const r1 = r0 + dr * (L - 1), c1 = c0 + dc * (L - 1);
           if (r1 < 0 || c1 < 0 || r1 >= n || c1 >= n) continue;
           let ok = true, ov = 0;
@@ -112,7 +111,7 @@ function occurrences(g, w) {
   for (const s of rw === w ? [w] : [w, rw]) {
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
       if (g[r][c] !== s[0]) continue;
-      for (const [dr, dc] of TRAWL_DIRS) {
+      for (const [dr, dc] of SEARCH_DIRS) {
         const er = r + dr * (s.length - 1), ec = c + dc * (s.length - 1);
         if (er < 0 || ec < 0 || er >= n || ec >= n) continue;
         let ok = true;
@@ -130,13 +129,13 @@ let board = null;
 for (let attempt = 0; attempt < 40 && !board; attempt++) {
   const rand = rng(seed * 7919 + attempt);
   const b = build(n, rand);
-  if (!b) { if (process.env.TRAWL_DEBUG) console.error("place fail n=" + n); if (attempt % 3 === 2) n++; continue; }
+  if (!b) { if (process.env.SEARCH_DEBUG) console.error("place fail n=" + n); if (attempt % 3 === 2) n++; continue; }
   // Repair: an entry the filler spelled a second time loses a filler letter.
   let clean = false;
   for (let pass = 0; pass < 60; pass++) {
     const rows = b.g.map((row) => row.join(''));
-    const lines = trawlLines(rows);
-    const bad = items.map((it, i) => i).filter((i) => trawlCount(lines, items[i].w) !== 1);
+    const lines = searchLines(rows);
+    const bad = items.map((it, i) => i).filter((i) => searchCount(lines, items[i].w) !== 1);
     if (!bad.length) { clean = true; break; }
     for (const i of bad) {
       const [pr, pc, pdr, pdc] = b.at[i];
@@ -152,33 +151,26 @@ for (let attempt = 0; attempt < 40 && !board; attempt++) {
       }
     }
   }
-  if (clean) board = b; else if (process.env.TRAWL_DEBUG) console.error("repair fail n=" + n);
+  if (clean) board = b; else if (process.env.SEARCH_DEBUG) console.error("repair fail n=" + n);
 }
 if (!board) { console.error('could not build a clean board; try another --seed'); process.exit(1); }
 
 const grid = board.g.map((row) => row.join(''));
-const [Y, M, D] = date.split('-').map(Number);
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 // ---- append ---------------------------------------------------------------
-let src = fs.readFileSync(BANK, 'utf8');
-const m = src.match(/export const PUZZLES = (\[[\s\S]*\]);\s*$/);
+const src = fs.readFileSync(BANK, 'utf8');
+const m = src.match(/export const BOARDS = (\[[\s\S]*\]);\s*$/);
 if (!m) { console.error('bank shape not recognised'); process.exit(1); }
 const bank = JSON.parse(m[1]);
-const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
-const prior = bank.findIndex((p) => p.live === date);
-if (prior >= 0) {
-  if (!args.includes('--replace')) { console.error(`${date} already has a board (use --replace for a future date)`); process.exit(1); }
-  if (date <= today && !args.includes('--force-live')) { console.error(`${date} is live; a live board is never rewritten`); process.exit(1); }
-}
-const entry = {
-  num: 0, quizId: trawlQuizId(date), live: date, dateLabel: `${MONTHS[M - 1]} ${D}, ${Y}`,
-  theme, noun, size: grid.length, grid, items,
-};
-if (prior >= 0) bank[prior] = entry; else bank.push(entry);
-bank.sort((a, b) => a.live.localeCompare(b.live));
-bank.forEach((p, i) => { p.num = i + 1; });
+const rep = Number(opt('--replace', '0'));
+let num;
+if (rep) {
+  if (!bank.find((b) => b.num === rep)) { console.error(`no board ${rep}`); process.exit(1); }
+  if (Date.now() >= SEARCH_LAUNCH + (rep - 1) * SEARCH_MIN_MS) { console.error(`board ${rep} may have opened; a board that may be live is never rewritten`); process.exit(1); }
+  num = rep;
+} else num = bank.length + 1;
+const entry = { num, key: `search-b${num}`, theme, noun, size: grid.length, grid, items };
+if (rep) bank[rep - 1] = entry; else bank.push(entry);
 const head = src.slice(0, m.index);
-const body = 'export const PUZZLES = [\n' + bank.map((p) => '  ' + JSON.stringify(p)).join(',\n') + '\n];\n';
-fs.writeFileSync(BANK, head + body);
-console.log(`gen-trawl: ${date} ${theme}: ${items.length} ${noun}, ${grid.length}x${grid.length}, ${letters} letters (${Math.round((letters / grid.length ** 2) * 100)}% before crossings)`);
+fs.writeFileSync(BANK, head + 'export const BOARDS = [\n' + bank.map((b) => '  ' + JSON.stringify(b)).join(',\n') + '\n];\n');
+console.log(`gen-search: board ${num} ${theme}: ${items.length} ${noun}, ${grid.length}x${grid.length}, ${letters} letters (${Math.round((letters / grid.length ** 2) * 100)}% before crossings)`);

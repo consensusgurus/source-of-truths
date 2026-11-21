@@ -445,7 +445,7 @@ const BY_KEY = {
   window: Grid9('window'), five: Grid9('five'), racecar: Grid9('racecar'), sumo: Grid9('sumo'), rim: Grid9('rim'),
   polka: Grid9('polka'), whittle: Grid9('whittle'), sixes: () => <Grid n={6} />, giant: () => <Grid n={16} />,
   // Word
-  emcee: Xword, encore: Xword, arcos: Xword, scour: Search, trawl: Search, garble: Cipher, scram: () => <Tiles word="MSARC" hit={1} />,
+  emcee: Xword, encore: Xword, arcos: Xword, scour: Search, search: Search, garble: Cipher, scram: () => <Tiles word="MSARC" hit={1} />,
   // Trivia
   tape: Chart, circa: Timeline, streak: Timeline, history: Timeline,
   // Geography

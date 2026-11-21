@@ -45,7 +45,7 @@ import { gameBlurb } from '@/lib/game-blurbs';
 const LIVE_KEYS = new Set(liveDailyKeys());
 const DAILY_GAMES = ALL_DAILY_GAMES.filter((g) => LIVE_KEYS.has(g.key));
 import { SUDOKU_POOL, DISPLAY_CIRCUITS, RUN_GAMES, circuitKeysFor, circuitEntryHref } from '@/lib/circuits';
-import { FEATURED_KEYS, FEATURED_RECENT } from '@/lib/featured';
+import { FEATURED_KEYS, FEATURED_RECENT, FEATURED_STAYS } from '@/lib/featured';
 import { muralFeaturedKey } from '@/lib/mural-shared';
 import GameGlyph from '../GameGlyph';
 import GamePreview, { GP_CSS } from '../GamePreview';
@@ -3269,7 +3269,7 @@ export default function StageToday() {
   const featFor = (n) => {
     if (n < 1) return [];
     const out = []; const seen = new Set(['mural', 'muraltoo']);
-    const add = (g) => { if (g && !seen.has(g.key) && !done.has(g.key) && out.length < n) { seen.add(g.key); out.push(g); } };
+    const add = (g) => { if (g && !seen.has(g.key) && (FEATURED_STAYS.has(g.key) || !done.has(g.key)) && out.length < n) { seen.add(g.key); out.push(g); } };
     const lead = muralFeat && alpha.find((g) => g.key === muralFeat);
     if (lead) out.push(lead);
     for (const k of FEATURED_KEYS) add(alpha.find((g) => g.key === k));

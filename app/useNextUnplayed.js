@@ -29,7 +29,7 @@
 import { useEffect, useState } from 'react';
 import { DAILY_GAMES } from './DailyEndCard';
 import { fetchDailyMe, dailyMeQuery, dailyMeIdentity } from './dailyMeClient';
-import { familyAfter, spotlightFor } from '@/lib/daily-games';
+import { familyAfter, spotlightFor, nextPinFor } from '@/lib/daily-games';
 
 // Which catalog departments a finished daily hands on to once its own category
 // is cleared, as /api/quiz/next-quiz tiers (`|` between tiers, `,` pools). Geography goes to geography; a subject
@@ -62,6 +62,10 @@ export default function useNextUnplayed({ self = null, active = false }) {
         const per = (d && d.perGame) || {};
         const played = (k) => !!(per[k] && !per[k].abandoned);
         const mine = DAILY_GAMES.find((g) => g.key === self) || null;
+        // A hand-off pin (lib/daily-games NEXT_PINS) takes the slot, played or not.
+        const pin = nextPinFor(self);
+        const pinned = pin ? DAILY_GAMES.find((g) => g.key === pin.key) : null;
+        if (pinned) { setNext(pinned); return; }
         const open = DAILY_GAMES.filter((g) => g.key !== self && !played(g.key));
         const sameCat = mine ? open.filter((g) => g.cat === mine.cat) : [];
         // A retired family member is absent from DAILY_GAMES, so resolve through
@@ -125,7 +129,11 @@ export function useUnplayedSimilar({ self = null, active = false, count = 4 }) {
           // a spotlit game (lib/daily-games SPOTLIGHT) goes first in its category
           .sort((a, b) => (spot ? (b.key === spot.key) - (a.key === spot.key) : 0));
         const rest = open.filter((g) => !fam.includes(g) && !sameCat.includes(g));
-        setList([...fam, ...sameCat, ...rest].slice(0, count));
+        const pin = nextPinFor(self);
+        const pinned = pin ? DAILY_GAMES.find((g) => g.key === pin.key) : null;
+        const lead = pinned ? [pinned] : [];
+        const notPin = (g) => !pinned || g.key !== pinned.key;
+        setList([...lead, ...fam.filter(notPin), ...sameCat.filter(notPin), ...rest.filter(notPin)].slice(0, count));
       })
       .catch((e) => { if (typeof console !== 'undefined') console.warn('useUnplayedSimilar', e); });
     return () => { alive = false; };

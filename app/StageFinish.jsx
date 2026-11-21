@@ -59,7 +59,7 @@ import GameGlyph from './GameGlyph';
 import { savedIdentity } from '@/lib/saved-identity';
 import { withRef, myRefCode, ensureMyRefCode } from '@/lib/referrals';
 import { drawingIsLive, DRAWING } from '@/lib/drawing';
-import { etTodayISO, spotlightFor } from '@/lib/daily-games';
+import { etTodayISO, spotlightFor, nextPinFor } from '@/lib/daily-games';
 import { readChallenge, encodeChallenge, challengeFig, challengeResult, ymdCompact, isBlankMiss } from '@/lib/challenge';
 import { metricDef } from '@/lib/challenge-metric';
 import { newCid, withCid, recordSend, reportTake } from '@/lib/challenge-client';
@@ -1382,6 +1382,13 @@ export default function StageFinish({
   // SPOTLIGHT): while it is unplayed it is the Up next door for every game in
   // its category, and the hand-off countdown opens it.
   const setNext = useMemo(() => {
+    // A HAND-OFF PIN (lib/daily-games NEXT_PINS; owner, 2026-11-20: Scour hands
+    // to Search) takes the door every time, played or not.
+    const pin = me ? nextPinFor(me.key) : null;
+    if (pin) {
+      const pg = LIVE().find((x) => x.key === pin.key);
+      if (pg) return { g: pg, set: { name: pin.label, keys: [pin.key], open: [pin.key], total: 1, handoff: false, spot: true } };
+    }
     const spot = me ? spotlightFor(me.cat, me.key) : null;
     if (spot && !played.has(spot.key)) {
       const sg = LIVE().find((x) => x.key === spot.key);

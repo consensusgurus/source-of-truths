@@ -11,7 +11,7 @@ import { PUZZLES as SPELL_FULL } from '../spell/puzzles';
 import { PUZZLES as ORIGIN_FULL } from '../origin/puzzles';
 import { PUZZLES as IDIOM_FULL } from '../idiom/puzzles';
 import { PUZZLES as SCOUR_FULL } from '../scour/puzzles';
-import { PUZZLES as TRAWL_FULL } from '../trawl/puzzles';
+import { PUZZLES as SEARCH_FULL } from '../search/puzzles';
 import { PUZZLES as LINKS } from '../links/puzzles';
 import { PUZZLES as SPAN } from '../span/puzzles';
 import { PUZZLES as DATING } from '../dating/puzzles';
@@ -340,7 +340,7 @@ const SPELL = SPELL_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizI
 const ORIGIN = ORIGIN_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const IDIOM = IDIOM_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const SCOUR = SCOUR_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
-const TRAWL = TRAWL_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel, sunday: false }));
+const SEARCH = SEARCH_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel, sunday: false }));
 const SUFFICE = SUFFICE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DOCKET = DOCKET_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const ERGO = ERGO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -465,7 +465,7 @@ const GAMES = [
   { key: 'origin', name: 'Origin', path: '/origin', tag: 'Word origins, one life', accent: '#92400e', bg: '#fef3c7', border: 'rgba(146,64,14,0.4)', src: ORIGIN },
   { key: 'idiom', name: 'Idiom', path: '/idiom', tag: 'Idioms, one life', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.4)', src: IDIOM },
   { key: 'scour', name: 'Scour', path: '/scour', tag: 'The daily word search', accent: '#0369a1', bg: '#e0f2fe', border: 'rgba(3,105,161,0.38)', src: SCOUR },
-  { key: 'trawl', name: 'Trawl', path: '/trawl', tag: 'The giant word search', accent: '#155e75', bg: '#e0f7fa', border: 'rgba(21,94,117,0.38)', src: TRAWL },
+  { key: 'search', name: 'Search', path: '/search', tag: 'The giant word search', accent: '#155e75', bg: '#e0f7fa', border: 'rgba(21,94,117,0.38)', src: SEARCH },
   { key: 'links', name: 'Links', path: '/links', tag: 'Sixteen words, four hidden groups', accent: '#166534', bg: '#eefaf1', border: 'rgba(90,169,106,0.5)', src: LINKS },
   { key: 'span', name: 'Span', path: '/span', tag: 'Cross the map, border by border', accent: '#9d174d', bg: '#fdf0f6', border: 'rgba(217,99,153,0.45)', src: SPAN },
   { key: 'dating', name: 'Dating', path: '/dating', tag: 'Put five moments in order', accent: '#6d28d9', bg: '#f5f0ff', border: 'rgba(124,58,237,0.4)', src: DATING },

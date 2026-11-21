@@ -282,10 +282,13 @@ if (!staleFound && BAD === 0) ok('junkyard pool', `${PUZZLES.length} boards, ${s
   // this file's ladder correct and the end card offering a random Logic game.
   const hookSrc = fs.readFileSync(new URL('../app/useNextUnplayed.js', import.meta.url), 'utf8');
   for (const need of [
-    "import { familyAfter } from '@/lib/daily-games'",
+    // (2026-11-20: the import also names spotlightFor and nextPinFor, the pick
+    // reads a spotlight between the family and the category, and a hand-off pin
+    // (NEXT_PINS) can lead both; the family still outranks the category.)
+    "import { familyAfter, spotlightFor, nextPinFor } from '@/lib/daily-games'",
     'const fam = familyAfter(self)',
-    'setNext(fam[0] || sameCat[0] || open[0] || null)',
-    'setList([...fam, ...sameCat, ...rest].slice(0, count))',
+    'const local = fam[0] || spotGame || sameCat[0] || null;',
+    '...fam.filter(notPin), ...sameCat.filter(notPin), ...rest.filter(notPin)',
   ]) {
     if (!hookSrc.includes(need)) fail('family', `app/useNextUnplayed.js no longer contains \`${need}\`, so the up-next pick has stopped preferring the family`);
   }

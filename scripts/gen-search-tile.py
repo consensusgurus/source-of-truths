@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-# Draw the 76x76 daily tile art for Trawl, the enormous word search, in both the
+# Draw the 76x76 daily tile art for Search, the enormous word search, in both the
 # full-colour and the brand-blue palette (same drawing, remapped palette).
 #
-#   python3 scripts/gen-trawl-tile.py
+#   python3 scripts/gen-search-tile.py
 #
-# Writes public/games/btn-trawl.png and public/games/blue/btn-trawl.png. Drawn at
+# Writes public/games/btn-search.png and public/games/blue/btn-search.png. Drawn at
 # 4x with PIL and box-filtered down: a dense 7 by 7 field of small letters, much
 # tighter than Scour's four by four, with three found-word capsules across it,
 # so it reads as the big search where many words are hidden.
@@ -13,7 +13,7 @@ import os
 
 S, SS = 76, 4
 W = S * SS
-GRID = ['TRAWLIN', 'OSCARME', 'PBJAWSR', 'GRIEDUN', 'UOHALKE', 'NCLUESA', 'ADMOVIE']
+GRID = ['TSEARCH', 'OSCARME', 'PBJAWSR', 'GRIEDUN', 'UOHALKE', 'NCLUESA', 'ADMOVIE']
 
 def font(px):
     for f in ('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', '/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf'):
@@ -54,7 +54,7 @@ def draw(ground, ink, caps, out):
     print('wrote', out, im.size)
 
 root = os.path.join(os.path.dirname(__file__), '..', 'public', 'games')
-# full colour: Trawl's deep teal ground, ivory letters, three pastel capsules
-draw((21, 94, 117, 255), (255, 250, 240, 255), [(253, 224, 71, 160), (134, 239, 172, 150), (249, 168, 212, 150)], os.path.join(root, 'btn-trawl.png'))
+# full colour: Search's deep teal ground, ivory letters, three pastel capsules
+draw((21, 94, 117, 255), (255, 250, 240, 255), [(253, 224, 71, 160), (134, 239, 172, 150), (249, 168, 212, 150)], os.path.join(root, 'btn-search.png'))
 # brand blue: a deep navy ground, letters #e8f2ff, capsules on two pale blue steps
-draw((22, 48, 110, 255), (232, 242, 255, 255), [(194, 221, 254, 120), (74, 140, 240, 150), (219, 233, 255, 110)], os.path.join(root, 'blue', 'btn-trawl.png'))
+draw((22, 48, 110, 255), (232, 242, 255, 255), [(194, 221, 254, 120), (74, 140, 240, 150), (219, 233, 255, 110)], os.path.join(root, 'blue', 'btn-search.png'))
