@@ -52,7 +52,7 @@ const mondayOf = (iso) => { const d = atNoon(iso); return isoOf(new Date(d.getTi
 const thumb = (b, w) => `/api/${b.g}/img?n=${b.n}&w=${w}`;
 const hrefOf = (b) => (b.today ? `/${b.g}` : `/${b.g}?p=${b.n}`);
 
-export default function ShelfClient({ boards, today, crumb, faq }) {
+export default function ShelfClient({ boards, today, crumb, faq, topics = [] }) {
   const byDay = useMemo(() => new Map(boards.map((b) => [`${b.g}|${b.d}`, b])), [boards]);
   const firstOf = useMemo(() => {
     const f = {};
@@ -316,6 +316,15 @@ export default function ShelfClient({ boards, today, crumb, faq }) {
         ))}
       </section>
 
+      {topics.length ? (
+        <nav className="jsh-topics" aria-label="Jigsaw puzzles by topic">
+          <h2>Jigsaw puzzles by topic</h2>
+          <div>
+            {topics.map((t) => <a key={t.slug} href={t.href}>{t.label} <b>{t.count}</b></a>)}
+          </div>
+        </nav>
+      ) : null}
+
       <p className="jsh-foot">
         {total} puzzles so far ({counts.jig} Jig, {counts.saw} Saw), a new photograph for each every day at midnight Eastern.
         Every photo is a featured picture from <a href="https://commons.wikimedia.org/" rel="noopener">Wikimedia Commons</a>, credited on its box.
@@ -473,6 +482,12 @@ const CSS = `
 .jsh-qa{padding:16px 18px;border-radius:12px;background:var(--stg-surf);border:1px solid var(--stg-line);}
 .jsh-qa h2{margin:0;font-size:16px;font-weight:800;color:var(--stg-ink);}
 .jsh-qa p{margin:6px 0 0;font-size:14px;line-height:1.5;font-weight:600;color:var(--stg-ink2);}
+.jsh-topics{margin-top:28px;}
+.jsh-topics h2{margin:0 0 10px;font-size:18px;font-weight:800;color:var(--stg-ink);}
+.jsh-topics div{display:flex;flex-wrap:wrap;gap:8px;}
+.jsh-topics a{font-size:13px;font-weight:800;padding:8px 13px;border-radius:999px;background:var(--stg-surf);color:var(--stg-ink2);border:1px solid var(--stg-line);text-decoration:none;}
+.jsh-topics a:hover{border-color:var(--stg-ink);color:var(--stg-ink);}
+.jsh-topics a b{font-weight:800;color:var(--stg-mute);margin-left:3px;}
 .jsh-foot{margin:22px 0 0;font-size:13.5px;line-height:1.55;font-weight:600;color:var(--stg-mute);max-width:760px;}
 .jsh-foot a{color:var(--stg-ink2);}
 

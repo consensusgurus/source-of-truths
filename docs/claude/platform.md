@@ -877,3 +877,22 @@ how many quizzes it serves, while the scoped loader runs a count plus a delta ev
 so one slice per quizId multiplied database requests by roughly the number of quizzes served.
 Any retry needs a shared delta (one per instance feeding every slice) or a much longer slice TTL,
 and a 15-minute watch of the logs for 'refresh timed out'.
+
+## Jigsaw topic pages: /jig/shelf/<topic> (SEO pass, 2026-11-21)
+
+Owner, 2026-11-21: make Mind Loft the top destination for online jigsaws, SEO first. Every past
+Jig and Saw photo is sorted into one topic by `lib/jigsaw-topics.js` (word lists on the printed
+`name`, first match wins, Landscapes is the fallback, `OVERRIDE` pins the misses). The topics are
+Animals, Food, Flowers, Cities and Landmarks, Landscapes. Check a new photo batch with
+`node -e "import('./lib/jigsaw-topics.js').then(m=>m.debugTopics())"`.
+
+- `lib/jigsaw-library.js` is the one list of PAST boards (live before today; today's photo stays
+  the surprise) with topics, used by the topic pages, the shelf's "Jigsaw puzzles by topic" row
+  and the sitemap.
+- `app/jig/shelf/[topic]/page.js`: all server HTML, one card per photo linking `/jig?p=N` or
+  `/saw?p=N`, CollectionPage + ImageObject JSON-LD with Commons credit and licence, breadcrumb.
+- **Thin topics stay out of search.** Under `TOPIC_MIN` (8) past photos a topic page opens as
+  `noindex, follow` and is left out of the sitemap, the shelf's topic row and the other topic
+  pages' links. On 2026-11-21 Food (4) and Flowers (5) were under it; they join on their own.
+- The shelf's topic row sits under the shelves, above the FAQ (owner's 11-19 rule: no visible
+  change on the first screen of the hub).

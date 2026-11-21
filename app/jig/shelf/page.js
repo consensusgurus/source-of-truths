@@ -4,6 +4,7 @@ import { PUZZLES } from '../puzzles';
 import { PUZZLES as SAW } from '../../saw/puzzles';
 import { SITE_URL } from '@/lib/site';
 import { gameCategory } from '@/lib/game-seo';
+import { topicCounts } from '@/lib/jigsaw-library';
 
 // /jig/shelf: THE JIGSAW PUZZLE SHELF (owner, 2026-10-16; Saw added and the
 // shelf renamed from "Jig Puzzle Shelf" 2026-11-11, same URL so it keeps its
@@ -130,6 +131,7 @@ export default function JigShelfPage() {
       ['MuralToo: the midnight 4,000 piece jigsaw', '/muraltoo'],
       ['Private Mural: a giant jigsaw for your group', '/mural/private'],
       ['Kids jigsaw puzzles', '/kids/jigsaw'],
+      ...topicCounts(today).filter((t) => t.indexed).map((t) => [`${t.label} jigsaw puzzles`, t.href]),
     ].map(([name, href]) => ({ '@type': 'WebPage', name, url: `${SITE_URL}${href}` })),
     mainEntity: {
       '@type': 'ItemList',
@@ -180,7 +182,7 @@ export default function JigShelfPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <PageViewBeacon id="jig-shelf" />
-      <ShelfClient boards={boards} today={today} crumb={cat ? { label: cat.label, href: cat.href } : null} faq={FAQ} />
+      <ShelfClient boards={boards} today={today} crumb={cat ? { label: cat.label, href: cat.href } : null} faq={FAQ} topics={topicCounts(today).filter((t) => t.indexed)} />
     </>
   );
 }
