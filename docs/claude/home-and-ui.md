@@ -3065,3 +3065,22 @@ phone Study list, nav rail); its pane is IQ_ID (`#sty-iq`) holding both lists un
 and School Tests heads. An old `#sty-exams` link opens the same pane. The page is **/tests**
 (app/tests/page.js): the trivia IQ tests, then the six school practice tests and the LSAT logic
 games. /iq and /exams 308 there (next.config.js); /iq/<slug> and /<exam> test pages are unchanged.
+
+## The open pane lives in the URL; Back and reload keep your place (owner, 2026-11-21)
+
+Owner report: reload and the browser Back button "always send you back to main page", and in a
+question database Back from a game skipped the database. Rules now:
+
+- **Home (`app/today/StageToday.jsx`):** an open category or skill pane is `/#cat=<id>` (the
+  RAMP_ORDER key, e.g. `Logic`, `Word`), All Puzzles is `/#all`, the tiles carry no hash. A sync
+  effect keeps the hash in step with `picked` + `pane`; the old 2.5s hash-clearing timers are gone
+  (except for the `#all` reader who keeps their own view). Opening a pane FROM the tiles pushes one
+  history step, so a phone's Back closes the pane before leaving the site; switching panes only
+  replaces it. A `popstate` listener reopens or closes panes. A visit to bare `/` still opens on the
+  home (the 2026-10-25 ruling: only My Puzzles is restored from storage).
+- **Question databases (`app/QdbPortal.jsx`):** starting a game pushes a history step; Back or Leave
+  pops it and lands on the topic picker with the picks kept. Only a step this page pushed is popped.
+  On a topic page (`/trivia-questions/<topic>` etc.) the header back arrow goes to the database's
+  first page, not home.
+- Next's app router patches pushState/replaceState and copies its own state in, so call them with
+  your own data or `null`, never `window.history.state` (that carries `__NA` and skips the patch).

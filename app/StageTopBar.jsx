@@ -129,7 +129,7 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
   return (
     <div ref={barRef} className={'stb' + (title ? ' has-t' : '')} style={{ color: ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <BrandFit><a className="stb-home" href={href} aria-label="Back to Mind Loft home" onClick={(e) => soakNav(e, href)}>
+      <BrandFit><a className="stb-home" href={href} aria-label={href === '/' ? 'Back to Mind Loft home' : 'Back'} onClick={(e) => soakNav(e, href)}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
         <MindLoftMark size={16} ink={ink} accent="var(--stg-brand,#7dd3fc)" />
         <span>Mind <span>Loft</span></span>

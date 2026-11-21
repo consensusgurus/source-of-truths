@@ -1370,9 +1370,12 @@ export default function StageToday({ seed = null } = {}) {
           keep = localStorage.getItem(TILES_KEY) === '1' || (!!v && v !== ALL_ID);
         } catch (er) {}
         if (!keep) { setPane(ALL_ID); setPicked(true); setAllTiles(true); }
+        // A reader who keeps their own view gets the hash cleared, as before
+        // (later, since the entry door and home snapshot stand down on a hash).
+        else setTimeout(() => { try { if (window.location.hash === '#all') window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (er) {} }, 2500);
         // Cleared LATER, not here: the entry door and the home snapshot both
         // stand down on a hash, and their own effects run after this one.
-        setTimeout(() => { try { if (window.location.hash === '#all') window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (er) {} }, 2500);
+        // The hash now STAYS (owner, 2026-11-21): the URL sync below keeps it in step with the open pane, so a reload or Back reopens it.
         try { window.scrollTo(0, 0); } catch (er) {}
       }
     } catch (e) {}
@@ -1389,7 +1392,6 @@ export default function StageToday({ seed = null } = {}) {
         // links every row here, in whichever lens it is showing.
         if (RAMP_ORDER.includes(c) || (isSkillId(c) && skillOfId(c))) {
           setIxLens(RAMP_ORDER.includes(c) ? 'cat' : 'skill'); setPane(c); setPicked(true);
-          setTimeout(() => { try { if (String(window.location.hash).startsWith('#cat=')) window.history.replaceState(null, '', window.location.pathname + window.location.search); } catch (er) {} }, 2500);
           try { window.scrollTo(0, 0); } catch (er) {}
         }
       }
@@ -1403,6 +1405,58 @@ export default function StageToday({ seed = null } = {}) {
   // A desktop never reads it. The tile that was
   // tapped rides up to the top of the list (flipFrom is where it started).
   const [picked, setPicked] = useState(false);
+  // THE OPEN PANE LIVES IN THE URL (owner, 2026-11-21: reload and Back "always
+  // send you back to main page"). A category or skill pane is /#cat=<id>, All
+  // Puzzles is /#all, the tiles carry no hash. So a reload reopens the pane and
+  // Back from a game lands on the category it was opened from. A fresh visit to
+  // bare / still opens on the home (the 2026-10-25 ruling: nothing but My
+  // Puzzles is restored from storage). Opening a pane from the tiles pushes a
+  // history step, so a phone's Back closes the pane before it leaves the site;
+  // switching panes only replaces the step.
+  const paneStep = useRef(false);
+  const hashSynced = useRef(false);
+  useEffect(() => {
+    try {
+      const cur = String(window.location.hash || '');
+      const ours = cur === '#all' || cur.startsWith('#cat=');
+      let want = null;
+      if (picked && pane === ALL_ID) want = '#all';
+      else if (picked && pane && (RAMP_ORDER.includes(pane) || (isSkillId(pane) && skillOfId(pane)))) want = '#cat=' + encodeURIComponent(pane);
+      // The first commit runs before the layout effect's restore has landed:
+      // leave a pane hash alone until the pane it names is open.
+      if (!hashSynced.current && ours && !picked) return;
+      const first = !hashSynced.current;
+      hashSynced.current = true;
+      if (want === null) {
+        // Tiles, or a pane with its own anchor (leaderboard, quizzes) or none
+        // (My Puzzles, Runs): only clear a hash this sync owns.
+        if (!ours) return;
+        if (!picked && paneStep.current) { paneStep.current = false; window.history.back(); return; }
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+        return;
+      }
+      if (cur === want) return;
+      const url = window.location.pathname + window.location.search + want;
+      if (!first && !ours && !paneStep.current) { window.history.pushState({ mlPane: 1 }, '', url); paneStep.current = true; }
+      else window.history.replaceState(null, '', url);
+    } catch (e) {}
+  }, [picked, pane]);
+  useEffect(() => {
+    const onPop = () => {
+      try {
+        const h = String(window.location.hash || '');
+        if (h === '#all') { setPane(ALL_ID); setPicked(true); return; }
+        if (h.startsWith('#cat=')) {
+          const c = decodeURIComponent(h.slice(5));
+          if (RAMP_ORDER.includes(c) || (isSkillId(c) && skillOfId(c))) { setIxLens(RAMP_ORDER.includes(c) ? 'cat' : 'skill'); setPane(c); setPicked(true); }
+          return;
+        }
+        if (!h) { paneStep.current = false; setPicked(false); try { localStorage.setItem(TILES_KEY, '1'); } catch (er) {} }
+      } catch (e) {}
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
   const flipFrom = useRef(null);
   const pickPane = (id, ev) => {
     try {

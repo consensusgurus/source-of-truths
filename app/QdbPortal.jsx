@@ -84,6 +84,25 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
   const [laneQ, setLaneQ] = useState('');
   // Topics picked on a hub (owner, 2026-11-21: "a way to select multiple topics").
   const [picked, setPicked] = useState(() => new Set());
+  // BROWSER BACK CLOSES A GAME FIRST (owner, 2026-11-21: Back from a game "takes
+  // you all the way back home instead of database first page"). A game opens in
+  // place, so starting one adds a history step; Back (or Leave) pops it and lands
+  // on the topic picker with the picks kept. Only a step this page pushed is
+  // popped, so Leave after a reload never steps off the site.
+  const gameStep = useRef(false);
+  useEffect(() => {
+    if (!game || gameStep.current) return;
+    try { window.history.pushState({ qdbGame: 1 }, '', window.location.href); gameStep.current = true; } catch (e) {}
+  }, [game]);
+  useEffect(() => {
+    const onPop = () => { if (gameStep.current) { gameStep.current = false; setGame(null); } };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+  const leaveGame = useCallback(() => {
+    if (gameStep.current) { try { window.history.back(); return; } catch (e) {} }
+    setGame(null);
+  }, []);
 
   useEffect(() => {
     try { setSetup(cleanSetup(JSON.parse(localStorage.getItem(setupKey(dbKey)) || 'null'))); } catch (e) {}
@@ -222,7 +241,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
     <div className={`qd${dark ? ' dk' : ''}`} style={{ '--qd-bg': pal.bg, '--qd-ink': pal.ink, '--qd-tile': pal.tile || `color-mix(in srgb, ${pal.ink} 8%, transparent)` }}>
       <PageViewBeacon id={topic ? `qdb-${dbKey}-${topic.slug}` : `qdb-${dbKey}`} />
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <div className="qd-top"><StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} href="/" allLooks share /></div>
+      <div className="qd-top"><StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} href={topic ? db.base : '/'} allLooks share /></div>
       <main className="qd-col">
         {/* No breadcrumb row (owner, 2026-11-21: "get rid of the text above"); the BreadcrumbList data stays in the page head (QdbPages.jsx). */}
         {!topic ? (
@@ -396,7 +415,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
       ) : null}
       <StageFooter />
 
-      {game ? <Player key={game.key + game.qs[0].k} db={db} dbKey={dbKey} game={game} onAnswer={onAnswer} onDone={onDone} onExit={() => setGame(null)}
+      {game ? <Player key={game.key + game.qs[0].k} db={db} dbKey={dbKey} game={game} onAnswer={onAnswer} onDone={onDone} onExit={leaveGame}
         onAgain={() => start(game.slug, { mode: game.mode, lanes: game.lanes, title: game.title, n: game.endless ? undefined : game.qs.length, ids: game.retry ? store.m.slice(0, 25) : undefined })} /> : null}
     </div>
   );
