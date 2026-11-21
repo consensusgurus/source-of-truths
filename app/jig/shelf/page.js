@@ -39,7 +39,7 @@ export const metadata = {
     'Free online jigsaw puzzles from real photos: play any picture at 24 to 4,000 pieces, plus a new daily jigsaw and a 4,000 piece jigsaw built together.',
   alternates: { canonical: '/jig/shelf' },
   openGraph: {
-    images: [{ url: '/og/jig-shelf.png', width: 1200, height: 630, alt: 'Mind Loft jigsaw puzzles: free photo jigsaws at 24 to 4,000 pieces' }],
+    images: [{ url: '/og/jig-shelf.png?v=2', width: 1200, height: 630, alt: 'Mind Loft jigsaw puzzles: free photo jigsaws at 24 to 4,000 pieces' }],
     title: 'Free Online Jigsaw Puzzles, 24 to 4,000 Pieces',
     description: 'Every picture, any size. Free photo jigsaws in your browser, with a new one every day.',
     url: '/jig/shelf',
@@ -47,7 +47,7 @@ export const metadata = {
     siteName: 'Mind Loft',
   },
   twitter: {
-    images: ['/og/jig-shelf.png'],
+    images: ['/og/jig-shelf.png?v=2'],
     card: 'summary_large_image',
     title: 'Free Online Jigsaw Puzzles, 24 to 4,000 Pieces',
     description: 'Every picture, any size. Free photo jigsaws in your browser, with a new one every day.',

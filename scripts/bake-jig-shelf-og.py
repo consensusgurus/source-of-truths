@@ -1,135 +1,107 @@
 #!/usr/bin/env python3
-# Bakes public/og/jig-shelf.png, the share card for /jig/shelf (2026-10-17).
+# Bakes public/og/jig-shelf.png, the share card for /jig/shelf.
 #
-#   python3 scripts/bake-jig-shelf-og.py
+#   python3 scripts/bake-jig-shelf-og.py /path/to/atrani.jpg
 #
-# Same frame as the baked Jig card (public/og/jig.png, whose logo strip it
-# lifts so the two match exactly): title and lede left, two shelves of boxes
-# right, today a question mark. The photos are BACKFILL boards (Sep 20 to
-# Oct 4), which are permanently past, so the card can never leak a future
-# day. They are fetched from upload.wikimedia.org thumbnails; fonts come from
-# node_modules/@fontsource. Needs Pillow. Credits are printed on the card.
-import os, json, re, hashlib, subprocess, tempfile, time, urllib.parse
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
-FONTS = os.path.join(ROOT, 'node_modules', '@fontsource')
-D = tempfile.mkdtemp(prefix='jigshelf-')
-SRC = open(os.path.join(ROOT, 'app', 'jig', 'puzzles.js'), encoding='utf-8').read()
-ROWS = {json.loads(m)['num']: json.loads(m) for m in re.findall(r'^\s*(\{"num".*\}),?\s*$', SRC, re.M)}
-def fetch(n):
-    f = ROWS[n]['t'].replace(' ', '_'); h = hashlib.md5(f.encode()).hexdigest(); q = urllib.parse.quote(f)
-    url = f'https://upload.wikimedia.org/wikipedia/commons/thumb/{h[0]}/{h[:2]}/{q}/500px-{q}'
-    for _ in range(5):
-        code = subprocess.run(['curl', '-s', '-A', 'MindLoftOGBake/1.0 (https://mindloftdaily.com)', '-o', os.path.join(D, f'p{n}.jpg'), '-w', '%{http_code}', url], capture_output=True, text=True).stdout
-        if code == '200': return
-        time.sleep(6)
-    raise SystemExit(f'could not fetch board {n}')
+# 2026-11-21: rebuilt for the Jigsaw Puzzles portal (the old card still said
+# "The Jig Puzzle Shelf"). Same dark table as the page (TABLE.dark in
+# ShelfClient.jsx): title and lede left, one photo right cut three ways
+# (24, 300 and 4,000 pieces) to show "any picture at any size". The photo is
+# board #9 (Atrani, Sept 28), permanently past, so the card never leaks a
+# future day. Pass a 1280px Commons thumb of it; credit is printed on the card.
+# Fonts: Manrope TTFs (convert node_modules/@fontsource/manrope woffs with
+# fontTools if /tmp/og has none). Needs Pillow.
+import os, sys, random
 from PIL import Image, ImageDraw, ImageFont, ImageOps, ImageFilter
-S = 2  # supersample
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+FD = os.environ.get('MANROPE_DIR', '/tmp/og')
+S = 2
 W, H = 1200 * S, 630 * S
-GROUND = (11, 15, 26); SURF = (21, 25, 34); LINE = (37, 43, 54)
-INK = (233, 237, 244); INK2 = (170, 181, 199); MUTE = (139, 149, 168); MUTE2 = (120, 133, 157)
-LIME = (190, 242, 100); LID = (43, 58, 85)
-WOOD = (168, 125, 85); WOOD2 = (138, 100, 64); WOOD3 = (92, 64, 41)
-
-def F(name, px):
-    sub = 'manrope' if name.startswith('manrope') else 'dm-mono'
-    return ImageFont.truetype(os.path.join(FONTS, sub, 'files', name), px * S)
-SANS8, SANS7, SANS6 = 'manrope-latin-800-normal.woff', 'manrope-latin-700-normal.woff', 'manrope-latin-600-normal.woff'
-MONO5, MONO4 = 'dm-mono-latin-500-normal.woff', 'dm-mono-latin-400-normal.woff'
+s = lambda v: int(round(v * S))
+GROUND = (22, 18, 14); SURF = (33, 27, 21)
+INK = (244, 234, 216); INK2 = (214, 205, 190); MUTE = (165, 158, 147)
+F = lambda w, px: ImageFont.truetype(os.path.join(FD, f'm{w}.ttf'), s(px))
 
 im = Image.new('RGB', (W, H), GROUND)
 d = ImageDraw.Draw(im)
-s = lambda v: int(round(v * S))
 
-# top rule
-d.rectangle([0, 0, W, s(9)], fill=LIME)
-
-# header: logo + wordmark lifted from the baked Jig card so it matches exactly
-src = Image.open(os.path.join(ROOT, 'public', 'og', 'jig.png')).convert('RGB')
-logo = src.crop((56, 64, 272, 124)).resize((s(216), s(60)), Image.LANCZOS)
-im.paste(logo, (s(56), s(64)))
-d.line([s(287), s(66), s(287), s(120)], fill=LINE, width=s(1.5))
 def spaced(x, y, text, font, fill, track):
     for ch in text:
         d.text((x, y), ch, font=font, fill=fill)
         x += d.textlength(ch, font=font) + track
     return x
-spaced(s(303), s(85), 'LOGIC · PUZZLE SHELF', F(MONO4, 15), MUTE, s(2.6))
 
-# title + lede
-d.text((s(56), s(196)), 'The Jig', font=F(SANS8, 76), fill=INK)
-d.text((s(56), s(278)), 'Puzzle Shelf', font=F(SANS8, 76), fill=INK)
-lede = ['Every daily jigsaw so far,', 'one photograph a day.', 'Pick a box and play it free.']
-for i, ln in enumerate(lede):
-    d.text((s(56), s(386 + i * 38)), ln, font=F(SANS6, 26), fill=INK2)
+# left column
+spaced(s(64), s(70), 'MIND LOFT', F(800, 22), INK, s(0.6))
+spaced(s(64), s(156), 'FREE ONLINE JIGSAW PUZZLES', F(800, 15), MUTE, s(2.2))
+d.text((s(60), s(184)), 'Jigsaw', font=F(800, 84), fill=INK)
+d.text((s(60), s(278)), 'Puzzles', font=F(800, 84), fill=INK)
+for i, ln in enumerate(['Any picture at 24 to', '4,000 pieces. A new one', 'every day. No download.']):
+    d.text((s(64), s(396 + i * 36)), ln, font=F(500, 26), fill=INK2)
+spaced(s(64), s(546), 'mindloftdaily.com/jig/shelf', F(700, 19), MUTE, s(0.3))
 
-# footer
-d.line([s(56), s(537), s(1144), s(537)], fill=LINE, width=s(1))
-spaced(s(56), s(561), 'mindloftdaily.com/jig/shelf', F(MONO4, 18), INK2, s(0.6))
-f = F(MONO5, 16)
-txt = 'PLAY ANY DAY FREE'
-tw = sum(d.textlength(c, font=f) + s(2.4) for c in txt) - s(2.4)
-spaced(s(1144) - tw, s(561), txt, f, LIME, s(2.4))
+# right: one photo, cut three ways
+PX, PY, PW, PH = 612, 70, 528, 470
+ph = Image.open(sys.argv[1]).convert('RGB')
+ph = ImageOps.fit(ph, (s(PW), s(PH)), Image.LANCZOS, centering=(0.42, 0.5))
+sh = Image.new('L', (s(PW + 60), s(PH + 60)), 0)
+ImageDraw.Draw(sh).rounded_rectangle([s(30), s(30), s(PW + 30), s(PH + 30)], radius=s(14), fill=170)
+sh = sh.filter(ImageFilter.GaussianBlur(s(14)))
+im.paste((0, 0, 0), (s(PX - 30), s(PY - 22)), sh)
 
-# the shelf: two planks of boxes, newest first, today a question mark
-rows = [[None, 15, 14, 12, 10], [8, 6, 5, 4, 2]]
-pcs = {n: ROWS[n]['cols'] * ROWS[n]['rows'] for r in rows for n in r if n}
-for r in rows:
-    for n in r:
-        if n: fetch(n); time.sleep(3)
-X0, X1 = 552, 1144
-BW, BH, GAP = 106, 98, 15.5
-LIDH = 19
-plank_y = [262, 448]
-fl = F(MONO5, 10)
-for r, row in enumerate(rows):
-    py = plank_y[r]
-    for i, n in enumerate(row):
-        bx = X0 + i * (BW + GAP)
-        by = py - BH
-        # soft shadow on the wall behind the box
-        sh = Image.new('L', (s(BW + 30), s(BH + 30)), 0)
-        ImageDraw.Draw(sh).rounded_rectangle([s(15), s(15), s(BW + 15), s(BH + 15)], radius=s(5), fill=150)
-        sh = sh.filter(ImageFilter.GaussianBlur(s(7)))
-        im.paste((0, 0, 0), (s(bx - 15 + 3), s(by - 15 + 5)), sh)
-        d = ImageDraw.Draw(im)
-        if n is None:
-            d.rounded_rectangle([s(bx), s(by), s(bx + BW), s(by + BH)], radius=s(5), fill=SURF, outline=LIME, width=s(2))
-            q = F(SANS8, 44)
-            qw = d.textlength('?', font=q)
-            d.text((s(bx + BW / 2) - qw / 2, s(by + 12)), '?', font=q, fill=LIME)
-            lab = 'TODAY'
-            lw = sum(d.textlength(c, font=fl) + s(1.2) for c in lab) - s(1.2)
-            spaced(s(bx + BW / 2) - lw / 2, s(by + BH - 18), lab, fl, LIME, s(1.2))
-            continue
-        ph = Image.open(os.path.join(D, f'p{n}.jpg')).convert('RGB')
-        ph = ImageOps.fit(ph, (s(BW), s(BH - LIDH)), Image.LANCZOS, centering=(0.5, 0.45))
-        box = Image.new('RGB', (s(BW), s(BH)), LID)
-        box.paste(ph, (0, 0))
-        bd = ImageDraw.Draw(box)
-        lab = f'#{n} · {pcs[n]} PCS'
-        lw = sum(bd.textlength(c, font=fl) + s(0.4) for c in lab) - s(0.4)
-        x = s(BW / 2) - lw / 2
-        for ch in lab:
-            bd.text((x, s(BH - LIDH + 2.5)), ch, font=fl, fill=(255, 255, 255))
-            x += bd.textlength(ch, font=fl) + s(0.4)
-        m = Image.new('L', box.size, 0)
-        ImageDraw.Draw(m).rounded_rectangle([0, 0, box.size[0] - 1, box.size[1] - 1], radius=s(5), fill=255)
-        im.paste(box, (s(bx), s(by)), m)
-        d = ImageDraw.Draw(im)
-    # plank
-    d.rectangle([s(X0 - 14), s(py), s(X1 + 14), s(py + 10)], fill=WOOD)
-    d.rectangle([s(X0 - 14), s(py + 10), s(X1 + 14), s(py + 17)], fill=WOOD2)
-    d.rectangle([s(X0 - 14), s(py + 17), s(X1 + 14), s(py + 19)], fill=WOOD3)
-    for gx in (X0 + 40, X0 + 210, X0 + 395, X0 + 520):
-        d.line([s(gx), s(py + 4), s(gx + 70), s(py + 4)], fill=WOOD2, width=s(1))
-
-# photo credits, small, under the shelves
-fc = F(MONO4, 10.5)
-cred = ['Photos: W.carter, Rhododendrites, Moahim, Christopher Michel, Brocken Inaglory,',
-        'Anass Errihani, Ganga Raj Sunuwar, Kallerna, Basile Morin · Wikimedia Commons']
-for i, ln in enumerate(cred):
-    d.text((s(X0 - 14), s(484 + i * 16)), ln, font=fc, fill=MUTE2)
+cut = Image.new('RGBA', ph.size, (0, 0, 0, 0))
+cd = ImageDraw.Draw(cut)
+bands = [(24, 0, PW / 3), (300, PW / 3, 2 * PW / 3), (4000, 2 * PW / 3, PW)]
+def tabbed(x0, y0, x1, y1, t, flip, width, fill):
+    # a straight edge with one round knob in the middle (horizontal or vertical)
+    if y0 == y1:
+        L = x1 - x0; a, b = x0 + L * 0.38, x0 + L * 0.62
+        cd.line([s(x0), s(y0), s(a), s(y0)], fill=fill, width=width)
+        cd.line([s(b), s(y0), s(x1), s(y0)], fill=fill, width=width)
+        r = (b - a) / 2; cx = (a + b) / 2
+        box = [s(cx - r), s(y0 - r), s(cx + r), s(y0 + r)]
+        cd.arc(box, 180 if flip else 0, 360 if flip else 180, fill=fill, width=width)
+    else:
+        L = y1 - y0; a, b = y0 + L * 0.38, y0 + L * 0.62
+        cd.line([s(x0), s(y0), s(x0), s(a)], fill=fill, width=width)
+        cd.line([s(x0), s(b), s(x0), s(y1)], fill=fill, width=width)
+        r = (b - a) / 2; cy = (a + b) / 2
+        box = [s(x0 - r), s(cy - r), s(x0 + r), s(cy + r)]
+        cd.arc(box, 90 if flip else 270, 270 if flip else 450, fill=fill, width=width)
+rnd = random.Random(7)
+for n, bx0, bx1 in bands:
+    bw = bx1 - bx0
+    # cells sized as if the whole photo were cut at n pieces
+    cols_full = max(2, round((n * PW / PH) ** 0.5)); cell = PW / cols_full
+    cols = max(1, round(bw / cell)); rows = max(2, round(PH / cell))
+    cw, ch = bw / cols, PH / rows
+    lw = s(2.2) if n < 100 else s(1.4) if n < 1000 else s(0.9)
+    col = (255, 255, 255, 150 if n < 1000 else 120)
+    for i in range(1, cols):
+        x = bx0 + i * cw
+        for j in range(rows):
+            tabbed(x, j * ch, x, (j + 1) * ch, 0, rnd.random() < .5, lw, col)
+    for j in range(1, rows):
+        y = j * ch
+        for i in range(cols):
+            tabbed(bx0 + i * cw, y, bx0 + (i + 1) * cw, y, 0, rnd.random() < .5, lw, col)
+ph = ph.convert('RGBA'); ph.alpha_composite(cut)
+pd = ImageDraw.Draw(ph)
+for k in (1, 2):  # band seams
+    x = s(PW * k / 3); pd.rectangle([x - s(2), 0, x + s(2), s(PH)], fill=GROUND + (255,))
+fl = F(800, 17)
+for n, bx0, bx1 in bands:
+    lab = f'{n:,} pieces'
+    tw = pd.textlength(lab, font=fl)
+    cx = s((bx0 + bx1) / 2); bh = s(36)
+    y0 = s(PH - 54)
+    pd.rounded_rectangle([cx - tw / 2 - s(14), y0, cx + tw / 2 + s(14), y0 + bh], radius=bh // 2, fill=(22, 18, 14, 235))
+    pd.text((cx - tw / 2, y0 + s(7)), lab, font=fl, fill=INK)
+m = Image.new('L', ph.size, 0)
+ImageDraw.Draw(m).rounded_rectangle([0, 0, ph.size[0] - 1, ph.size[1] - 1], radius=s(14), fill=255)
+im.paste(ph.convert('RGB'), (s(PX), s(PY)), m)
+d = ImageDraw.Draw(im)
+d.text((s(PX), s(PY + PH + 18)), 'Atrani, Amalfi Coast · Photo: Paolo Costa Baldi, CC BY 3.0, Wikimedia Commons', font=F(500, 12.5), fill=MUTE)
 
 out = im.resize((1200, 630), Image.LANCZOS)
 dest = os.path.join(ROOT, 'public', 'og', 'jig-shelf.png')
