@@ -810,6 +810,7 @@ and English ... same SEO, same style" added two more. One engine, three database
 | Trivia Database | `/trivia-questions` | the 16 trivia banks | 11 (`lib/trivia-topics.js`) |
 | Math Database | `/math-questions` | blitz, blitzed, gap, series, back | 5, one per bank |
 | English Database | `/english-questions` | gram, vocab, spell, origin, idiom | 5, one per bank |
+| Science Database | `/science-questions` | sci, orbit, bond, gene, pulse, eureka | 6, one per bank |
 
 - **Only questions that already ran.** `lib/qdb-library.js` (server only; was trivia-library.js)
   reads every bank and keeps a question once its day is before today, Eastern. A new gauntlet bank
@@ -836,6 +837,14 @@ and English ... same SEO, same style" added two more. One engine, three database
   the same questions"): the browser keeps every answered key (`s` in its record, newest first, up
   to 4,000) and sends it; `pickSet` deals those last, the rest oldest day first, round robin over
   the topics (a whole-database mix) or the lanes (one topic) so a mix stays mixed.
+- **Science twice** (owner: "a science database. It will be separate, but the same options will
+  also exist within trivia"): the six science banks are the Science Database's topics with their own
+  lanes, and still Trivia's Science topic, where LANE_MAP folds them into five lanes. BANK_DB links a
+  science daily to the Science Database (the last database listing a bank wins).
+- **Pick several topics** (owner: "Choose your topic(s): ... a way to select multiple topics"): on a
+  hub a tile tap picks or unpicks the topic, Start plays every topic (none picked), the one picked,
+  or a mix of the picked few (POST `ts`); each tile's small Parts link opens its topic page, which
+  stays the crawl path. Topic pages read "Choose your part(s):".
 - **The start bar** (owner: "very hard to understand you have to scroll down to start"; picked
   option B of the "Database Start Fix" canvas): a bar sticky at the foot of the screen on every
   database page names what Start plays and the settings, with Change opening a sheet of the three

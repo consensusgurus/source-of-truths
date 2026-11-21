@@ -35,6 +35,7 @@ export const FOOTER_COLS = [
       { label: 'Trivia Database', href: '/trivia-questions' },
       { label: 'Math Database', href: '/math-questions' },
       { label: 'English Database', href: '/english-questions' },
+      { label: 'Science Database', href: '/science-questions' },
       // The full index. This link is the crawl path to the whole quiz catalogue, so it
       // must stay on a server-rendered surface: see lib/quiz-catalog.js.
       // Same job for the circuits: /circuits is the only crawlable path to the

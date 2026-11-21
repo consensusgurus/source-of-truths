@@ -897,6 +897,7 @@ export default function LayoutCInner({ gameKey }) {
             {ixDoor('/trivia-questions', 'Trivia Database')}
             {ixDoor('/math-questions', 'Math Database')}
             {ixDoor('/english-questions', 'English Database')}
+            {ixDoor('/science-questions', 'Science Database')}
             {ixHash('sty-board', 'Leaderboards + Stats')}
             <span className="lc-eecut" aria-hidden="true" />
             {ixHash('sty-iq', 'IQ Tests')}

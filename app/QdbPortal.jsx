@@ -82,6 +82,8 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
   const [laneQ, setLaneQ] = useState('');
+  // Topics picked on a hub (owner, 2026-11-21: "a way to select multiple topics").
+  const [picked, setPicked] = useState(() => new Set());
 
   useEffect(() => {
     try { setSetup(cleanSetup(JSON.parse(localStorage.getItem(setupKey(dbKey)) || 'null'))); } catch (e) {}
@@ -108,7 +110,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
       const r = opts.ids
         ? await fetch(`/api/trivia/set?db=${dbKey}&ids=${encodeURIComponent(opts.ids.join(','))}`)
         : await fetch('/api/trivia/set', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ db: dbKey, t: slug, l: opts.lanes || [], lv: endless || mode === 'sprint' ? 'ramp' : setup.level, n, s: Math.floor(Math.random() * 1000), seen: (readStore(dbKey).s || []).slice(0, SEEN_CAP) }) });
+          body: JSON.stringify({ db: dbKey, t: slug, ts: opts.topics || [], l: opts.lanes || [], lv: endless || mode === 'sprint' ? 'ramp' : setup.level, n, s: Math.floor(Math.random() * 1000), seen: (readStore(dbKey).s || []).slice(0, SEEN_CAP) }) });
       const d = await r.json();
       if (!d || !Array.isArray(d.qs) || !d.qs.length) throw new Error('empty');
       setGame({ qs: d.qs, mode, endless, title: opts.title || t.label, color: t.color, slug, key: `${slug}|${mode}|${mode === 'sprint' || endless ? 0 : n}`, lanes: opts.lanes || [], retry: !!opts.ids, level: setup.level });
@@ -204,6 +206,14 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
     </div>
   );
 
+  // What Start plays on a hub: every topic, the one picked, or the picked few mixed.
+  const hubStart = () => {
+    const ps = topics.filter((t) => picked.has(t.slug)).map((t) => t.slug);
+    if (ps.length === 1) return start(ps[0]);
+    if (ps.length > 1) return start('mix', { topics: ps, title: `${ps.length} Topics, Mixed` });
+    return start('mix');
+  };
+  const hubName = picked.size === 1 ? (topics.find((t) => picked.has(t.slug)) || {}).label : picked.size > 1 ? `${picked.size} Topics, Mixed` : `${db.mix}: All ${topics.length} Topics`;
   const others = QDB_KEYS.filter((k) => k !== dbKey).map((k) => QDBS[k]);
   const showLanes = topic ? topic.lanes.filter(([l]) => !laneQ || l.toLowerCase().includes(laneQ.toLowerCase())) : [];
   const manyLanes = topic && topic.lanes.length > 12;
@@ -218,7 +228,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
         {!topic ? (
           <>
             <h1 className="qd-kick">{db.name} · {fmt(total)} {db.many}</h1>
-            <p className="qd-q">{db.ask}</p>
+            <p className="qd-q">Choose your topic(s):</p>
             {dropdowns}
             <ul className="qd-grid">
               {topics.map((t, i) => {
@@ -226,11 +236,17 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
                 const bg = tileFor(t.color);
                 return (
                   <li key={t.slug}>
-                    <a className="qd-tile" href={`${db.base}/${t.slug}`} style={bg ? { background: bg, '--qd-tink': look === 'darktint' ? pal.ink : RAMP_INK } : null}>
-                      <span className="qd-num">{String(i + 1).padStart(2, '0')}</span>
-                      <span className="qd-tname">{t.label}</span>
-                      <span className="qd-tsub">{fmt(t.n)} {db.many}{me && me[0] ? ` · ${pct(me)}% right` : ''}</span>
-                    </a>
+                    {/* A tap picks the topic for Start (several mix); its Parts link opens the
+                        topic's own page, which stays the crawl path to it. */}
+                    <div className={`qd-tile qd-pick${picked.has(t.slug) ? ' ok' : ''}`} style={bg && !picked.has(t.slug) ? { background: bg, '--qd-tink': look === 'darktint' ? pal.ink : RAMP_INK } : null}>
+                      <button type="button" className="qd-pbtn" aria-pressed={picked.has(t.slug)}
+                        onClick={() => setPicked((s0) => { const n2 = new Set(s0); if (n2.has(t.slug)) n2.delete(t.slug); else n2.add(t.slug); return n2; })}>
+                        <span className="qd-num">{picked.has(t.slug) ? '✓' : String(i + 1).padStart(2, '0')}</span>
+                        <span className="qd-tname">{t.label}</span>
+                        <span className="qd-tsub">{fmt(t.n)} {db.many}{me && me[0] ? ` · ${pct(me)}% right` : ''}</span>
+                      </button>
+                      <a className="qd-parts" href={`${db.base}/${t.slug}`} aria-label={`${t.label}: pick its parts`}>Parts</a>
+                    </div>
                   </li>
                 );
               })}
@@ -256,7 +272,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
         ) : (
           <>
             <h1 className="qd-kick">{topic.label} · {fmt(topic.n)} {db.many}</h1>
-            <p className="qd-q">{manyLanes ? 'Pick a quiz, or play them all' : db.key === 'trivia' ? `Which part of ${topic.label.toLowerCase()}?` : `Which kind of ${db.one}?`}</p>
+            <p className="qd-q">{manyLanes ? 'Choose your quiz(zes):' : 'Choose your part(s):'}</p>
             {dropdowns}
             {manyLanes ? (
               <label className="qd-search"><input type="search" value={laneQ} onChange={(e) => setLaneQ(e.target.value)} placeholder="Find a topic: Rome, volcanoes, jazz" aria-label="Find a quiz topic" /></label>
@@ -356,10 +372,10 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
           topic page, or of whichever parts are picked. Change opens the settings. */}
       <div className="qd-bar" role="region" aria-label="Start a game">
         <div className="qd-bt">
-          <b>{!topic ? `${db.mix}: All ${topics.length} Topics` : !lanes.size ? `${topic.label} Mixed Bag` : lanes.size === 1 ? laneLabel([...lanes][0]) : `${lanes.size} ${manyLanes ? 'Quizzes' : 'Parts'} of ${topic.label}, Mixed`}</b>
+          <b>{!topic ? hubName : !lanes.size ? `${topic.label} Mixed Bag` : lanes.size === 1 ? laneLabel([...lanes][0]) : `${lanes.size} ${manyLanes ? 'Quizzes' : 'Parts'} of ${topic.label}, Mixed`}</b>
           <small>{modeName} · {setup.mode === 'sprint' ? '60 seconds' : endlessOn ? 'Endless' : `${setup.n} ${db.many}`}{setup.mode === 'sprint' || endlessOn ? '' : ` · ${diffName}`} · <button type="button" className="qd-chg" onClick={() => setSheet(true)}>Change</button></small>
         </div>
-        <button type="button" className="qd-bgo" disabled={loading} onClick={() => (topic ? start(topic.slug, { lanes: [...lanes], title: lanes.size === 1 ? `${topic.label}: ${laneLabel([...lanes][0])}` : topic.label }) : start('mix'))}>
+        <button type="button" className="qd-bgo" disabled={loading} onClick={() => (topic ? start(topic.slug, { lanes: [...lanes], title: lanes.size === 1 ? `${topic.label}: ${laneLabel([...lanes][0])}` : topic.label }) : hubStart())}>
           <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg>{loading ? 'Loading' : 'Start'}
         </button>
       </div>
@@ -371,7 +387,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
             {controls}
             <div className="qd-srow">
               <button type="button" className="qd-tile sm" onClick={() => setSheet(false)}><span className="qd-tname">Done</span></button>
-              <button type="button" className="qd-bgo" disabled={loading} onClick={() => { setSheet(false); if (topic) start(topic.slug, { lanes: [...lanes] }); else start('mix'); }}>
+              <button type="button" className="qd-bgo" disabled={loading} onClick={() => { setSheet(false); if (topic) start(topic.slug, { lanes: [...lanes] }); else hubStart(); }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg>Start
               </button>
             </div>
@@ -551,6 +567,10 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 .qd.dk .qd-tile:hover{filter:brightness(1.15);}
 .qd-tile:disabled{cursor:default;opacity:.6;}
 .qd-tile.ok{background:var(--qd-ink);border-color:var(--qd-ink);}
+.qd-pick{padding:0;overflow:hidden;}
+.qd-pbtn{flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 14px 26px;border:0;background:transparent;font:inherit;text-align:center;cursor:pointer;color:inherit;}
+.qd-parts{position:absolute;right:10px;bottom:8px;font-size:11.5px;font-weight:800;text-decoration:underline;text-underline-offset:2px;opacity:.75;}
+.qd-parts:hover{opacity:1;}
 .qd-tile.ok,.qd-tile.ok *{color:var(--qd-bg) !important;}
 .qd-num{position:absolute;top:11px;left:13px;font-size:11.5px;font-weight:800;opacity:.55;}
 .qd-tname{font-size:21px;font-weight:800;line-height:1.18;letter-spacing:-0.01em;padding-bottom:.06em;}

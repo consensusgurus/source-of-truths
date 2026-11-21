@@ -62,10 +62,25 @@ const HUB = {
   },
 };
 
+HUB.science = {
+  title: (n) => `Science Database: ${round(n)} Free Science Trivia Questions and Answers | Mind Loft`,
+  description: 'Free science quiz questions with answers: space and physics, chemistry, biology, the human body, and inventions. Practice by topic, gentle to tough.',
+  social: 'Thousands of multiple choice science questions in six topics. Play in Practice, Gauntlet, or Sprint mode, from gentle to tough.',
+  about: 'Science',
+  faq: (n) => [
+    { q: 'Are these science questions free?', a: 'Yes. Every question is free to play in your browser, with no app and no signup. Your record and the questions you missed stay in this browser.' },
+    { q: 'What does the Science Database cover?', a: 'Six topics: general science, space and physics, chemistry, life science, the human body, and inventions and discoveries.' },
+    { q: 'Where do the questions come from?', a: 'Every one has already run in a Mind Loft daily: Sci from the Trivia Gauntlet, and Orbit, Bond, Gene, Pulse, and Eureka from the Science Gauntlet. A question joins the database the day after it runs.' },
+    { q: 'How do the three modes work?', a: 'Practice has no clock and shows the right answer after a miss. Gauntlet puts a 20 second clock on every question and ends on your first miss; pick Endless to play until then. Sprint is as many as you can answer in 60 seconds.' },
+    { q: 'Can I mix topics?', a: 'Yes. Pick two or more topics and press Start for a mix of them, or open a topic and pick several of its parts.' },
+    { q: 'How many science questions are there?', a: `${n.toLocaleString('en-US')} so far, and more join every day.` },
+  ],
+};
+
 const crumbLdOf = (crumbs) => ({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({ '@type': 'ListItem', position: i + 1, name: c.label, ...(i < crumbs.length - 1 ? { item: `${SITE_URL}${c.href === '/' ? '' : c.href}` } : {}) })) });
 const faqLdOf = (faq) => ({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) });
 const Ld = ({ data }) => <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
-const catCrumb = { trivia: { label: 'Trivia', href: '/trivia-games' }, math: { label: 'Number Puzzles', href: '/number-puzzles' }, english: { label: 'Word Games', href: '/word-games' } };
+const catCrumb = { trivia: { label: 'Trivia', href: '/trivia-games' }, math: { label: 'Number Puzzles', href: '/number-puzzles' }, english: { label: 'Word Games', href: '/word-games' }, science: { label: 'Trivia', href: '/trivia-games' } };
 
 function totalOf(db) {
   const stats = poolStats(db, etToday());

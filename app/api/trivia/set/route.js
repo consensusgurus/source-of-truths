@@ -26,11 +26,12 @@ export async function POST(req) {
   const t = typeof body.t === 'string' ? body.t : 'mix';
   if (t !== 'mix' && !qdbTopic(db, t)) return NextResponse.json({ error: 'topic' }, { status: 400 });
   const lanes = (Array.isArray(body.l) ? body.l : []).filter((x) => typeof x === 'string').slice(0, 40);
+  const ts = t === 'mix' ? (Array.isArray(body.ts) ? body.ts : []).filter((x) => typeof x === 'string' && qdbTopic(db, x)).slice(0, 20) : [];
   const lv = DIFF_TIERS[body.lv] ? body.lv : 'ramp';
   const n = Math.max(1, Math.min(120, parseInt(body.n, 10) || 25));
   const s = Math.max(0, Math.min(999, parseInt(body.s, 10) || 0));
   const seen = new Set((Array.isArray(body.seen) ? body.seen : []).filter((x) => typeof x === 'string').slice(0, 4000));
-  const qs = pickSet({ db, topic: t, lanes, level: lv, n, seed: s + 1, today, seen });
+  const qs = pickSet({ db, topic: t, topics: ts, lanes, level: lv, n, seed: s + 1, today, seen });
   return NextResponse.json({ day: today, qs }, { headers: { 'Cache-Control': 'private, no-store' } });
 }
 
