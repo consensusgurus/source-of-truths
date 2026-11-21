@@ -17,8 +17,11 @@
 //   Practice  no clock, no lives; a miss shows the answer and play goes on
 //   Gauntlet  the clock on every question, one miss ends it; Endless runs until then
 //   Sprint    as many as you can in 60 seconds; a miss costs time, not the game
-// Nothing posts to the server or counts toward points; the record (seen, right,
-// bests, missed questions) is this browser's (lib/qdb.js storeKey).
+// The record (seen, right, bests, missed questions) is this browser's (lib/qdb.js
+// storeKey). TRACKING (owner, 2026-11-21): each page posts a view (qdb-<db>,
+// qdb-<db>-<topic>), and each finished game posts a result row under
+// qdb-<db>-<topic or mix> so it counts in the admin's Quiz Plays. quiz-xp skips
+// qdb- ids: no IQ Points, and nothing ranks on it.
 //
 // SERVER HTML IS THE CRAWL PATH: topic tiles are real links to their pages, and
 // the sample questions print with their answers in the page.
@@ -26,6 +29,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import GauntletStage, { MISS_MS } from './GauntletStage';
 import StageTopBar from './StageTopBar';
 import StageFooter from './StageFooter';
+import PageViewBeacon from './PageViewBeacon';
+import { dailyMeIdentity } from './dailyMeClient';
 import { useGauntletLook, stagePalette, useStageChrome } from './GauntletScreens';
 import { nextLook } from '@/lib/stage-look';
 import { softGround, RAMP_INK } from '@/lib/category-ramp';
@@ -190,6 +195,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
 
   return (
     <div className={`qd${dark ? ' dk' : ''}`} style={{ '--qd-bg': pal.bg, '--qd-ink': pal.ink, '--qd-tile': pal.tile || `color-mix(in srgb, ${pal.ink} 8%, transparent)` }}>
+      <PageViewBeacon id={topic ? `qdb-${dbKey}-${topic.slug}` : `qdb-${dbKey}`} />
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="qd-top"><StageTopBar look={look} onFlip={() => setLook(nextLook(look))} ink={pal.ink} href="/" allLooks share /></div>
       <main className="qd-col">
@@ -364,7 +370,24 @@ function Player({ db, dbKey, game, onAnswer, onDone, onExit, onAgain }) {
     const iv = setInterval(() => setNow(Date.now()), 200);
     return () => clearInterval(iv);
   }, [over]);
-  const finish = useCallback((why, score) => { setOver({ why, score }); onDone(game.key, score); }, [game.key, onDone]);
+  const t0 = useRef(Date.now());
+  const posted = useRef(false);
+  const finish = useCallback((why, score) => {
+    setOver({ why, score });
+    onDone(game.key, score);
+    // A QUIZ PLAY (owner, 2026-11-21): one result row per finished game.
+    if (posted.current) return;
+    posted.current = true;
+    try {
+      const who = dailyMeIdentity();
+      const answered = why === 'all' ? qs.length : Math.max(1, i + 1);
+      fetch('/api/quiz/result', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quizId: `qdb-${dbKey}-${game.slug}`, score, total: answered, correct: score,
+          timeElapsed: Math.max(0, Math.round((Date.now() - t0.current) / 1000)),
+          anonId: who.anonId || null, email: who.email || null,
+          referrer: typeof document !== 'undefined' ? document.referrer : null }) }).catch(() => {});
+    } catch (e) {}
+  }, [game.key, game.slug, onDone, dbKey, qs.length, i]);
   const next = useCallback((score) => {
     if (i + 1 >= qs.length) { finish('all', score); return; }
     // The next question's clock starts now, before the render that shows it,
@@ -478,8 +501,10 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 .qd-kick{align-self:center;display:inline-flex;align-items:center;gap:8px;max-width:100%;margin:0;padding:6px 14px 6px 11px;border:1px solid var(--qd-ink);border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;line-height:1.3;text-align:center;}
 .qd-kick::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--qd-ink);}
 .qd-q{margin:-6px 0 0;text-align:center;font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-0.02em;padding-bottom:.06em;}
-.qd-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
-.qd-grid li{display:flex;}
+/* THE ODD-TILE RULE (owner, 2026-11-21): a short last row is centred at the same
+   tile size, never left-hanging. Topic tiles wrap three to a row and centre the rest. */
+.qd-grid{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:14px;}
+.qd-grid li{display:flex;flex:0 0 calc((100% - 28px) / 3);min-width:0;}
 .qd-tile{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:118px;width:100%;box-sizing:border-box;padding:16px 14px;border:1px solid var(--qd-ink);border-radius:18px;background:var(--qd-tile);color:var(--qd-tink, var(--qd-ink)) !important;font-family:inherit;text-align:center;text-decoration:none;cursor:pointer;transition:background .15s, transform .1s;}
 .qd-tile *{color:var(--qd-tink, var(--qd-ink));}
 .qd-tile:active{transform:scale(.99);}
@@ -493,9 +518,11 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 .qd-tsub{font-size:13px;font-weight:700;opacity:.75;line-height:1.35;}
 .qd-tile.sm{min-height:84px;}
 .qd-tile.sm .qd-tname{font-size:17px;}
-.qd-lanes{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+.qd-lanes{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;}
+.qd-lanes > .qd-tile{flex:0 0 calc((100% - 28px) / 3);}
 .qd-lanes .qd-tile{min-height:104px;}
-.qd-lanes.many{max-height:520px;overflow-y:auto;padding:2px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;}
+.qd-lanes.many{display:grid;justify-content:normal;max-height:520px;overflow-y:auto;padding:2px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;}
+.qd-lanes.many > .qd-tile{flex:none;}
 .qd-lanes.many .qd-tile{min-height:70px;padding:10px;}
 .qd-lanes.many .qd-tname{font-size:16px;}
 .qd-search{display:flex;justify-content:center;margin-bottom:-12px;}
@@ -568,12 +595,15 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 @media(max-width:560px){
   .qd-col{padding:18px 14px 10px;gap:22px;}
   .qd-q{font-size:28px;}
-  .qd-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .qd-grid{gap:10px;}
+  .qd-grid li{flex-basis:calc((100% - 10px) / 2);}
   .qd-grid .qd-tile{min-height:92px;padding:12px 10px;}
   .qd-num{display:none;}
   .qd-tname{font-size:17px;}
   .qd-tsub{font-size:12px;}
-  .qd-lanes{grid-template-columns:1fr 1fr;gap:10px;}
+  .qd-lanes{gap:10px;}
+  .qd-lanes > .qd-tile{flex-basis:calc((100% - 10px) / 2);}
+  .qd-lanes.many{grid-template-columns:1fr 1fr;}
   .qd-lanes .qd-tile{min-height:84px;padding:10px;}
   .qd-setup{flex-direction:column;align-items:center;flex-wrap:nowrap;gap:12px;}
   .qd-note{margin-top:0;}

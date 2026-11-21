@@ -3046,3 +3046,13 @@ moved under the reader's thumb once per read. The runs row also only appeared af
 - Trade-offs accepted: the week's plays no longer break Popular ties, and Top Puzzles / Featured rank
   by today's plays when the seed is present (the week's unique counts arrived seconds after paint).
 - **Do not add an order term that reads a late fetch.** If a new term is needed, put it in the seed.
+
+## The odd-tile rule (owner, 2026-11-21)
+
+In ANY tile grid, a short last row is centred, with each tile the same size as the rest, never
+left-hanging (e.g. Find the Equation alone on the Math Database, About Me in Everything Else).
+Build tile grids as `display:flex; flex-wrap:wrap; justify-content:center` with each tile at a
+fixed basis (`flex:0 0 calc((100% - gaps) / N)`), which centres any leftover row for free. A CSS
+grid needs `:last-child:nth-child(odd){grid-column:1/-1;justify-self:center;width:calc(50% - gap/2)}`
+for two columns. Applied first to the phone Everything Else (option C: Talk, Play, Study, You and
+Mind Loft, three tiles to a row) and the question databases' topic and lane grids (app/QdbPortal.jsx).
