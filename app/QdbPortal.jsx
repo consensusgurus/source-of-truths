@@ -179,6 +179,31 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
     </div>
   );
 
+  // THE ONE-LINE SETTINGS (owner, 2026-11-21: "condense these to a single line by
+  // making them drop down selections"). The page shows three dropdown pills in one
+  // row; the start bar's Change sheet keeps the full toggles.
+  const drop = (label, value, onPick, items, disabled = false) => (
+    <label className={`qd-dd${disabled ? ' off' : ''}`}>
+      <span className="qd-sr">{label}</span>
+      <select value={String(value)} disabled={disabled} onChange={(e) => onPick(e.target.value)}>
+        {items.map(([k, lab]) => <option key={String(k)} value={String(k)}>{lab}</option>)}
+      </select>
+      <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+    </label>
+  );
+  const Many = db.many.charAt(0).toUpperCase() + db.many.slice(1);
+  const dropdowns = (
+    <div className="qd-drops" aria-label="Game settings">
+      {drop('Play it as', setup.mode, (v) => pick('mode', v), MODES.map((m) => [m.key, m.label]))}
+      {setup.mode === 'sprint' || endlessOn
+        ? drop('Difficulty', 'climb', () => {}, [['climb', 'Climbs']], true)
+        : drop('Difficulty', setup.level, (v) => pick('level', v), DIFFICULTY)}
+      {setup.mode === 'sprint'
+        ? drop(Many, 'sprint', () => {}, [['sprint', '60 Sec']], true)
+        : drop(Many, setup.n, (v) => pick('n', Number(v)), COUNTS.filter((c) => c || setup.mode === 'gauntlet').map((c) => [c, c ? `${c} Qs` : 'Endless']))}
+    </div>
+  );
+
   const others = QDB_KEYS.filter((k) => k !== dbKey).map((k) => QDBS[k]);
   const showLanes = topic ? topic.lanes.filter(([l]) => !laneQ || l.toLowerCase().includes(laneQ.toLowerCase())) : [];
   const manyLanes = topic && topic.lanes.length > 12;
@@ -194,7 +219,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
           <>
             <h1 className="qd-kick">{db.name} · {fmt(total)} {db.many}</h1>
             <p className="qd-q">{db.ask}</p>
-            {controls}
+            {dropdowns}
             <ul className="qd-grid">
               {topics.map((t, i) => {
                 const me = hydrated ? store.t[t.slug] : null;
@@ -232,7 +257,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
           <>
             <h1 className="qd-kick">{topic.label} · {fmt(topic.n)} {db.many}</h1>
             <p className="qd-q">{manyLanes ? 'Pick a quiz, or play them all' : db.key === 'trivia' ? `Which part of ${topic.label.toLowerCase()}?` : `Which kind of ${db.one}?`}</p>
-            {controls}
+            {dropdowns}
             {manyLanes ? (
               <label className="qd-search"><input type="search" value={laneQ} onChange={(e) => setLaneQ(e.target.value)} placeholder="Find a topic: Rome, volcanoes, jazz" aria-label="Find a quiz topic" /></label>
             ) : null}
@@ -549,6 +574,15 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 .qd-seg button:first-child{border-left:0;}
 .qd-seg button.on{background:var(--qd-ink);color:var(--qd-bg);}
 .qd-note{flex-basis:100%;margin:-4px 0 0;text-align:center;font-size:13px;font-weight:700;opacity:.72;}
+.qd-drops{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.25fr);gap:8px;width:min(460px, 100%);align-self:center;margin-top:-8px;}
+.qd-dd{position:relative;display:flex;align-items:center;min-width:0;}
+.qd-dd select{appearance:none;-webkit-appearance:none;width:100%;min-width:0;height:42px;padding:0 32px 0 16px;border:1px solid var(--qd-ink);border-radius:999px;background:var(--qd-tile);color:var(--qd-ink);font:inherit;font-size:14px;font-weight:800;cursor:pointer;text-overflow:ellipsis;}
+.qd-dd select:focus-visible{outline:3px solid var(--qd-ink);outline-offset:2px;}
+.qd-dd svg{position:absolute;right:13px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--qd-ink);}
+.qd-dd.off select{opacity:.55;cursor:default;}
+.qd-dd.off svg{opacity:.35;}
+.qd-dd option{background:#ffffff;color:#08222e;}
+.qd-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
 .qd-err{margin:-10px 0 0;text-align:center;font-weight:800;}
 .qd-go{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;min-height:150px;box-sizing:border-box;padding:22px 20px;border:0;border-radius:26px;background:var(--qd-ink);font-family:inherit;cursor:pointer;}
 .qd-go,.qd-go *{color:var(--qd-bg) !important;}
@@ -641,6 +675,10 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
   .qd-lanes.many{grid-template-columns:1fr 1fr;}
   .qd-lanes .qd-tile{min-height:84px;padding:10px;}
   .qd-setup{flex-direction:column;align-items:center;flex-wrap:nowrap;gap:12px;}
+  .qd-drops{gap:6px;}
+  .qd-drops{gap:6px;grid-template-columns:minmax(0,106px) minmax(0,108px) minmax(0,1fr);}
+  .qd-dd select{height:40px;font-size:12.5px;padding:0 20px 0 8px;text-align:center;text-align-last:center;}
+  .qd-dd svg{right:7px;width:10px;height:10px;}
   .qd-note{margin-top:0;}
   .qd-seg button{font-size:12.5px;padding:0 11px;height:36px;}
   .qd-go{min-height:140px;}
