@@ -224,7 +224,7 @@ const doorLine = (P) => (P.floors.length === 3 ? `Three floors today, the ground
   : P.floors.length === 2 ? `Two floors today, the ground floor and the upstairs. ${doors(P)}` : doors(P));
 
 const GAME = {
-  key: 'mop', name: 'Mop', cat: 'Logic', miss: 'Replays', missOne: 'replay',
+  key: 'mop', name: 'Mop', cat: 'Logic', miss: 'Replays', missOne: 'replay', runDoor: 'oddjobs',
   fresh: (P) => ({ path: [modelOf(P).start], view: P.start[0], undos: 0, replays: 0 }),
   validSave: (P, s) => { const M = modelOf(P); return Array.isArray(s.path) && s.path.length >= 1 && s.path[0] === M.start && s.path.every((v) => Number.isInteger(v) && v >= 0 && v < M.n); },
   touched: (s) => s.path.length > 1 || (s.replays || 0) > 0,

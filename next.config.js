@@ -140,6 +140,9 @@ const nextConfig = {
       { source: '/due-diligence', destination: '/duediligence', permanent: true },
       // Eagle Eye (owner, 2026-11-13) lives at /eagleeye.
       { source: '/eagle-eye', destination: '/eagleeye', permanent: true },
+      // Odd Jobs (owner, 2026-11-21) lives at /oddjobs.
+      { source: '/odd-jobs', destination: '/oddjobs', permanent: true },
+      { source: '/chores', destination: '/oddjobs', permanent: false },
       { source: '/crossed-up', destination: '/crossed', permanent: true },
       // 2026-10-20 (owner): the Daily Five and every circuit that was not a
       // designed run were retired. Each old address goes to its nearest home.

@@ -268,7 +268,8 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
     postResult(g2, isWon);
     if (EMBED) {
       const rr = GAME.result(PUZZLE, g2.s, isWon);
-      EMBED.onResult({ key: KEY, score: rr.score, total: rr.total || 10, won: isWon, t0: g2.t0, tEnd: g2.tEnd });
+      // `guesses` is the result's guessesUsed (Mop, Mow and Plow file their replays there; Odd Jobs reads it, 2026-11-21).
+      EMBED.onResult({ key: KEY, score: rr.score, total: rr.total || 10, won: isWon, t0: g2.t0, tEnd: g2.tEnd, guesses: rr.guessesUsed });
     }
     gRef.current = g2;
     setG(g2);

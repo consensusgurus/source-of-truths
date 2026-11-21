@@ -32,6 +32,7 @@ export const GATE_TEXT = {
   spacecadet: ['spatial puzzles', (n) => `${n} Legs. One Launch.`, 'One clock decides your rank.'],
   duediligence: ['business puzzles', (n) => `${n} Checks. One Deal.`, 'Fewer clues decide your rank.'],
   eagleeye: ['visual puzzles', (n) => `${n} Looks. One Sharp Eye.`, 'Speed and accuracy decide your rank.'],
+  oddjobs: ['chores', (n) => `${n} Jobs. No Second Pass.`, 'Fewest replays decide your rank, then the clock.'],
 };
 
 // A leg chip's short form, where the full name will not fit the strip
@@ -47,6 +48,7 @@ const LEG_SHORT = { history: 'Hist.' };
 const EMBLEM = {
   gauntlet: <><rect className="f1" x="8" y="31" width="32" height="8" rx="1.5" /><rect className="f2" x="11" y="22" width="27" height="8" rx="1.5" /><rect className="f1" x="7" y="13" width="30" height="8" rx="1.5" /><path d="M13 35h8M16 26h6M12 17h7" /></>,
   triviaencore: <><path className="f2" d="M24 14C19 10 11 10 6 12v24c5-2 13-2 18 2 5-4 13-4 18-2V12c-5-2-13-2-18 2z" /><path className="f1" d="M24 14c5-4 13-4 18-2v24c-5-2-13-2-18 2z" /><path d="M24 14v24M11 18c3-.6 6-.3 9 1M11 24c3-.6 6-.3 9 1" /></>,
+  oddjobs: <><path className="f2" d="M8 22L24 9l16 13v17H8z" /><rect className="f1" x="20" y="28" width="8" height="11" /><path d="M33 6l-7 14" /><path className="f1" d="M23 20h6l1 4h-8z" /></>,
   science: <><path className="f2" d="M20 7v12L10 37.5a3 3 0 0 0 2.6 4.5h22.8a3 3 0 0 0 2.6-4.5L28 19V7z" /><path className="f1" d="M15.4 28h17.2l5.4 9.5a3 3 0 0 1-2.6 4.5H12.6a3 3 0 0 1-2.6-4.5z" /><path d="M17.5 7h13" /><circle className="f2" cx="21" cy="35" r="1.8" /><circle className="f2" cx="27.5" cy="32.5" r="1.2" /></>,
   math: <><rect className="f2" x="12" y="6" width="24" height="36" rx="3" /><rect className="f1" x="16" y="10" width="16" height="8" rx="1.5" /><circle className="f1" cx="18" cy="25" r="1.7" /><circle className="f1" cx="24" cy="25" r="1.7" /><circle className="f1" cx="30" cy="25" r="1.7" /><circle className="f1" cx="18" cy="31" r="1.7" /><circle className="f1" cx="24" cy="31" r="1.7" /><circle className="f1" cx="30" cy="31" r="1.7" /><circle className="f1" cx="18" cy="37" r="1.7" /><circle className="f1" cx="24" cy="37" r="1.7" /><circle className="f1" cx="30" cy="37" r="1.7" /></>,
   english: <><rect className="f1" x="10" y="7" width="28" height="34" rx="3" /><path d="M16 7v34" /><path d="M21 31l5-13 5 13M23 27h6" /></>,

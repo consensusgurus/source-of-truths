@@ -212,7 +212,7 @@ const AZ_KEY = 'sot_stage_az';
 // same way; this repeats it because the home's sort has to interleave that
 // lead with the reader's own progress, which that module knows nothing about.
 // On a phone the shelf's peek is exactly these three (CIRC_PEEK_NARROW).
-const CIRC_LEAD = ['pricecheck', 'gauntlet', 'triviaencore', 'passport', 'deduction', 'dojo', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
+const CIRC_LEAD = ['pricecheck', 'gauntlet', 'triviaencore', 'passport', 'deduction', 'dojo', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye', 'oddjobs'];   // owner, 2026-10-03: Passport replaces the Daily Five; 2026-10-08: Judged fourth
 
 // THE NEWCOMER'S ROW (owner, 2026-09-04). A reader with NO footprint at all gets
 // one row above everything else: two circuits sharing a line, then the busiest
@@ -465,7 +465,7 @@ const SORTS_KEPT = new Set(['pop', 'diff', 'new']);
 const NEWEST_ROW = 12;   // how many puzzles the phone home's Newest row holds
 const TOP_WAIT_MS = 1500;   // how long the phone's Top Puzzles row waits for the week's counts
 const TOP_PUZZLES = 25;
-const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'dojocolor', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye'];   // dojocolor beside the Dojo (2026-11-08)
+const PILL_CIRCUITS = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'deduction', 'dojo', 'dojocolor', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye', 'oddjobs'];   // dojocolor beside the Dojo (2026-11-08)
 // CIRCUITS-PANE ONLY: a circuit listed here is never offered on the main page
 // (pills, phone runs, the shelf peek), only when the reader opens Circuits.
 // Empty since the Valet Gauntlet was retired (owner, 2026-10-18).
@@ -3808,7 +3808,7 @@ export default function StageToday() {
   // icon. Runs are one piece, so nothing here shows how far into one you are:
   // a run reads as players today until you finish it, then as your place on
   // the site board and in your group.
-  const RUN_SHORT = { gauntlet: 'Trivia', triviaencore: 'Encore', english: 'English', science: 'Science', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', dojocolor: 'Color Dojo', crossed: 'Crossed Up', spacecadet: 'Space Cadet', duediligence: 'Diligence', eagleeye: 'Eagle Eye', room: 'Room' };
+  const RUN_SHORT = { gauntlet: 'Trivia', triviaencore: 'Encore', english: 'English', science: 'Science', pricecheck: 'Prices', passport: 'Passport', math: 'Math', deduction: 'Judged', dojo: 'Dojo', dojocolor: 'Color Dojo', crossed: 'Crossed Up', spacecadet: 'Space Cadet', duediligence: 'Diligence', eagleeye: 'Eagle Eye', oddjobs: 'Odd Jobs', room: 'Room' };
   const runFull = (c) => c.games.length > 0 && c.n === c.games.length;
   const fmtN = (n) => Number(n || 0).toLocaleString('en-US');
   const runLook = (c, cat) => {
@@ -4919,7 +4919,7 @@ export default function StageToday() {
                   <span className="sty-pinn">{c.name}</span>
                   {/* WHAT IT TESTS, under the name, not how many games it holds
                       (owner, 2026-10-07). */}
-                  <span className="sty-pine">{{ pricecheck: 'Shopping test', gauntlet: 'Knowledge test', passport: 'Geography test', dojo: 'Sudoku test', dojocolor: 'Color sudoku test', crossed: 'Crossword test', room: 'Crowd test', spacecadet: 'Spatial test', duediligence: 'Business test', eagleeye: 'Eye test' }[c.id] || c.unit || `${c.games.length} games`}</span>
+                  <span className="sty-pine">{{ pricecheck: 'Shopping test', gauntlet: 'Knowledge test', passport: 'Geography test', dojo: 'Sudoku test', dojocolor: 'Color sudoku test', crossed: 'Crossword test', room: 'Crowd test', spacecadet: 'Spatial test', duediligence: 'Business test', eagleeye: 'Eye test', oddjobs: 'Chores test' }[c.id] || c.unit || `${c.games.length} games`}</span>
                   {c.blurb ? <span className="sty-pinb">{c.blurb}</span> : null}
                 </span>
                 <span className="sty-pingo">Play</span>

@@ -99,6 +99,7 @@ const RUN_TAG = {
   spacecadet: 'Five spatial puzzles, one clock',
   duediligence: 'A chart, a filing and a resume, fewest clues',
   eagleeye: 'Five visual puzzles, speed and accuracy',
+  oddjobs: 'Mop, mow and plow, fewest replays',
   math: 'Five math quizzes back to back, one life each',
   english: 'Five English quizzes back to back, one life each',
   science: 'Five science quizzes back to back, one life each',

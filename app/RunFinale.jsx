@@ -64,6 +64,8 @@ export const FINALE_PIECE = {
   duediligence: 'chart',
   // Eagle Eye (2026-11-13): the lens, which pulls each rank into focus.
   eagleeye: 'lens',
+  // Odd Jobs (2026-11-21): the dictionary, each rank defined by its line.
+  oddjobs: 'dict',
 };
 
 // ── THE PIECES ─────────────────────────────────────────────────────────────

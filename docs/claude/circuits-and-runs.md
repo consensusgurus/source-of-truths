@@ -862,6 +862,37 @@ from Space Cadet. Wiring `scripts/wire-eagleeye.mjs`.
   line ("Eye test"), RunGateTile, MoreRuns, RUN_PAGES, EntryDoor, CircuitArt, the DrawingPop / ThanksPop regexes,
   challenge ENGINE_CAT (Visual). `/eagle-eye` redirects to it.
 
+## Odd Jobs (`/oddjobs`): the daily chores run (owner, 2026-11-21)
+
+Mop, Mow, then Plow (the house, the yard, the town: the approved mockup's order), back to back on one page.
+Circuit id `oddjobs`, engine `oddjobs`, scorer `oddjobs`, `scoreFrom: '2026-11-21'`, `ownerOrder`, `lead: 12`,
+trophy `circuit-oddjobs` "Foreman" (gold, Award). Files: `lib/odd-jobs.js`,
+`app/oddjobs/{page.js,OddJobsClient.jsx,leaderboard/page.js,card/route.js}`, forked from Due Diligence. Wiring
+`scripts/wire-oddjobs.mjs`. Mockup: https://claude.ai/artifact/BZF3RvDs8uXggPc2KttCsB. "Odd Jobs" is the run's NAME
+only, never a rung.
+
+- **Fewest replays first, then the clock** (owner's 2026-11-19 rule for these three games). Each finished leg pays
+  100, less 20 a replay and up to 6 for time (a straight line to `ODD_CAP`, 10:00, and no further). Unfinished pays
+  0. The clock can cost at most 18 across the run, less than one replay, so the total ranks strictly on total
+  replays, then total time. Out of 300. The board reads each row's `guessesUsed` (the replays) and `timeElapsed`.
+- **Ladder** (owner, 2026-11-21: "foreman should be top", then "remove jack of all trades"), low to high: Couch
+  Potato 0 (6+ replays or a job not finished), Weekend Warrior 182 (3 to 5), Handyman 242 (1 or 2), Groundskeeper
+  282 (no replays), Foreman 295 (no replays, under about 8:20). Every cutoff is a whole number and no run can land
+  within half a point of one from the wrong side, so the rounded total ranks the same as the exact one. THE FOREMAN
+  TIME IS A PLACEHOLDER: tune it from a fortnight of runs (Sundays are three Sunday Editions and run long).
+- **The games play exactly as on their own pages**, that day's real boards. SimpleDaily's `EMBED.onResult` now also
+  carries `guesses` (the result's `guessesUsed`) so the run knows each leg's replays. The page strips each board's
+  stored route (`sol`) as the games' own pages do. A game finished today on its own page is banked off its save
+  (`s.replays`, `t0`/`tEnd`); a win known only from another device counts as clean at the full time charge here, and
+  the board reads the real row.
+- **Looks**: the gate wears amber `#fcd34d`; legs wear Mop sky, Mow mint, Plow orange (`ODD_FORMS`, labelled The
+  House, The Yard, The Town in the run). The entry centrepiece is the work order. The finale piece is the dictionary.
+- **Pop-ups**: one PREMIERE_RUNS card (2026-11-21 to 2026-11-25), which stands in for the Mow and Plow cards while
+  open; Mop, Mow and Plow each mount `RunDoorPop id="oddjobs"` (once per game, everyone) through `GAME.runDoor`.
+- Placed like Eagle Eye: LEAD_ORDER and SHOWN, CIRC_LEAD / PILL_CIRCUITS / LEAD_CIRCUITS / RUN_SHORT / the pin line
+  ("Chores test"), RunGateTile, MoreRuns, RUN_PAGES, EntryDoor, CircuitArt, the DrawingPop / ThanksPop regexes,
+  challenge ENGINE_CAT (Logic). `/odd-jobs` and `/chores` redirect to it.
+
 ## Enter the Dojo: In Color (`/dojocolor`): the Dojo on the color twins (owner, 2026-11-08)
 
 "Same as Enter the Dojo, just the color version." SixesToo, SudsToo, then ONE color variant dealt by

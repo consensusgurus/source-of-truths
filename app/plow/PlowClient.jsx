@@ -325,7 +325,7 @@ const courtLine = (P) => (P.edges.some((e) => e.court) ? ' A cul-de-sac is one m
 const riverLine = (P) => (P.river ? ` The river has ${P.edges.filter((e) => e.bridge).length} bridges, and each is a street like any other.` : '');
 
 export const GAME = {
-  key: 'plow', name: 'Plow', cat: 'Logic', miss: 'Replays', missOne: 'replay',
+  key: 'plow', name: 'Plow', cat: 'Logic', miss: 'Replays', missOne: 'replay', runDoor: 'oddjobs',
   fresh: () => ({ path: [], replays: 0 }),
   validSave: (P, s) => Array.isArray(s.path) && s.path.every((v) => Number.isInteger(v) && v >= 0 && v < P.edges.length) && new Set(s.path).size === s.path.length && !walk(P, s.path).err,
   touched: (s) => s.path.length > 0 || (s.replays || 0) > 0,

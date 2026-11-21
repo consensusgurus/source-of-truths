@@ -193,7 +193,7 @@ const doors = (P) => (same(P) ? 'Come in from the street and leave by the same g
 const plural = (n) => `${n} ${n === 1 ? 'replay' : 'replays'}`;
 
 const GAME = {
-  key: 'mow', name: 'Mow', cat: 'Logic', miss: 'Replays', missOne: 'replay',
+  key: 'mow', name: 'Mow', cat: 'Logic', miss: 'Replays', missOne: 'replay', runDoor: 'oddjobs',
   fresh: (P) => ({ path: [modelOf(P).start], dir: null, replays: 0 }),
   validSave: (P, s) => { const M = modelOf(P); return Array.isArray(s.path) && s.path.length >= 1 && s.path[0] === M.start && s.path.every((v) => Number.isInteger(v) && v >= 0 && v < M.n) && new Set(s.path).size === s.path.length; },
   touched: (s) => s.path.length > 1 || (s.replays || 0) > 0,

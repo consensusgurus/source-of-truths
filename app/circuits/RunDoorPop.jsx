@@ -124,6 +124,14 @@ export const RUN_DOORS = {
     go: 'Run all three', accent: '#a5b4fc',
     tags: [['Tape', '#7dd3fc'], ['Filing', '#a5b4fc'], ['Resume', '#93c5fd']],
   },
+  // ODD JOBS (owner, 2026-11-21): once per game, to everyone, on the start
+  // gate of Mop, Mow or Plow.
+  oddjobs: {
+    href: '/oddjobs', name: 'Odd Jobs', eyebrow: 'Daily run \u00b7 Three chores', once: 'game', everyone: true, from: '2026-11-21',
+    body: 'Mop, Mow and Plow back to back on one page: the house, the yard, then the town, every tile, square and street exactly once. Fewest replays rank you, then the clock, from Couch Potato up to Foreman.',
+    go: 'Do all three', accent: '#fcd34d',
+    tags: [['Mop', '#bae6fd'], ['Mow', '#bbf7d0'], ['Plow', '#fed7aa']],
+  },
   // EAGLE EYE (owner, 2026-11-13): once per game, to everyone, on the start
   // gate of Spot, Jig, Saw, Scour or Witness.
   eagleeye: {

@@ -370,6 +370,7 @@ export default function CircuitRunPage({ params }) {
   if (runEngine(id) === 'spacecadet') redirect('/spacecadet');
   if (runEngine(id) === 'duediligence') redirect('/duediligence');
   if (runEngine(id) === 'eagleeye') redirect('/eagleeye');
+  if (runEngine(id) === 'oddjobs') redirect('/oddjobs');
   // Read the Room too (2026-10-13).
   if (runEngine(id) === 'room') redirect('/room');
 
