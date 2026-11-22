@@ -81,15 +81,25 @@ export default function PrivateMuralClient() {
   const [made, setMade] = useState(null);       // { code }
   const [copied, setCopied] = useState('');
 
-  const load = useCallback((seed) => {
-    const q = `anonId=${encodeURIComponent(anonId())}${email() ? `&email=${encodeURIComponent(email())}` : ''}&seed=${encodeURIComponent(seed)}`;
+  const load = useCallback((seed, pin) => {
+    const q = `anonId=${encodeURIComponent(anonId())}${email() ? `&email=${encodeURIComponent(email())}` : ''}&seed=${encodeURIComponent(seed)}${pin ? `&photo=${pin}` : ''}`;
     return fetch(`/api/mural/private?${q}`).then((r) => r.json())
-      .then((j) => { if (j && j.options) { setData(j); setFailed(false); } else setFailed(true); })
+      .then((j) => { if (j && j.options) { setData(j); setFailed(false); } else setFailed(true); return j; })
       .catch(() => setFailed(true));
   }, []);
   useEffect(() => {
     try { setDark(localStorage.getItem('sot_theme2') === 'dark'); } catch (e) { /* light */ }
-    load(String(Date.now()));
+    // A picture and size picked on the Jigsaw Puzzles page (?photo=12&size=m)
+    // arrive chosen; the server lists that picture first when it may be used.
+    let pin = null;
+    try {
+      const sp = new URLSearchParams(window.location.search);
+      const p = Number(sp.get('photo'));
+      if (Number.isInteger(p) && p > 0) pin = p;
+      const sz = sp.get('size');
+      if (sz && /^(s|m|l|xl)$/.test(sz)) setSize(sz);
+    } catch (e) { /* no query */ }
+    load(String(Date.now()), pin).then((j) => { if (pin && j && Array.isArray(j.options) && j.options.some((o) => o.n === pin)) setPhoto(pin); });
   }, [load]);
 
   const linkFor = (code) => `${typeof window !== 'undefined' ? window.location.origin : 'https://mindloftdaily.com'}/mural/p/${code}`;

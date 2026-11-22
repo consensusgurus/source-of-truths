@@ -57,6 +57,19 @@ const thumb = (b, w) => `/api/${b.g}/img?n=${b.n}&w=${w}`;
 const fold = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const readJSON = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
 
+// PLAY TOGETHER (owner, 2026-11-22: "in the Mural wiring we have the option to
+// create a private group to work on a puzzle. can we do that in the jigsaw shelf
+// too?"). A wide (Jig) picture opens the Private Mural start page with itself
+// and a size chosen; the private cuts are 640, 1,000, 1,960 and 4,000, so the
+// shelf's size rounds up to the nearest one, held to what the photo can do.
+const TOGETHER = [['s', 640], ['m', 1000], ['l', 1960], ['xl', 4000]];
+function togetherKey(size, max) {
+  const fits = TOGETHER.filter(([, n]) => n <= max);
+  const up = TOGETHER.find(([, n]) => n >= size) || TOGETHER[TOGETHER.length - 1];
+  if (!fits.length || up[1] <= max) return up[0];
+  return fits[fits.length - 1][0];
+}
+
 const TABS = [['all', 'All Puzzles'], ['daily', 'Daily Archive'], ['murals', 'Murals'], ['kids', 'Kids']];
 const LOOK_KEY = 'sot_jigsaw_look';
 const TABLE = {
@@ -362,7 +375,14 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
                   </>
                 );
                 return (
-                  <li key={b.k}>
+                  <li key={b.k} className="jp-li">
+                    {b.g === 'jig' ? (
+                      <a className="jp-tog" href={`/mural/private?photo=${b.n}&size=${togetherKey(size, maxOf(b))}`}
+                        aria-label={`Play ${b.name} together: start a private mural with your group or anyone you send the link to`}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2" fill="none" stroke="currentColor" strokeWidth="2" /><path d="M3 19c.6-3.3 3-5 6-5s5.4 1.7 6 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><circle cx="17" cy="9" r="2.6" fill="none" stroke="currentColor" strokeWidth="2" /><path d="M16.5 14.2c2.4.1 4.1 1.6 4.5 4.3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                        Play Together
+                      </a>
+                    ) : null}
                     {ok ? (
                       <a className="jp-card" href={hydrated ? playHref(b, size) : `/${b.g}?p=${b.n}`}
                         aria-label={`${b.name}: play it as a ${sizeLabel(size)} piece jigsaw${done ? ', done at this size' : ''}`}>{inner}</a>
@@ -551,6 +571,11 @@ a.jp-card:focus-visible{outline:3px solid var(--stg-ink);outline-offset:4px;bord
 .jp-bd.tall{left:10px;top:10px;}
 .jp-bd.max{left:50%;top:50%;transform:translate(-50%,-50%);font-size:13px;padding:7px 12px;white-space:nowrap;}
 .jp-card.off{cursor:default;}
+.jp-li{position:relative;}
+.jp-tog{position:absolute;left:10px;top:10px;z-index:2;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 11px 0 9px;border-radius:999px;background:rgba(22,18,14,.82);color:#f4ead8;font-size:12.5px;font-weight:800;text-decoration:none;white-space:nowrap;transition:opacity .15s,background .15s;}
+.jp-tog:hover{background:rgba(22,18,14,.96);}
+.jp-tog:focus-visible{outline:2px solid #f4ead8;outline-offset:2px;}
+@media (hover:hover){.jp-tog{opacity:0;}.jp-li:hover .jp-tog,.jp-tog:focus-visible{opacity:1;}}
 .jp-card.off img{filter:grayscale(1);opacity:.4;}
 .jp-card.off .jp-cap{color:var(--stg-mute);}
 .jp-q{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;color:var(--jp-ink);background:var(--jp-hue);}

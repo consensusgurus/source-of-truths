@@ -5,7 +5,8 @@ import { PRIVATE_SIZES, PRIVATE_OPEN_MAX } from '@/lib/mural-shared';
 
 // /api/mural/private   (owner, 2026-11-19: murals "with your group or with A group")
 //
-//   GET  ?anonId=&email=&seed=   the start page: whether the viewer has a name,
+//   GET  ?anonId=&email=&seed=&photo=   the start page (photo: a Jig number
+//                                picked on the Jigsaw Puzzles page, listed first): whether the viewer has a name,
 //                                their groups, three pictures to choose from and
 //                                the private murals they started or can join
 //                                through a group
@@ -69,7 +70,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const who = await muralPlayer(supabaseAdmin, { anonId: str(searchParams.get('anonId'), 64) || null, email: str(searchParams.get('email')) || null });
   const seed = str(searchParams.get('seed'), 24) || String(Date.now());
-  const base = { available: true, sizes: SIZES, max: PRIVATE_OPEN_MAX, options: privatePhotoOptions(seed, 3) };
+  const base = { available: true, sizes: SIZES, max: PRIVATE_OPEN_MAX, options: privatePhotoOptions(seed, 3, searchParams.get('photo')) };
   if (!who || !who.userId) return NextResponse.json({ ...base, registered: false, groups: [], murals: [] }, { headers: NO_STORE });
   try {
     const groups = await myGroups(who.userId);

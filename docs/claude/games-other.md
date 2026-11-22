@@ -3547,6 +3547,17 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
     open per starter, one open per group. Runs until finished, no 24 hour minimum.
   - **Entry points:** the `Private Mural` pill in the Mural header (it reads `Invite` inside a
     private mural and copies the link), and a line on the Puzzle Shelf's Murals tab.
+  - **Play Together on the Jigsaw Puzzles page (owner, 2026-11-22: "can we do that in the jigsaw
+    shelf too?").** Every wide (Jig) picture in All Puzzles carries a `Play Together` pill (top
+    left of the photo; on a mouse it shows on hover) linking `/mural/private?photo=<Jig num>&size=<key>`.
+    The size is the shelf's chosen size rounded UP to the nearest private cut (640, 1,000, 1,960,
+    4,000), held to the photo's own max from `/api/jigsaw/fit` (`togetherKey`). The start page
+    reads both, the GET passes `photo` to `privatePhotoOptions(seed, 3, pin)`, which lists that
+    picture first, and the client selects it. Tall (Saw) pictures get no pill: the cut is 8 by 5.
+  - **Which pictures a private mural may use: `privatePhotoOk(num)`.** Any PAST Jig photo (live
+    before today ET, so never today's or a future one), a JPEG, wide. This replaced the old
+    "live at least a week" rule for a picture the player picks; the three random suggestions still
+    draw only from week-old photos, like the public murals.
   - **In play:** the Mural / MuralToo switch becomes a tag (`<Group>'s Mural` or `Private
     Mural`), Site Total reads All Placed, the Rules lead is rewritten, and the wall offers Start
     Another Private Mural.
