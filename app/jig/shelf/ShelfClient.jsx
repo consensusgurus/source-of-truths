@@ -341,8 +341,8 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
             <select className="jp-sel" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort the pictures">
               <option value="new">Newest</option>
               <option value="old">Oldest</option>
-              <option value="todo">Not done at this size</option>
-              <option value="big">Best for big sizes</option>
+              <option value="todo">Not done</option>
+              <option value="big">Most pieces</option>
             </select>
             <svg className="jp-selc" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </span>
@@ -547,6 +547,7 @@ const CSS = `
 .jp-selc{position:absolute;right:14px;top:50%;margin-top:-6px;pointer-events:none;}
 .jp-row2{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 14px;}
 .jp-row2 .jp-topics{margin:0;}
+.jp-row2 .jp-search{flex:1 1 200px;width:auto;max-width:300px;margin-left:auto;}
 .jp-topics{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px;}
 .jp-topics button{font:inherit;font-size:13px;font-weight:800;padding:0 13px;height:36px;border-radius:999px;border:1px solid var(--stg-line);background:var(--stg-surf);color:var(--stg-ink2);cursor:pointer;}
 .jp-topics button b{font-weight:800;color:var(--stg-mute);margin-left:3px;}
@@ -600,7 +601,7 @@ a.jp-card:focus-visible{outline:3px solid var(--stg-ink);outline-offset:4px;bord
 .jp-foot{margin:22px 0 0;font-size:13.5px;line-height:1.55;font-weight:600;color:var(--stg-mute);max-width:760px;}
 .jp-foot a{color:var(--stg-ink2);}
 @media (max-width:1100px){.jp-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.jp-faq{grid-template-columns:repeat(2,minmax(0,1fr));}}
-@media (max-width:900px){.jp-row2 .jp-search{width:100%;}.jp-row2 .jp-sp{display:none;}.jp-row2 .jp-topics{width:100%;}}
+@media (max-width:900px){.jp-row2 .jp-search{width:100%;max-width:none;flex-basis:100%;margin-left:0;}.jp-row2 .jp-sp{display:none;}.jp-row2 .jp-topics{width:100%;}}
 @media (max-width:640px){
   .jp-head h1{font-size:26px;}
   .jp-lede{font-size:14px;}
