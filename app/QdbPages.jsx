@@ -27,7 +27,7 @@ const HUB = {
       { q: 'Are these trivia questions free?', a: 'Yes. Every question is free to play in your browser on a phone or a computer, with no app and no signup. Your record (what you have seen, your best scores, and the questions you missed) stays in this browser.' },
       { q: 'Where do the questions come from?', a: 'Every one has already run as a Mind Loft daily, from the Trivia Gauntlet and Trivia Encore to the Science Gauntlet. A question joins the database the day after it runs, so playing here never spoils a coming daily.' },
       { q: 'How do the three modes work?', a: 'Practice has no clock and no lives, and shows the right answer after a miss. Gauntlet puts a 20 second clock on every question and ends on your first miss; pick Endless to play until then. Sprint is as many as you can answer in 60 seconds.' },
-      { q: 'Can I pick how hard the questions are?', a: 'Yes. Set the difficulty to Gentle, Moderate, or Tough, or pick Mixed to start gentle and finish tough. Open a topic to narrow it to the parts you want, like capitals or the Middle Ages.' },
+      { q: 'Can I pick how hard the questions are?', a: 'Yes. Set the difficulty to Gentle, Moderate, or Tough, or pick Mixed to start gentle and finish tough. Open a topic to narrow it to the subtopics you want, like capitals or the Middle Ages.' },
       { q: 'Does playing here count toward my Mind Loft score?', a: 'No. The database is for fun and practice. The ranked games are the daily ones: the Trivia Gauntlet and Trivia Encore open fresh every day at midnight Eastern, and only your first try counts.' },
       { q: 'How many trivia questions are there?', a: `${n.toLocaleString('en-US')} so far, and more join every day as each day's gauntlets run.` },
     ],
@@ -72,7 +72,7 @@ HUB.science = {
     { q: 'What does the Science Database cover?', a: 'Six topics: general science, space and physics, chemistry, life science, the human body, and inventions and discoveries.' },
     { q: 'Where do the questions come from?', a: 'Every one has already run in a Mind Loft daily: Sci from the Trivia Gauntlet, and Orbit, Bond, Gene, Pulse, and Eureka from the Science Gauntlet. A question joins the database the day after it runs.' },
     { q: 'How do the three modes work?', a: 'Practice has no clock and shows the right answer after a miss. Gauntlet puts a 20 second clock on every question and ends on your first miss; pick Endless to play until then. Sprint is as many as you can answer in 60 seconds.' },
-    { q: 'Can I mix topics?', a: 'Yes. Pick two or more topics and press Start for a mix of them, or open a topic and pick several of its parts.' },
+    { q: 'Can I mix topics?', a: 'Yes. Pick two or more topics and press Start for a mix of them, or open a topic and pick several of its subtopics.' },
     { q: 'How many science questions are there?', a: `${n.toLocaleString('en-US')} so far, and more join every day.` },
   ],
 };

@@ -255,7 +255,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
                 const bg = tileFor(t.color);
                 return (
                   <li key={t.slug}>
-                    {/* A tap picks the topic for Start (several mix); its Parts link opens the
+                    {/* A tap picks the topic for Start (several mix); its Subtopics link opens the
                         topic's own page, which stays the crawl path to it. */}
                     <div className={`qd-tile qd-pick${picked.has(t.slug) ? ' ok' : ''}`} style={bg && !picked.has(t.slug) ? { background: bg, '--qd-tink': look === 'darktint' ? pal.ink : RAMP_INK } : null}>
                       <button type="button" className="qd-pbtn" aria-pressed={picked.has(t.slug)}
@@ -264,7 +264,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
                         <span className="qd-tname">{t.label}</span>
                         <span className="qd-tsub">{fmt(t.n)} {db.many}{me && me[0] ? ` · ${pct(me)}% right` : ''}</span>
                       </button>
-                      <a className="qd-parts" href={`${db.base}/${t.slug}`} aria-label={`${t.label}: pick its parts`}>Parts</a>
+                      <a className="qd-parts" href={`${db.base}/${t.slug}`} aria-label={`${t.label}: pick its subtopics`}>Subtopics</a>
                     </div>
                   </li>
                 );
@@ -391,7 +391,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
           topic page, or of whichever parts are picked. Change opens the settings. */}
       <div className="qd-bar" role="region" aria-label="Start a game">
         <div className="qd-bt">
-          <b>{!topic ? hubName : !lanes.size ? `${topic.label} Mixed Bag` : lanes.size === 1 ? laneLabel([...lanes][0]) : `${lanes.size} ${manyLanes ? 'Quizzes' : 'Parts'} of ${topic.label}, Mixed`}</b>
+          <b>{!topic ? hubName : !lanes.size ? `${topic.label} Mixed Bag` : lanes.size === 1 ? laneLabel([...lanes][0]) : `${lanes.size} ${manyLanes ? 'Quizzes' : 'Subtopics'} of ${topic.label}, Mixed`}</b>
           <small>{modeName} · {setup.mode === 'sprint' ? '60 seconds' : endlessOn ? 'Endless' : `${setup.n} ${db.many}`}{setup.mode === 'sprint' || endlessOn ? '' : ` · ${diffName}`} · <button type="button" className="qd-chg" onClick={() => setSheet(true)}>Change</button></small>
         </div>
         <button type="button" className="qd-bgo" disabled={loading} onClick={() => (topic ? start(topic.slug, { lanes: [...lanes], title: lanes.size === 1 ? `${topic.label}: ${laneLabel([...lanes][0])}` : topic.label }) : hubStart())}>
@@ -577,8 +577,12 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 .qd-q{margin:-6px 0 0;text-align:center;font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-0.02em;padding-bottom:.06em;}
 /* THE ODD-TILE RULE (owner, 2026-11-21): a short last row is centred at the same
    tile size, never left-hanging. Topic tiles wrap three to a row and centre the rest. */
-.qd-grid{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:14px;}
-.qd-grid li{display:flex;flex:0 0 calc((100% - 28px) / 3);min-width:0;}
+/* Every tile is the same size (owner, 2026-11-21): a 6-track grid, each tile spans 2, rows all as tall as the tallest
+   (grid-auto-rows:1fr). A short last row is centred by offsetting its first tile one track. */
+.qd-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:1fr;gap:14px;}
+.qd-grid li{display:flex;grid-column:auto / span 2;min-width:0;}
+.qd-grid > li:last-child:nth-child(3n+1),.qd-lanes:not(.many) > .qd-tile:last-child:nth-child(3n+1){grid-column:3 / span 2;}
+.qd-grid > li:nth-last-child(2):nth-child(3n+1),.qd-lanes:not(.many) > .qd-tile:nth-last-child(2):nth-child(3n+1){grid-column:2 / span 2;}
 .qd-tile{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:118px;width:100%;box-sizing:border-box;padding:16px 14px;border:1px solid var(--qd-ink);border-radius:18px;background:var(--qd-tile);color:var(--qd-tink, var(--qd-ink)) !important;font-family:inherit;text-align:center;text-decoration:none;cursor:pointer;transition:background .15s, transform .1s;}
 .qd-tile *{color:var(--qd-tink, var(--qd-ink));}
 .qd-tile:active{transform:scale(.99);}
@@ -596,11 +600,11 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 .qd-tsub{font-size:13px;font-weight:700;opacity:.75;line-height:1.35;}
 .qd-tile.sm{min-height:84px;}
 .qd-tile.sm .qd-tname{font-size:17px;}
-.qd-lanes{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;}
-.qd-lanes > .qd-tile{flex:0 0 calc((100% - 28px) / 3);}
+.qd-lanes{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:1fr;gap:14px;}
+.qd-lanes > .qd-tile{grid-column:auto / span 2;min-width:0;}
 .qd-lanes .qd-tile{min-height:104px;}
-.qd-lanes.many{display:grid;justify-content:normal;max-height:520px;overflow-y:auto;padding:2px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;}
-.qd-lanes.many > .qd-tile{flex:none;}
+.qd-lanes.many{display:grid;justify-content:normal;max-height:520px;overflow-y:auto;padding:2px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));grid-auto-rows:1fr;gap:10px;}
+.qd-lanes.many > .qd-tile{flex:none;grid-column:auto;}
 .qd-lanes.many .qd-tile{min-height:70px;padding:10px;}
 .qd-lanes.many .qd-tname{font-size:16px;}
 .qd-search{display:flex;justify-content:center;margin-bottom:-12px;}
@@ -704,13 +708,15 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
   .qd-col{padding:18px 14px 10px;gap:22px;}
   .qd-q{font-size:28px;}
   .qd-grid{gap:10px;}
-  .qd-grid li{flex-basis:calc((100% - 10px) / 2);}
+  .qd-grid,.qd-lanes:not(.many){grid-template-columns:repeat(4,minmax(0,1fr));}
+  .qd-grid > li:last-child:nth-child(3n+1),.qd-grid > li:nth-last-child(2):nth-child(3n+1),
+  .qd-lanes:not(.many) > .qd-tile:last-child:nth-child(3n+1),.qd-lanes:not(.many) > .qd-tile:nth-last-child(2):nth-child(3n+1){grid-column:auto / span 2;}
+  .qd-grid > li:last-child:nth-child(2n+1),.qd-lanes:not(.many) > .qd-tile:last-child:nth-child(2n+1){grid-column:2 / span 2;}
   .qd-grid .qd-tile{min-height:92px;padding:12px 10px;}
   .qd-num{display:none;}
   .qd-tname{font-size:17px;}
   .qd-tsub{font-size:12px;}
   .qd-lanes{gap:10px;}
-  .qd-lanes > .qd-tile{flex-basis:calc((100% - 10px) / 2);}
   .qd-lanes.many{grid-template-columns:1fr 1fr;}
   .qd-lanes .qd-tile{min-height:84px;padding:10px;}
   .qd-setup{flex-direction:column;align-items:center;flex-wrap:nowrap;gap:12px;}
