@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { focusStyle } from '@/lib/photo-focus';
 
 // The start and share page for private murals (owner, 2026-11-19: "you start them
 // via a button on menu of puzzle itself 'private mural' that takes you to the
@@ -193,7 +194,7 @@ export default function PrivateMuralClient() {
                 {(data.options || []).map((o) => (
                   <button type="button" key={o.n} className={`pm-pic${photo === o.n ? ' on' : ''}`} onClick={() => setPhoto(o.n)} aria-pressed={photo === o.n}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`/api/jig/img?n=${o.n}&w=500`} alt={o.name || 'A picture to choose'} loading="lazy" />
+                    <img src={`/api/jig/img?n=${o.n}&w=500`} style={focusStyle('jig', o.n)} alt={o.name || 'A picture to choose'} loading="lazy" />
                     <span>{o.name || 'Picture'}</span>
                   </button>
                 ))}

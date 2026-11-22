@@ -955,6 +955,15 @@ have to rotate puzzle pieces". Both are kids dailies (registry rows in `lib/kids
 
 ## The Jigsaw Puzzle Shelf (`/jig/shelf`, Jig and Saw, 2026-11-11)
 
+**PREVIEW CROPS HOLD THE SUBJECT: `lib/photo-focus.js` (owner, 2026-11-22: "why do the kissing
+prairie dogs here run off the preview? can we fix that here and everywhere").** Every cover-cropped
+preview of a Jig or Saw photo sets `style={focusStyle(g, n)}` (an `object-position`): the Jigsaw
+Puzzles cards (All Puzzles and Daily Archive), its hero, the topic pages, ShelfLink under the Jig
+and Saw boards, and the Private Mural picture picks. `PHOTO_FOCUS` holds the vertical position per
+photo, set by eye; unlisted photos default to 50 (Jig) or 40 (Saw, whose subjects sit high). A NEW
+photo that is square or tall, or whose subject is near an edge, gets a line there when its bank is
+written. Previews only: the boards keep their own cut (never rewrite a live board).
+
 Owner, 2026-11-11: the shelf holds every Jig AND Saw board and is called the Jigsaw Puzzle Shelf
 (the URL stayed `/jig/shelf` to keep its search standing). Each week is a Jig plank plus, from
 Saw's first week, a Saw plank of tall boxes. Boards are keyed `<g>-<num>`; links, thumbs, saves

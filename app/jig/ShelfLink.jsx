@@ -1,5 +1,7 @@
 'use client';
 
+import { focusStyle } from '@/lib/photo-focus';
+
 // The door from the Jig and Saw pages to the jigsaw portal (/jig/shelf; the
 // Jigsaw Puzzle Shelf until 2026-11-21, when the grid of every photo at any
 // size replaced it and this link was renamed "Jigsaw puzzles"),
@@ -16,7 +18,7 @@ export default function ShelfLink({ puzzles, todayNum, game = 'jig' }) {
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <span className="jgs-shelf" aria-hidden="true">
         {past.map((p) => (
-          <span key={p.num} className="jgs-box"><img src={thumb(p.num)} alt="" loading="lazy" decoding="async" /></span>
+          <span key={p.num} className="jgs-box"><img src={thumb(p.num)} style={focusStyle(game, p.num)} alt="" loading="lazy" decoding="async" /></span>
         ))}
         <span className="jgs-box jgs-q">?</span>
       </span>

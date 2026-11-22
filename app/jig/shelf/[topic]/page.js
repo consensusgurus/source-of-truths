@@ -4,6 +4,7 @@ import PageViewBeacon from '../../../PageViewBeacon';
 import { SITE_URL } from '@/lib/site';
 import { gameColor, softGround } from '@/lib/category-ramp';
 import { topicBySlug } from '@/lib/jigsaw-topics';
+import { focusStyle } from '@/lib/photo-focus';
 import { pastJigsaws, topicCounts, TOPIC_MIN, etToday } from '@/lib/jigsaw-library';
 
 // /jig/shelf/<topic>: JIGSAW TOPIC PAGES (SEO pass, 2026-11-21). Every past Jig
@@ -116,7 +117,7 @@ export default function JigsawTopicPage({ params }) {
             {boards.map((b) => (
               <li key={`${b.g}-${b.n}`}>
                 <a className={`jtp-card ${b.g}`} href={`/${b.g}?p=${b.n}`}>
-                  <img src={`/api/${b.g}/img?n=${b.n}&w=500`} alt={`${b.name}, ${GNAME[b.g]} jigsaw puzzle`} loading="lazy" width="500" height="333" />
+                  <img src={`/api/${b.g}/img?n=${b.n}&w=500`} style={focusStyle(b.g, b.n)} alt={`${b.name}, ${GNAME[b.g]} jigsaw puzzle`} loading="lazy" width="500" height="333" />
                   <span className="jtp-name">{b.name}</span>
                   <span className="jtp-sub">{b.c * b.r} pieces · {b.g === 'saw' ? 'Tall' : 'Wide'} · {GNAME[b.g]} No. {b.n}</span>
                 </a>

@@ -40,6 +40,7 @@ import StageFooter from '../../StageFooter';
 import { useStageChrome } from '../../GauntletScreens';
 import { fetchDayStatus } from '../../useDayStats';
 import { migrateJigSaves } from '@/lib/jig-renum';
+import { focusStyle } from '@/lib/photo-focus';
 import { gameColor, softGround } from '@/lib/category-ramp';
 import {
   JIGSAW_SIZES, PHONE_SIZES, ALWAYS_OK, DEFAULT_SIZE, SIZE_KEY, DONE_KEY,
@@ -260,7 +261,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
         {hero ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="jp-heroimg" src={thumb(hero, 1280)} alt={`${hero.name}, the newest jigsaw puzzle picture`} width="1280" height="853" fetchPriority="high" />
+            <img className="jp-heroimg" style={focusStyle(hero.g, hero.n)} src={thumb(hero, 1280)} alt={`${hero.name}, the newest jigsaw puzzle picture`} width="1280" height="853" fetchPriority="high" />
             <Cuts d={heroD} vb="0 0 300 120" />
           </>
         ) : null}
@@ -362,7 +363,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
                   <>
                     <span className="jp-ph">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={thumb(b, 500)} alt={`${b.name}, ${b.g === 'saw' ? 'tall ' : ''}jigsaw puzzle`} width="500" height="333"
+                      <img src={thumb(b, 500)} style={focusStyle(b.g, b.n)} alt={`${b.name}, ${b.g === 'saw' ? 'tall ' : ''}jigsaw puzzle`} width="500" height="333"
                         loading={i < 6 ? 'eager' : 'lazy'} decoding="async" />
                       {ok ? <Cuts d={cutD} /> : null}
                       {b.g === 'saw' ? <span className="jp-bd tall">Tall</span> : null}
@@ -423,7 +424,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
                     <span className="jp-ph">
                       {shut ? <span className="jp-q">?</span>
                         // eslint-disable-next-line @next/next/no-img-element
-                        : <img src={thumb(b, 500)} alt={b.today ? `Today's ${GNAME[b.g]}` : `${b.name}, ${GNAME[b.g]} No. ${b.n}`} width="500" height="333" loading="lazy" decoding="async" />}
+                        : <img src={thumb(b, 500)} style={focusStyle(b.g, b.n)} alt={b.today ? `Today's ${GNAME[b.g]}` : `${b.name}, ${GNAME[b.g]} No. ${b.n}`} width="500" height="333" loading="lazy" decoding="async" />}
                       {solved ? <span className="jp-bd done">Solved</span> : b.today ? <span className="jp-bd res">Today</span> : null}
                     </span>
                     <span className="jp-cap">{b.today ? `Today's ${GNAME[b.g]}` : b.name}</span>
