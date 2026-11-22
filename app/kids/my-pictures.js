@@ -41,7 +41,26 @@ function numOf(id) {
   return (h % 9000) + 1000;
 }
 
-// The shape the Puzzle Shelf uses for a board.
+// A saved picture as an object URL. The jigsaw draws the picture once per
+// piece (tray, board and the lifted copy); handing every one of those SVG
+// <image>s a ~80 KB data URL drew black squares on iPad Safari (owner,
+// 2026-11-22). A blob URL behaves like the photo puzzles' normal image URLs.
+const urlCache = new Map();
+export function blobUrlOf(dataUrl) {
+  if (urlCache.has(dataUrl)) return urlCache.get(dataUrl);
+  try {
+    const comma = dataUrl.indexOf(',');
+    const mime = (dataUrl.slice(0, comma).match(/^data:([^;,]+)/) || [])[1] || 'image/jpeg';
+    const bin = atob(dataUrl.slice(comma + 1));
+    const u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([u8], { type: mime }));
+    urlCache.set(dataUrl, url);
+    return url;
+  } catch (e) { return dataUrl; }
+}
+
+// The shape the Puzzle Shelf uses for a board (client only: makes a blob URL).
 export function myPictureBoard(p) {
-  return { key: `my-${p.id}`, g: 'my', num: numOf(p.id), name: p.name, src: p.src, tall: false, mine: true, at: p.at };
+  return { key: `my-${p.id}`, g: 'my', num: numOf(p.id), name: p.name, src: blobUrlOf(p.src), tall: false, mine: true, at: p.at };
 }

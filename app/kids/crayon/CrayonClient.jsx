@@ -8,12 +8,14 @@ import { PICTURES, PICTURE_MAP, partCount } from './pictures';
 import { saveMyPicture } from '../my-pictures';
 
 // Crayon (/kids/crayon; owner, 2026-11-22). A kid picks a simple outline
-// picture and colors it: 12 color families, each opening 8 shades (96
-// colors in the space of 20 buttons), with three tools.
-//   Fill    tap a part to fill it.
-//   Crayon  draw with a finger; the stroke is clipped to the part it began
-//           in, so it never goes over the lines. Thin, medium or big.
-//   Eraser  tap a part to wipe it clean (fill and crayon).
+// picture and colors it BY HAND (owner, 2026-11-22: no tap-to-fill): 12
+// color families, each opening 8 shades (96 colors in the space of 20
+// buttons), and two tools that both draw with a finger.
+//   Crayon  the stroke is clipped to the part it began in, so it never goes
+//           over the lines. Thin, Medium, Big or Huge.
+//   Eraser  the same, in white, so it rubs color back out of that part.
+// Old saves may carry whole-part `fills` (the first build had a Fill tool);
+// they still draw.
 // Undo, Redo and Start over. When the kid is done, the drawing is rendered to
 // a 960 x 720 picture and saved to My Pictures (app/kids/my-pictures.js),
 // which the kids Puzzle Shelf serves as a jigsaw. Not scored, nothing leaves
@@ -31,8 +33,10 @@ const GREY = [100, 88, 76, 62, 48, 34, 20, 6];
 const shade = (f, i) => (f.grey ? `hsl(220, 6%, ${GREY[i]}%)` : `hsl(${f.h}, ${f.s}%, ${LIGHT[i]}%)`);
 const famMid = (f) => (f.grey ? 'hsl(220, 6%, 48%)' : `hsl(${f.h}, ${f.s}%, 52%)`);
 const SHADE_WORDS = ['palest', 'very light', 'light', 'soft', 'bright', 'deep', 'dark', 'darkest'];
-const WIDTHS = [7, 15, 30];
-const SIZE_NAMES = ['Thin', 'Medium', 'Big'];
+const WIDTHS = [8, 18, 34, 60];
+const SIZE_NAMES = ['Thin', 'Medium', 'Big', 'Huge'];
+const DOTS = [8, 14, 22, 32];
+const ERASE = '#ffffff';
 const WORK_KEY = 'sot_kids_crayon_work';
 
 function readWork() {
@@ -133,8 +137,8 @@ function Colorer({ pic, onBack, onFinish }) {
   const [future, setFuture] = useState([]);
   const [fam, setFam] = useState(7);
   const [sel, setSel] = useState(shade(FAMS[7], 4));
-  const [tool, setTool] = useState('fill');
-  const [size, setSize] = useState(1);
+  const [tool, setTool] = useState('brush');
+  const [size, setSize] = useState(2);
   const [busy, setBusy] = useState(false);
   const svgRef = useRef(null);
   const drawRef = useRef(null);
@@ -177,25 +181,18 @@ function Colorer({ pic, onBack, onFinish }) {
     if (!r) return;
     e.preventDefault();
     const { fills: f, strokes: s } = stateRef.current;
-    if (tool === 'fill') { if (f[r] !== sel) commit({ ...f, [r]: sel }, s); return; }
-    if (tool === 'erase') {
-      if (!f[r] && !s.some((k) => k.r === r)) return;
-      const nf = { ...f }; delete nf[r];
-      commit(nf, s.filter((k) => k.r !== r));
-      return;
-    }
     const p = toPoint(e);
     if (!p) return;
     try { svgRef.current.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
     const d = `M${p[0]} ${p[1]} L${p[0] + 0.1} ${p[1] + 0.1}`;
     drawRef.current = { id: e.pointerId, d, last: p };
-    commit(f, [...s, { r, c: sel, w: WIDTHS[size], d }]);
+    commit(f, [...s, { r, c: tool === 'erase' ? ERASE : sel, w: WIDTHS[size], d }]);
   };
   const onMove = (e) => {
     const D = drawRef.current;
     if (!D || D.id !== e.pointerId) return;
     const p = toPoint(e);
-    if (!p || Math.hypot(p[0] - D.last[0], p[1] - D.last[1]) < 1.2) return;
+    if (!p || Math.hypot(p[0] - D.last[0], p[1] - D.last[1]) < 2) return;
     D.last = p;
     D.d += ` L${p[0]} ${p[1]}`;
     const d = D.d;
@@ -221,12 +218,12 @@ function Colorer({ pic, onBack, onFinish }) {
   };
   const clear = () => { if (Object.keys(fills).length || strokes.length) commit({}, []); };
 
-  const pickFam = (i) => { setFam(i); setSel(shade(FAMS[i], 4)); if (tool === 'erase') setTool('fill'); };
-  const pickShade = (c) => { setSel(c); if (tool === 'erase') setTool('fill'); };
+  const pickFam = (i) => { setFam(i); setSel(shade(FAMS[i], 4)); setTool('brush'); };
+  const pickShade = (c) => { setSel(c); setTool('brush'); };
 
-  const colored = pic.parts.filter(([id]) => fills[id] || strokes.some((s) => s.r === id)).length;
+  const colored = pic.parts.filter(([id]) => (fills[id] && fills[id] !== ERASE) || strokes.some((s) => s.r === id && s.c !== ERASE)).length;
   const total = partCount(pic);
-  const hint = tool === 'fill' ? 'Tap a part to fill it' : tool === 'brush' ? 'Draw with your finger. It stays inside the lines.' : 'Tap a part to wipe it clean';
+  const hint = tool === 'brush' ? 'Color with your finger. It stays inside the lines.' : 'Rub with your finger to erase';
   const f = FAMS[fam];
 
   const finish = async () => {
@@ -259,19 +256,17 @@ function Colorer({ pic, onBack, onFinish }) {
         <div className="cr-panel">
           <div className="cr-tools">
             <div className="cr-seg" role="radiogroup" aria-label="Tool">
-              {[['fill', 'Fill'], ['brush', 'Crayon'], ['erase', 'Eraser']].map(([k, label]) => (
+              {[['brush', 'Crayon'], ['erase', 'Eraser']].map(([k, label]) => (
                 <button key={k} type="button" role="radio" aria-checked={tool === k} className={tool === k ? 'on' : ''} onClick={() => setTool(k)}>{label}</button>
               ))}
             </div>
-            {tool === 'brush' ? (
-              <div className="cr-sizes" role="radiogroup" aria-label="Crayon size">
-                {WIDTHS.map((w, i) => (
-                  <button key={w} type="button" role="radio" aria-checked={size === i} aria-label={`${SIZE_NAMES[i]} crayon`} className={size === i ? 'on' : ''} onClick={() => setSize(i)}>
-                    <span style={{ width: [10, 18, 30][i], height: [10, 18, 30][i], background: sel }} />
-                  </button>
-                ))}
-              </div>
-            ) : null}
+            <div className="cr-sizes" role="radiogroup" aria-label="Size">
+              {WIDTHS.map((w, i) => (
+                <button key={w} type="button" role="radio" aria-checked={size === i} aria-label={`${SIZE_NAMES[i]} ${tool === 'erase' ? 'eraser' : 'crayon'}`} className={size === i ? 'on' : ''} onClick={() => setSize(i)}>
+                  <span style={{ width: DOTS[i], height: DOTS[i], background: tool === 'erase' ? '#ffffff' : sel }} />
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="cr-box">
@@ -351,7 +346,7 @@ const CR_CSS = `
 .cr-hint{margin:0 0 8px;font-family:var(--kdisp);font-weight:600;font-size:15px;color:var(--kink2)}
 .cr-panel{display:flex;flex-direction:column;gap:12px;min-width:0}
 .cr-tools{display:flex;gap:8px;align-items:stretch}
-.cr-seg{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:2px solid var(--kink);border-radius:16px;overflow:hidden;min-height:54px}
+.cr-seg{flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:2px solid var(--kink);border-radius:16px;overflow:hidden;min-height:54px}
 .cr-seg button{border:0;border-radius:0;background:var(--kpaper);color:var(--kink);font-family:var(--kdisp);font-weight:700;font-size:16px;cursor:pointer;padding:0 6px}
 .cr-seg button+button{border-left:2px solid var(--kink)}
 .cr-seg button.on{background:var(--kink);color:#fff}
@@ -452,7 +447,7 @@ export default function CrayonClient() {
         )}
 
         <h2 className="cr-howh">How to play</h2>
-        <p className="kd-how cr-how">Pick a picture, then pick a color and a shade. With Fill, tap a part of the picture to color it in. With Crayon, draw with your finger: it stays inside the lines of the part you start in. With Eraser, tap a part to wipe it clean. Made a mistake? Tap Undo. When you are done, your picture becomes your own jigsaw puzzle on the Puzzle Shelf.</p>
+        <p className="kd-how cr-how">Pick a picture, then pick a color and a shade. Color with your finger: the crayon stays inside the lines of the part you start in, so color right up to the edge. Pick a bigger crayon for big spaces like the sky. The Eraser rubs color back out. Made a mistake? Tap Undo. When you are done, your picture becomes your own jigsaw puzzle on the Puzzle Shelf.</p>
 
         <div className="kd-foot">
           <span>Mind Loft Kids · free, no sign-up, no ads. Your pictures stay on this device.</span>

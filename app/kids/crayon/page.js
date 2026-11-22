@@ -4,7 +4,7 @@ import CrayonClient from './CrayonClient';
 // then play it as a jigsaw on the kids Puzzle Shelf (My Pictures). Not a
 // daily and not scored: no registry row, only a view count (kids-crayon).
 
-const DESC = 'A free coloring game for kids: pick a simple picture, color it with 96 colors using fill, a crayon that stays inside the lines, and an eraser, then play it as your own jigsaw puzzle. No sign-up, no ads.';
+const DESC = 'A free coloring game for kids: pick a simple picture, color it by hand with 96 colors and a crayon that stays inside the lines, then play it as your own jigsaw puzzle. No sign-up, no ads.';
 
 export const metadata = {
   title: 'Crayon: Free Coloring Pages That Turn Into Jigsaws | Mind Loft Kids',

@@ -953,9 +953,11 @@ https://claude.ai/artifact/8BH4Z6WJZkjHB77qEggwnm.
   parts big and few (10 to 13).
 - **Palette:** 12 families (the 12th is gray), each opening 8 shades: 96 colors. Families 4 across
   beside the picture from 900px (iPad landscape), 6 across stacked below on phones and iPad portrait.
-- **Tools:** Fill (tap a part), Crayon (finger drawing in Thin / Medium / Big, clipped to the part
-  the stroke STARTED in, so it never crosses a line), Eraser (tap a part: clears its fill and
-  strokes). Undo / Redo (80 steps) / Start over. Pointer events with `touch-action:none` on the
+- **Tools: hand coloring only (owner, 2026-11-22, same day: "make coloring non autofill. It should
+  color within a given line though").** The launch Fill tool is gone. Crayon draws with a finger in
+  Thin / Medium / Big / Huge (8 / 18 / 34 / 60 units), clipped to the part the stroke STARTED in, so
+  it never crosses a line. Eraser is the same brush in white. Picking a color switches back to the
+  Crayon. Old saves with whole-part `fills` still draw. Undo / Redo (80 steps) / Start over. Pointer events with `touch-action:none` on the
   drawing plus a window `touchmove` guard while a stroke is live (iPad Safari). Points map through
   `getScreenCTM`.
 - **Work in progress** autosaves per picture in `sot_kids_crayon_work`; the picker marks a started
@@ -967,7 +969,9 @@ https://claude.ai/artifact/8BH4Z6WJZkjHB77qEggwnm.
 - **Puzzle Shelf:** `KidsJigsaw.jsx` reads My Pictures after mount and shows a "My pictures" row
   (plus a "Color your own picture" tile to `/kids/crayon`) above the day's photos. A My Pictures
   board has `src` (the data URL), `mine: true`, key `my-<id>`, a `num` hashed from the id so the cut
-  is stable; it plays exactly like a photo, wide shape. Finish credit reads "Colored by you in Crayon".
+  is stable; it plays exactly like a photo, wide shape. **Its `src` is a BLOB URL** made from the
+  stored data URL (`blobUrlOf`): the jigsaw draws the picture once per piece, and ~80 KB data URLs
+  in every piece's SVG `<image>` drew black squares on iPad (owner, 2026-11-22). Finish credit reads "Colored by you in Crayon".
 - **"Built by Emma"** is a line under the kids footer on `/kids/crayon` (owner, keep it there).
 - `Confetti` takes an optional `word`; Crayon cheers "WOW!" (default stays SOLVED!).
 
