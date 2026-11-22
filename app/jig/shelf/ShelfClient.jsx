@@ -616,7 +616,7 @@ html.lc-on:not(.lc-focus) .jp-top{display:none;}
 .jp-hero .jp-cut{position:absolute;inset:0;width:100%;height:100%;}
 .jp-hero{--jp-gut:calc(max(0px, (100% - 1360px) / 2) + 32px);}
 .jp-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(22,18,14,.92) 0%,rgba(22,18,14,.88) var(--jp-gut),rgba(22,18,14,.55) calc(var(--jp-gut) + 520px),rgba(22,18,14,0) calc(var(--jp-gut) + 900px));}
-.jp-htx{position:relative;max-width:600px;padding:56px 56px 56px var(--jp-gut);display:flex;flex-direction:column;gap:14px;}
+.jp-htx{position:relative;box-sizing:content-box;max-width:488px;padding:56px 56px 56px var(--jp-gut);display:flex;flex-direction:column;gap:14px;}
 .jp-htx,.jp-htx *{color:#f4ead8;}
 .jp-eyb{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.75;}
 .jp-hero h1{margin:0;font-size:64px;line-height:1.04;font-weight:800;letter-spacing:-0.03em;padding-bottom:.06em;}
