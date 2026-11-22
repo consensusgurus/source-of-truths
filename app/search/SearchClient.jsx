@@ -80,6 +80,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
   const [found, setFound] = useState({}); // i -> [r0, c0, r1, c1, foundAtMs, syncedAtMs]
   const [crowd, setCrowd] = useState(null);
   const [me, setMe] = useState(null);
+  const [myName, setMyName] = useState(null);
   const [panel, setPanel] = useState(null); // 'list' | 'standings' | 'help'
   const [toast, setToast] = useState(null);
   const [read, setRead] = useState('');
@@ -168,6 +169,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
       if (!d || d.error) return;
       dirty.current = false;
       if (d.me) setMe(d.me);
+      if (d.name) setMyName(d.name);
       setFound((cur) => {
         const next = { ...cur };
         for (const i of ids) if (next[i] && !next[i][5]) next[i] = [...next[i].slice(0, 5), sentAt];
@@ -213,9 +215,9 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
   }, [live, crowd]);
 
   function say(t) {
-    setToast(t);
+    setToast({ ...t, k: Date.now() });
     if (toastT.current) clearTimeout(toastT.current);
-    toastT.current = setTimeout(() => setToast(null), 3400);
+    toastT.current = setTimeout(() => setToast(null), t.find ? 2800 : 3400);
   }
 
   // ---- the canvas ---------------------------------------------------------------
@@ -372,9 +374,18 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
     if (prior) line = 'Found on your other device, now circled here';
     else if (!live) line = others == null ? 'This board is closed: finds here are for fun' : (others === 0 ? 'Nobody found it while the board was open' : `${fmt(others)} ${others === 1 ? 'player' : 'players'} found it`);
     else if (others == null) line = 'Counting the crowd...';
-    else if (others === 0) line = `Nobody else has it yet: all ${SEARCH_POT} points are yours, for now`;
-    else line = `${fmt(others)} ${others === 1 ? 'other player has' : 'other players have'} it. You are the ${ord(others + 1)}: ${fmt(searchValue(others + 1))} ${searchValue(others + 1) === 1 ? 'point' : 'points'} each, for now.`;
-    say({ title: it.t, y: it.y, line, uniq: others === 0 && !prior && live });
+    else if (others === 0) line = `You're the first finder · all ${SEARCH_POT} points, for now`;
+    else {
+      // WHO ELSE FOUND IT (owner, 2026-11-21): a find names the players who got it
+      // first, "and N others" past three; the first to find it is told so.
+      const mine = new Set([myName, me ? `Guest ${me.slice(0, 4).toUpperCase()}` : null].filter(Boolean));
+      const names = ((crowd && crowd.whoBy && crowd.whoBy[i]) || []).filter((n) => !mine.has(n)).slice(0, 3);
+      const rest = Math.max(0, others - names.length);
+      const parts = rest ? [...names, `${fmt(rest)} ${names.length ? (rest === 1 ? 'other' : 'others') : (rest === 1 ? 'other player' : 'other players')}`] : names;
+      const who = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts[0];
+      line = `Also found by ${who} · ${fmt(searchValue(others + 1))} ${searchValue(others + 1) === 1 ? 'pt' : 'pts'} each, for now`;
+    }
+    say({ title: it.t, y: it.y, line, uniq: others === 0 && !prior && live, find: true });
   }
 
   // ---- pointers ----------------------------------------------------------------
@@ -519,12 +530,17 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
   const listRows = useMemo(() => {
     const rows = P.items.map((it, i) => ({ it, i })).filter(({ it, i }) => {
       if (listTab === 'found' && !found[i]) return false;
-      if (listTab === 'left' && found[i]) return false;
+      if ((listTab === 'left' || listTab === 'rare') && found[i]) return false;
       return !q || it.t.toLowerCase().includes(q);
     });
-    rows.sort((a, b) => a.it.t.replace(/^(the|a|an) /i, '').localeCompare(b.it.t.replace(/^(the|a|an) /i, '')));
+    const abc = (a, b) => a.it.t.replace(/^(the|a|an) /i, '').localeCompare(b.it.t.replace(/^(the|a|an) /i, ''));
+    // UNFOUND (owner, 2026-11-21): entries nobody has found come first, then the
+    // least found, so the rarest of what you still need sits at the top.
+    if (listTab === 'rare' && crowd) rows.sort((a, b) => (crowd.counts[a.i] || 0) - (crowd.counts[b.i] || 0) || abc(a, b));
+    else rows.sort(abc);
     return rows;
-  }, [P, found, listTab, q]);
+  }, [P, found, listTab, q, crowd]);
+  const unfoundN = crowd ? crowd.counts.filter((c) => !c).length : null;
 
   // The board's window, in words: open until solved, between its 24 hour
   // minimum and its 72 hour cap.
@@ -562,6 +578,12 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
 .trl canvas.board{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:crosshair}
 .trl .read{position:absolute;left:50%;top:10px;transform:translateX(-50%);pointer-events:none;max-width:80%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 14px;border-radius:999px;font-weight:800;font-size:15px;letter-spacing:.14em;background:var(--card);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.14)}
 .trl .toast{position:absolute;left:50%;top:52px;transform:translateX(-50%);min-width:240px;max-width:min(460px,calc(100% - 24px));background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 16px 11px;box-shadow:0 8px 26px rgba(0,0,0,.18);text-align:center;pointer-events:none;animation:trlIn .28s cubic-bezier(.2,.9,.25,1.2)}
+.trl .toast.find{min-width:0;padding:7px 14px 8px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.12);animation:trlUp .22s ease-out,trlOut .5s ease-in 2.3s forwards}
+.trl .toast.find b{display:inline;font-size:14px}
+.trl .toast.find b i{font-size:12px}
+.trl .toast.find span{display:inline;font-size:12.5px;margin:0 0 0 8px;opacity:.8}
+@keyframes trlUp{from{opacity:0;transform:translate(-50%,6px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes trlOut{to{opacity:0}}
 .trl .toast.uniq{background:var(--good);color:var(--good-ink);border-color:var(--good-ink)}
 .trl .toast b{display:block;font-size:17px;font-weight:800;letter-spacing:-.01em;line-height:1.3}
 .trl .toast b i{font-style:normal;font-weight:700;opacity:.65;margin-left:6px;font-size:14px}
@@ -616,6 +638,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
   .trl .meta{display:none}
   .trl .btns{gap:6px}
   .trl .pill{padding:6px 10px;font-size:12px}
+  .trl .seg button{font-size:11.5px;padding:8px 3px}
   .trl .sheet{top:auto;left:0;right:0;bottom:0;width:auto;height:min(72%,560px);border-radius:16px 16px 0 0;border-bottom:0}
   .trl .mini{width:84px;height:84px}
   .trl .mini canvas{width:84px;height:84px}
@@ -629,14 +652,18 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
         <button className={listTab === 'all' ? 'on' : ''} onClick={() => setListTab('all')}>All {fmt(N)}</button>
         <button className={listTab === 'left' ? 'on' : ''} onClick={() => setListTab('left')}>To find {fmt(N - total)}</button>
         <button className={listTab === 'found' ? 'on' : ''} onClick={() => setListTab('found')}>Found {fmt(total)}</button>
+        <button className={listTab === 'rare' ? 'on' : ''} onClick={() => setListTab('rare')} title="Nobody has found these yet; the least found come next">Unfound{unfoundN != null ? ` ${fmt(unfoundN)}` : ''}</button>
       </div>
       <input className="search" placeholder={`Search the ${P.noun}`} value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search the list" />
       <div className="body">
-        {listRows.map(({ it, i }) => {
+        {listTab === 'rare' && crowd && listRows.length > 0 && !(crowd.counts[listRows[0].i] || 0) && <div className="fh">Nobody has found these</div>}
+        {listRows.map(({ it, i }, k) => {
           const got = !!found[i];
           const n = crowd ? countOf(i) : null;
+          const lessFound = listTab === 'rare' && crowd && (crowd.counts[i] || 0) > 0 && (k === 0 || !(crowd.counts[listRows[k - 1].i] || 0));
           return (
-            <div key={i} className={'row' + (got ? ' got' : '')}>
+            <div key={i} style={{ display: 'contents' }}>{lessFound && <div className="fh">Least found next</div>}
+            <div className={'row' + (got ? ' got' : '')}>
               <span className="dot" style={got ? { background: `hsl(${HUES[i % HUES.length]}, 72%, 62%)`, borderColor: 'transparent' } : undefined} />
               <span className="t">{it.t}{it.y ? <i>{it.y}</i> : null}</span>
               {got && found[i][0] >= 0 && <button className="go" onClick={() => { jumpTo(found[i][0], found[i][1]); if (narrow) setPanel(null); }}>Show</button>}
@@ -644,6 +671,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
                   in the list"): how many players have found it so far, found by you or
                   not, and on your own finds what each finder is paid right now. */}
               {n != null && <span className={'n' + (got && n === 1 ? ' u' : (!n ? ' z' : ''))} title="How many players have found it, and what it pays each of them">{got ? (n === 1 ? `Only you · ${SEARCH_POT} pts` : `${fmt(n)} finds · ${fmt(searchValue(n))} pts`) : (n ? `${fmt(n)} ${n === 1 ? 'find' : 'finds'}` : 'No finds')}</span>}
+            </div>
             </div>
           );
         })}
@@ -764,7 +792,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
           onContextMenu={(e) => e.preventDefault()} />
         {read ? <div className="read" aria-live="polite">{read}</div> : null}
         {toast && (
-          <div className={'toast' + (toast.uniq ? ' uniq' : '')} aria-live="polite">
+          <div key={toast.k} className={'toast' + (toast.uniq ? ' uniq' : '') + (toast.find ? ' find' : '')} aria-live="polite">
             <b>{toast.title}{toast.y ? <i>{toast.y}</i> : null}</b>
             <span>{toast.line}</span>
           </div>
