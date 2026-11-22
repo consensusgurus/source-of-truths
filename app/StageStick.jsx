@@ -57,7 +57,6 @@ import { EndNext, EndDay, StandChips, buildStops } from './EndNext';
 import { pageAge, BEAT_FRESH } from '@/lib/finish-beat';
 import { typicalSeconds } from '@/lib/game-medians';
 import EndFirst, { groupStandingOf } from './EndFirst';
-import TalkBand from './community/TalkBand';
 // THE QUESTION DATABASES (owner, 2026-11-21: "Trivia Database ... on end game
 // for trivia puzzles"): a gauntlet daily's ending points at its topic in the
 // Trivia, Math or English Database (lib/qdb.js BANK_DB), where jig/saw point at the shelf.
@@ -650,7 +649,10 @@ export default function StageStick({
       {s.gameKey && !s.boardLabel ? (
         <div className="sst-scope" role="tablist" aria-label="Leaderboard">
           <button type="button" role="tab" aria-selected={scope === 'today'} className={scope === 'today' ? 'on' : ''} onClick={() => setScope('today')}>Today</button>
-          {/* No category, Today's Puzzles or All time tabs (owner, 2026-11-20: that puzzle only). */}
+          {/* ALL TIME IS BACK (owner, 2026-11-22): Today, All time, Talk. Still this
+              puzzle only (no category or Today's Puzzles tabs), and its board loads
+              only when the tab is pressed. */}
+          <button type="button" role="tab" aria-selected={scope === 'all'} className={scope === 'all' ? 'on' : ''} onClick={() => setScope('all')}>All time</button>
           {/* POST-GAME TALK, a fourth tab, only after finishing (owner, 2026-11-18, spot 4). */}
           {talkOn ? <button type="button" role="tab" aria-selected={scope === 'talk'} className={scope === 'talk' ? 'on' : ''} onClick={() => setScope('talk')}>Talk{talkN ? ` ${talkN}` : ''}</button> : null}
         </div>
@@ -1377,8 +1379,7 @@ export default function StageStick({
     <section className={'sst-card sst-nc sst-nx ' + on(3)}>
       <div className="sst-ncm">
         <EndNext stops={stops} picks={firstPicksList} from={null} passName={null} armed={false} />
-        {/* POST-GAME TALK, below Up next (owner, 2026-11-18). */}
-        {talkOn ? <TalkBand gameKey={s.gameKey} gameName={s.gameName} where="sheet" /> : null}
+        {/* No Talk band here any more (owner, 2026-11-22): Talk is a tab on the one leaderboard. */}
         {rankCard}
         {pnNode(true)}
       </div>
@@ -1443,7 +1444,6 @@ export default function StageStick({
           passNode={(stops.length || firstPicksList.length) ? (armed) => (
             <>
               <EndNext phone stops={stops} picks={firstPicksList} from={null} passName={null} armed={false} />
-              {talkOn ? <TalkBand gameKey={s.gameKey} gameName={s.gameName} where="sheet" phone /> : null}
             </>
           ) : passNode}
           playNode={stops.length ? <EndDay dayRow={null} stops={stops} grp={grp} /> : playNode}
@@ -1607,7 +1607,7 @@ const CSS = `
 .sst-page .sst-rkb{display:flex;flex-direction:column;}
 .sst-tfill{position:relative;flex:1 1 auto;overflow:hidden;}
 .sst-tfill > .sst-tbl{position:absolute;left:0;right:0;top:0;}
-.sst-bh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+.sst-bh{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 10px;}
 .sst-bh .sst-sl{min-width:0;}
 .sst-scope{flex:none;display:flex;gap:10px;margin-bottom:9px;}
 .sst-scope button{border:0;background:none;padding:0 0 2px;font:inherit;font-size:11.5px;font-weight:700;color:var(--sst-ink);opacity:.5;cursor:pointer;
@@ -1723,7 +1723,7 @@ const CSS = `
 .sst-figs > div{flex:1 1 90px;min-width:0;background:var(--sst-wash);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;}
 .sst-figs b{font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
 .sst-figs b small{font-size:14px;opacity:.75;}
-.sst-figs i{font-style:normal;font-size:12px;font-weight:700;opacity:.82;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
+.sst-figs i{font-style:normal;font-size:12px;font-weight:700;line-height:1.25;opacity:.82;overflow-wrap:break-word;}
 .sst-runs{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:12px;}
 .sst-runs a{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border-radius:10px;background:var(--sst-wash);color:var(--sst-ink);text-decoration:none;min-width:0;}
 .sst-runs a span{font-size:11.5px;font-weight:700;opacity:.82;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}

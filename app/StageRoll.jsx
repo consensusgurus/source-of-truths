@@ -255,23 +255,15 @@ export default function StageRoll({
           </button>
         </div>
 
-        {/* THE RANK ONCE, SHOW BOARD BELOW IT (owner, 2026-11-20): the standings open
-            straight under the bar, and the bar's chips hide while they are open. */}
-        {standRows ? (
-          <section className={'srl-beat ' + (phase >= 2 && open ? 'focus' : phase >= 2 ? 'gone' : 'pend')}>
+        {/* ONE LEADERBOARD, ON DEMAND (owner, 2026-11-22): the board (Today / All
+            time / Talk, with the group under it), the weekday card and the stats
+            grid mount only when the bar is opened, so a closed page loads just the
+            result, Up next and the share links. The board card is the only board;
+            the old Where You Stand card shows only when there is no board card. */}
+        {standRows && !rankNode && phase >= 2 && open ? (
+          <section className="srl-beat focus">
             <div className="srl-full">
               <div className="sst-card srl-land"><StandCard rows={standRows} /></div>
-            </div>
-          </section>
-        ) : null}
-
-        {onShowBoard ? (
-          <section className={'srl-beat ' + (phase >= 2 && open ? 'focus' : phase >= 2 ? 'gone' : 'pend')}>
-            <div className="srl-full">
-              <button type="button" className="srl-sbd srl-land" onClick={onShowBoard}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16M15 4v16" /></svg>
-                {showBoardLabel || 'Show Board'}
-              </button>
             </div>
           </section>
         ) : null}
@@ -302,12 +294,27 @@ export default function StageRoll({
         <section className={beatRows ? 'srl-beat ' + (phase >= 2 && open ? 'focus' : phase >= 1 ? 'gone' : 'pend') : beat(1)}>
           <div className="srl-full">
             <div className="srl-stats" onClick={(e) => { if (!(e.target.closest && e.target.closest('a,button'))) advance(); }}>
-              <div className="sst-card srl-land">{statsNode}</div>
-              {rankNode ? <div className="srl-land d2">{rankNode}</div> : null}
-              {recordNode && phase >= 2 ? <div className="srl-land d3">{recordNode}</div> : null}
+              {(phase >= 2 ? open : !beatRows && phase === 1) ? (
+                <>
+                  {rankNode && phase >= 2 ? <div className="srl-land">{rankNode}</div> : null}
+                  <div className="sst-card srl-land d1">{statsNode}</div>
+                  {recordNode && phase >= 2 ? <div className="srl-land d2">{recordNode}</div> : null}
+                </>
+              ) : null}
             </div>
           </div>
         </section>
+
+        {onShowBoard && phase >= 2 && open ? (
+          <section className={'srl-beat focus'}>
+            <div className="srl-full">
+              <button type="button" className="srl-sbd srl-land" onClick={onShowBoard}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16M15 4v16" /></svg>
+                {showBoardLabel || 'Show Board'}
+              </button>
+            </div>
+          </section>
+        ) : null}
 
         <section className={'srl-beat ' + (phase >= 2 ? 'focus' : 'pend')}>
           <div className="srl-full">

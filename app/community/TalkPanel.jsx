@@ -138,7 +138,7 @@ export default function TalkPanel({ gameKey, gameName = '', day = null, compact 
             </label>
           ) : null}
           <div className="tkp-row">
-            <textarea value={text} maxLength={data.max || 600} rows={compact ? 1 : 3} placeholder={data.admin && !data.played ? 'Write the Maker post for this puzzle' : `Add to the discussion. Your ${data.result || 'result'} shows next to your name.`}
+            <textarea value={text} maxLength={data.max || 600} rows={compact ? 1 : 3} placeholder={data.admin && !data.played ? (compact ? 'Write the Maker post' : 'Write the Maker post for this puzzle') : (compact ? 'Add your take' : `Add to the discussion. Your ${data.result || 'result'} shows next to your name.`)}
               onChange={(e) => setText(e.target.value)} aria-label="Your post" />
             <button type="submit" className="tkp-btn go" disabled={busy}>{busy ? 'Posting…' : 'Post'}</button>
           </div>
