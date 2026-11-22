@@ -308,6 +308,14 @@ const Tangled = () => (
     {[[148, 6], [179, 24], [179, 60], [148, 78], [117, 60], [117, 24]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={5} className="d" />)}</g>
 );
 // a street scene in a frame: a sun, two shopfronts and a car
+// Glimpse: the four-quadrant panel, dots top left, a lit grid top right, a clock, a string
+const Glimpse = () => (
+  <g><rect x={112} y={6} width={72} height={72} rx={4} className="w" /><rect x={147.5} y={6} width={1} height={72} className="d" /><rect x={112} y={41.5} width={72} height={1} className="d" />
+    <circle cx={121} cy={15} r={2.5} className="d" /><circle cx={130} cy={22} r={2.5} className="d" /><circle cx={138} cy={14} r={2.5} className="m" /><circle cx={124} cy={31} r={2.5} className="m" /><circle cx={137} cy={32} r={2.5} className="d" />
+    <rect x={155} y={13} width={9} height={9} rx={1.5} className="m" /><rect x={167} y={13} width={9} height={9} rx={1.5} className="sm" /><rect x={155} y={25} width={9} height={9} rx={1.5} className="sm" /><rect x={167} y={25} width={9} height={9} rx={1.5} className="m" />
+    <circle cx={130} cy={60} r={11} className="sm" /><rect x={129} y={51} width={2} height={10} className="d" /><rect x={129} y={59} width={8} height={2} className="d" />
+    <rect x={154} y={57} width={24} height={6} rx={3} className="d" /></g>
+);
 const Witness = () => (
   <g><rect x={112} y={6} width={72} height={72} rx={4} className="w" /><circle cx={170} cy={20} r={6} className="m" />
     <rect x={118} y={30} width={28} height={28} className="sm" /><rect x={150} y={36} width={28} height={22} className="sm" />
@@ -809,7 +817,7 @@ export const TILE_BY_KEY = {
   atlas: Atlas, carmen: Carmen, span: Span, passport: Passport, flank: Flank, ping: Ping,
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
-  suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, defuse: Defuse, spot: Spot,
+  suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, glimpse: Glimpse, defuse: Defuse, spot: Spot,
   connect: Connect, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, bot: Bot, peg: Peg, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw, mural: Mural, muraltoo: Mural,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers

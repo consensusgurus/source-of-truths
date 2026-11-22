@@ -3812,3 +3812,37 @@ title... everywhere").** Route `/search` (`/trawl` redirects there), registry ke
 `search-M-D-YY`, board 1's key `search-11-20-26`, files `app/search/`, `app/api/search/`, `lib/search.js`,
 `lib/search-server.js`, `scripts/{gen,verify,wire}-search.mjs`, tiles `btn-search.png`, share card
 `public/og/search.png`. Finds made in the first hour under the old `trawl-` keys were not carried over.
+
+## Glimpse: the daily flash-recall game (launched 2026-11-22)
+
+Owner, 2026-11-22: "any good ideas for a daily that gives you a glimpse of something and forces recall? like 75
+dots on a screen", then "can we combine multiple elements of these into one daily?", approved from the mockup and
+ordered "build and implement" the same day. Visual, group Observation puzzles, finish set Sharp eyes, skills
+Memory and Estimation, family beside Witness.
+
+- **The game.** A square panel in four quadrants: a cloud of DOTS (top left), a 4x4 GRID with some squares lit
+  (top right), a CLOCK (bottom left) and a STRING of letters and digits (bottom right). Press Show me, a 3-2-1
+  (550ms a beat), then the panel shows for the flash's `ms` and blanks on the frame it runs out (no fade). One
+  question follows about ONE quadrant, and the player does not know which. The panel comes back after each flash
+  with the asked quadrant outlined and the scores.
+- **The day.** Flash 1: Dots and Grid only, 2.5s. Flash 2: Clock and String only, 2.5s. Flashes 3 and 4: all
+  four, 2s. Flash 5: all four, 1.5s, two questions (averaged). Flashes 1 to 4 ask about each quadrant once.
+  Red dots join from flash 3 (a quarter to under half of them), and a dots question there may ask "how many
+  red". SUNDAY EDITION: a sixth flash at 1.25s with two questions, so Sunday is out of 600.
+- **Weekday ramp** (`BANDS` in lib/glimpse-engine.js): the clocks never change, the panel fills up: Mon/Tue
+  Gentle, Wed/Thu Moderate, Fri/Sat Tough, Sun the Sunday Edition (dot ranges, lit squares and string length
+  per flash).
+- **Scoring** (`askPoints`): dots 100 less 2.5 per 1% off; grid the share of lit squares picked (you pick
+  exactly as many as were lit; the count is given); clock 100 less 2 per minute off on a 12-hour face; string
+  the share of characters in the right place. Every flash is 0 to 100; the day is out of 500 (600 Sunday).
+  SCORE_VIEW 'points' (never a fraction), ranked points then the clock, first try counts. A give-up keeps the
+  flashes already answered. Challenges fight on points.
+- **One look.** The Show me press is stamped into the save (`s.t`) and the window is read off it, so a reload
+  mid-flash lands on the question; leaving never buys a second look.
+- **Files.** `lib/glimpse-engine.js` (bands, dot layout from a per-flash seed, scoring, the SVGs, `buildBoard`),
+  `app/glimpse/` (page, client on app/SimpleDaily.jsx, bank), `scripts/gen-glimpse.mjs --through YYYY-MM-DD`
+  (append-only; stores the board seed), `scripts/verify-glimpse.mjs` (rebuilds every board from its seed, checks
+  every rule, mutation-tested on a dot count, a band and a lit square), `scripts/wire-glimpse.mjs`,
+  `scripts/gen-glimpse-tile.py`, share card from `scripts/bake-og.mjs glimpse`. Bank to 2027-03-31 at launch.
+- **The panel is white in both registers** (as Witness's scene). Lit squares wear the stage accent
+  (`--pst-acc`, the Visual pastel) with an ink edge; red dots are #e5484d.

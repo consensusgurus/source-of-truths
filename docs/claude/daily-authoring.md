@@ -449,6 +449,7 @@ archive and hub chips use the short form `Sun`.
 | Crate | five crates in a bigger warehouse, against three on Monday and Tuesday and four the rest of the week |
 | Bot | P2 and P3 rows on a bigger board (up to 7x7, five to eight lamps); its par is the setter's best, proved only to seven commands |
 | Peg | 24 to 30 pegs, against 9 to 12 on Monday and Tuesday |
+| Glimpse | a sixth flash at 1.25 seconds with two questions, and the fullest panels of the week (out of 600 against 500), from launch 2026-11-22 |
 
 **Every daily on the roster runs a Sunday Edition.** A new daily game should decide at launch
 whether it has one (see "Adding a BRAND NEW daily game" below).

@@ -101,6 +101,7 @@ import { PUZZLES as TOPPLE_FULL } from '../topple/puzzles';
 import { PUZZLES as ROLL_FULL } from '../roll/puzzles';
 import { PUZZLES as TANGLED_FULL } from '../tangled/puzzles';
 import { PUZZLES as WITNESS_FULL } from '../witness/puzzles';
+import { PUZZLES as GLIMPSE_FULL } from '../glimpse/puzzles';
 import { PUZZLES as DEFUSE_FULL } from '../defuse/puzzles';
 import { PUZZLES as SPOT_FULL } from '../spot/puzzles';
 import { PUZZLES as SUDOCLUE_FULL } from '../sudoclue/puzzles';
@@ -278,6 +279,7 @@ const TOPPLE = TOPPLE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ 
 const ROLL = ROLL_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const TANGLED = TANGLED_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const WITNESS = WITNESS_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const GLIMPSE = GLIMPSE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const DEFUSE = DEFUSE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SPOT = SPOT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUDOCLUE = SUDOCLUE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -539,6 +541,7 @@ const GAMES = [
   { key: 'peg', name: 'Peg', path: '/peg', tag: 'The daily peg solitaire', accent: '#1d6b4f', bg: '#e6f2ec', border: 'rgba(29,107,79,0.35)', src: PEG },
   { key: 'bot', name: 'Bot', path: '/bot', tag: 'Program the robot to light every lamp', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: BOT },
   { key: 'witness', name: 'Witness', path: '/witness', tag: 'What did you see?', accent: '#9f1239', bg: '#ffe4e6', border: 'rgba(159,18,57,0.35)', src: WITNESS },
+  { key: 'glimpse', name: 'Glimpse', path: '/glimpse', tag: 'One look, then one question', accent: '#86198f', bg: '#fae8ff', border: 'rgba(134,25,143,0.35)', src: GLIMPSE },
   { key: 'defuse', name: 'Defuse', path: '/defuse', tag: 'Cut the wires in the safe order', accent: '#7c2d12', bg: '#ffedd5', border: 'rgba(124,45,18,0.35)', src: DEFUSE },
   { key: 'spot', name: 'Spot', path: '/spot', tag: 'Find the seven differences', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: SPOT },
   { key: 'sudoclue', name: 'Sudoclue', path: '/sudoclue', tag: 'Find the killer, place the suspects', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: SUDOCLUE },
