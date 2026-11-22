@@ -850,9 +850,26 @@ and English ... same SEO, same style" added two more. One engine, three database
   database page names what Start plays and the settings, with Change opening a sheet of the three
   settings. A hub plays a Mixed Bag of every topic; a topic page plays the whole topic, or the one
   or several parts picked, mixed. The settings no longer sit in the page.
-- **SEO** (`app/QdbPages.jsx`): hub CollectionPage + BreadcrumbList + FAQPage; topic Quiz with a
-  dozen weekly sample Questions (acceptedAnswer + suggestedAnswer) printed with answers, plus FAQ.
-  Sitemap: hubs 0.8, topics 0.7. Share cards `public/og/{trivia,math,english}-questions.png`.
+- **SEO** (`app/QdbPages.jsx`): hub CollectionPage + BreadcrumbList + FAQPage; topic Quiz with its
+  printed Questions (acceptedAnswer + suggestedAnswer), plus FAQ. Sitemap: hubs 0.8, topics 0.7,
+  subtopics 0.6.
+- **Printed questions and subtopic pages** (owner, 2026-11-22: "let's do this", of the plan to
+  deepen these pages for long-tail search). A topic page prints 60 past questions (`TOPIC_PRINT`;
+  it was a dozen), each with its four choices A to D and the answer behind a `<details>` "Show
+  answer", so the answer is in the server HTML. `samples()` is MOSTLY STABLE: each question has a
+  fixed rank from its key, the page keeps the lowest ranks per lane, and only the last 10 move on
+  weekly. Every lane that earns one has its own page at `<base>/<topic>/<lane-slug>`
+  (`LanePage`, `lanePages()` in qdb-library; 206 pages at launch, 107 of them Deep Cuts subjects
+  like `/trivia-questions/deep-cuts/ancient-rome`): the same portal with the lane already picked,
+  up to 50 printed questions, and links to its siblings. `lib/qdb.js` holds the rules: `laneSlug`,
+  `LANE_PAGE_MIN` (15 questions), `LANE_SKIP` (lanes that repeat another page: Trivia's Science
+  topic, General Knowledge's subject lanes, General Science's lanes, the arts bank's Food lane),
+  and `laneSeo` with `LANE_NAME` for the searcher's phrase ("Middle Ages" is "Medieval History
+  Trivia Questions"). A new lane gets a page by itself; add a `LANE_NAME` entry if its bank name is
+  not what people search, and a `LANE_SKIP` entry if it repeats an existing page.
+- **Subtopic pages are NEVER built at deploy** (cost): the four `[topic]/[lane]/page.js` files
+  return no static params and set `revalidate = 86400`, so a page renders on first request and is
+  cached a day. Do not add `generateStaticParams` entries there; the build must not grow with them. Share cards `public/og/{trivia,math,english}-questions.png`.
 - **Links** (owner: "Trivia Database in the navigation rail and footer and on end game for trivia
   puzzles and runs"): footer and rail (LayoutCInner) and both StageToday lists name all three
   databases; a gauntlet daily's end card (EndFirst via StageStick, `BANK_DB`) and its StageTail

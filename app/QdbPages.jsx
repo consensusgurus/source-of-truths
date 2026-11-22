@@ -12,8 +12,8 @@ import { notFound } from 'next/navigation';
 import QdbPortal from './QdbPortal';
 import PageViewBeacon from './PageViewBeacon';
 import { SITE_URL } from '@/lib/site';
-import { QDBS, qdbTopic, tierBand } from '@/lib/qdb';
-import { poolStats, samples, etToday, topicCards } from '@/lib/qdb-library';
+import { QDBS, qdbTopic, tierBand, laneSeo, laneLabel } from '@/lib/qdb';
+import { poolStats, samples, etToday, topicCards, lanePages } from '@/lib/qdb-library';
 
 const round = (n) => (n >= 1000 ? `${Math.floor(n / 1000).toLocaleString('en-US')},000` : String(n));
 
@@ -127,6 +127,17 @@ export function HubPage({ db }) {
   );
 }
 
+// How many questions a page prints with their choices and answers.
+const TOPIC_PRINT = 60;
+const LANE_PRINT = 50;
+const questionLd = (q) => ({
+  '@type': 'Question', eduQuestionType: 'Multiple choice',
+  name: q.p ? `${q.q} (${q.p})` : q.q, text: q.p ? `${q.q} (${q.p})` : q.q,
+  educationalLevel: tierBand(q.tier),
+  acceptedAnswer: { '@type': 'Answer', text: q.c[q.a] },
+  suggestedAnswer: q.c.filter((_, i) => i !== q.a).map((c) => ({ '@type': 'Answer', text: c })),
+});
+
 function topicFaq(db, t, n) {
   const cfg = QDBS[db];
   const lbl = t.label.toLowerCase();
@@ -157,7 +168,9 @@ export function TopicPage({ db, slug }) {
   const today = etToday();
   const topics = topicCards(db, poolStats(db, today));
   const me = topics.find((x) => x.slug === t.slug);
-  const sample = samples(db, t.slug, 12, today);
+  // 60 printed questions (2026-11-22; a dozen until then), and links to the subtopic pages.
+  const sample = samples(db, t.slug, TOPIC_PRINT, today);
+  const laneLinks = lanePages(db, today).filter((l) => l.topic === t.slug).map((l) => ({ href: l.href, label: `${l.label} (${l.n.toLocaleString('en-US')})` }));
   const faq = topicFaq(db, t, me.n);
   const crumbs = [{ label: 'Home', href: '/' }, { label: cfg.name, href: cfg.base }, { label: t.label, href: `${cfg.base}/${t.slug}` }];
   const quizLd = {
@@ -166,13 +179,7 @@ export function TopicPage({ db, slug }) {
     about: { '@type': 'Thing', name: t.label },
     educationalLevel: 'Beginner to advanced', isAccessibleForFree: true, numberOfQuestions: me.n,
     isPartOf: { '@type': 'CollectionPage', name: cfg.name, url: `${SITE_URL}${cfg.base}` },
-    hasPart: sample.map((q) => ({
-      '@type': 'Question', eduQuestionType: 'Multiple choice',
-      name: q.p ? `${q.q} (${q.p})` : q.q, text: q.p ? `${q.q} (${q.p})` : q.q,
-      educationalLevel: tierBand(q.tier),
-      acceptedAnswer: { '@type': 'Answer', text: q.c[q.a] },
-      suggestedAnswer: q.c.filter((_, i) => i !== q.a).map((c) => ({ '@type': 'Answer', text: c })),
-    })),
+    hasPart: sample.map(questionLd),
   };
   return (
     <>
@@ -180,7 +187,69 @@ export function TopicPage({ db, slug }) {
       <Ld data={crumbLdOf(crumbs)} />
       <Ld data={faqLdOf(faq)} />
       <PageViewBeacon id={`${cfg.base.slice(1)}-${t.slug}`} />
-      <QdbPortal db={db} topics={topics} topic={{ ...me, h1: t.h1, blurb: t.blurb }} samples={sample} faq={faq} crumbs={crumbs} />
+      <QdbPortal db={db} topics={topics} topic={{ ...me, h1: t.h1, blurb: t.blurb }} samples={sample} laneLinks={laneLinks} faq={faq} crumbs={crumbs} />
+    </>
+  );
+}
+
+// THE SUBTOPIC PAGES (2026-11-22): <base>/<topic>/<lane-slug>, one per lane that
+// earns a page (lib/qdb-library.js lanePages). The same portal with the lane
+// already picked, up to LANE_PRINT of its past questions printed with choices
+// and answers, and links to its sibling subtopics. Rendered on first request
+// and cached (the route files set revalidate), never built at deploy.
+function laneOf(db, slug, laneSlugged, today) {
+  const t = qdbTopic(db, slug);
+  if (!t) return null;
+  const page = lanePages(db, today).find((l) => l.topic === t.slug && l.slug === laneSlugged);
+  return page ? { t, page, seo: laneSeo(db, t, page.lane) } : null;
+}
+
+export function laneMetadata(db, slug, laneSlugged) {
+  const cfg = QDBS[db];
+  const hit = laneOf(db, slug, laneSlugged, etToday());
+  if (!hit) return {};
+  const { page, seo } = hit;
+  const description = seo.blurb(page.n);
+  return {
+    title: seo.title, description,
+    alternates: { canonical: page.href },
+    openGraph: { title: `${seo.h1}, Free`, description, url: page.href, type: 'website', siteName: 'Mind Loft', images: [{ url: cfg.og, width: 1200, height: 630 }] },
+    twitter: { card: 'summary_large_image', title: `${seo.h1}, Free`, description, images: [cfg.og] },
+  };
+}
+
+export function LanePage({ db, slug, lane: laneSlugged }) {
+  const cfg = QDBS[db];
+  const today = etToday();
+  const hit = laneOf(db, slug, laneSlugged, today);
+  if (!hit) notFound();
+  const { t, page, seo } = hit;
+  const topics = topicCards(db, poolStats(db, today));
+  const me = topics.find((x) => x.slug === t.slug);
+  const sample = samples(db, t.slug, Math.min(LANE_PRINT, page.n), today, { lane: page.lane }).map((q) => ({ ...q, band: tierBand(q.tier) }));
+  const laneLinks = lanePages(db, today).filter((l) => l.topic === t.slug && l.slug !== page.slug).slice(0, 40).map((l) => ({ href: l.href, label: l.label }));
+  const lbl = laneLabel(page.lane);
+  const faq = [
+    { q: `How many ${lbl} ${cfg.many} are there?`, a: `${page.n.toLocaleString('en-US')} so far, every one from a past Mind Loft daily. ${sample.length} of them are printed on this page with their answers, and Start plays the rest.` },
+    { q: 'Are the answers on the page?', a: `Yes. Each ${cfg.one} lists its four choices, and Show answer reveals the right one, so you can quiz yourself or read straight through.` },
+    { q: 'Is it free?', a: `Yes, free in your browser with no signup.${t.daily ? ` The ranked daily is ${t.daily.name}, with new ${cfg.many} every day.` : ''}` },
+  ];
+  const crumbs = [{ label: 'Home', href: '/' }, { label: cfg.name, href: cfg.base }, { label: t.label, href: `${cfg.base}/${t.slug}` }, { label: lbl, href: page.href }];
+  const quizLd = {
+    '@context': 'https://schema.org', '@type': 'Quiz',
+    name: seo.h1, description: seo.blurb(page.n), url: `${SITE_URL}${page.href}`,
+    about: { '@type': 'Thing', name: lbl },
+    educationalLevel: 'Beginner to advanced', isAccessibleForFree: true, numberOfQuestions: page.n,
+    isPartOf: { '@type': 'Quiz', name: t.h1, url: `${SITE_URL}${cfg.base}/${t.slug}` },
+    hasPart: sample.map(questionLd),
+  };
+  return (
+    <>
+      <Ld data={quizLd} />
+      <Ld data={crumbLdOf(crumbs)} />
+      <Ld data={faqLdOf(faq)} />
+      <PageViewBeacon id={`${cfg.base.slice(1)}-${t.slug}-${page.slug}`} />
+      <QdbPortal db={db} topics={topics} topic={{ ...me, h1: t.h1, blurb: t.blurb }} lane={{ name: page.lane, n: page.n, h1: seo.h1, blurb: `${page.n.toLocaleString('en-US')} free multiple choice ${cfg.many} from past Mind Loft dailies, gentle to tough. ${sample.length} are printed here with their choices and answers. Start plays them all, in Practice, Gauntlet, or Sprint mode.` }} samples={sample} laneLinks={laneLinks} faq={faq} crumbs={crumbs} />
     </>
   );
 }

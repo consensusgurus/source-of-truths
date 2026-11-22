@@ -35,13 +35,13 @@ import { useGauntletLook, stagePalette, useStageChrome } from './GauntletScreens
 import { nextLook } from '@/lib/stage-look';
 import { softGround, RAMP_INK } from '@/lib/category-ramp';
 import { mathText } from './MathText';
-import { QDBS, QDB_KEYS, MODES, DIFFICULTY, COUNTS, ENDLESS_N, SPRINT_SECONDS, storeKey, setupKey, MISS_CAP } from '@/lib/qdb';
+import { QDBS, QDB_KEYS, MODES, DIFFICULTY, COUNTS, ENDLESS_N, SPRINT_SECONDS, storeKey, setupKey, MISS_CAP, laneLabel } from '@/lib/qdb';
 
 const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 const pct = (a) => (a && a[0] ? Math.round((a[1] / a[0]) * 100) : 0);
 // Lane names keep the banks' ampersands as keys; readers get "and", with the
 // Oxford comma where a list has three (site style, 2026-11-18).
-export const laneLabel = (s) => String(s || '').replace(/, ([^,&]+) & /, ', $1, and ').replace(/ & /g, ' and ');
+export { laneLabel };
 const LEGACY_LEVEL = { 1: 'g', 2: 'g', 3: 'm', 4: 't', 5: 't' };
 const DIFF_KEYS = DIFFICULTY.map(([k]) => k);
 const SEEN_CAP = 4000;
@@ -64,7 +64,7 @@ function cleanSetup(s) {
   return out;
 }
 
-export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, samples = [], showcase = [], faq = [], total = 0, crumbs = [] }) {
+export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, lane = null, laneLinks = [], samples = [], showcase = [], faq = [], total = 0, crumbs = [] }) {
   const db = QDBS[dbKey];
   const [look, setLook] = useGauntletLook();
   const ground = topic ? topic.color : db.ground;
@@ -76,7 +76,8 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
   const [setup, setSetup] = useState({ mode: 'practice', level: 'ramp', n: 10 });
   const [store, setStore] = useState({ t: {}, l: {}, b: {}, m: [], s: [] });
   const [sheet, setSheet] = useState(false);
-  const [lanes, setLanes] = useState(() => new Set());
+  // A subtopic page (lane: { name, n, h1, blurb }) opens with its own lane picked.
+  const [lanes, setLanes] = useState(() => new Set(lane ? [lane.name] : []));
   const [hydrated, setHydrated] = useState(false);
   const [game, setGame] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -290,7 +291,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
           </>
         ) : (
           <>
-            <h1 className="qd-kick">{topic.label} · {fmt(topic.n)} {db.many}</h1>
+            <h1 className="qd-kick">{lane ? `${topic.label}: ${laneLabel(lane.name)} · ${fmt(lane.n)}` : `${topic.label} · ${fmt(topic.n)}`} {db.many}</h1>
             <p className="qd-q">{manyLanes ? 'Choose your quiz(zes):' : 'Choose your part(s):'}</p>
             {dropdowns}
             {manyLanes ? (
@@ -354,19 +355,33 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
             </>
           ) : samples.length ? (
             <>
-              <h2>{topic.h1} with answers</h2>
-              <div className="qd-qa">
+              {/* THE PRINTED QUESTIONS (2026-11-22): every question with its four choices,
+                  the answer one tap away in a <details>, so a reader can quiz themselves and
+                  a crawler still reads the answer in the page. */}
+              <h2>{lane ? lane.h1 : topic.h1} with answers</h2>
+              {lane ? <p className="qd-lede">{lane.blurb}</p> : null}
+              <ol className="qd-qa">
                 {samples.map((q) => (
-                  <div key={q.k} className="qd-qr">
-                    <span className="qd-ql">{laneLabel(q.lane)}</span>
+                  <li key={q.k} className="qd-qr">
+                    <span className="qd-ql">{lane ? q.band : laneLabel(q.lane)}</span>
                     <div>
                       <b>{dbKey === 'math' ? mathText(q.q) : q.q}{q.p ? ` (${q.p.toLowerCase()})` : ''}</b>
-                      <span className="qd-ans">Answer: {dbKey === 'math' ? mathText(q.c[q.a]) : q.c[q.a]}</span>
+                      <ul className="qd-ch">{q.c.map((c, i) => <li key={i}><i>{'ABCD'[i] || i + 1}</i> {dbKey === 'math' ? mathText(c) : c}</li>)}</ul>
+                      <details className="qd-rev"><summary>Show answer</summary><span className="qd-ans">Answer: {'ABCD'[q.a] || ''}{'ABCD'[q.a] ? ', ' : ''}{dbKey === 'math' ? mathText(q.c[q.a]) : q.c[q.a]}</span></details>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
-              <p className="qd-lede sm">Every {db.one} here has already run as a Mind Loft daily, so replaying it never spoils a future one. These samples change every week.</p>
+              </ol>
+              <p className="qd-lede sm">Every {db.one} here has already run as a Mind Loft daily, so replaying it never spoils a future one. A few of these change every week. Press Start below to play {lane ? 'this subtopic' : 'the whole topic'} on the clock.</p>
+              {laneLinks.length ? (
+                <>
+                  <h2 className="qd-subh">{lane ? `More ${topic.label} subtopics` : `${topic.label} subtopics`}</h2>
+                  <nav className="qd-links" aria-label={`${topic.label} subtopics`}>
+                    {lane ? <a href={`${db.base}/${topic.slug}`}>All of {topic.label}</a> : null}
+                    {laneLinks.map((l) => <a key={l.href} href={l.href}>{l.label}</a>)}
+                  </nav>
+                </>
+              ) : null}
             </>
           ) : null}
 
@@ -658,6 +673,16 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 .qd-qr{display:grid;grid-template-columns:170px 1fr;gap:16px;padding:15px 0;border-bottom:1px solid color-mix(in srgb, var(--qd-ink) 18%, transparent);}
 .qd-ql{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.65;padding-top:4px;}
 .qd-qr b{display:block;font-size:17px;line-height:1.4;}
+.qd-qa{list-style:none;margin:0;padding:0;}
+.qd-ch{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;font-size:15px;font-weight:600;line-height:1.4;}
+.qd-ch i{font-style:normal;font-weight:800;opacity:.6;margin-right:4px;}
+.qd-rev{margin-top:8px;}
+.qd-rev summary{display:inline-block;cursor:pointer;font-size:13.5px;font-weight:800;text-decoration:underline;text-underline-offset:3px;list-style:none;}
+.qd-rev summary::-webkit-details-marker{display:none;}
+.qd-rev[open] summary{display:none;}
+.qd-subh{margin-top:36px;}
+.qd-subh + .qd-links{margin-top:14px;}
+@media (max-width:640px){.qd-ch{grid-template-columns:1fr;}}
 .qd-ans{display:inline-flex;margin-top:8px;padding:4px 11px;border-radius:999px;background:var(--qd-ink);color:var(--qd-bg) !important;font-size:13.5px;font-weight:800;}
 .qd-faq{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 40px;margin-top:40px;}
 .qd-faq div{padding:16px 0;border-top:1px solid color-mix(in srgb, var(--qd-ink) 18%, transparent);}
