@@ -599,7 +599,8 @@ a.jp-card:focus-visible{outline:3px solid var(--stg-ink);outline-offset:4px;bord
 /* THE PUZZLE TABLE (owner, 2026-11-21). Everything above keeps working off the
    stage tokens, which the root sets from TABLE; these rules belong to the table. */
 .jp-table{background:var(--stg-ground);color:var(--stg-ink);min-height:100vh;font-family:'Manrope',system-ui,sans-serif;}
-.jp-top{padding:max(12px, var(--safe-top, 0px)) 14px 8px;}
+.jp-top{max-width:1360px;margin:0 auto;padding:max(12px, var(--safe-top, 0px)) 32px 8px;box-sizing:border-box;}
+.jp-top .stb{--stb-w:100%;width:100%;margin-left:0;}
 html.lc-on:not(.lc-focus) .jp-top{display:none;}
 .jp-table>.jp-crumb{max-width:1360px;margin:0 auto;padding:10px 32px 12px;box-sizing:border-box;}
 .jp-wrap{max-width:1360px;margin:0 auto;padding:0 32px 40px;box-sizing:border-box;}
@@ -618,7 +619,7 @@ html.lc-on:not(.lc-focus) .jp-top{display:none;}
 .jp-b.pri{background:#f4ead8;}
 .jp-b.pri,.jp-b.pri *{color:#16120e;}
 .jp-b:hover{filter:brightness(1.08);}
-.jp-pictured{position:absolute;right:16px;bottom:16px;padding:7px 12px;border-radius:999px;background:rgba(22,18,14,.78);color:#f4ead8 !important;font-size:12.5px;font-weight:800;text-decoration:none;max-width:calc(100% - 32px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.jp-pictured{position:absolute;right:calc(max(0px, (100% - 1360px) / 2) + 32px);bottom:16px;padding:7px 12px;border-radius:999px;background:rgba(22,18,14,.78);color:#f4ead8 !important;font-size:12.5px;font-weight:800;text-decoration:none;max-width:calc(100% - 64px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .jp-pictured:hover{background:rgba(22,18,14,.92);}
 .jp-cut path{fill:none;stroke:var(--jp-cutc);opacity:.8;stroke-width:1;vector-effect:non-scaling-stroke;}
 .jp-tabs{margin-top:18px;align-items:center;}
@@ -660,7 +661,7 @@ html:not(.lc-on) .jp-ladder,html.lc-focus .jp-ladder{top:0;}
 .jp-faq .jp-qa{background:transparent;}
 .jp-more a{background:transparent;}
 @media (max-width:1100px){.jp-steps button{width:76px;font-size:14px;}}
-@media (max-width:900px){.jp-hero{min-height:440px;}.jp-hero h1{font-size:44px;}.jp-htx{padding:28px 24px;}.jp-wrap{padding:0 18px 32px;}.jp-ladder{margin:0 -18px 14px;padding:16px 18px 14px;}.jp-table>.jp-crumb{padding:10px 18px;}}
+@media (max-width:900px){.jp-hero{min-height:440px;}.jp-hero h1{font-size:44px;}.jp-htx{padding:28px 24px;}.jp-wrap{padding:0 18px 32px;}.jp-ladder{margin:0 -18px 14px;padding:16px 18px 14px;}.jp-table>.jp-crumb{padding:10px 18px;}.jp-top{padding-left:18px;padding-right:18px;}.jp-pictured{right:18px;max-width:calc(100% - 36px);}}
 @media (max-width:640px){
   .jp-hero{min-height:420px;}
   .jp-shade{background:linear-gradient(0deg,rgba(22,18,14,.95) 0%,rgba(22,18,14,.45) 58%,rgba(22,18,14,0) 85%);}
@@ -669,7 +670,7 @@ html:not(.lc-on) .jp-ladder,html.lc-focus .jp-ladder{top:0;}
   .jp-hero .jp-lede{font-size:14.5px;}
   .jp-btns{flex-direction:column;align-items:stretch;}
   .jp-b{justify-content:center;height:48px;}
-  .jp-pictured{left:16px;right:auto;bottom:12px;}
+  .jp-pictured{left:14px;right:auto;bottom:12px;max-width:calc(100% - 28px);}
   .jp-lh{font-size:20px;margin-top:18px;}
   .jp-steps{width:100%;}
   .jp-steps button{flex:1;width:auto;padding:8px 0;font-size:13px;}
