@@ -441,6 +441,11 @@ Five (differences of 5 in 1 to 6), Giant, Quilt, Towers, Whittle (already 6x6).
   (Python: one constraint model per rule; a board ships only if it has exactly one solution AND
   generalised arc consistency over its constraints, one rule at a time, fills every square, i.e.
   no guessing). Ramp: dug to a minimal clue set, then Mon +6 clues back, Tue +5 ... Sun +0.
+  **Coop contrast (2026-11-22, player report):** cage pastels (`SK_PASTEL`) are a full step deep, not near-white;
+  cage walls are solid dark slate 2px with box walls redrawn at 3.4px over them so the two never blur; in-cage
+  hairlines are faint. Selection SHADES the cage colour (ink 14% on peers, 26% on the selected cage) and never
+  paints a hue over it. Desktop cage outlines are solid (never dashed) in the register's ink. Keep these when
+  restyling any killer-style board.
   Coop prints no digits (ramp is cage size); **Dot prints every dot and no digit, so it
   has no ramp and NO Sunday Edition** (sunday false, not in SUNDAY_EDITION_GAMES). Dot dots:
   a 1 beside a 2 is ALWAYS white (the 9x9 bank prints either). Checked by

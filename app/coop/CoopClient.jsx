@@ -97,11 +97,15 @@ const STATS_KEY = 'sot_coop_stats';
 // shades of the same color cannot do that.
 // The stage board's cage pastels (Coop.dc.html, owner: faint pastels),
 // worn by the same greedy colouring (CAGE_TINT) the old board uses.
-const SK_PASTEL = ['#fde4e7', '#e1f1fc', '#fde9d6', '#e0f6e7', '#ece6fb', '#fcf1d2', '#d7f3ee', '#f9e3f0', '#eef3d6'];
+// Contrast pass (2026-11-22, player report): the first pastels sat within a
+// shade of white and of each other, so a cage could not be told from its
+// neighbour. These are a full step deeper and spread further round the wheel;
+// black digits and the white total chips still read well above 7:1 on all.
+const SK_PASTEL = ['#f7c6cd', '#bfdcf5', '#f9cfa5', '#bfe6c9', '#d6ccf5', '#f3e09a', '#a9e1d6', '#efc1db', '#d8e4a8'];
 const CAGE_TINTS = ['#ece5fa', '#dfeafc', '#d9f0ee', '#e4f5e2', '#fbeed3', '#fbe3ec', '#e6e9f0'];
 // the cage outline, a neutral dark rather than the accent so it stays visible
 // over every tint including the violet one
-const WALL_INK = 'rgba(40,20,70,0.55)';
+const WALL_INK = 'rgba(30,16,60,0.85)';
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -355,6 +359,10 @@ export default function CoopClient({ puzzles = [], forceNum = null }) {
   useEffect(() => { if (EMBED && EMBED.autostart && preStart) startGame(); }, [EMBED, preStart]); // eslint-disable-line react-hooks/exhaustive-deps
   useRunHelp(EMBED, () => setShowHelp(true));
   const INK = STAGE ? 'var(--stg-ink,#e9edf4)' : COLORS.ink;
+  // Cage outline (desktop board): solid, never dashed (owner), and drawn in the
+  // register's own ink on the stage, because the old fixed dark violet all but
+  // vanished on the dark stage (contrast pass, 2026-11-22).
+  const CAGE_WALL = STAGE ? 'color-mix(in srgb, var(--stg-ink, #e9edf4) 72%, transparent)' : WALL_INK;
   const FADED = STAGE ? 'var(--stg-mute,#8b95a8)' : COLORS.faded;
   const SURF = STAGE ? 'var(--stg-surf,rgba(255,255,255,0.045))' : T.white;
   const SURF_B = STAGE ? 'var(--stg-line,rgba(255,255,255,0.11))' : 'rgba(28,30,36,0.42)';
@@ -848,11 +856,11 @@ export default function CoopClient({ puzzles = [], forceNum = null }) {
     // washed over it, exactly as Quilt's regions are (peer a neutral ink lift,
     // same-digit and selected carrying the accent). The Loft keeps its seven
     // pastels and its translucent washes untouched.
-    const tint = STAGE ? regionMix(1) : CAGE_TINTS[tone % CAGE_TINTS.length];
+    const tint = STAGE ? regionMix(1.45) : CAGE_TINTS[tone % CAGE_TINTS.length];
     let bg = tint;
     if (STAGE) {
-      if (peer) bg = `color-mix(in srgb, var(--stg-ink) 12%, ${tint})`;
-      if (sameVal) bg = `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 24%, ${tint})`;
+      if (peer) bg = `color-mix(in srgb, var(--stg-ink) ${CAGE[idx] === selK ? 24 : 15}%, ${tint})`;
+      if (sameVal) bg = `color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 34%, ${tint})`;
       if (isSel) bg = `var(--stg-sel, ${`color-mix(in srgb, var(--stg-acc) 40%, ${tint})`})`;
     }
     let wash = null;
@@ -909,7 +917,7 @@ export default function CoopClient({ puzzles = [], forceNum = null }) {
       steps={[
         <><b>Tap a square then tap a number</b>, or pick a number first and tap every square it goes in. On desktop the <b>arrow keys and number keys</b> work too.</>,
         <>Turn on <b>Notes</b> (or press N) to pencil candidates, or with a number picked just <b>long-press</b> a square to pencil it.</>,
-        <>Each <b>shaded block</b> inside a dashed outline is a cage. The small number in its corner is the <b>total of the digits inside it</b>, and <b>no digit repeats within a cage</b>. A two-square cage totalling 4 can only be 1 and 3.</>,
+        <>Each <b>shaded block</b> inside an outline is a cage. The small number in its corner is the <b>total of the digits inside it</b>, and <b>no digit repeats within a cage</b>. A two-square cage totalling 4 can only be 1 and 3.</>,
         <><b>Undo</b> (or Ctrl+Z) takes back your last move. <b>Clear</b> wipes the whole grid, which on a killer board means all of it.</>,
       ]}
       knack="A two-square cage totalling 3 is a 1 and a 2, and one totalling 11 is a 5 and a 6. Start with the extremes."
@@ -934,11 +942,21 @@ export default function CoopClient({ puzzles = [], forceNum = null }) {
   // Faint pastels (owner ruling): each cage wears one, the selection's
   // peers lay a third of periwinkle over it, and the dark look sinks the
   // pastel onto the near-black board. The black-and-white looks drop it.
-  const skPastel = (i) => { const h = SK_PASTEL[CAGE_TINT[CAGE[i]] % SK_PASTEL.length]; return skDark ? `color-mix(in srgb, ${h} 22%, #0f1420)` : h; };
+  const skPastel = (i) => { const h = SK_PASTEL[CAGE_TINT[CAGE[i]] % SK_PASTEL.length]; return skDark ? `color-mix(in srgb, ${h} 36%, #0f1420)` : h; };
   const skFill = (i) => {
     if (skMono) return null;
     const base = skPastel(i);
-    if (playing && sel >= 0 && i !== sel && (Math.floor(i / 6) === selR || i % 6 === selC || boxOf(Math.floor(i / 6), i % 6) === selB || CAGE[i] === selK)) return `color-mix(in srgb, var(--pst-acc) ${skDark ? 40 : 34}%, ${base})`;
+    // Highlight SHADES the cage colour instead of painting over it (contrast
+    // pass, 2026-11-22): a periwinkle wash over the whole row, column, box and
+    // cage turned most of the board one colour the moment a square was picked,
+    // which is exactly when the cages need reading. Peers darken (lighten in
+    // the dark look) a step and keep their hue; the selected square's own cage
+    // goes a step further so it stands out from the row and column.
+    if (playing && sel >= 0 && i !== sel) {
+      const r = Math.floor(i / 6), c = i % 6;
+      const mate = CAGE[i] === selK;
+      if (mate || r === selR || c === selC || boxOf(r, c) === selB) return `color-mix(in srgb, ${skDark ? '#ffffff' : '#1c2540'} ${mate ? (skDark ? 22 : 26) : (skDark ? 11 : 14)}%, ${base})`;
+    }
     return base;
   };
   // Cage walls: solid grey on every square edge between two cages (never
@@ -956,7 +974,11 @@ export default function CoopClient({ puzzles = [], forceNum = null }) {
   }, [CAGE]);
   const skCageOver = (
     <g>
-      <path d={SK_CAGE_D} fill="none" stroke={skDark ? '#8592a4' : '#5b6678'} strokeWidth="1.6" strokeLinecap="square" vectorEffect="non-scaling-stroke" />
+      {/* cage walls a clear dark slate (light) / pale slate (dark), and the box
+          walls redrawn heavier on top, so the two line systems never get mixed
+          up now that the cage walls are dark enough to see */}
+      <path d={SK_CAGE_D} fill="none" stroke={skDark ? '#b3bdcc' : '#2f3848'} strokeWidth="2" strokeLinecap="square" vectorEffect="non-scaling-stroke" />
+      <path d="M3 0V6M0 2H6M0 4H6" fill="none" stroke="var(--sks-wall)" strokeWidth="3.4" strokeLinecap="butt" vectorEffect="non-scaling-stroke" />
       {SUM_AT.map((v, i) => {
         if (!v) return null;
         const r = Math.floor(i / 6), c = i % 6, w = String(v).length > 1 ? 0.482 : 0.328;
@@ -984,6 +1006,8 @@ export default function CoopClient({ puzzles = [], forceNum = null }) {
         fill: skFill,
         over: skCageOver,
         cellClass: (i) => (SUM_AT[i] ? 'cg' : ''),
+        // the hairlines inside a cage go fainter, so the cage walls carry the shape
+        style: { '--sks-thin': skDark ? '#2c3445' : '#d3d9e2' },
         cellLabel: (i) => `Row ${Math.floor(i / 6) + 1}, column ${(i % 6) + 1}, ${cells[i] || 'empty'}${SUM_AT[i] ? `, cage total ${SUM_AT[i]}` : ''}${i === sel ? ', selected' : ''}`,
       }}
       pad={{ note: noteMode, onDigit: padTap, keys: Array.from({ length: N }, (_, k) => ({ d: k + 1, left: Math.max(0, N - (padCounts[k + 1] || 0)), done: digitDone[k + 1], armed: armed === k + 1 })) }}
@@ -1145,10 +1169,10 @@ export default function CoopClient({ puzzles = [], forceNum = null }) {
                 // A cage wall goes wherever the neighbour belongs to a different
                 // cage, or where the grid runs out, so every cage closes.
                 const wall = {
-                  borderTop: r === 0 || CAGE[idx - 6] !== k ? `1.5px dashed ${WALL_INK}` : 'none',
-                  borderLeft: c === 0 || CAGE[idx - 1] !== k ? `1.5px dashed ${WALL_INK}` : 'none',
-                  borderBottom: r === 5 || CAGE[idx + 6] !== k ? `1.5px dashed ${WALL_INK}` : 'none',
-                  borderRight: c === 5 || CAGE[idx + 1] !== k ? `1.5px dashed ${WALL_INK}` : 'none',
+                  borderTop: r === 0 || CAGE[idx - 6] !== k ? `2px solid ${CAGE_WALL}` : 'none',
+                  borderLeft: c === 0 || CAGE[idx - 1] !== k ? `2px solid ${CAGE_WALL}` : 'none',
+                  borderBottom: r === 5 || CAGE[idx + 6] !== k ? `2px solid ${CAGE_WALL}` : 'none',
+                  borderRight: c === 5 || CAGE[idx + 1] !== k ? `2px solid ${CAGE_WALL}` : 'none',
                 };
                 const sum = SUM_AT[idx];
                 const cageDone = cageFilled[k] === CAGE_CELLS[k].length;
