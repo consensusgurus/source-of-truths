@@ -2,23 +2,12 @@ import MathDashClient from './MathDashClient';
 import { etTodayISO } from '@/lib/daily-games';
 import { KIDS_DAILY_MAP, kidsDateLabel, resolveKidsDay } from '@/lib/kids-daily';
 import { mathDashFor } from '@/lib/kids-mathdash';
+import { kidsMetadata } from '@/lib/kids-seo';
+import KidsSeo from '../KidsSeo';
 
 // Math Dash: Blitz for kids. Ten sums, three hearts, no clock that scolds.
 
-export const metadata = {
-  title: 'Math Dash | Mind Loft Kids',
-  description: 'A daily arithmetic run for kids. Ten sums, three hearts, starting easy and getting a little bigger. Quick adding and subtracting inside 20, with a star for every right answer and the answer shown on every miss.',
-  alternates: { canonical: '/kids/mathdash' },
-  openGraph: {
-    title: 'Math Dash | Mind Loft Kids',
-    description: 'A daily arithmetic run for kids: ten sums, three hearts, adding and subtracting inside 20. A star for every right answer.',
-    url: '/kids/mathdash',
-    type: 'website',
-    siteName: 'Mind Loft',
-    images: ['/kids/opengraph-image'],
-  },
-  twitter: { card: 'summary_large_image', title: 'Math Dash | Mind Loft Kids', description: 'A daily arithmetic run for kids: ten sums, three hearts, adding and subtracting inside 20. A star for every right answer.', images: ['/kids/opengraph-image'] },
-};
+export const metadata = kidsMetadata('mathdash');
 
 // The browser chrome (address bar, installed-app cap) takes the kids butter
 // ground, not the site navy; see html:has(.kd) in app/globals.css.
@@ -33,6 +22,8 @@ export default function KidsMathDashPage({ searchParams }) {
   const dow = new Date(`${day.dateIso}T12:00:00Z`).getUTCDay();
   const qs = mathDashFor(dayNum, dow === 0 || dow === 6);
   return (
+    <>
+      <KidsSeo id="mathdash" />
     <MathDashClient
       key={day.dateIso}
       game={KIDS_DAILY_MAP.mathdash}
@@ -42,5 +33,6 @@ export default function KidsMathDashPage({ searchParams }) {
       dayLabel={kidsDateLabel(day.dateIso)}
       todayNum={day.todayNum}
     />
+    </>
   );
 }

@@ -2,6 +2,8 @@ import KidsSpinClient from './KidsSpinClient';
 import { PUZZLES as SPIN } from '@/app/spin/puzzles';
 import { etTodayISO } from '@/lib/daily-games';
 import { KIDS_DAILY_MAP, kidsDateLabel, resolveKidsDay } from '@/lib/kids-daily';
+import { kidsMetadata } from '@/lib/kids-seo';
+import KidsSeo from '../KidsSeo';
 
 // Spin for kids (owner, 2026-11-15: "a kids version of our game where you
 // have to rotate puzzle pieces"). The SAME photo grown-up Spin played on the
@@ -11,13 +13,7 @@ import { KIDS_DAILY_MAP, kidsDateLabel, resolveKidsDay } from '@/lib/kids-daily'
 
 const DESC = 'A free daily photo puzzle for kids. A picture is cut into big squares and every one is turned. Tap a square to spin it until the whole picture is the right way up. No timer, no sign-up, no ads.';
 
-export const metadata = {
-  title: 'Spin | Mind Loft Kids',
-  description: DESC,
-  alternates: { canonical: '/kids/spin' },
-  openGraph: { title: 'Spin | Mind Loft Kids', description: DESC, url: '/kids/spin', type: 'website', siteName: 'Mind Loft', images: ['/kids/opengraph-image'] },
-  twitter: { card: 'summary_large_image', title: 'Spin | Mind Loft Kids', description: DESC, images: ['/kids/opengraph-image'] },
-};
+export const metadata = kidsMetadata('spin');
 
 // The browser chrome takes the kids butter ground; see html:has(.kd).
 export const viewport = { width: 'device-width', initialScale: 1, maximumScale: 5, userScalable: true, viewportFit: 'cover', themeColor: '#fff6e0' };
@@ -31,6 +27,8 @@ export default function KidsSpinPage({ searchParams }) {
   const row = live.find((p) => p.live === day.dateIso) || live[live.length - 1] || null;
   const board = row ? { num: row.num, jig: row.jig ?? null, saw: row.saw ?? null } : null;
   return (
+    <>
+      <KidsSeo id="spin" />
     <KidsSpinClient
       key={day.dateIso}
       game={KIDS_DAILY_MAP.spin}
@@ -40,5 +38,6 @@ export default function KidsSpinPage({ searchParams }) {
       dayLabel={kidsDateLabel(day.dateIso)}
       todayNum={day.todayNum}
     />
+    </>
   );
 }

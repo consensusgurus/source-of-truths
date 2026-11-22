@@ -1,18 +1,9 @@
 import LearningMatch from '../LearningMatch';
+import { kidsMetadata } from '@/lib/kids-seo';
+import KidsSeo from '../KidsSeo';
 
-export const metadata = {
-  title: 'Clock Match | Kids Corner | Mind Loft',
-  description: 'A free matching memory game for kids. Learn to tell time: match each clock face to its time, on the hour and half hour. 24 cards, 12 pairs. Up to four players.',
-  alternates: { canonical: '/kids/clock-match' },
-  openGraph: {
-    title: 'Clock Match | Kids Corner',
-    description: 'Learn to tell time: match each clock face to its time, on the hour and half hour. Find all twelve pairs.',
-    url: '/kids/clock-match',
-    type: 'website',
-    siteName: 'Mind Loft',
-  },
-};
+export const metadata = kidsMetadata('clock-match');
 
 export default function ClockMatchPage() {
-  return <LearningMatch id="clock-match" />;
+  return <><KidsSeo id="clock-match" /><LearningMatch id="clock-match" /></>;
 }

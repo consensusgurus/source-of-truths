@@ -281,7 +281,8 @@ const load = async (rel) => import(pathToFileURL(join(root, rel)).href);
     if (!page.includes('resolveKidsDay(searchParams')) bad(`hub: ${g.key} page does not resolve ?p through resolveKidsDay (the archive strip would open today's board)`);
     if (!page.includes('todayNum={day.todayNum}')) bad(`hub: ${g.key} page does not pass todayNum (the archive strip would not render)`);
     if (!page.includes('key={day.dateIso}')) bad(`hub: ${g.key} page does not key its client by date (state would carry over between archive days)`);
-    if (!page.includes(`alternates: { canonical: '${g.href}' }`)) bad(`hub: ${g.key} canonical is not ${g.href}`);
+    // Metadata comes from lib/kids-seo.js since 2026-11-22: the row's path is the canonical.
+    if (!page.includes(`kidsMetadata('${g.key}')`)) bad(`hub: ${g.key} page does not take kidsMetadata('${g.key}')`);
   }
   ok(`hub: ${KIDS_DAILIES.length} dailies registered, paged, and counted`);
 }

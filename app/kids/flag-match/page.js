@@ -1,18 +1,9 @@
 import LearningMatch from '../LearningMatch';
+import { kidsMetadata } from '@/lib/kids-seo';
+import KidsSeo from '../KidsSeo';
 
-export const metadata = {
-  title: 'Flag Match | Kids Corner | Mind Loft',
-  description: 'A free matching memory game for kids. Match each flag to its country: Japan, France, Brazil, Canada and more. 24 cards, 12 pairs. Up to four players.',
-  alternates: { canonical: '/kids/flag-match' },
-  openGraph: {
-    title: 'Flag Match | Kids Corner',
-    description: 'Match each flag to its country: Japan, France, Brazil, Canada and more. Find all twelve pairs.',
-    url: '/kids/flag-match',
-    type: 'website',
-    siteName: 'Mind Loft',
-  },
-};
+export const metadata = kidsMetadata('flag-match');
 
 export default function FlagMatchPage() {
-  return <LearningMatch id="flag-match" />;
+  return <><KidsSeo id="flag-match" /><LearningMatch id="flag-match" /></>;
 }

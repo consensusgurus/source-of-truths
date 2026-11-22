@@ -1,18 +1,9 @@
 import DogMatchClient from './DogMatchClient';
+import { kidsMetadata } from '@/lib/kids-seo';
+import KidsSeo from '../KidsSeo';
 
-export const metadata = {
-  title: 'Dog Match | Kids Corner | Mind Loft',
-  description: 'A free picture-matching memory game for kids. Flip 28 cards to find 14 pairs of dog breeds. One-player or two-player pass-and-play.',
-  alternates: { canonical: '/kids/dog-match' },
-  openGraph: {
-    title: 'Dog Match | Kids Corner',
-    description: 'Flip the cards and find all fourteen matching dog breeds. Play solo or two-player.',
-    url: '/kids/dog-match',
-    type: 'website',
-    siteName: 'Mind Loft',
-  },
-};
+export const metadata = kidsMetadata('dog-match');
 
 export default function DogMatchPage() {
-  return <DogMatchClient />;
+  return <><KidsSeo id="dog-match" /><DogMatchClient /></>;
 }

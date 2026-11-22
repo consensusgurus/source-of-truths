@@ -2,6 +2,8 @@ import KidsJigsaw from '../KidsJigsaw';
 import { kidsJigsawBoards, kidsJigsawDaily } from '../kids-jigsaw-boards';
 import { etTodayISO } from '@/lib/daily-games';
 import { KIDS_DAILY_MAP, kidsDateLabel, resolveKidsDay } from '@/lib/kids-daily';
+import { kidsMetadata } from '@/lib/kids-seo';
+import KidsSeo from '../KidsSeo';
 
 // The kids Puzzle Shelf (owner, 2026-11-13; was the Jigsaw and Tall Jigsaw
 // tiles from 2026-11-11). One page, one screen: every Jig and Saw photo so far,
@@ -10,13 +12,7 @@ import { KIDS_DAILY_MAP, kidsDateLabel, resolveKidsDay } from '@/lib/kids-daily'
 
 const DESC = 'A free jigsaw shelf for kids: every real photo from Mind Loft’s daily Jig and Saw on one screen, today’s two first. Pick any picture and cut it into 6, 12, 20 or 30 pieces. No sign-up, no ads, no timer.';
 
-export const metadata = {
-  title: 'Puzzle Shelf: Free Jigsaws for Kids | Mind Loft Kids',
-  description: DESC,
-  alternates: { canonical: '/kids/jigsaw' },
-  openGraph: { title: 'Puzzle Shelf | Mind Loft Kids', description: DESC, url: '/kids/jigsaw', type: 'website', siteName: 'Mind Loft', images: ['/kids/opengraph-image'] },
-  twitter: { card: 'summary_large_image', title: 'Puzzle Shelf | Mind Loft Kids', description: DESC, images: ['/kids/opengraph-image'] },
-};
+export const metadata = kidsMetadata('jigsaw');
 
 // The browser chrome takes the kids butter ground; see html:has(.kd).
 export const viewport = { width: 'device-width', initialScale: 1, maximumScale: 5, userScalable: true, viewportFit: 'cover', themeColor: '#fff6e0' };
@@ -30,6 +26,8 @@ export default function KidsJigsawPage({ searchParams }) {
   const jig = kidsJigsawDaily(boards, 'jig', day.dateIso);
   const saw = kidsJigsawDaily(boards, 'saw', day.dateIso);
   return (
+    <>
+      <KidsSeo id="jigsaw" />
     <KidsJigsaw
       key={day.dateIso}
       game={KIDS_DAILY_MAP['jigsaw']}
@@ -42,5 +40,6 @@ export default function KidsJigsawPage({ searchParams }) {
       todayNum={day.todayNum}
       quizId="kids-jigsaw"
     />
+    </>
   );
 }

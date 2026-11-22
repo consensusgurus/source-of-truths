@@ -942,3 +942,16 @@ hero (today's photos still never leave the server) with the daily's cut drawn on
 ladder is sticky and its cells draw a finer grid as the size grows; every playable card wears the
 chosen size's cut lines (finer up to 500, then held); a card that cannot do the size goes grey and
 dark with "Up to N".
+
+## Kids SEO: one table for every kids page (2026-11-22)
+
+Owner: "build SEO support for all kids pages." `lib/kids-seo.js` `KIDS_SEO_ROWS` holds every kids page's
+search title (70 or fewer, searcher's words first, ends `| Mind Loft Kids`) and description (160 or
+fewer, says free, no em dash). Every `app/kids/<id>/page.js` and the hub take
+`export const metadata = kidsMetadata('<id>')` (canonical, Open Graph and Twitter with
+`/kids/opengraph-image`) and mount `<KidsSeo id="<id>" />` (`app/kids/KidsSeo.jsx`): a Game schema
+(CollectionPage with hasPart for the hub) with a children's audience, plus a BreadcrumbList Mind Loft >
+Kids > game. The sitemap gained a `kids` segment (`kidsEntries` in `lib/sitemap-entries.js`, so
+`/sitemaps/kids.xml`); kids pages had never been in the sitemap before. `scripts/verify-kids-seo.mjs`
+(found by verify-all) fails a kids page without its row, metadata call or `<KidsSeo>`. A NEW kids page:
+one row, those two lines in its page.js.

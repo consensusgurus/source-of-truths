@@ -1,18 +1,9 @@
 import LearningMatch from '../LearningMatch';
+import { kidsMetadata } from '@/lib/kids-seo';
+import KidsSeo from '../KidsSeo';
 
-export const metadata = {
-  title: 'Rhyme Match | Kids Corner | Mind Loft',
-  description: 'A free matching memory game for kids. Match the rhyming words: cat and hat, moon and spoon, frog and log. 24 cards, 12 pairs. Up to four players.',
-  alternates: { canonical: '/kids/rhyme-match' },
-  openGraph: {
-    title: 'Rhyme Match | Kids Corner',
-    description: 'Match the rhyming words: cat and hat, moon and spoon, frog and log. Find all twelve pairs.',
-    url: '/kids/rhyme-match',
-    type: 'website',
-    siteName: 'Mind Loft',
-  },
-};
+export const metadata = kidsMetadata('rhyme-match');
 
 export default function RhymeMatchPage() {
-  return <LearningMatch id="rhyme-match" />;
+  return <><KidsSeo id="rhyme-match" /><LearningMatch id="rhyme-match" /></>;
 }

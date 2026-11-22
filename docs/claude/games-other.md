@@ -982,6 +982,14 @@ https://claude.ai/artifact/8BH4Z6WJZkjHB77qEggwnm.
   pieces so every one fits without the tray scrolling (80vh, or the board card's height when beside
   it). At 20 and 30 pieces the old fixed 118px tray ran past the screen on iPad.
 - `Confetti` takes an optional `word`; Crayon cheers "WOW!" (default stays SOLVED!).
+- **Draw Your Own (2026-11-22, owner: "have a spot where kids can draw their own image, color, and
+  make a puzzle").** First card on the picker (`?pic=draw`), `DrawPad` in `CrayonClient.jsx`. Two
+  800 x 720 canvases, LINE layer over COLOR layer. Pencil draws ink lines; Crayon flood-fills the line
+  layer from the touch-down point (`regionMask`, lines = alpha >= 128, grown 3px under the lines) and
+  draws the stroke through that mask, so it stays inside the kid's own lines (no closed shape = the
+  whole page); Eraser rubs out both layers. Undo / Redo keep 25 snapshots. Work autosaves to
+  `sot_kids_crayon_draw`. Done saves "My Drawing" to My Pictures like any picture. `ColorPanel` is the
+  shared tools / palette / actions column for both modes.
 
 ## Kids Mop and Kids Spin (`/kids/mop`, `/kids/spin`, launched 2026-11-15)
 

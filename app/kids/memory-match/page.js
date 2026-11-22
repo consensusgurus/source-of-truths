@@ -1,18 +1,9 @@
 import MemoryMatchClient from './MemoryMatchClient';
+import { kidsMetadata } from '@/lib/kids-seo';
+import KidsSeo from '../KidsSeo';
 
-export const metadata = {
-  title: 'Treats Match | Kids Corner | Mind Loft',
-  description: 'A free picture-matching memory game for kids. Flip 20 cards to find 10 pairs of treats. One-player or two-player pass-and-play.',
-  alternates: { canonical: '/kids/memory-match' },
-  openGraph: {
-    title: 'Treats Match | Kids Corner',
-    description: 'Flip the cards and find all ten matching treats. Play solo or two-player.',
-    url: '/kids/memory-match',
-    type: 'website',
-    siteName: 'Mind Loft',
-  },
-};
+export const metadata = kidsMetadata('memory-match');
 
 export default function MemoryMatchPage() {
-  return <MemoryMatchClient />;
+  return <><KidsSeo id="memory-match" /><MemoryMatchClient /></>;
 }
