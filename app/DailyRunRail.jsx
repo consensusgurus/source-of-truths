@@ -82,8 +82,23 @@ export default function DailyRunRail({ gameKey }) {
 }
 
 const CSS = `
-.drr{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:7px 16px;border-bottom:1px solid var(--stg-line,rgba(127,127,127,.25));
+.drr{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:7px 20px;border-bottom:1px solid var(--stg-line,rgba(127,127,127,.25));
   font-family:'Manrope',system-ui,sans-serif;font-size:12px;}
+/* THE RAIL LINES UP WITH THE TOP BAR (owner, 2026-11-22: "alignment is off in
+   header, on the left and on the right ... should align with the back and
+   light dark elements"). Where the simple top bar (StageTopBar, .stg-sim) is the
+   header, the rail's edges take that bar's edges: 14px on a phone, and on a
+   desktop the bar's own centred width, min(1040px, 100vw - 48px). */
+@media (max-width:900px){.drr{padding-left:13px;padding-right:13px;}}
+html[data-stage-pastel] .stg-top:has(.stg-sim) .drr{padding-left:14px;padding-right:14px;}
+@media (min-width:900px){
+  html[data-stage-pastel] .stg-top:has(.stg-sim) .drr{--drr-w:min(1040px, calc(100vw - 48px));
+    padding-left:max(14px, calc((100% - var(--drr-w)) / 2));padding-right:max(14px, calc((100% - var(--drr-w)) / 2));}
+}
+@media (min-width:900px) and (max-width:1099px){
+  html:not([data-stage-pastel]) .stg-top:has(.stg-sim) .drr{--drr-w:min(1040px, calc(100vw - 48px));
+    padding-left:max(14px, calc((100% - var(--drr-w)) / 2));padding-right:max(14px, calc((100% - var(--drr-w)) / 2));}
+}
 .drr-eb{font-family:'Manrope',ui-monospace,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--stg-mute,#8a93a6);}
 .drr-chips{display:flex;gap:6px;flex-wrap:wrap;}
 .drr-chips.drr-long{flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none;}
