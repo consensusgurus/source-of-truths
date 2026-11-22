@@ -370,9 +370,11 @@ const CR_CSS = `
 .cr-fintext h2{font-size:clamp(26px,4vw,34px);font-weight:700;margin:0 0 8px}
 .cr-fintext p{color:var(--kink2);font-size:16px;margin:0 0 14px}
 .cr-counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 14px}
-.cr-count{display:flex;flex-direction:column;align-items:center;padding:10px 6px;border:2.5px solid var(--kink);border-radius:16px;background:var(--kink);color:#fff;text-decoration:none;box-shadow:0 4px 0 #0c0f24;line-height:1.15}
+.cr-count{display:flex;flex-direction:column;align-items:center;padding:10px 6px;border:2.5px solid var(--kline);border-radius:16px;background:#fff;color:var(--kink);text-decoration:none;box-shadow:0 4px 0 #e9d9ad;line-height:1.15;transition:transform .12s,border-color .12s}
+.cr-count:hover,.cr-count:focus-visible{border-color:var(--kink);transform:translateY(-2px)}
+.cr-count:active{transform:translateY(2px);box-shadow:0 1px 0 #e9d9ad}
 .cr-count b{font-family:var(--kdisp);font-size:26px;font-weight:700}
-.cr-count span{font-size:12px;font-weight:700;opacity:.85}
+.cr-count span{font-size:12px;font-weight:700;color:var(--kink2)}
 .cr-fin .cr-acts{grid-template-columns:repeat(2,minmax(0,1fr))}
 .cr-howh{font-size:17px;font-weight:700;margin:26px 0 0;padding-top:16px;border-top:2px solid var(--kline);color:var(--kink2)}
 .cr-how{max-width:62ch}
