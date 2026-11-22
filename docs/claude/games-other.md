@@ -971,7 +971,11 @@ https://claude.ai/artifact/8BH4Z6WJZkjHB77qEggwnm.
   board has `src` (the data URL), `mine: true`, key `my-<id>`, a `num` hashed from the id so the cut
   is stable; it plays exactly like a photo, wide shape. **Its `src` is a BLOB URL** made from the
   stored data URL (`blobUrlOf`): the jigsaw draws the picture once per piece, and ~80 KB data URLs
-  in every piece's SVG `<image>` drew black squares on iPad (owner, 2026-11-22). Finish credit reads "Colored by you in Crayon".
+  in every piece's SVG `<image>` drew black squares on iPad (owner, 2026-11-22).
+  The blob URL alone did NOT cure the black tray boxes on iPad, so a `mine` board's tray and lifted
+  pieces are now BITMAPS: `rasterPieces` cuts each piece on a canvas (clip to its path, slice-fit
+  the picture, same two outline strokes) and `PieceSvg` renders an `<img>` when given `raster`.
+  Photo boards keep the SVG path. Finish credit reads "Colored by you in Crayon".
 - **"Built by Emma"** is a line under the kids footer on `/kids/crayon` AND under a My Pictures
   puzzle on `/kids/jigsaw` (`kj-emma`, shown only while a `mine` board is open). Owner, keep both.
 - **Tray fits its pieces (2026-11-22, all kids jigsaws).** From 640px up, `fitTray` shrinks the tray

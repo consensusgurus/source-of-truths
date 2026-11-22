@@ -118,7 +118,11 @@ function markDone(key, n) {
 
 // One piece drawn on its own, the photo clipped to its outline. `idp` must be
 // unique on the page (tray, floating and board copies each get their own).
-function PieceSvg({ p, BW, BH, src, idp, size, lift }) {
+function PieceSvg({ p, BW, BH, src, idp, size, lift, raster }) {
+  const shadow = lift ? 'drop-shadow(0 10px 10px rgba(27,31,59,.35))' : 'drop-shadow(0 3px 0 rgba(27,31,59,.18))';
+  if (raster) {
+    return <img src={raster} width={size} height={size} alt="" draggable={false} style={{ display: 'block', width: size, height: size, filter: shadow, pointerEvents: 'none', WebkitUserDrag: 'none', WebkitTouchCallout: 'none' }} />;
+  }
   return (
     <svg viewBox={`${p.x - KNOB} ${p.y - KNOB} ${S + 2 * KNOB} ${S + 2 * KNOB}`} width={size} height={size}
       style={{ display: 'block', overflow: 'visible', filter: lift ? 'drop-shadow(0 10px 10px rgba(27,31,59,.35))' : 'drop-shadow(0 3px 0 rgba(27,31,59,.18))' }} aria-hidden="true">
@@ -191,6 +195,49 @@ function Picker({ boards, mine = [], dailyKeys, isToday, done, n, setN, onPick }
   );
 }
 
+// My Pictures pieces as plain bitmaps (owner, 2026-11-22: the tray boxes
+// stayed solid black on iPad for colored pictures, with both a data URL and a
+// blob URL in the SVG <image>). Each piece is cut on a canvas once: clipped
+// to its outline, the picture slice-fitted exactly as the SVG draws it, the
+// same two outline strokes, then handed to an <img>. Photo boards keep the
+// SVG path that already works for them.
+function rasterPieces(src, pieces, BW, BH) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const out = {};
+      const PX = 2; // canvas pixels per board unit, crisp on retina
+      const side = (S + 2 * KNOB) * PX;
+      const sc = Math.max(BW / img.naturalWidth, BH / img.naturalHeight);
+      const dw = img.naturalWidth * sc, dh = img.naturalHeight * sc;
+      const dx = (BW - dw) / 2, dy = (BH - dh) / 2;
+      try {
+        pieces.forEach((p) => {
+          const cv = document.createElement('canvas');
+          cv.width = side; cv.height = side;
+          const ctx = cv.getContext('2d');
+          ctx.scale(PX, PX);
+          ctx.translate(KNOB - p.x, KNOB - p.y);
+          const path = new Path2D(p.d);
+          ctx.save();
+          ctx.clip(path);
+          ctx.fillStyle = '#fffdf6';
+          ctx.fillRect(p.x - KNOB, p.y - KNOB, S + 2 * KNOB, S + 2 * KNOB);
+          ctx.drawImage(img, dx, dy, dw, dh);
+          ctx.restore();
+          ctx.lineJoin = 'round';
+          ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 5; ctx.stroke(path);
+          ctx.strokeStyle = 'rgba(27,31,59,.55)'; ctx.lineWidth = 2; ctx.stroke(path);
+          out[p.i] = cv.toDataURL('image/png');
+        });
+        resolve(out);
+      } catch (e) { resolve(null); }
+    };
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
 function Play({ board, n, setN, onBack, onDone }) {
   const { img, tall } = board;
   const [C, R] = GRID[tall ? 'tall' : 'wide'][n];
@@ -198,6 +245,16 @@ function Play({ board, n, setN, onBack, onDone }) {
   const src = board.src || `${img}?n=${board.num}&w=960`;
   const pieces = useMemo(() => cutPieces(C, R, (board.num * 7919 + n * 131) >>> 0), [C, R, board.num, n]);
   const order = useMemo(() => shuffled(pieces.length, board.num * 17 + n), [pieces.length, board.num, n]);
+  // Colored pictures: bitmap pieces (see rasterPieces). null = not ready yet.
+  const [raster, setRaster] = useState(null);
+  useEffect(() => {
+    if (!board.mine) return undefined;
+    let live = true;
+    setRaster(null);
+    rasterPieces(src, pieces, BW, BH).then((r) => { if (live) setRaster(r || {}); });
+    return () => { live = false; };
+  }, [board.mine, src, pieces, BW, BH]);
+  const waitRaster = board.mine && raster === null;
   const [placed, setPlaced] = useState(() => new Set());
   const [ghost, setGhost] = useState(true);
   const [drag, setDrag] = useState(null); // { i, px, py }
@@ -382,7 +439,7 @@ function Play({ board, n, setN, onBack, onDone }) {
             {tray.map((i) => (
               <div key={i} className={`kj-tp${miss === i ? ' kd-shake' : ''}`} style={{ width: trayBox, height: trayBox, visibility: drag && drag.i === i ? 'hidden' : 'visible' }}
                 data-home={`${pieces[i].x},${pieces[i].y}`} onPointerDown={startDrag(i)}>
-                <PieceSvg p={pieces[i]} BW={BW} BH={BH} src={src} idp={`${pre}-t${i}`} size={trayBox} />
+                {waitRaster ? null : <PieceSvg p={pieces[i]} BW={BW} BH={BH} src={src} idp={`${pre}-t${i}`} size={trayBox} raster={raster && raster[i]} />}
               </div>
             ))}
           </div>
@@ -394,7 +451,7 @@ function Play({ board, n, setN, onBack, onDone }) {
 
       {drag ? (
         <div className="kj-float" style={{ left: drag.px - box / 2, top: drag.py - box / 2 - drag.lift, width: box, height: box }}>
-          <PieceSvg p={pieces[drag.i]} BW={BW} BH={BH} src={src} idp={`${pre}-f${drag.i}`} size={box} lift />
+          <PieceSvg p={pieces[drag.i]} BW={BW} BH={BH} src={src} idp={`${pre}-f${drag.i}`} size={box} lift raster={raster && raster[drag.i]} />
         </div>
       ) : null}
       <Confetti go={cheer} />
