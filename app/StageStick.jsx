@@ -1719,12 +1719,12 @@ const CSS = `
 .sst-catc .n{min-width:24px;height:24px;padding:0 5px;border-radius:99px;background:#ffffff;display:inline-flex;align-items:center;justify-content:center;font-size:11px;}
 .sst-all{display:flex;align-items:center;justify-content:center;min-height:46px;margin-top:16px;border-radius:13px;background:var(--sst-wash);
   color:var(--sst-ink);font-size:14.5px;font-weight:800;text-decoration:none;}
-.sst-figs{display:flex;gap:8px;flex-wrap:wrap;}
-.sst-figs > div{flex:1 1 90px;min-width:0;background:var(--sst-wash);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;}
+.sst-figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));grid-auto-rows:1fr;gap:8px;}
+.sst-figs > div{min-width:0;background:var(--sst-wash);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;}
 .sst-figs b{font-size:22px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums;}
 .sst-figs b small{font-size:14px;opacity:.75;}
 .sst-figs i{font-style:normal;font-size:12px;font-weight:700;line-height:1.25;opacity:.82;overflow-wrap:break-word;}
-.sst-runs{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:12px;}
+.sst-runs{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));grid-auto-rows:1fr;gap:8px;margin-top:12px;}
 .sst-runs a{display:flex;flex-direction:column;gap:2px;padding:9px 11px;border-radius:10px;background:var(--sst-wash);color:var(--sst-ink);text-decoration:none;min-width:0;}
 .sst-runs a span{font-size:11.5px;font-weight:700;opacity:.82;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.16em;margin-bottom:-.16em;}
 .sst-runs a b{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;}
