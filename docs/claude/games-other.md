@@ -972,7 +972,11 @@ https://claude.ai/artifact/8BH4Z6WJZkjHB77qEggwnm.
   is stable; it plays exactly like a photo, wide shape. **Its `src` is a BLOB URL** made from the
   stored data URL (`blobUrlOf`): the jigsaw draws the picture once per piece, and ~80 KB data URLs
   in every piece's SVG `<image>` drew black squares on iPad (owner, 2026-11-22). Finish credit reads "Colored by you in Crayon".
-- **"Built by Emma"** is a line under the kids footer on `/kids/crayon` (owner, keep it there).
+- **"Built by Emma"** is a line under the kids footer on `/kids/crayon` AND under a My Pictures
+  puzzle on `/kids/jigsaw` (`kj-emma`, shown only while a `mine` board is open). Owner, keep both.
+- **Tray fits its pieces (2026-11-22, all kids jigsaws).** From 640px up, `fitTray` shrinks the tray
+  pieces so every one fits without the tray scrolling (80vh, or the board card's height when beside
+  it). At 20 and 30 pieces the old fixed 118px tray ran past the screen on iPad.
 - `Confetti` takes an optional `word`; Crayon cheers "WOW!" (default stays SOLVED!).
 
 ## Kids Mop and Kids Spin (`/kids/mop`, `/kids/spin`, launched 2026-11-15)

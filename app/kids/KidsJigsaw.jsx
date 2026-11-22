@@ -69,6 +69,18 @@ function cutPieces(C, R, seed) {
   return out;
 }
 
+// The biggest tray piece (px) that lets all `n` pieces fit in a tray of
+// width W and height H with no scrolling (owner, 2026-11-22: at 20 and 30
+// pieces the tray ran past the screen on iPad and pieces fell out of the
+// play space). The tray has 14px padding and 6px gaps.
+function fitTray(W, H, n, cap) {
+  for (let t = Math.floor(cap); t > 46; t -= 2) {
+    const cols = Math.max(1, Math.floor((W - 28 + 6) / (t + 6)));
+    if (Math.ceil(n / cols) * (t + 6) - 6 + 28 <= H) return t;
+  }
+  return 46;
+}
+
 function shuffled(n, seed) {
   const rnd = rng(seed * 31 + 7);
   const a = Array.from({ length: n }, (_, i) => i);
@@ -193,7 +205,9 @@ function Play({ board, n, setN, onBack, onDone }) {
   const [cheer, setCheer] = useState(0);
   const [scale, setScale] = useState(0);
   const [narrow, setNarrow] = useState(false);
+  const [trayFit, setTrayFit] = useState(0);
   const boardRef = useRef(null);
+  const trayRef = useRef(null);
   const dragRef = useRef(null);
   dragRef.current = drag;
   // The live touch, set the instant a piece is touched (before React renders
@@ -223,17 +237,28 @@ function Play({ board, n, setN, onBack, onDone }) {
     const el = boardRef.current;
     if (!el) return undefined;
     const measure = () => {
-      setScale(fitOf(el, BW, BH).scale);
-      setNarrow(window.innerWidth < 640);
+      const sc = fitOf(el, BW, BH).scale;
+      setScale(sc);
+      const nar = window.innerWidth < 640;
+      setNarrow(nar);
+      const tr = trayRef.current;
+      if (!nar && tr) {
+        // Desktop and iPad: the tray may be at most 80vh tall (its CSS cap);
+        // beside the board it may also use the board card's height.
+        const card = el.closest('.kj-boardcard');
+        const beside = window.innerWidth >= 900;
+        const H = Math.max(window.innerHeight * 0.8 - 4, beside && card ? card.getBoundingClientRect().height : 0);
+        setTrayFit(fitTray(tr.clientWidth, H, pieces.length, Math.min((S + 2 * KNOB) * sc, 118)));
+      } else setTrayFit(0);
     };
     measure();
     let ro = null;
     try { ro = new ResizeObserver(measure); ro.observe(el); } catch (e) { window.addEventListener('resize', measure); }
     return () => { if (ro) ro.disconnect(); else window.removeEventListener('resize', measure); };
-  }, [BW]);
+  }, [BW, pieces.length]);
 
   const box = (S + 2 * KNOB) * scale;            // a piece at board size, px
-  const trayBox = Math.min(box, narrow ? 84 : 118); // a piece waiting in the tray
+  const trayBox = narrow ? Math.min(box, 84) : (trayFit || Math.min(box, 118)); // a piece waiting in the tray
 
   const place = useCallback((i) => {
     setPlaced((prev) => { const nx = new Set(prev); nx.add(i); return nx; });
@@ -353,7 +378,7 @@ function Play({ board, n, setN, onBack, onDone }) {
         </div>
 
         {!finished ? (
-          <div className="kj-tray" aria-label="Pieces">
+          <div className="kj-tray" aria-label="Pieces" ref={trayRef}>
             {tray.map((i) => (
               <div key={i} className={`kj-tp${miss === i ? ' kd-shake' : ''}`} style={{ width: trayBox, height: trayBox, visibility: drag && drag.i === i ? 'hidden' : 'visible' }}
                 data-home={`${pieces[i].x},${pieces[i].y}`} onPointerDown={startDrag(i)}>
@@ -417,6 +442,7 @@ const JIG_CSS = `
 .kj-tp:active{cursor:grabbing}
 .kj-nosel,.kj-nosel *{user-select:none!important;-webkit-user-select:none!important;cursor:grabbing}
 .kj-float{position:fixed;z-index:60;pointer-events:none;touch-action:none}
+.kj-emma{text-align:center;font-family:var(--kdisp);font-weight:600;font-size:15px;color:var(--kink2);margin:18px 0 0}
 .kj-howh{font-size:17px;font-weight:700;margin:26px 0 0;padding-top:16px;border-top:2px solid var(--kline);color:var(--kink2)}
 .kj-how{max-width:60ch}
 /* Desktop: the tray sits beside the board so every piece is in reach. */
@@ -518,6 +544,7 @@ export default function KidsJigsaw({ game, dailyKeys = [], dayKey, dayLabel, day
           <span>Mind Loft Kids · free, no sign-up, no ads. Grown-ups: these are the same photos as the daily <Link href="/jig">Jig</Link> and <Link href="/saw">Saw</Link>, and every past one is on <Link href="/jig/shelf">the jigsaw puzzles page</Link> at 24 to 4,000 pieces.</span>
           <span>Puzzle #{dayNum} · {dayLabel}</span>
         </div>
+        {board && board.mine ? <p className="kj-emma">Built by Emma</p> : null}
       </div>
       <Footer />
     </div>
