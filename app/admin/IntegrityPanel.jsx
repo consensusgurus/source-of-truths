@@ -35,6 +35,7 @@ function fmtTime(s) {
 function exampleLine(e) {
   const day = e.q;
   if (e.why === 'instant') return `${day}: ${e.score}/${e.total} in ${fmtTime(e.time)} (field ${e.field})`;
+  if (e.why === 'scouted') return `${day}: ${e.score}/${e.total} in ${fmtTime(e.time)}, after ${e.guests} throwaway guest${e.guests === 1 ? '' : 's'} on the same device played it ${e.lead} min earlier (best ${e.guestBest})`;
   if (e.why === 'alone') return `${day}: ${e.score}/${e.total}, next best ${e.next} (field ${e.field})`;
   return `${day}: ${e.score}/${e.total} in ${fmtTime(e.time)}, next best ${fmtTime(e.nextTime)} (field ${e.field})`;
 }
@@ -49,6 +50,7 @@ export default function IntegrityPanel({ part }) {
   const [open, setOpen] = useState(null);
   const [showLow, setShowLow] = useState(false);
   const shown = showLow ? players : players.filter((p) => p.risk >= 20);
+  const bursts = d.bursts || [];
   return (
     <div>
       <div style={{ fontFamily: SANS, fontSize: 13, color: C.faded, marginBottom: 12, lineHeight: 1.5 }}>
@@ -79,6 +81,7 @@ export default function IntegrityPanel({ part }) {
                 <th style={{ ...TH, textAlign: 'right' }}>Instant</th>
                 <th style={{ ...TH, textAlign: 'right' }}>Alone on top</th>
                 <th style={{ ...TH, textAlign: 'right' }}>Replays</th>
+                <th style={{ ...TH, textAlign: 'right' }}>Scouted</th>
                 <th style={TH}>Why</th>
               </tr>
             </thead>
@@ -98,18 +101,54 @@ export default function IntegrityPanel({ part }) {
                     <td style={NUM}>{p.instant}</td>
                     <td style={NUM}>{p.soleTops}</td>
                     <td style={NUM}>{p.replayDays}</td>
+                    <td style={{ ...NUM, color: p.scouted ? C.high : C.ink, fontWeight: p.scouted ? 800 : 400 }}>{p.scouted || 0}</td>
                     <td style={{ ...TD, fontSize: 12, color: C.faded }}>{p.flags.join('; ') || '-'}</td>
                   </tr>
                   {open === p.key ? (
                     <tr>
-                      <td colSpan={9} style={{ ...TD, background: C.surface, fontSize: 12 }}>
+                      <td colSpan={10} style={{ ...TD, background: C.surface, fontSize: 12 }}>
                         <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.faded, marginBottom: 6 }}>Examples</div>
                         {p.examples.length ? p.examples.map((e, i) => <div key={i} style={{ marginBottom: 3 }}>{exampleLine(e)}</div>) : <div>No single board stands out.</div>}
+                        {p.device ? <div style={{ marginTop: 8, color: C.faded }}>Scouting device: {p.device}</div> : null}
                         <div style={{ marginTop: 8, color: C.faded }}>Player key: {p.key}</div>
                       </td>
                     </tr>
                   ) : null}
                 </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.ink, margin: '26px 0 6px', fontWeight: 700 }}>Throwaway guest bursts</div>
+      <div style={{ fontFamily: SANS, fontSize: 13, color: C.faded, marginBottom: 10, lineHeight: 1.5 }}>
+        One device making 10+ brand new guests in a day, each with 3 plays or fewer inside an hour: usually private tabs used to peek at a daily before playing it for real. These guests also count as new players. {d.throwawayGuests || 0} throwaway guests in the last {d.windowDays || 14} days.
+      </div>
+      {!bursts.length ? (
+        <div style={{ padding: 20, textAlign: 'center', fontFamily: SANS, color: C.faded, border: `1px solid ${C.line}` }}>No bursts right now.</div>
+      ) : (
+        <div style={{ overflowX: 'auto', border: `1px solid ${C.line}`, background: C.paper }}>
+          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+            <thead>
+              <tr>
+                <th style={TH}>Day (UTC)</th>
+                <th style={TH}>Device</th>
+                <th style={{ ...TH, textAlign: 'right' }}>Guests</th>
+                <th style={TH}>Between</th>
+                <th style={TH}>Games</th>
+                <th style={TH}>Scouted for</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bursts.map((b, i) => (
+                <tr key={i}>
+                  <td style={TD}>{b.day}</td>
+                  <td style={{ ...TD, fontSize: 12 }}>{b.device}</td>
+                  <td style={{ ...NUM, fontWeight: 800, color: C.high }}>{b.guests}</td>
+                  <td style={{ ...TD, fontSize: 12, whiteSpace: 'nowrap' }}>{new Date(b.first).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })} to {new Date(b.last).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</td>
+                  <td style={{ ...TD, fontSize: 12 }}>{b.games.map((g) => `${g.game} ${g.plays}`).join(', ')}</td>
+                  <td style={{ ...TD, fontSize: 12 }}>{b.linked.length ? b.linked.map((l) => `${l.name} (${l.boards})`).join(', ') : <span style={{ color: C.faded }}>no account found</span>}</td>
+                </tr>
               ))}
             </tbody>
           </table>

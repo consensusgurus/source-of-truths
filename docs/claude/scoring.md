@@ -1012,3 +1012,16 @@ included, wherever a board request names them: `/api/quiz/board` (end card, game
 also skips its shared core memo). Any request without their identity, and every other player,
 gets the hidden-free rows. Surfaces that never send identity (home tiles, IQ/XP leaderboards,
 archive) show the public version to everyone, the hidden player included.
+
+**Scouting signal and guest bursts (owner, 2026-11-22).** Cheat Watch (`lib/admin-integrity.js`)
+also catches a player who peeks at a daily through private tabs before playing it signed in
+(schnabinator, hidden the same day: 80+ Sydney iPhone guests in one morning, each 1 to 3 low
+scores in seconds, then 10/10 and 9/10 on the same boards). A throwaway guest is anon-only, 3 rows
+or fewer inside an hour, one device fingerprint (city, region, country, phone/desktop, OS, browser,
+time zone, language). A board is scouted when a throwaway with the player's exact fingerprint
+played it in the 6 hours before the player's first try; flagged at 3+ scouted boards and 15%+ of
+the player's boards, which keeps chance matches in big cities out. Flagged players get a large risk
+bump, a Scouted column and scouted examples. Below the table, Throwaway guest bursts lists any
+fingerprint that made 10+ throwaway guests in a day and which account they scouted for. Still a
+queue, not a verdict: hiding stays a manual line in `lib/hidden-players.js`. The bursts also pad
+new-player and DAU counts in Pulse; nothing filters them out of analytics yet.
