@@ -852,7 +852,7 @@ function popOut(){
   tb.innerHTML=[['pic','Picture'],['crowd','Crowd'],['val','Value']].map(t=>'<button data-pr="'+t[0]+'"'+(refTab===t[0]?' class="on"':'')+' style="'+bs+';font-size:13px;padding:0 14px">'+t[1]+'</button>').join('');
   d.body.appendChild(tb);
   tb.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>setRefTab(b.dataset.pr));
-  const st=d.createElement('style');st.textContent='#pzOut:disabled,#pzIn:disabled{opacity:.35;cursor:default}button:hover:not(:disabled){background:rgba(255,255,255,.14)!important}[data-pr].on,[data-pr].on:hover{background:#fff!important;color:#15171c}';d.head.appendChild(st);
+  const st=d.createElement('style');st.textContent='#pzOut:disabled,#pzIn:disabled{opacity:.35;cursor:default}button:hover:not(:disabled){background:rgba(255,255,255,.14)!important}[data-pr].on,[data-pr].on:hover{background:#fff!important;color:#15171c!important}button:focus{outline:none}button:focus-visible{outline:2px solid #fff;outline-offset:2px}';d.head.appendChild(st);
   d.getElementById('pzIn').onclick=()=>pzZoom(1.6);d.getElementById('pzOut').onclick=()=>pzZoom(1/1.6);d.getElementById('pzLab').onclick=()=>{PZ.s=1;pzClamp();pzUi();popDraw();};
   const ptr=new Map();let g=null;
   popCv.addEventListener('pointerdown',(e)=>{popCv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
