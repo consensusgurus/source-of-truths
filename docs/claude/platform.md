@@ -402,6 +402,12 @@ which is what puts the `sot_vid` cookie on the manifest fetch.
   and `start_url` (`<path>?src=pwa`); `/kids*` installs are named Mind Loft Kids with the butter
   theme. `/` keeps id `/` so existing home installs are unchanged. Never set a Referrer-Policy of
   `no-referrer` site-wide; it would send every install back to the homepage.
+- **The Jigsaw Puzzles page has its own install button and name (owner, 2026-11-22).** `/jig/shelf` carries
+  `<AddToHome compact>` in its breadcrumb row: a 34px pill (phones and tablets, plus a computer whose browser
+  offers an install; never once installed). `pageManifest` names that install `Jigsaw Puzzles` (id and
+  start_url `/jig/shelf`, topic pages included). `AddToHome` takes `compact` and `opens` (the help sheet's
+  last line for a page that is not a daily); on a page with its own palette, set `--stg-raise`, `--stg-acc`
+  and `--stg-onramp` on the wrapper or the sheet reads light on white.
 - **Diagnostics in Vercel function logs:** `[pwa-manifest] {game, cookie, minted}` on every
   manifest fetch and `[identity-claim] {valid, account}` on every claim. On the next
   install-signout report these two lines say whether the fetch carried a cookie, whether a token

@@ -41,6 +41,7 @@ import { useStageChrome } from '../../GauntletScreens';
 import { fetchDayStatus } from '../../useDayStats';
 import { migrateJigSaves } from '@/lib/jig-renum';
 import { focusStyle } from '@/lib/photo-focus';
+import AddToHome from '../../AddToHome';
 import { gameColor, softGround } from '@/lib/category-ramp';
 import {
   JIGSAW_SIZES, PHONE_SIZES, ALWAYS_OK, DEFAULT_SIZE, SIZE_KEY, DONE_KEY,
@@ -255,6 +256,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
         <a href="/">Home</a><span aria-hidden="true">/</span>
         {crumb ? <><a href={crumb.href}>{crumb.label}</a><span aria-hidden="true">/</span></> : null}
         <span aria-current="page">Jigsaw Puzzles</span>
+        <span className="jp-a2h" style={{ '--stg-raise': T.ground, '--stg-acc': T.ink, '--stg-onramp': T.ground }}><AddToHome name="Jigsaw Puzzles" compact opens="The tile opens the Jigsaw Puzzles page, with every puzzle on it." /></span>
       </nav>
 
       <header className="jp-hero">
@@ -513,6 +515,8 @@ const CSS = `
 .jp-crumb a{color:var(--stg-ink2);text-decoration:none;}
 .jp-crumb a:hover{color:var(--stg-ink);text-decoration:underline;}
 .jp-crumb span[aria-current]{color:var(--stg-ink);}
+.jp-crumb .jp-a2h{margin-left:auto;display:inline-flex;}
+.jp-crumb .jp-a2h:empty{display:none;}
 .jp-head{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:18px;}
 .jp-htx{flex:1 1 420px;min-width:0;}
 .jp-head h1{margin:0;font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-0.02em;color:var(--stg-ink);}

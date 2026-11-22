@@ -10,7 +10,7 @@
 // on a phone. Its photos are re-used later by Swap, Slide and Spin
 // (scripts/gen-photo-trio.mjs).
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { X, Lightbulb, Smartphone, Eye, Maximize2, Minimize2, ChevronDown, ChevronUp } from 'lucide-react';
 import Grain from '../Grain';
@@ -362,6 +362,18 @@ function freshState() {
   };
 }
 
+// A TABLET IS NOT A PHONE (owner, 2026-11-22). An iPad held upright is narrower
+// than the 820px phone layout, so it used to play the phone's snap way, and
+// turning it from landscape to portrait mid-game broke a loose table up. A touch
+// screen whose short side is 700px or more plays the loose table either way up;
+// the layout still follows the width.
+function isTabletNow() {
+  try {
+    if (typeof window === 'undefined' || !window.matchMedia || !window.screen) return false;
+    return window.matchMedia('(pointer: coarse)').matches && Math.min(window.screen.width, window.screen.height) >= 700;
+  } catch (e) { return false; }
+}
+const ZOOM_MAX = 3;
 const HAPT = { ok: [8], win: [10, 40, 20, 40, 20, 60], bad: [20] };
 function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
@@ -387,6 +399,9 @@ const JG_ST_CSS = `
 .pst .jg-ob{font-size:14px;font-weight:700;}
 @media (max-width:820px){.pst .jg-play.box .jg-swb{font-size:12px;min-height:30px;}}
 .pst:has(.jg-play.box) .pst-col::after{content:"";display:block;flex:none;height:var(--jg-dockh, 0px);}
+/* A tablet held upright (owner, 2026-11-22): the phone column is 520px, which
+   left the board small on a 768 to 820px screen. The jigsaw takes more of it. */
+@media (min-width:600px) and (max-width:820px) and (min-height:700px){.pst:has(.jg-st) .pst-col{max-width:min(620px, 96vw);}}
 .jg-st .jg-fs,.jg-st .jg-below{display:none !important;}
 .jg-st .jg-top{margin:0 0 10px;}
 @media (min-width:900px){
@@ -474,6 +489,10 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   // board wider than the screen, scrolled sideways inside its frame.
   const [zoom, setZoom] = useState(1);
   const boxRef = useRef(null);
+  const zoomRef = useRef(1);
+  zoomRef.current = zoom;
+  const zoomElRef = useRef(null);
+  const pinch = useRef(null);
   const [dockH, setDockH] = useState(0);   // the docked tray's height, kept clear under the board
   const autoScroll = useRef(null);
   selRef.current = sel;
@@ -736,7 +755,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   }
 
   function startGame() {
-    setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now(), mode: cur.mode || (narrow ? 'snap' : 'loose') }));
+    setG((cur) => (cur.t0 ? cur : { ...cur, t0: Date.now(), mode: cur.mode || (narrow && !isTabletNow() ? 'snap' : 'loose') }));
     try { localStorage.setItem(HELP_KEY, '1'); } catch (e) {}
   }
 
@@ -1173,11 +1192,71 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, [boxMode]);
+  // PINCH TO ZOOM (owner, 2026-11-22). In the phone play box two fingers on the
+  // board size it (1x to 3x) and carry it: the point of the picture under the
+  // fingers stays under them, so a pinch is also a two finger pan. One finger
+  // still moves a piece or scrolls the page. A piece already in hand stays in
+  // hand; a press that had not lifted anything yet gives way to the pinch.
+  function holdAnchor() {
+    const a = pinch.current, box = boxRef.current, el = zoomElRef.current;
+    if (!a || !box || !el) return;
+    const r = el.getBoundingClientRect();
+    const dx = r.left + a.ax * r.width - a.fx;
+    const dy = r.top + a.ay * r.height - a.fy;
+    if (Math.abs(dx) >= 0.5) box.scrollLeft += dx;
+    if (Math.abs(dy) >= 0.5) { const h = scrollHost(); if (h) h.scrollTop += dy; else window.scrollBy(0, dy); }
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useLayoutEffect(() => { holdAnchor(); }, [zoom]);
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!boxMode || !box) return undefined;
+    const mid = (t) => ({ x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2, d: Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY) });
+    const start = (e) => {
+      if (e.touches.length !== 2) { pinch.current = null; return; }
+      const pr = press.current;
+      if (pr && pr.dragging && pr.group == null) return;
+      if (pr) { clearTimeout(pr.hold); press.current = null; setGdrag(null); }
+      const el = zoomElRef.current;
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const m = mid(e.touches);
+      pinch.current = { d0: Math.max(1, m.d), z0: zoomRef.current, ax: (m.x - r.left) / r.width, ay: (m.y - r.top) / r.height, fx: m.x, fy: m.y };
+    };
+    const move = (e) => {
+      const a = pinch.current;
+      if (!a || e.touches.length !== 2) return;
+      if (e.cancelable) e.preventDefault();
+      const m = mid(e.touches);
+      a.fx = m.x; a.fy = m.y;
+      const z = Math.round(Math.max(1, Math.min(ZOOM_MAX, a.z0 * m.d / a.d0)) * 100) / 100;
+      if (z !== zoomRef.current) setZoom(z); else holdAnchor();
+    };
+    const end = (e) => { if (e.touches.length < 2) pinch.current = null; };
+    const gest = (e) => { if (e.cancelable) e.preventDefault(); };
+    box.addEventListener('touchstart', start, { passive: true });
+    box.addEventListener('touchmove', move, { passive: false });
+    box.addEventListener('touchend', end);
+    box.addEventListener('touchcancel', end);
+    box.addEventListener('gesturestart', gest);
+    box.addEventListener('gesturechange', gest);
+    return () => {
+      pinch.current = null;
+      box.removeEventListener('touchstart', start);
+      box.removeEventListener('touchmove', move);
+      box.removeEventListener('touchend', end);
+      box.removeEventListener('touchcancel', end);
+      box.removeEventListener('gesturestart', gest);
+      box.removeEventListener('gesturechange', gest);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boxMode]);
   // A phone always plays the snap way. A game begun on the loose table (on a
   // computer, or on a phone before 2026-11-07) and opened on a phone carries
   // over: a group that sits at its home is placed, the rest go back to the tray.
   useEffect(() => {
-    if (!narrow || g.mode !== 'loose' || g.status !== 'playing') return;
+    if (!narrow || isTabletNow() || g.mode !== 'loose' || g.status !== 'playing') return;
     setG((cur) => {
       if (cur.mode !== 'loose' || cur.status !== 'playing') return cur;
       const home = cur.cl.filter((x) => Math.abs(x.dx) < S * 0.33 && Math.abs(x.dy) < S * 0.33).flatMap((x) => x.m);
@@ -1322,9 +1401,9 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   const rulesBody = (
     <DailyRules
       accent={COLORS.accent} accentSoft={COLORS.accentSoft}
-      lead="Put the picture back together. Today's photo stands tall and is cut into pieces that interlock with tabs and blanks. On a computer you build it on a loose table, the way you would at home; on a phone each piece snaps into its own spot. Pieces never need turning."
+      lead="Put the picture back together. Today's photo stands tall and is cut into pieces that interlock with tabs and blanks. On a computer or a tablet you build it on a loose table, the way you would at home; on a phone each piece snaps into its own spot. Pieces never need turning."
       steps={[
-        <><b>On a computer</b> there is no frame: drag a piece from the tray and it stays wherever you drop it. Bring two pieces together, side by side as they are in the picture, and they lock; a locked group moves as one, and a lone piece dragged back over the tray goes back in. <b>On a phone</b>, drop a piece near its own spot and it snaps in; anywhere else it slides back, at no cost. Tap a piece to pick it, then tap the board; press and hold to lift it.</>,
+        <><b>On a computer or a tablet</b> there is no frame: drag a piece from the tray and it stays wherever you drop it. Bring two pieces together, side by side as they are in the picture, and they lock; a locked group moves as one, and a lone piece dragged back over the tray goes back in. <b>On a phone</b>, drop a piece near its own spot and it snaps in; anywhere else it stays where you put it, at no cost. Tap a piece to pick it, then tap the board; press and hold to lift it. Pinch the board with two fingers to zoom in, and move both fingers to slide it around.</>,
         <><b>The tray opens sorted.</b> <b>Edges</b> splits the loose pieces into edge pieces and the middle, <b>Colors</b> into one of the picture&rsquo;s colors and the rest, and <b>All</b> shows every loose piece in one bin.</>,
         <><b>Peek</b> shows the whole picture for a moment and adds 15 seconds to your clock. Edge pieces have a straight side; corners have two.</>,
       ]}
@@ -1354,7 +1433,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
 
     <div className={`jg-play${boxMode ? ' box' : ''}`} ref={playRef} style={boxMode && dockH && (!stageOn || EMBED) ? { paddingBottom: dockH + 8 } : undefined}>
       <div className={`jg-boardbox${boxMode && zoom > 1 ? ' scr' : ''}`} ref={boxRef} style={fitOn && fitW ? { width: fitW } : (narrow ? undefined : { maxWidth: `max(320px, calc((100vh - 230px) * ${((BW + 2 * BP) / (BH + 2 * BP)).toFixed(3)}))` })}>
-       <div className="jg-zoom" style={boxMode && zoom > 1 ? { width: `${zoom * 100}%` } : undefined}>
+       <div className="jg-zoom" ref={zoomElRef} style={boxMode && zoom > 1 ? { width: `${zoom * 100}%` } : undefined}>
         <svg ref={boardRef} className={`jg-board${flashMiss ? ' miss' : ''}${LOOSE && started ? ' lt' : ''}`} viewBox={`${-BP} ${-BP} ${BW + 2 * BP} ${BH + 2 * BP}`}
           role="img" aria-label={LOOSE ? `Saw table, ${biggest} of ${NP} pieces joined in the biggest group` : `Saw board, ${placedCount} of ${NP} pieces placed`} onClick={boardTap}>
           <defs>
@@ -1432,7 +1511,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
             {boxMode && (
               <div className="jg-zm" role="group" aria-label="Board size">
                 <button type="button" onClick={() => setZoom((z) => Math.max(1, Math.round((z - 0.5) * 2) / 2))} disabled={zoom <= 1} aria-label="Smaller board">&minus;</button>
-                <button type="button" onClick={() => setZoom((z) => Math.min(2.5, Math.round((z + 0.5) * 2) / 2))} disabled={zoom >= 2.5} aria-label="Bigger board">+</button>
+                <button type="button" onClick={() => setZoom((z) => Math.min(ZOOM_MAX, Math.round((z + 0.5) * 2) / 2))} disabled={zoom >= ZOOM_MAX} aria-label="Bigger board">+</button>
               </div>
             )}
             <div className="jg-seg" role="group" aria-label="Sort the tray">
@@ -1597,6 +1676,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           @media (prefers-reduced-motion: reduce){.lt-grp{transition:none !important;}}
           .jg-foot.inbox .jg-msg{display:none;}
           .jg-play.box{flex-direction:column;align-items:stretch;gap:0;}
+          .jg-play.box .jg-boardbox{touch-action:pan-x pan-y;}
           .jg-play.box .jg-boardbox.scr{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
           .jg-play.box .jg-side{position:fixed;left:0;right:0;bottom:0;z-index:60;gap:4px;margin:0;padding:6px 8px calc(6px + env(safe-area-inset-bottom));background:var(--stg-b, #eef2f7);box-shadow:0 -8px 18px -10px rgba(10,14,24,.4);}
           .jg-play.box .jg-ctl{min-height:0;gap:6px;flex-wrap:nowrap;}
@@ -1607,6 +1687,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           .jg-play.box .jg-tray{padding:4px 6px;border-radius:10px;}
           .jg-play.box .jg-tray:not(.vs) .jg-grid{grid-template-rows:repeat(2, 46px);grid-auto-columns:46px;gap:3px;padding-bottom:2px;}
           .jg-play.box .jg-tray.bins:not(.vs) .jg-grid{grid-template-rows:46px;}
+          @media (min-width:600px) and (max-width:820px) and (min-height:700px){.jg-play.box .jg-tray:not(.vs) .jg-grid{grid-template-rows:repeat(2, 62px);grid-auto-columns:62px;gap:4px;}.jg-play.box .jg-tray.bins:not(.vs) .jg-grid{grid-template-rows:62px;}}
           .jg-play.box .jg-tray:not(.vs) .jg-binlab{display:none;}
           .jg-play.box .jg-tray:not(.vs) .jg-bin + .jg-bin{margin-top:3px;padding-top:3px;}
           .jg-play.box .jg-tray.vs{max-height:42vh !important;max-height:42dvh !important;}

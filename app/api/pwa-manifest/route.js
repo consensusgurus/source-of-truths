@@ -55,6 +55,15 @@ function pageManifest(base, path) {
     mf.background_color = '#fff6e0';
     mf.theme_color = '#fff6e0';
   }
+  // The Jigsaw Puzzles page installs under its own name (owner, 2026-11-22), so
+  // the tile on the home screen says what it opens.
+  if (path === '/jig/shelf' || path.startsWith('/jig/shelf/')) {
+    mf.id = '/jig/shelf';
+    mf.start_url = '/jig/shelf?src=pwa';
+    mf.name = 'Jigsaw Puzzles by Mind Loft';
+    mf.short_name = 'Jigsaw Puzzles';
+    mf.description = 'Free online jigsaw puzzles: a new photo every day, every past puzzle, and giant puzzles built together.';
+  }
   return mf;
 }
 

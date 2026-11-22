@@ -225,6 +225,17 @@ canvas "Daily Jigsaw Mockup":
   moment and adds 15 seconds to the clock (`pen` in the save, included in `timeElapsed`). The free first-play
   hint drops a corner in. In SOLVE_ONLY.
 - Wired by `scripts/wire-jig.mjs`. Tile art `scripts/gen-jig-tile.py`. Checker `scripts/verify-jig.mjs`.
+- **Pinch to zoom and tablets (owner, 2026-11-22; Jig and Saw alike).** In the phone play box two fingers on
+  the board size it from 1x to `ZOOM_MAX` (3x) and carry it: `pinch` holds the picture point under the fingers
+  (`holdAnchor`, run in a layout effect on `zoom`), so a pinch is also a two finger pan, sideways through the
+  box's `scrollLeft` and up and down through the page (or the stage). The box is `touch-action:pan-x pan-y` so
+  the browser's own page zoom never competes. A piece already in hand stays in hand; a press that has lifted
+  nothing gives way. The +/- buttons stay. **A tablet is not a phone:** `isTabletNow()` (coarse pointer, short
+  screen side 700px or more) plays the loose table in EITHER orientation; before this an upright iPad (768 to
+  820px wide) got the phone's snap mode and turning it mid-game broke the table up. The layout still follows
+  the 820px width, so an upright tablet has the docked tray, with a wider stage column (780px Jig, 620px Saw)
+  and 62px dock pieces. Call `isTabletNow()` at use, never from state: the narrow effect runs before any
+  state could be set and would convert the save. Tested with emulated touch (pinch, pan, rotate both ways).
 
 ## Scram is the THEMED WORD SCRAMBLE, raced on the clock (launched 2026-10-14)
 

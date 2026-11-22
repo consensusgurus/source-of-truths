@@ -18,7 +18,12 @@ const isIosDevice = () =>
   (/iPad|iPhone|iPod/.test(navigator.userAgent || '') ||
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
-export default function AddToHome({ name, noun = 'puzzle' }) {
+// `compact` (owner, 2026-11-22: "add puzzle shelf to home screen easily, button
+// in top") draws a small pill for a page's top row instead of the full-width
+// ending button, and also shows on a computer whose browser offers an install.
+// `opens` replaces the "opens today's puzzle, every day" line for a page that
+// is not a daily.
+export default function AddToHome({ name, noun = 'puzzle', compact = false, opens = null }) {
   const [installEvt, setInstallEvt] = useState(null);
   const [help, setHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
@@ -36,14 +41,21 @@ export default function AddToHome({ name, noun = 'puzzle' }) {
     return () => { window.removeEventListener('beforeinstallprompt', onBip); window.removeEventListener('appinstalled', onInstalled); };
   }, []);
 
-  if (!mobileUi || standalone) return null;
+  if (standalone || (!mobileUi && !(compact && installEvt))) return null;
+  const tail = opens || `The tile opens today's ${noun}, every day.`;
   const click = () => { const e = installEvt; if (e) { setInstallEvt(null); e.prompt(); } else { setHelp(true); } };
 
   return (
     <>
+      {compact ? (
+        <button type="button" onClick={click} className="a2h-pill" style={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 800, height: 34, padding: '0 13px', borderRadius: 999, border: '1px solid var(--stg-line, rgba(20,22,28,0.2))', background: 'var(--stg-surf, transparent)', color: INK, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap', flex: 'none' }}>
+          <Smartphone size={14} strokeWidth={2.5} aria-hidden="true" /> Add to Home Screen
+        </button>
+      ) : (
       <button type="button" onClick={click} style={{ marginTop: 10, width: '100%', fontFamily: SANS, fontSize: 13.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 800, height: 54, borderRadius: 10, border: 'none', background: 'var(--stg-acc, #1d4ed8)', color: 'var(--stg-onramp, #ffffff)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 9, whiteSpace: 'nowrap' }}>
         <Smartphone size={15} strokeWidth={2.5} /> Add to Home Screen
       </button>
+      )}
       {help && (
         <div onClick={() => setHelp(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(20,22,28,0.55)', zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: 'var(--stg-raise, #ffffff)', borderRadius: 14, maxWidth: 430, width: '100%', padding: '22px 22px 16px', fontFamily: SANS, border: '1px solid var(--stg-line, rgba(20,22,28,0.12))' }}>
@@ -52,11 +64,11 @@ export default function AddToHome({ name, noun = 'puzzle' }) {
               <ol style={{ margin: '0 0 4px', paddingLeft: 20, color: INK, fontSize: 14, lineHeight: 1.7 }}>
                 <li>Tap the <b>Share</b> button in Safari&apos;s toolbar.</li>
                 <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-                <li>Tap <b>Add</b> &mdash; the tile opens today&apos;s {noun}, every day.</li>
+                <li>Tap <b>Add</b>. {tail}</li>
               </ol>
             ) : (
               <p style={{ margin: '0 0 4px', color: INK, fontSize: 14, lineHeight: 1.7 }}>
-                Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). The tile opens today&apos;s {noun}, every day.
+                Open your browser&apos;s menu and choose <b>Add to Home Screen</b> (or <b>Install app</b>). {tail}
               </p>
             )}
             <button type="button" onClick={() => setHelp(false)} style={{ marginTop: 10, fontFamily: SANS, fontSize: 12.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 700, height: 44, width: '100%', borderRadius: 10, border: 'none', background: 'var(--stg-acc, #1d4ed8)', color: 'var(--stg-onramp, #fff)', cursor: 'pointer' }}>Got it</button>
