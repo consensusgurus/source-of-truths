@@ -184,7 +184,7 @@ export function openMemorial(fin, d) {
   let who;
   if (wall) {
     who = [{ n: 'Guests', f: (wall.guests && wall.guests.f) || 0, guest: true, players: (wall.guests && wall.guests.players) || 0 }]
-      .concat((wall.who || []).map((o) => ({ n: o.n || 'Player', f: o.f || 0, ...(o.g ? { g: true } : {}) })));
+      .concat((wall.who || []).map((o) => ({ n: o.n || 'Player', f: o.f || 0, c: typeof o.c === 'string' ? o.c : '', ...(o.g ? { g: true } : {}) })));
   } else {
     const g = st.guests || {};
     who = [{ n: 'Guests', f: g.firsts || 0, guest: true, players: g.players || 0 }]
@@ -237,6 +237,42 @@ export function openMemorial(fin, d) {
   const fillOf = who.map(() => (dark ? '#252d3d' : mix(GROUND, '#ffffff', 0.5)));
   for (const t of tiles) for (const i of t.idx) fillOf[i] = t.fill;
 
+  /* ---------- where it was built (owner, 2026-11-22: "show contributions by country") ----------
+     The same blocks, one a country, sized by the pieces its players placed first. The wall
+     answers each player's country; a player it could not place reads as Unknown. */
+  let regionName = (c) => c;
+  try { const dn = new Intl.DisplayNames(['en'], { type: 'region' }); regionName = (c) => { try { return dn.of(c) || c; } catch (e) { return c; } }; } catch (e) { /* old browser: the code */ }
+  const byCode = new Map();
+  if (wall) for (let i = 1; i < who.length; i++) {
+    if (!(who[i].f > 0)) continue;
+    const c = who[i].c || '';
+    let g = byCode.get(c);
+    if (!g) { g = { code: c, n: c ? regionName(c) : 'Unknown', f: 0, idx: [], players: 0, country: true, unknown: !c }; byCode.set(c, g); }
+    g.f += who[i].f; g.idx.push(i); g.players += 1;
+  }
+  const nations = [...byCode.values()].filter((g) => !g.unknown).sort((a, b) => b.f - a.f || (a.n < b.n ? -1 : 1));
+  const nCountries = nations.length;
+  const cTiles = nations.slice();
+  if (byCode.has('')) cTiles.push(byCode.get(''));
+  cTiles.forEach((t, i) => {
+    t.rank = t.unknown ? 0 : i + 1;
+    // The best builder of each country, for the hover card.
+    let top = -1; for (const o of t.idx) if (top < 0 || who[o].f > who[top].f) top = o;
+    t.lead = top > 0 ? who[top] : null;
+    t.mine = meIdx > 0 && t.idx.includes(meIdx);
+    const c = RAMP[i % RAMP.length], tier = Math.floor(i / RAMP.length);
+    t.fill = t.unknown ? (dark ? '#313a4d' : mix(GROUND, '#ffffff', 0.78))
+      : dark ? mix(c, DARK_GROUND, [0.45, 0.6, 0.7][Math.min(2, tier)]) : mix(c, '#ffffff', [0.18, 0.42, 0.6][Math.min(2, tier)]);
+    t.v = t.f;
+  });
+  cTiles.sort((a, b) => b.v - a.v);
+  const cFillOf = who.map(() => (dark ? '#252d3d' : mix(GROUND, '#ffffff', 0.5)));
+  for (const t of cTiles) for (const i of t.idx) cFillOf[i] = t.fill;
+  const hasCountries = nCountries > 0;
+  let view = 'players';
+  const curTiles = () => (view === 'countries' ? cTiles : tiles);
+  const curFill = () => (view === 'countries' ? cFillOf : fillOf);
+
   /* ---------- the words ---------- */
   const nMembers = typeof st.players === 'number' ? st.players : members.length;
   const nGuests = (st.guests && st.guests.players) || who[0].players || 0;
@@ -244,8 +280,8 @@ export function openMemorial(fin, d) {
   const hrs = Math.max(0, Math.floor(d.hoursOpen || 0));
   const span = hrs >= 72 ? num(Math.round(hrs / 24)) + ' Days.' : hrs >= 1 ? num(hrs) + plural(hrs, ' Hour.', ' Hours.') : 'Under An Hour.';
   const head = d.complete
-    ? [num(total) + ' Pieces.', num(builders) + plural(builders, ' Builder.', ' Builders.'), span]
-    : [num(placed) + ' Of ' + num(total) + ' Pieces.', num(builders) + plural(builders, ' Builder.', ' Builders.')];
+    ? [num(total) + ' Pieces.', num(builders) + plural(builders, ' Builder.', ' Builders.')].concat(nCountries > 1 ? [num(nCountries) + ' Countries.'] : [], [span])
+    : [num(placed) + ' Of ' + num(total) + ' Pieces.', num(builders) + plural(builders, ' Builder.', ' Builders.')].concat(nCountries > 1 ? [num(nCountries) + ' Countries.'] : []);
   const nameAt = (k) => { const o = who[wall.own[k]]; return o ? (o.guest ? 'a guest' : o.n) : 'a player'; };
   let lead = num(nMembers) + plural(nMembers, ' player', ' players') + ' and ' + num(nGuests) + plural(nGuests, ' guest', ' guests') + ' built this ' + d.name + (d.complete ? '.' : ' before it closed.');
   if (wall && wall.order.length > 1) {
@@ -293,7 +329,9 @@ export function openMemorial(fin, d) {
     + (wall ? '<div class="mwSeg" id="mwSeg" role="group" aria-label="What the wall shows"><button type="button" data-m="pic" class="on">Picture</button><button type="button" data-m="own">Who Placed What</button></div><button type="button" class="mwTxt" id="mwReplay">Watch It Build</button>' : '')
     + '</div></div>'
     + '<div class="mwCol mwTreeCol rise"><div class="mwTree' + (animate ? ' pre' : '') + '" id="mwTree" role="group" aria-label="Who built it"></div>'
-    + '<div class="mwRow"><div class="mwCap"><b>Who Built It.</b> One block a player, sized by pieces placed first.' + (wall ? ' Point at a block or a piece for the name. Tap a block for their pieces.' : '') + '</div></div></div>'
+    + '<div class="mwRow"><div class="mwCap" id="mwTreeCap"></div>'
+    + (hasCountries ? '<div class="mwSeg" id="mwView" role="group" aria-label="Show builders by"><button type="button" data-v="players" class="on">Players</button><button type="button" data-v="countries">Countries</button></div>' : '')
+    + '</div></div>'
     + '</div>'
     + '<div class="mwFoot rise">'
     + '<div class="mwCard"><h4>Your Part<span class="sp"></span>' + (wall && myFirsts.length ? '<button type="button" class="mwTxt" id="mwMine">Show My Pieces</button>' : '') + '</h4>' + you + '</div>'
@@ -327,6 +365,12 @@ export function openMemorial(fin, d) {
   const slot = dark ? '#131926' : mix(GROUND, '#ffffff', 0.3);
   const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
   function cell(ctx, p, fill) { ctx.fillStyle = fill; ctx.fillRect((p % cols) * cs, ((p / cols) | 0) * cs, cs, cs); }
+  function ownLayer() {
+    if (!ownC) return;
+    const ox = ownC.getContext('2d'), fills = curFill();
+    ox.fillStyle = slot; ox.fillRect(0, 0, ownC.width, ownC.height);
+    if (wall) for (let k = 0; k < wall.order.length; k++) cell(ox, wall.order[k], fills[wall.own[k]] || slot);
+  }
   function layers(cssW) {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const want = Math.max(4, Math.min(24, Math.round((cssW * dpr) / cols)));
@@ -343,9 +387,7 @@ export function openMemorial(fin, d) {
       for (let p = 0; p < total; p++) if (!has(p)) cell(px, p, slot);
     }
     ownC = mk(cv.width, cv.height);
-    const ox = ownC.getContext('2d');
-    ox.fillStyle = slot; ox.fillRect(0, 0, ownC.width, ownC.height);
-    if (wall) for (let k = 0; k < wall.order.length; k++) cell(ox, wall.order[k], fillOf[wall.own[k]] || slot);
+    ownLayer();
   }
   function paint(a) {
     if (!picC) return;
@@ -366,7 +408,7 @@ export function openMemorial(fin, d) {
     if (hl) { cap.innerHTML = hlLabel; return; }
     if (!wall) { cap.textContent = d.complete ? 'The finished picture.' : 'The picture as the site left it.'; return; }
     cap.textContent = mode === 'own'
-      ? 'Every piece in the colour of the player who placed it first.'
+      ? (view === 'countries' ? 'Every piece in the colour of the country it was placed from first.' : 'Every piece in the colour of the player who placed it first.')
       : (d.complete ? 'The finished picture, every piece in place.' : 'The picture as the site left it.');
   }
   function setMode(m) {
@@ -413,7 +455,8 @@ export function openMemorial(fin, d) {
       const k = Math.max(0, Math.min(1, (performance.now() - t0) / T));
       const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
       const upto = Math.round(e * N);
-      for (; at < upto; at++) cell(cx, wall.order[at], fillOf[wall.own[at]] || slot);
+      const fills = curFill();
+      for (; at < upto; at++) cell(cx, wall.order[at], fills[wall.own[at]] || slot);
       count.textContent = num(at) + plural(at, ' piece', ' pieces');
       if (k < 1) { raf = requestAnimationFrame(step); return; }
       setTimeout(() => { if (closed || !building) return; fade(1, 1100, reveal); el.classList.add('done'); tree.classList.remove('pre'); }, 450);
@@ -423,22 +466,25 @@ export function openMemorial(fin, d) {
 
   /* ---------- who built it, as blocks ---------- */
   const tree = q('#mwTree');
+  let treeW = 0, treeH = 0;
   function drawTree(W, H) {
-    const lay = squarify(tiles, W, H);
+    const lay = squarify(curTiles(), W, H);
+    treeW = W; treeH = H;
     tree.style.width = W + 'px'; tree.style.height = H + 'px';
     if (!lay.length) { tree.innerHTML = '<p class="mwNone" style="padding:14px">Nobody placed a piece on this one.</p>'; return; }
     tree.innerHTML = lay.map((r, i) => {
       const t = r.o, g = 3, w = Math.max(1, r.w - g), h = Math.max(1, r.h - g);
-      const nm = t.me ? 'You' : t.n;
+      const nm = t.me && !t.country ? 'You' : t.n;
       const pad = w > 90 ? 10 : 6;
       const fs = Math.max(10, Math.min(30, h * 0.3, (w - pad * 2) / (Math.max(3, nm.length) * 0.6)));
       const showName = w >= 38 && h >= 22;
       const fs2 = Math.max(10.5, Math.min(14, fs * 0.62));
       const showCt = showName && h >= fs * 1.3 + fs2 * 1.3 + pad + 4;
       const pct = t.f / total * 100;
-      const ct = num(t.f) + (w > 110 ? ' · ' + pct.toFixed(pct < 10 ? 1 : 0) + '%' : '') + (t.sub && w > 190 ? ' · ' + t.sub : '');
-      const title = (t.me ? 'You, ' + t.n : t.n) + ': ' + num(t.f) + plural(t.f, ' piece', ' pieces') + ', ' + pct.toFixed(1) + '% of the wall';
-      return '<button type="button" class="mwTile' + (t.me ? ' me' : '') + (Math.min(w, h) < 14 ? ' sm' : '') + '" data-t="' + i + '" aria-label=""' + esc(title) + '" style="left:' + r.x.toFixed(1) + 'px;top:' + r.y.toFixed(1) + 'px;width:' + w.toFixed(1) + 'px;height:' + h.toFixed(1) + 'px;background:' + t.fill + ';transition-delay:' + Math.min(900, i * 22) + 'ms">'
+      const sub = t.country ? num(t.players) + plural(t.players, ' player', ' players') : t.sub;
+      const ct = num(t.f) + (w > 110 ? ' · ' + pct.toFixed(pct < 10 ? 1 : 0) + '%' : '') + (sub && w > 190 ? ' · ' + sub : '');
+      const title = (t.me && !t.country ? 'You, ' + t.n : t.n) + ': ' + num(t.f) + plural(t.f, ' piece', ' pieces') + ', ' + pct.toFixed(1) + '% of the wall' + (t.country ? ', ' + sub : '');
+      return '<button type="button" class="mwTile' + (t.me || t.mine ? ' me' : '') + (Math.min(w, h) < 14 ? ' sm' : '') + '" data-t="' + i + '" aria-label=""' + esc(title) + '" style="left:' + r.x.toFixed(1) + 'px;top:' + r.y.toFixed(1) + 'px;width:' + w.toFixed(1) + 'px;height:' + h.toFixed(1) + 'px;background:' + t.fill + ';transition-delay:' + Math.min(900, i * 22) + 'ms">'
         + (showName ? '<i style="font-size:' + fs.toFixed(1) + 'px;padding:' + (pad - 3) + 'px ' + pad + 'px 0">' + esc(nm) + '</i>' : '')
         + (showCt ? '<em style="font-size:' + fs2.toFixed(1) + 'px;top:' + (pad - 3 + fs * 1.3).toFixed(1) + 'px;padding:0 ' + pad + 'px">' + esc(ct) + '</em>' : '')
         + '</button>';
@@ -452,7 +498,9 @@ export function openMemorial(fin, d) {
     if (node.classList.contains('hl')) { setMode(mode); return; }
     const mb = q('#mwMine'); if (mb) mb.textContent = 'Show My Pieces';
     hl = []; for (const o of t.idx) for (const p of byOwner[o]) hl.push(p);
-    hlLabel = '<b>' + esc(t.me ? 'You' : t.n) + '</b> placed ' + (hl.length === 1 ? 'this piece' : 'these ' + num(hl.length) + ' pieces') + ' first. Tap again to bring the picture back.';
+    hlLabel = t.country
+      ? '<b>' + esc(t.unknown ? 'Players we could not place' : t.n) + '</b>' + ' placed ' + (hl.length === 1 ? 'this piece' : 'these ' + num(hl.length) + ' pieces') + ' first' + (t.unknown ? '' : ', across ' + num(t.players) + plural(t.players, ' player', ' players')) + '. Tap again to bring the picture back.'
+      : '<b>' + esc(t.me ? 'You' : t.n) + '</b> placed ' + (hl.length === 1 ? 'this piece' : 'these ' + num(hl.length) + ' pieces') + ' first. Tap again to bring the picture back.';
     tree.classList.add('dim'); tree.querySelectorAll('.hl').forEach((n) => n.classList.remove('hl')); node.classList.add('hl');
     caption(); paint();
   }
@@ -474,6 +522,28 @@ export function openMemorial(fin, d) {
     if (el.classList.contains('stack')) q('#mwWall').scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
   });
 
+  const treeCap = q('#mwTreeCap');
+  function treeCaption() {
+    if (!treeCap) return;
+    treeCap.innerHTML = view === 'countries'
+      ? '<b>Where It Was Built.</b> One block a country, sized by pieces placed first.' + (nCountries > 1 ? ' ' + num(nCountries) + ' countries in all.' : '') + ' Point at a block for the detail. Tap one for its pieces.'
+      : '<b>Who Built It.</b> One block a player, sized by pieces placed first.' + (wall ? ' Point at a block or a piece for the name. Tap a block for their pieces.' : '');
+  }
+  treeCaption();
+  const viewSeg = q('#mwView');
+  if (viewSeg) viewSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('button'); if (!b || building) return;
+    const v = b.dataset.v; if (!v || v === view) return;
+    view = v;
+    viewSeg.querySelectorAll('button').forEach((n) => n.classList.toggle('on', n.dataset.v === v));
+    hideTip();
+    ownLayer();
+    drawTree(treeW, treeH);
+    tree.querySelectorAll('.mwTile').forEach((n) => { n.style.transitionDelay = '0ms'; });
+    treeCaption();
+    setMode(mode);
+  });
+
   /* ---------- the hover card (owner, 2026-11-19: "you can't see the user names. maybe putting
      cursor over gives full details for the given square") ----------
      A mouse over a block, or over a piece on the wall, shows who it is in full: the whole name,
@@ -486,13 +556,20 @@ export function openMemorial(fin, d) {
   function tipFor(t) {
     if (!t) return '';
     const pcs = num(t.f) + plural(t.f, ' piece', ' pieces') + ' placed first';
+    if (t.country) {
+      return '<b>' + esc(t.n) + (t.mine ? ' (Yours)' : '') + '</b><span>' + pcs + ' \u00b7 ' + share1(t.f) + '</span>'
+        + '<span>' + num(t.players) + plural(t.players, ' player', ' players') + (t.rank ? ' \u00b7 #' + num(t.rank) + ' of ' + num(nCountries) + plural(nCountries, ' country', ' countries') : '') + '</span>'
+        + (t.lead && t.players > 1 ? '<span>Top builder: ' + esc(t.lead.n) + ', ' + num(t.lead.f) + '</span>' : '')
+        + (t.unknown ? '<span>Players whose country we could not tell.</span>' : '');
+    }
     if (t.guest) return '<b>Guests</b><span>' + esc(t.sub || '') + ' together</span><span>' + pcs + ' \u00b7 ' + share1(t.f) + '</span>';
     if (t.bucket) return '<b>' + esc(t.n) + '</b><span>' + pcs + ' \u00b7 ' + share1(t.f) + '</span><span>Each placed fewer than the players shown.</span>';
     return '<b>' + esc(t.n) + (t.me ? ' (You)' : '') + '</b><span>' + pcs + ' \u00b7 ' + share1(t.f) + '</span>'
       + (t.rank ? '<span>#' + num(t.rank) + ' of ' + num(members.length) + plural(members.length, ' player', ' players') + ' by pieces</span>' : '');
   }
-  const tileOf = new Map();
+  const tileOf = new Map(), cTileOf = new Map();
   for (const t of tiles) for (const i of t.idx) tileOf.set(i, t);
+  for (const t of cTiles) for (const i of t.idx) cTileOf.set(i, t);
   let tipKey = null;
   function showTip(key, html, e) {
     if (!html) { hideTip(); return; }
@@ -520,6 +597,12 @@ export function openMemorial(fin, d) {
     if (c < 0 || rw < 0 || c >= cols || rw >= rows) { hideTip(); return; }
     const o = ownerOf[rw * cols + c];
     if (o < 0) { showTip('none', '<b>Not placed</b><span>Nobody placed this piece before it closed.</span>', e); return; }
+    if (view === 'countries') {
+      const ct = cTileOf.get(o);
+      if (!ct) { hideTip(); return; }
+      showTip('c' + o, '<span>This piece was placed by</span><b>' + esc(who[o].n) + '</b><span>from ' + esc(ct.unknown ? 'an unknown country' : ct.n) + '</span><span>' + esc(ct.n) + ': ' + num(ct.f) + plural(ct.f, ' piece', ' pieces') + ' \u00b7 ' + share1(ct.f) + '</span>', e);
+      return;
+    }
     const t = tileOf.get(o);
     if (!t) { hideTip(); return; }
     // A player folded into the "more players" block is still named on their own piece.

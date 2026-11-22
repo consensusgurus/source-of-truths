@@ -16,6 +16,11 @@ import { parseMuralId, muralIdAllowed } from '@/lib/mural-shared';
 //          guests. group by individual identifier"), numbered by pieces
 //   guests the guest count: { players, f: 0 } (f stays for old readers)
 //   order  piece ids, oldest placement first
+//   who[].c  ISO country code of the player, '' when unknown (owner,
+//          2026-11-22: "show contributions by country"). Read from the
+//          player's own play rows (quiz_results.country, set from Vercel's
+//          edge geo header), the country they play from most often. No
+//          migration: it works for murals already finished.
 //   own    for each of those, 0 for a guest or 1 + its index in `who`
 //
 // A finished mural cannot change (mural_place refuses it), so its answer is
@@ -26,6 +31,54 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
 const PAGE = 1000;
+const CODE = /^[A-Z]{2}$/;
+
+// Each player's country: the one their play rows carry most often. One query
+// per small batch of players, newest rows first; a player crowded out of a
+// batch by heavier players is asked again on their own. Best effort: any
+// failure leaves the country blank and never fails the wall.
+async function countriesOf(players) {
+  const out = new Map();
+  const want = { user_id: [], anon_id: [] };
+  const key = new Map();
+  for (const pl of players) {
+    if (typeof pl !== 'string') continue;
+    if (pl.startsWith('u:')) { want.user_id.push(pl.slice(2)); key.set('user_id:' + pl.slice(2), pl); }
+    else if (pl.startsWith('a:')) { want.anon_id.push(pl.slice(2)); key.set('anon_id:' + pl.slice(2), pl); }
+  }
+  for (const col of ['user_id', 'anon_id']) {
+    let left = want[col];
+    for (let pass = 0; pass < 3 && left.length; pass++) {
+      const size = pass === 0 ? 20 : pass === 1 ? 4 : 1;
+      const miss = [];
+      for (let i = 0; i < left.length; i += size) {
+        const chunk = left.slice(i, i + size);
+        const r = await supabaseAdmin.from('quiz_results').select(col + ', country')
+          .in(col, chunk).not('country', 'is', null)
+          .order('created_at', { ascending: false }).limit(600);
+        if (r.error) throw r.error;
+        const tally = new Map();
+        for (const row of r.data || []) {
+          const c = String(row.country || '').toUpperCase();
+          if (!CODE.test(c) || c === 'XX') continue;
+          const id = row[col];
+          let t = tally.get(id); if (!t) { t = new Map(); tally.set(id, t); }
+          t.set(c, (t.get(c) || 0) + 1);
+        }
+        for (const id of chunk) {
+          const t = tally.get(id);
+          if (!t) { if ((r.data || []).length >= 600) miss.push(id); continue; }
+          let best = '', n = 0;
+          for (const [c, k] of t) if (k > n) { best = c; n = k; }
+          out.set(key.get(col + ':' + id), best);
+        }
+      }
+      // Only a full answer can have crowded someone out; a short one means they have no rows.
+      left = miss;
+    }
+  }
+  return out;
+}
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
@@ -76,12 +129,15 @@ export async function GET(request) {
     own.push(index.get(r.player) || 0);
   }
 
+  let ctry = new Map();
+  try { ctry = await countriesOf(members.map(([player]) => player)); } catch (e) { console.error('mural wall countries', e); }
+
   const done = !!b.data.completed_at;
   return NextResponse.json({
     id, cols: b.data.cols, rows: b.data.rows, total, n: order.length,
     opens: Date.parse(b.data.opens_at),
     completed: done ? Date.parse(b.data.completed_at) : null,
-    who: members.map(([, p]) => (p.member ? { n: p.name || 'Player', f: p.f } : { n: 'Guest ' + p.guestNo, f: p.f, g: 1 })),
+    who: members.map(([player, p]) => ({ ...(p.member ? { n: p.name || 'Player', f: p.f } : { n: 'Guest ' + p.guestNo, f: p.f, g: 1 }), c: ctry.get(player) || '' })),
     guests: { players: guestPlayers, f: 0 },
     order, own,
   }, {
