@@ -171,7 +171,7 @@ export const PUZZLES = [
     "id": "venice",
     "tier": 1,
     "tips": [
-     "A glass bead from Murano rolled out of her bag, along with a used vaporetto pass. Wherever she is going, there are no cars at all.",
+     "A glass bead from Murano rolled out of her bag, along with a used vaporetto pass. Wherever she is going, the streets are canals and the buses are boats.",
      "A gondolier rowed her toward the Rialto Bridge and the Doge's Palace. She asked about acqua alta, the tides that flood this lagoon city of palaces on wooden piles.",
      "La Serenissima. Pigeons and visitors crowd St. Mark's Square beneath the campanile and the basilica's golden mosaics, steps from the Grand Canal of the floating city."
     ]
@@ -275,7 +275,7 @@ export const PUZZLES = [
     "tier": 1,
     "tips": [
      "A souvlaki wrapper from Monastiraki and a metro ticket with \"efcharistó\" written on the back. She's headed for an ancient capital by the sea.",
-     "A taxi driver dropped her below Lycabettus Hill. She also asked about the changing of the guard at Syntagma Square, in a sun-baked, white-walled city ringed by mountains.",
+     "A taxi driver dropped her below Lycabettus Hill. She also asked about the changing of the guard at Syntagma Square, in a sun-baked, sprawling city ringed by mountains.",
      "The cradle of democracy? Exactly. She is in the capital of Greece, where the marble Parthenon has crowned the Acropolis since the fifth century BC."
     ]
    },
@@ -1473,7 +1473,7 @@ export const PUZZLES = [
     "id": "venice",
     "tier": 1,
     "tips": [
-     "A glass bead from Murano rolled out of her bag, along with a used vaporetto pass. Wherever she is going, there are no cars at all.",
+     "A glass bead from Murano rolled out of her bag, along with a used vaporetto pass. Wherever she is going, the streets are canals and the buses are boats.",
      "A gondolier rowed her toward the Rialto Bridge and the Doge's Palace. She asked about acqua alta, the tides that flood this lagoon city of palaces on wooden piles.",
      "La Serenissima. Pigeons and visitors crowd St. Mark's Square beneath the campanile and the basilica's golden mosaics, steps from the Grand Canal of the floating city."
     ]
@@ -1549,7 +1549,7 @@ export const PUZZLES = [
     "tier": 1,
     "tips": [
      "A souvlaki wrapper from Monastiraki, a one-euro coin stamped with an owl, and a metro ticket with \"efcharistó\" written on the back. She's headed for an ancient capital by the sea.",
-     "A taxi driver dropped her below Lycabettus Hill. She also asked about the changing of the guard at Syntagma Square, in a sun-baked, white-walled city ringed by mountains.",
+     "A taxi driver dropped her below Lycabettus Hill. She also asked about the changing of the guard at Syntagma Square, in a sun-baked, sprawling city ringed by mountains.",
      "The cradle of democracy? Exactly. She is in the capital of Greece, where the marble Parthenon has crowned the Acropolis since the fifth century BC."
     ]
    },
@@ -3298,6 +3298,184 @@ export const PUZZLES = [
      "Ticket stub: the red cable car up to Kelburn. Also on the cafe table, a receipt for a flat white. She's heading for a windy harbor in the far south.",
      "A ferry worker heard her plan a visit to the Te Papa museum and the Mount Victoria lookout, in a famously windy city wrapped around a harbor at the foot of an island.",
      "Southernmost capital of any sovereign state: that is her hideout, the windy city of New Zealand whose parliament meets in a building nicknamed the Beehive."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 37,
+  "quizId": "carmen-12-14-26",
+  "live": "2026-12-14",
+  "dateLabel": "December 14, 2026",
+  "sunday": false,
+  "title": "The Stolen Gilded Astrolabe",
+  "suspect": "The Magpie",
+  "stolen": "A gilded astrolabe",
+  "start": {
+   "name": "Santa Fe, United States",
+   "ll": [
+    -105.94,
+    35.69
+   ]
+  },
+  "legs": [
+   {
+    "name": "Madrid, Spain",
+    "ll": [
+     -3.7,
+     40.42
+    ],
+    "id": "madrid",
+    "tier": 1,
+    "tips": [
+     "Chocolate con churros at San Ginés, according to the receipt in her passport, plus a metro card. The note beside it says \"nos vemos en la Plaza Mayor.\"",
+     "A bellhop pointed her to the Prado's Velázquez paintings and a rowboat on the Retiro lake, in a high, dry inland capital of grand plazas and royal parks.",
+     "Kilometer Zero is set in the pavement of the Puerta del Sol, near the center of Spain, and the Santiago Bernabéu stadium draws huge crowds. That is where she went."
+    ]
+   },
+   {
+    "name": "Istanbul, Turkey",
+    "ll": [
+     28.98,
+     41.01
+    ],
+    "id": "istanbul",
+    "tier": 1,
+    "tips": [
+     "A ferry token and a receipt for baklava and tea near the Grand Bazaar, paid in lira. On the back, in her handwriting: \"teşekkürler.\" She's chasing a great port.",
+     "According to a ferry captain, she wanted a hilly city of minarets and domes split by a strait, and asked about the Blue Mosque and the jeweled treasury of Topkapı Palace.",
+     "Constantinople, for centuries. The great city straddles Europe and Asia across the Bosphorus, and the vast dome of Hagia Sophia rises over it."
+    ]
+   },
+   {
+    "name": "Singapore, Singapore",
+    "ll": [
+     103.85,
+     1.29
+    ],
+    "id": "singapore",
+    "tier": 1,
+    "tips": [
+     "Chili crab and kaya toast at a hawker center, ordered off a menu printed in English, Malay, Mandarin and Tamil. She kept the receipt.",
+     "The cabbie dropped her at the giant Supertrees of Gardens by the Bay and heard she wanted the Botanic Gardens' orchids next, on a hot, humid island off the tip of a peninsula.",
+     "She's bound for the Lion City, a tiny city-state whose Marina Bay Sands hotel balances a ship-shaped sky deck across the tops of three towers."
+    ]
+   },
+   {
+    "name": "Venice, Italy",
+    "ll": [
+     12.33,
+     45.44
+    ],
+    "id": "venice",
+    "tier": 1,
+    "tips": [
+     "A glass bead from Murano rolled out of her bag, along with a used vaporetto pass. Wherever she is going, the streets are canals and the buses are boats.",
+     "A gondolier rowed her toward the Rialto Bridge and the Doge's Palace. She asked about acqua alta, the tides that flood this lagoon city of palaces on wooden piles.",
+     "La Serenissima. Pigeons and visitors crowd St. Mark's Square beneath the campanile and the basilica's golden mosaics, steps from the Grand Canal of the floating city."
+    ]
+   },
+   {
+    "name": "Athens, Greece",
+    "ll": [
+     23.73,
+     37.98
+    ],
+    "id": "athens",
+    "tier": 1,
+    "tips": [
+     "A souvlaki wrapper from Monastiraki, a one-euro coin stamped with an owl, and a metro ticket with \"efcharistó\" written on the back. She's headed for an ancient capital by the sea.",
+     "A taxi driver dropped her below Lycabettus Hill. She also asked about the changing of the guard at Syntagma Square, in a sun-baked, sprawling city ringed by mountains.",
+     "The cradle of democracy? Exactly. She is in the capital of Greece, where the marble Parthenon has crowned the Acropolis since the fifth century BC."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 38,
+  "quizId": "carmen-12-15-26",
+  "live": "2026-12-15",
+  "dateLabel": "December 15, 2026",
+  "sunday": false,
+  "title": "The Stolen Jade Chess Set",
+  "suspect": "The Jackdaw",
+  "stolen": "A jade chess set",
+  "start": {
+   "name": "Moscow, Russia",
+   "ll": [
+    37.62,
+    55.76
+   ]
+  },
+  "legs": [
+   {
+    "name": "Lisbon, Portugal",
+    "ll": [
+     -9.14,
+     38.72
+    ],
+    "id": "lisbon",
+    "tier": 1,
+    "tips": [
+     "A custard-tart receipt from a bakery in Belém is folded inside a phrasebook, \"obrigada\" circled on the torn page. Whoever she meets next is waiting in a capital on the Atlantic.",
+     "The night porter remembers her asking for the tram up to São Jorge Castle and for Alfama, the Moorish quarter that survived the 1755 earthquake, in a hilly city of tiled facades and yellow trams.",
+     "Mainland Europe's westernmost capital. Look where the Tagus meets the ocean under a red suspension bridge, and you will find her in Portugal."
+    ]
+   },
+   {
+    "name": "London, United Kingdom",
+    "ll": [
+     -0.13,
+     51.51
+    ],
+    "id": "london",
+    "tier": 1,
+    "tips": [
+     "An Oyster card with its balance spent, a ten-pound note and a receipt from a cheese stall at Borough Market. She is near a capital on a tidal river.",
+     "The doorman watched her pass red double-decker buses and black cabs in the drizzle. In this sprawling city she asked about the Crown Jewels at the Tower and a play in the West End.",
+     "The tip-off is solid: the British capital, where Big Ben chimes beside the Houses of Parliament on the Thames and the Underground, the world's oldest metro, opened in 1863."
+    ]
+   },
+   {
+    "name": "Ulaanbaatar, Mongolia",
+    "ll": [
+     106.91,
+     47.89
+    ],
+    "id": "ulaanbaatar",
+    "tier": 2,
+    "tips": [
+     "Somebody paid in tögrög for a fur hat, a felt-lined coat and a train ticket to the capital where nearly half the country lives. The winters there are brutal.",
+     "A clerk heard her ask for the central square with its hero on horseback and the towering gilded statue in Gandan Monastery, in a valley city on the Tuul River ringed by bare steppe hills.",
+     "The world's coldest national capital. From here it is about an hour's drive to Tsonjin Boldog, where a 40-meter steel statue of Genghis Khan sits on horseback."
+    ]
+   },
+   {
+    "name": "Delhi, India",
+    "ll": [
+     77.21,
+     28.61
+    ],
+    "id": "delhi",
+    "tier": 1,
+    "tips": [
+     "Stuffed paratha in a lane off Chandni Chowk, a metro card, and a Hindi phrase card that reads \"kitna hai?\" Her trail leads to a big capital.",
+     "An auto-rickshaw driver took her past Mughal ruins and wide avenues near the Yamuna River; she wanted to see Qutub Minar and Humayun's Tomb in a hot, sprawling capital.",
+     "Every August the Independence Day flag raising happens at the Red Fort of this Indian capital, where the India Gate arch honors fallen soldiers. Find her there."
+    ]
+   },
+   {
+    "name": "Cape Town, South Africa",
+    "ll": [
+     18.42,
+     -33.92
+    ],
+    "id": "cape-town",
+    "tier": 1,
+    "tips": [
+     "A postcard of the candy-colored houses of Bo-Kaap, half written and never mailed, sits beside a ferry ticket to Robben Island and a few rand coins. She's after a port near the southern tip of a continent.",
+     "According to a tour guide, she wanted a harbor wedged between mountains and the sea, vineyards close by, an afternoon on the V&A Waterfront and a stroll through Kirstenbosch's botanical gardens.",
+     "The tip-off is solid: South Africa's Mother City, where flat-topped Table Mountain looms over the harbor under a cloud the locals call the tablecloth."
     ]
    }
   ]

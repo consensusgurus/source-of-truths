@@ -6,9 +6,9 @@
     "note": "12-01..12-20 (20 new boards) read by a separate reviewer: Fink WEF title, Blakely Spanx years and fax-machine giveaway, Whitman Albertsons executive chair (Sept 2026, checked), Magic Johnson and Dell early giveaways softened, Schultz now Miami, Dorsey dispatch detail moved off clue 2, Lagarde IMF \"first\" cut, Witherspoon \"left to act\" cut. Earlier: bank rebuilt 2026-11-09 as a difficulty ladder (Tim Cook first); all 21 boards read by a separate reviewer, fixes applied (company names moved out of early clues for Burns, Chenault, Wolfe Herd; Chesky origin story hidden; Knight, Benioff, Powell, Hastings, Cook, Garten, Yellen corrected)"
   },
   "bacon": {
-    "through": "2026-11-30",
-    "on": "2026-11-07",
-    "note": "launch bank: every chain link, year, name and par sanity read by a separate reviewer over three rounds; its fixes went into scripts/bacon-cast-fixes.json and the generator"
+    "through": "2026-12-15",
+    "on": "2026-11-22",
+    "note": "12-01..12-15 read by a separate reviewer on 2026-11-22: every link, title and year, no defects. Earlier: launch bank: every chain link, year, name and par sanity read by a separate reviewer over three rounds; its fixes went into scripts/bacon-cast-fixes.json and the generator"
   },
   "stet": {
     "through": "2026-12-31",
@@ -41,9 +41,9 @@
     "note": "12-01..12-31 read by three separate reviewers by date with a cross-game pass, fixes applied in the sources, then late-replacement reads"
   },
   "encore": {
-    "through": "2026-11-30",
-    "on": "2026-10-08",
-    "note": "whole bank"
+    "through": "2026-12-12",
+    "on": "2026-11-22",
+    "note": "12-01..12-12 (12 new boards, 326 clues) read by a separate reviewer on 2026-11-22: 21 clue fixes applied in both word banks and on every board from 2026-09-30 carrying them (SHIN, SILL, CLEF key-sign error, SAGE/YEA naming a neighbour, US usage VILLA/RETIRE/CRUMPLE, POS fixes); DEEP/DEEPEST share a grid on 12-01 and were reclued apart. Earlier: whole bank"
   },
   "deep": {
     "through": "2026-12-31",
@@ -151,9 +151,9 @@
     "note": "12-01..12-31 read by three separate reviewers by date with a cross-game pass, fixes applied in the sources, then late-replacement reads Earlier: whole bank, review rounds rv-a..rv-p"
   },
   "pricer": {
-    "through": "2026-12-02",
-    "on": "2026-11-12",
-    "note": "11-15..12-02 (18 new rows) re-read live by a separate reviewer on 2026-11-12 (price, listing status, photos, broker, conversions): no changes. Nov 8-14 second city week read live on Amazon 2026-11-06; separate reviewer read names, copy and same-day spoilers"
+    "through": "2026-12-15",
+    "on": "2026-11-22",
+    "note": "12-03..12-15 (13 new rows) read live on Amazon 2026-11-22; separate reviewer checked names, ASINs and prices (AirTag renamed to 1st Generation). Earlier: 11-15..12-02 (18 new rows) re-read live by a separate reviewer on 2026-11-12 (price, listing status, photos, broker, conversions): no changes. Nov 8-14 second city week read live on Amazon 2026-11-06; separate reviewer read names, copy and same-day spoilers"
   },
   "dealer": {
     "through": "2026-11-14",
@@ -161,9 +161,9 @@
     "note": "Nov 8-14 rows read separately for copy and spoilers; MSRPs as read 2026-10-03, not re-read live"
   },
   "realtor": {
-    "through": "2026-12-02",
-    "on": "2026-11-12",
-    "note": "11-15..12-02 (18 new rows) re-read live by a separate reviewer on 2026-11-12 (price, listing status, photos, broker, conversions): no changes. Nov 8-14 second city week read live on Redfin 2026-11-06; separate reviewer read every row; Boston moved off Nov 8 (Dossier answer Massachusetts)"
+    "through": "2026-12-15",
+    "on": "2026-11-22",
+    "note": "12-03..12-15 (13 new rows) read live on Redfin 2026-11-22, real cities used (Rockwall TX, Lexington KY); separate reviewer checked city/zip/address and fields. Earlier: 11-15..12-02 (18 new rows) re-read live by a separate reviewer on 2026-11-12 (price, listing status, photos, broker, conversions): no changes. Nov 8-14 second city week read live on Redfin 2026-11-06; separate reviewer read every row; Boston moved off Nov 8 (Dossier answer Massachusetts)"
   },
   "agent": {
     "through": "2026-11-14",
@@ -274,9 +274,9 @@
     "note": "Added 2026-11-06 at the owner's direction. 2026-12-01..12-31 restock read by a separate reviewer, then a cross-game same-day giveaway pass and a final check; earlier launch days predate the restock and were not re-read in this pass"
   },
   "carmen": {
-    "through": "2026-12-13",
-    "on": "2026-11-08",
-    "note": "launch bank: the 113-city pool (339 tips) was authored in four regional passes and read tip by tip by two separate fact-checkers, who rewrote 31 tips (wrong superlatives, stale facts, giveaway nicknames, politics); scripts/verify-carmen.mjs checks name leaks, spelling and the route rules. 2026-11-08 restructure: all 339 tips rewritten for varied openings with currency moved later or dropped (owner: too many led with currency), checked old against new by a separate fact-checker, who found no drift and caught 8 older leaks and one false claim (Taipei), all fixed; boards from 2026-11-09 only, Nov 8 frozen. 2026-11-13 currency mix: 34 tips gained a currency reference (owner: mix more in), each currency, plural and coin design read by a separate fact-checker, no errors; two tram-driver payments reworded on the reviewer's realism note; boards from 2026-11-14 only"
+    "through": "2026-12-15",
+    "on": "2026-11-22",
+    "note": "12-14..12-15 (2 new cases) read by a separate reviewer on 2026-11-22: Venice \"no cars at all\" and Athens \"white-walled\" tips corrected in the pool and on every board carrying them. Earlier: launch bank: the 113-city pool (339 tips) was authored in four regional passes and read tip by tip by two separate fact-checkers, who rewrote 31 tips (wrong superlatives, stale facts, giveaway nicknames, politics); scripts/verify-carmen.mjs checks name leaks, spelling and the route rules. 2026-11-08 restructure: all 339 tips rewritten for varied openings with currency moved later or dropped (owner: too many led with currency), checked old against new by a separate fact-checker, who found no drift and caught 8 older leaks and one false claim (Taipei), all fixed; boards from 2026-11-09 only, Nov 8 frozen. 2026-11-13 currency mix: 34 tips gained a currency reference (owner: mix more in), each currency, plural and coin design read by a separate fact-checker, no errors; two tram-driver payments reworded on the reviewer's realism note; boards from 2026-11-14 only"
   },
   "tape": {
     "through": "2026-12-20",
@@ -289,9 +289,9 @@
     "note": "first ledger entry: 11-24..12-20 (27 new boards) read by a separate reviewer; clue orders changed where competition named the category (Roku, eBay, Instacart, CoreWeave, Ulta, Shake Shack), new verbatim clue 4 for Ulta and Zoetis, founder and CEO names put behind bars, Dutch Brothers alt. Every quote substring-checked against the S-1 on sec.gov. 11-10..11-23 launch boards were not re-read here"
   },
   "picks": {
-    "through": "2026-11-30",
-    "on": "2026-11-12",
-    "note": "pool rounds 2 and 3 (39 rows) also read by separate reviewers with live price re-reads: Burberry and Fender rows removed (photo), Omega moved to the photographed 007 Edition, Gibson name, Lexus GX and Nikon Z9 removed (price incl. destination / sale price), Lexus LX corrected to $107,500 before destination. first ledger entry, for the Picks pool (app/picks/pool.js): all 94 rows read by a separate reviewer (photos and credits on Commons, 41 prices re-read live, auction totals), 2 fixed (Codex Sassoon maker line, Hermes scarf name). Boards to 11-14 draw on retired rows reviewed under dealer/agent/curator"
+    "through": "2026-12-08",
+    "on": "2026-11-22",
+    "note": "12-01..12-08 dealt from 89 new pool rows read live on maker/brand sites 2026-11-22; a separate reviewer checked every price and Commons photo: 14 photos replaced (wrong generation or model), 4 prices/names fixed, 3 rows dropped. Earlier: pool rounds 2 and 3 (39 rows) also read by separate reviewers with live price re-reads: Burberry and Fender rows removed (photo), Omega moved to the photographed 007 Edition, Gibson name, Lexus GX and Nikon Z9 removed (price incl. destination / sale price), Lexus LX corrected to $107,500 before destination. first ledger entry, for the Picks pool (app/picks/pool.js): all 94 rows read by a separate reviewer (photos and credits on Commons, 41 prices re-read live, auction totals), 2 fixed (Codex Sassoon maker line, Hermes scarf name). Boards to 11-14 draw on retired rows reviewed under dealer/agent/curator"
   },
   "chain": {
     "through": "2026-12-31",

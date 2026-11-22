@@ -502,7 +502,8 @@ for (const p of PRIOR) {
   const ak = p.rules[ans[0]].k;
   legacy.answers[ak] = (legacy.answers[ak] || 0) + 1;
   const akey = keyOf(p.rules[ans[0]]);
-  p.rules.forEach((r, i) => { if (i !== ans[0]) { const P = `${akey}|${keyOf(r)}`; legacy.pairings[P] = (legacy.pairings[P] || 0) + 1; } });
+  // pairings: counted from 2026-09-30 only, the window verify-axiom's C12 measures
+  if (p.live >= '2026-09-30') p.rules.forEach((r, i) => { if (i !== ans[0]) { const P = `${akey}|${keyOf(r)}`; legacy.pairings[P] = (legacy.pairings[P] || 0) + 1; } });
   legacy.ruleSets.add(p.rules.map(keyOf).sort().join('+'));
 }
 
@@ -533,6 +534,10 @@ const answerPlan = [];
     for (const k of order) {
       if (answerPlan.length >= DAYS.length) break;
       if (count[k] >= Math.min(cap, ANSWER_CAP[k] ?? 1e9)) continue;
+      // A tight kind already near the RATE_GUARD ceiling bank-wide is not dealt
+      // as an answer again: a short run cannot buy it the extra appearances
+      // (2026-11-22: alpha sat at 4 of 10 and a fifth answer put it at 45%).
+      if (TIGHT.has(k) && (legacy.answers[k] || 0) >= 0.35 * (legacy.appears[k] || 0)) continue;
       answerPlan.push(k); count[k]++;
     }
     order = shuffle(order);
@@ -589,9 +594,22 @@ const ceiling = {};    // and the most it may have before the rate drops under R
 if (VERBOSE) console.error('quota', JSON.stringify(quota), '\nplanAnswers', JSON.stringify(planAnswers));
 
 // ── running ledger ─────────────────────────────────────────────────────────
+// SINCE_V3 (2026-11-22 restock): verify-axiom's C12 ceilings count every board
+// from V3_FROM, not just this run's. The first extension WAS the whole v3 era,
+// so a run-local ledger matched; every later run must start from the v3 boards
+// already banked, or a word on two of them gets a third (BEEF, SLEEPS did).
+const V3_FROM = '2026-09-30';
+const V3_PRIOR = PRIOR.filter((p) => p.live >= V3_FROM);
+const v3Words = {}, v3AnswerKey = {};
+for (const p of V3_PRIOR) {
+  p.tiles.forEach((t) => { v3Words[t.w] = (v3Words[t.w] || 0) + 1; });
+  const fns = p.rules.map(ruleFn);
+  const a = p.rules.findIndex((r, i) => p.tiles.every((t) => (fns[i](t.w) ? 1 : 0) === t.t));
+  if (a >= 0) v3AnswerKey[keyOf(p.rules[a])] = (v3AnswerKey[keyOf(p.rules[a])] || 0) + 1;
+}
 const used = {
   appears: {}, answers: {}, answerKey: {}, ruleKey: {},
-  words: { ...legacy.words }, newWords: {}, pairings: { ...legacy.pairings },
+  words: { ...legacy.words }, newWords: { ...v3Words }, pairings: { ...legacy.pairings },
   ruleSets: new Set(legacy.ruleSets), boards: [],
 };
 // 'vowels2' may be the answer four times where 'vowels' may be five. Kinds with
@@ -669,7 +687,7 @@ function buildBoard(day, answerKind, tries, poolFor) {
   for (let attempt = 0; attempt < tries; attempt++) {
     // 1. the answer, from the kind the plan asked for
     const keyCap = FLAVOUR.has(answerKind) ? 2 : ANSWER_KEY_CAP;
-    const cand = byKind[answerKind].filter((r) => byKind[answerKind].length === 1 || (used.answerKey[keyOf(r)] || 0) < keyCap);
+    const cand = byKind[answerKind].filter((r) => (byKind[answerKind].length === 1 || (used.answerKey[keyOf(r)] || 0) < keyCap) && (v3AnswerKey[keyOf(r)] || 0) + (used.answerKey[keyOf(r)] || 0) < 6);
     if (!cand.length) return null;
     const A = pick(cand);
 
@@ -807,7 +825,7 @@ function buildBoard(day, answerKind, tries, poolFor) {
     // 8. tile-overlap ceiling. Checked HERE, inside the attempt loop, so a
     //    collision costs one retry instead of ending the run.
     const ws = new Set(board.tiles.map((t) => t.w));
-    if (out.some((q) => q.tiles.filter((t) => ws.has(t.w)).length > OVERLAP_CAP)) { diag('tile overlap'); continue; }
+    if (V3_PRIOR.concat(out).some((q) => q.tiles.filter((t) => ws.has(t.w)).length > OVERLAP_CAP)) { diag('tile overlap'); continue; }
 
     // 9. shuffle the answer into a random slot and hand back a whole board
     const order = shuffle(rules.map((_, i) => i));
@@ -1023,10 +1041,10 @@ const SLOT_GUARD = 0.40;
   }
   const tot = Object.values(slots).reduce((a, b) => a + b, 0);
   if (Math.max(...Object.values(slots)) / tot > SLOT_GUARD) bad.push(`one candidate slot holds ${Math.max(...Object.values(slots))} of ${tot} answers`);
-  const topKey = Math.max(0, ...Object.values(used.answerKey));
-  if (topKey > 6) bad.push(`one rule spec is the answer on ${topKey} new boards (cap 6)`);
+  const topKey = Math.max(0, ...Object.keys(used.answerKey).map((k) => used.answerKey[k] + (v3AnswerKey[k] || 0)));
+  if (topKey > 6) bad.push(`one rule spec is the answer on ${topKey} boards since ${V3_FROM} (cap 6)`);
   const topWord = Math.max(0, ...Object.values(used.newWords));
-  if (topWord > WORD_CAP_NEW) bad.push(`a tile word appears on ${topWord} new boards (cap ${WORD_CAP_NEW})`);
+  if (topWord > WORD_CAP_NEW) bad.push(`a tile word appears on ${topWord} boards since ${V3_FROM} (cap ${WORD_CAP_NEW})`);
   if (bad.length) { console.error('gen-axiom: bank-wide ceilings breached —\n  ' + bad.join('\n  ')); process.exit(1); }
 }
 

@@ -176,9 +176,9 @@ const EMB_DIR = path.join(CACHE, 'warmer-emb');
 const VEC_BIN = path.join(CACHE, 'warmer-vectors.bin');
 const PKG = 'wink-embeddings-sg-100d';
 
-const LAST_FROZEN = '2026-09-29';   // the bank's current last day; asserted
-const FIRST_NEW = '2026-09-30';
-const LAST_NEW = '2026-11-30';
+const LAST_FROZEN = '2026-11-30';   // the bank's current last day; asserted
+const FIRST_NEW = '2026-12-01';
+const LAST_NEW = '2026-12-15';
 const SEED_BASE = 0x5741524d;       // "WARM"
 
 const WK_BAND = [460, 3600];        // weekday answer vocab-rank band
@@ -191,30 +191,43 @@ const SU_SUB = [[5030, 6000], [6000, 7000], [7000, 9000]];
 // boards sit inside 60, and its tightest pairs are at rank 2 (gold/diamond,
 // mountain/canyon). Both floors are checked in BOTH directions.
 const SEP_NEW = 150;                // against another answer in this run
-const SEP_FROZEN = 80;              // against a board that shipped before it
+const SEP_FROZEN = 80;              // against a board that shipped before VARIETY_FROM
+const VARIETY_FROM = '2026-09-30';  // verify-warmer's scope line
+// verify-warmer's length cap over every board from VARIETY_FROM: 18 of the first 62,
+// held as that share as the era grows (2026-11-22).
+const eraLenCap = (n) => Math.ceil((18 / 62) * n);
 // Vector distance does not catch word FAMILIES: "joy" and "enjoy" cleared the
 // rank floor and still read as the same puzzle two days running. So no two
 // answers in the bank may contain one another or share a five-letter prefix.
 const STEM_PREFIX = 5;
 const CLEAN_MIN = 13;               // of the top 15 neighbours, in the dictionary
-const DOMAIN_CAP = 5;
+// Run 3 (2026-11-22, Dec 1-15: 13 weekdays, 2 Sundays). The ceilings below were
+// written for the 62-board run 2 and are scaled here to the same shares; run 2's
+// values are in the comments. The header's numbers describe run 2.
+const DOMAIN_CAP = 2;               // run 2: 5 of 62
 const DOMAIN_WINDOW = 7;
-const NOUN_CAP = 40;
-const VERB_MIN = 8;
-const ADJ_MIN = 8;
+const NOUN_CAP = 10;                // run 2: 40 of 62
+const VERB_MIN = 2;                 // run 2: 8
+const ADJ_MIN = 2;                  // run 2: 8
 const POS_RUN_MAX = 4;
 // Target share of the run per part of speech; the picker steers towards these
 // every day rather than only checking the caps at the end.
 const POS_TARGET = { n: 0.58, v: 0.21, a: 0.21 };
-const LEN_CAP = 18;
-const LEN_DISTINCT_MIN = 5;
-const WK_SUB_MIN = 14;
-const SU_SUB_MIN = 2;
+const LEN_CAP = 5;                  // run 2: 18 of 62
+const LEN_DISTINCT_MIN = 4;         // run 2: 5
+// Per sub-band. Run 3 found the 460-1200 band exhausted: against 136 banked
+// answers at the 150-rank floor, two ordinary words in it survive vetting
+// (forward, interested); everything else left is a function word.
+const WK_SUB_MIN = [2, 3, 3];       // run 2: 14 of 53 each
+const SU_SUB_MIN = 0;               // run 2: 2 of 9; two Sundays cannot fill three sub-bands
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
   'August', 'September', 'October', 'November', 'December'];
 
 // ---------------------------------------------------------------------------
+// 2026-11-22 (run 3): the first 27 lines of WEEKDAY_POOL were added after the
+// 150-rank separation against the 62 run-2 boards left 20 weekday words; each was
+// read with its top neighbours (auto-scan of VOCAB 460-3600, then hand-picked).
 // The curated answer pool. `n` noun, `v` verb, `a` adjective. The second field
 // is the broad semantic domain the ceilings count. Every word here was read
 // with its top-15 GloVe neighbours in front of it; words whose neighbourhood
@@ -222,6 +235,34 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
 // in the list (see gate 2 above for the ones that were thrown out and why).
 // ---------------------------------------------------------------------------
 const WEEKDAY_POOL = `
+trash n: waste
+travel n: transport
+keeping n: storage
+network n: server
+city n: downtown
+chores n: cleaning
+effort n: initiative
+finance n: default
+faith n: worship
+company n: enterprise
+meaning n: definition
+screen v: click
+leave v: quit
+hit v: knock
+motion v: shake
+attention v: ignore
+scarcity a: rare
+quality a: pure
+science a: chemical
+chance a: random
+time a: brief
+feeling a: pleased
+power a: electrical
+speed a: rapid
+law a: valid
+direction a: forward
+closed a: locked
+interest a: interested
 weather n: snow rain storm cloud wind
 land n: valley village grass soil
 material n: wood iron glass plastic coal salt crystal gas
@@ -551,7 +592,7 @@ function main() {
   const vidx = new Map(); VOCAB.forEach((w, i) => vidx.set(w, i));
 
   // Frozen answers, and their orders, for the separation rule.
-  const frozen = PUZZLES.map((p) => ({ a: p.order[0], w: VOCAB[p.order[0]], rank: (() => {
+  const frozen = PUZZLES.map((p) => ({ a: p.order[0], w: VOCAB[p.order[0]], live: p.live, rank: (() => {
     const r = new Int32Array(N); for (let i = 0; i < p.order.length; i++) r[p.order[i]] = i; return r;
   })() }));
   const frozenWords = new Set(frozen.map((f) => f.w));
@@ -586,8 +627,11 @@ function main() {
     }
     // separation from every frozen answer, both directions
     for (const f of frozen) {
-      if (c.rank[f.a] <= SEP_FROZEN) return { ...entry, reject: `too close to frozen "${f.w}" (rank ${c.rank[f.a]})` };
-      if (f.rank[i] <= SEP_FROZEN) return { ...entry, reject: `frozen "${f.w}" ranks it ${f.rank[i]}` };
+      // verify-warmer holds every board from VARIETY_FROM to the in-run floor,
+      // so a banked board of an earlier extension is "new" to it, not frozen.
+      const sep = f.live >= VARIETY_FROM ? SEP_NEW : SEP_FROZEN;
+      if (c.rank[f.a] <= sep) return { ...entry, reject: `too close to banked "${f.w}" (rank ${c.rank[f.a]}, floor ${sep})` };
+      if (f.rank[i] <= sep) return { ...entry, reject: `banked "${f.w}" ranks it ${f.rank[i]} (floor ${sep})` };
       if (entry.w.includes(f.w) || f.w.includes(entry.w)) return { ...entry, reject: `same word family as frozen "${f.w}"` };
     }
     return { ...entry, i, ...c };
@@ -618,6 +662,9 @@ function main() {
 
   const picked = [];
   const domCount = new Map(), lenCount = new Map(), posCount = { n: 0, v: 0, a: 0 };
+  const eraLen = new Map();
+  PUZZLES.filter((p) => p.live >= VARIETY_FROM).forEach((p) => { const L = VOCAB[p.order[0]].length; eraLen.set(L, (eraLen.get(L) || 0) + 1); });
+  const ERA_LEN_CAP = eraLenCap(PUZZLES.filter((p) => p.live >= VARIETY_FROM).length + days.length);
   const wkSubCount = [0, 0, 0], suSubCount = [0, 0, 0];
   let wkSeen = 0, suSeen = 0;
 
@@ -657,6 +704,7 @@ function main() {
       if (recentDoms.includes(c.dom)) return false;
       if (c.pos === 'n' && posCount.n >= NOUN_CAP) return false;
       if ((lenCount.get(c.w.length) || 0) >= LEN_CAP) return false;
+      if ((eraLen.get(c.w.length) || 0) + (lenCount.get(c.w.length) || 0) >= ERA_LEN_CAP) return false;
       if (posRun && posRun.k >= POS_RUN_MAX && c.pos === posRun.pos) return false;
       if (forced && !forced.includes(c.pos)) return false;
       if (!separated(c)) return false;
@@ -708,7 +756,7 @@ function main() {
   for (const [l, c] of lenCount) if (c > LEN_CAP) fail.push(`length ${l} cap`);
   for (const [d, c] of domCount) if (c > DOMAIN_CAP) fail.push(`domain ${d} cap`);
   if (picked.length === days.length) {
-    for (const c of wkSubCount) if (c < WK_SUB_MIN) fail.push('weekday sub-band minimum');
+    wkSubCount.forEach((c, k) => { if (c < WK_SUB_MIN[k]) fail.push('weekday sub-band minimum'); });
     for (const c of suSubCount) if (c < SU_SUB_MIN) fail.push('sunday sub-band minimum');
   }
   if (fail.length) { console.error(`\nCEILINGS NOT MET: ${fail.join(', ')}`); process.exit(1); }

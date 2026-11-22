@@ -1268,3 +1268,24 @@ week inventory to fill earlier days and create new harder thursdays and other da
 - **Build time.** A v2 board takes roughly five to fifteen minutes on one core: the search for a board that passes the
   skip scan (about one built board in fifteen midweek, one in sixty for four links), then the pair sweep.
   `--jobs 2` builds two dates at once. Restock a week or two at a time, well before the runway warning.
+
+## The 2026-11-22 restock to Dec 15 (owner: "take everything to dec 15th")
+
+- **Axiom** (`scripts/gen-axiom.mjs`): the generator's word, answer-spec, overlap and pairing ledgers were run-local, which matched
+  verify-axiom's C12 only for the first v3 run. They now start from every board banked since `V3_FROM` (2026-09-30), and a tight
+  kind already at 35% answer rate is not dealt as an answer again. A short run (15 days) can stall on a Sunday; `--to` a few days
+  further sometimes clears it, splice only what you need.
+- **Warmer** (`scripts/gen-warmer.mjs`): run 3 (Dec 1-15). Every banked board from `VARIETY_FROM` is held to the 150-rank floor
+  (verify-warmer already did this; the generator used 80). The run-2 ceilings are scaled to the run length, the length cap is
+  verify-warmer's share (18 of 62, held as a share as the scope grows), and the weekday pool gained 28 vetted words. The common
+  460-1200 band is nearly exhausted against 136 answers at the 150 floor; the next run will need new pool words there.
+- **Encore**: the Dec 13 Sunday (11x11) cannot be filled under the answer cap of 3 with the current banks ("320 answers at cap").
+  The bank stops at Dec 12. Growing `encore-wordbank.txt` is the fix, but read the Emcee/Encore shared-bank warning first.
+- **Encore clue fixes**: a clue fix goes in BOTH word banks and on every Emcee/Encore board from 2026-09-30 carrying that answer
+  (verify-encore and verify-daily-banks compare every board to the bank); older boards get a `clue-retired.txt` line.
+- **Anon**: passages with proper nouns, semicolons or under ~95 letters often fail the `cover` or `slots` stage; plain, common-word
+  sentences (Hemingway, Henry, Poe, Burroughs) build in minutes. Verify every passage on Wikisource (Gutenberg was down).
+  This run reached Dec 8: Woolf, Trollope, Sabatini, Carroll, Doyle, Crane, London and Arrowsmith all failed, and each failure
+  costs about ten minutes. Pick candidate passages by running them through the generator one at a time (--out), not in a chain.
+- **Picks** is the binding constraint for Price Check: a day deals 9 items, and about 4 of them must be curator rows (retail list
+  prices or auction lots priced near the cars). The pool ran dry of curator rows at Dec 8.

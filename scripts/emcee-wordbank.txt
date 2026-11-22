@@ -431,7 +431,7 @@ DEAR|Beloved
 DECIDED|Made up one's mind
 DECK|Cards, collectively
 DECLINE|Turn down
-DEEP|Far down
+DEEP|Like the ocean floor
 DEFENSE|Team's other half
 DELAY|Hold up
 DELIVER|Drop off
@@ -1251,7 +1251,7 @@ ORGANIC|Pesticide-free
 OTHER|The alternative
 OTTER|Playful swimmer
 OUGHT|Should
-OUR|We share it: ___ home
+OUR|___ Town (Thornton Wilder play)
 OUT|Not in
 OUTDOOR|In the open air
 OUTER|Not inner
@@ -1720,7 +1720,7 @@ SINK|Kitchen basin
 SIP|Small drink
 SIR|Knight's title
 SIT|Take a seat
-SITE|Web address
+SITE|Web destination
 SITTING|Taking a seat
 SIX|Half a dozen
 SIXTEEN|Sweet birthday number
@@ -2231,7 +2231,7 @@ YAM|Starchy tuber
 YAP|Small dog's bark
 YARD|Three feet
 YARN|Knitter's supply
-YEA|Vote for
+YEA|Affirmative vote
 YEAR|Twelve months
 YEAST|Bread riser
 YELL|Shout
@@ -2682,7 +2682,7 @@ ENRICH|Make fuller
 ENROLL|Register for class
 ENSURE|Make certain of
 ENTAIL|Involve
-ENTIRE|The whole thing
+ENTIRE|Whole
 EQUALS|Is the same as
 EQUATE|Treat as alike
 ERASER|Pencil end
@@ -3053,7 +3053,7 @@ LAWYER|Bar member
 LAYERS|Onion has them
 LAZILY|Without hurry
 LEADER|The one out front
-LEAGUE|Where the teams play
+LEAGUE|NFL or NBA, e.g.
 LEAVES|Rake target
 LEDGER|Book of accounts
 LEGACY|What you leave behind
@@ -3431,7 +3431,7 @@ RAGGED|Tattered
 RAISIN|Dried grape
 RAMBLE|Wander on and on
 RANCID|Gone bad, as butter
-RANDOM|By chance
+RANDOM|Haphazard
 RANGER|Park warden
 RANSOM|Kidnapper's price
 RAPIDS|White water
@@ -3447,7 +3447,7 @@ REASON|The why of it
 REBATE|Money back
 REBELS|Ones who rise up
 RECALL|Bring to mind
-RECENT|Not long ago
+RECENT|Fresh, as news
 RECESS|School break
 RECIPE|Cook's instructions
 RECITE|Say from memory
@@ -3494,7 +3494,7 @@ RESULT|What comes of it
 RESUME|Pick it back up
 RETAIL|Shop selling
 RETAIN|Hold on to
-RETIRE|Hang up the boots
+RETIRE|Leave the workforce
 RETORT|Sharp reply
 RETURN|Come back
 REVEAL|Show at last
@@ -4535,7 +4535,7 @@ IMITATE|Copy
 IMMENSE|Absolutely vast
 IMPEACH|Charge an official
 IMPLIED|Hinted at
-IMPORTS|What the country buys in
+IMPORTS|Foreign goods
 IMPOSED|Forced it on them
 IMPRESS|Win them over
 IMPRINT|Mark left behind
@@ -5062,7 +5062,7 @@ SUCCEED|Pull it off
 SUCTION|Vacuum pull
 SUFFICE|Be enough
 SUMMONS|Court's order to appear
-SUNBEAM|Ray through the cloud
+SUNBEAM|Ray through the clouds
 SUNBURN|Beach's red reminder
 SUNDIAL|Shadow clock
 SURGERY|The operation
@@ -5280,7 +5280,7 @@ BLOOD|What runs in the veins
 BLOWN|Puffed away
 BLUFF|Poker pretense
 BLUNT|Not sharp
-BLURB|Short jacket note
+BLURB|Book jacket praise
 BLUSH|Go red
 BOAST|Brag
 BOGUS|Phony
@@ -5969,7 +5969,7 @@ TOKEN|Arcade coin
 TONIC|Gin's partner
 TOPAZ|Yellow gem
 TORSO|Trunk of the body
-TOTEM|Carved pole
+TOTEM|Clan emblem
 TOXIC|Poisonous
 TOXIN|Harmful substance
 TRACE|Faint mark
@@ -6019,7 +6019,7 @@ VERGE|Roadside edge
 VERSE|Poem's stanza
 VIGIL|Night's watch
 VIGOR|Real energy
-VILLA|Holiday house
+VILLA|Vacation home
 VINYL|Record material
 VIOLA|Viola's bigger cousin
 VIPER|Poisonous snake

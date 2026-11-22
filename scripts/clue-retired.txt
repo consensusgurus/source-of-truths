@@ -13,3 +13,8 @@ ITS|Belonging to it
 HIS|Belonging to he
 MAT|Doormat
 GEAR|Bike shifter
+#
+# Retired 2026-11-22 (Encore Dec 1-12 restock review):
+OUR|We share it: ___ home
+YEA|Vote for
+ENTIRE|The whole thing

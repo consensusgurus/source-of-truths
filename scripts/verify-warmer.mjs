@@ -45,8 +45,11 @@ const VARIETY_FROM = '2026-09-30';
 // past this rank in the in-scope one's), in both directions.
 const SEP_NEW = 150;     // against another in-scope answer
 const SEP_FROZEN = 80;   // against a board that predates VARIETY_FROM
-// No single answer LENGTH on more than this many in-scope boards.
-const LEN_CAP = 18;
+// No single answer LENGTH on more than this share of in-scope boards: 18 of
+// the 62 the 2026-09-30 extension wrote, held as that SHARE as the scope grows
+// (2026-11-22; a flat 18 over an ever-longer scope would cap the bank, not
+// the variety).
+const LEN_SHARE = 18 / 62;
 // US/British spelling folds, for "the hottest word is just the other spelling".
 const TWIN = [[/our$/, 'or'], [/re$/, 'er'], [/ise$/, 'ize'], [/isation$/, 'ization'],
   [/yse$/, 'yze'], [/ogue$/, 'og'], [/lling$/, 'ling'], [/lled$/, 'led'], [/ae/, 'e'], [/oe/, 'e']];
@@ -170,6 +173,7 @@ PUZZLES.forEach((p, i) => {
   });
 });
 
+const LEN_CAP = Math.ceil(LEN_SHARE * inScope.filter(Boolean).length);
 for (const [len, c] of lenCount) {
   if (c > LEN_CAP) { vbad++; console.error(`✗ ${c} answers of length ${len} since ${VARIETY_FROM} (cap ${LEN_CAP})`); }
 }

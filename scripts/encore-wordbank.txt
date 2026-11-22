@@ -336,7 +336,7 @@ ENGAGE|Draw into it
 ENGINE|Under the hood
 ENOUGH|No more needed
 ENSURE|Make certain of
-ENTIRE|The whole thing
+ENTIRE|Whole
 ENTREE|The main course
 ENVIED|Wanted what they had
 ERRAND|Quick trip to the shop
@@ -608,7 +608,7 @@ LAUNCH|Send the rocket up
 LAWYER|Bar member
 LAYERS|Onion has them
 LEADER|The one out front
-LEAGUE|Where the teams play
+LEAGUE|NFL or NBA, e.g.
 LEANED|Tilted
 LEAVES|Rake target
 LEDGER|Book of accounts
@@ -918,7 +918,7 @@ RAIDER|Raider of the lost ark, e.g.
 RAISED|Lifted, or brought up
 RAISIN|Dried grape
 RAMBLE|Wander on and on
-RANDOM|By chance
+RANDOM|Haphazard
 RANGER|Park warden
 RANSOM|Kidnapper's price
 RAPIDS|White water
@@ -977,7 +977,7 @@ RESULT|What comes of it
 RESUME|Pick it back up
 RETAIL|Shop selling
 RETAIN|Hold on to
-RETIRE|Hang up the boots
+RETIRE|Leave the workforce
 RETURN|Come back
 REVEAL|Show at last
 REVERE|Hold in awe
@@ -4084,7 +4084,7 @@ OLD|Not young
 ONE|Single
 OPT|Choose
 ORB|Sphere
-OUR|We share it: ___ home
+OUR|___ Town (Thornton Wilder play)
 OUT|Not in
 OWE|Be in debt
 OWL|Night hooter
@@ -4356,7 +4356,7 @@ CLAN|Highland family
 CLAP|Applaud
 CLAW|Cat's nail
 CLAY|Potter's material
-CLEF|Music's key sign
+CLEF|Treble or bass symbol
 CLIP|Paper fastener
 CLOG|Wooden shoe, or block up
 CLUB|Golf swinger
@@ -4409,7 +4409,7 @@ DEAR|Beloved, or costly
 DEBT|What you owe
 DECK|Ship's floor
 DEED|Act, or a property paper
-DEEP|Far down
+DEEP|Like the ocean floor
 DEER|Bambi
 DENT|Fender ding
 DENY|Say it isn't so
@@ -4953,7 +4953,7 @@ RUNG|Ladder step
 RUSH|Hurry
 RUST|Iron's orange decay
 SAFE|Out of danger
-SAGE|Wise one, or the herb
+SAGE|Wise one
 SAID|Uttered
 SAIL|Boat's canvas
 SAKE|For heaven's
@@ -4980,7 +4980,7 @@ SELL|Trade for money
 SEND|Mail out
 SENT|Dispatched
 SHED|Garden hut
-SHIN|Below the knee
+SHIN|Front of the lower leg
 SHIP|Ocean vessel
 SHOE|Foot wear
 SHOP|Where you buy
@@ -4993,14 +4993,14 @@ SIFT|Put through a sieve
 SIGH|Weary breath
 SIGN|Road marker
 SILK|Smooth fabric
-SILL|Below the window
+SILL|Window ledge
 SING|Carry a tune
 SINK|Kitchen basin
 SITE|Building plot
 SIZE|How big
 SKID|Slide on ice
 SKIN|Body's cover
-SKIP|Miss out
+SKIP|Pass over
 SLAB|Thick slice
 SLAM|Bang, as a door
 SLAP|Open-handed hit
@@ -6643,7 +6643,7 @@ VERSE|Poem's stanza
 VIDEO|Moving picture
 VIGIL|Night's watch
 VIGOR|Real energy
-VILLA|Holiday house
+VILLA|Vacation home
 VINYL|Record material
 VIOLA|Viola's bigger cousin
 VIRUS|Cold's cause
@@ -7211,7 +7211,7 @@ CRUELTY|Unkindness
 CRUISED|Sailed along
 CRUISER|Warship, or a bicycle
 CRUMBLE|Fall to bits
-CRUMPLE|Screw it up
+CRUMPLE|Crush into a ball
 CRUNCHY|Like a fresh apple
 CRUSADE|Determined campaign
 CRUSHED|Squashed
@@ -7264,7 +7264,7 @@ DECLINE|Turn it down
 DECODED|Cracked the message
 DECORUM|Proper behavior
 DEDUCED|Reasoned it out
-DEEPEST|Farthest down
+DEEPEST|Most profound
 DEFAULT|The setting it comes with
 DEFEATS|Losses
 DEFENSE|Guarding the goal
@@ -7857,7 +7857,7 @@ IMPACTS|Collisions
 IMPERIL|Put in danger
 IMPLIED|Hinted at
 IMPLIES|Suggests
-IMPORTS|What the country buys in
+IMPORTS|Foreign goods
 IMPOSED|Forced it on them
 IMPRESS|Win them over
 IMPRINT|Mark left behind
@@ -9352,7 +9352,7 @@ SUMMARY|The short of it
 SUMMERS|Beach seasons
 SUMMITS|Mountain tops
 SUMMONS|Court's order to appear
-SUNBEAM|Ray through the cloud
+SUNBEAM|Ray through the clouds
 SUNBURN|Beach's red reminder
 SUNDAES|Ice cream treats
 SUNDIAL|Shadow clock

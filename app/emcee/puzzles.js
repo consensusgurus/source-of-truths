@@ -2535,7 +2535,7 @@ export const PUZZLES = [
     down: [
       { n: 1, r: 0, c: 1, len: 5, clue: 'Skin and muscle' },
       { n: 2, r: 0, c: 2, len: 5, clue: 'Between the pews' },
-      { n: 3, r: 0, c: 3, len: 5, clue: 'Carved pole' },
+      { n: 3, r: 0, c: 3, len: 5, clue: 'Clan emblem' },
       { n: 5, r: 1, c: 4, len: 4, clue: 'Quick memo' },
       { n: 6, r: 2, c: 0, len: 3, clue: 'Peach center' },
     ],
@@ -3550,7 +3550,7 @@ export const PUZZLES = [
     down: [
       { n: 1, r: 0, c: 2, len: 5, clue: 'Trainee officer' },
       { n: 2, r: 0, c: 3, len: 4, clue: 'Strong impulse' },
-      { n: 3, r: 0, c: 4, len: 4, clue: 'Far down' },
+      { n: 3, r: 0, c: 4, len: 4, clue: 'Like the ocean floor' },
       { n: 4, r: 1, c: 0, len: 4, clue: 'In addition' },
       { n: 5, r: 1, c: 1, len: 4, clue: 'Pack howler' },
     ],
@@ -3700,7 +3700,7 @@ export const PUZZLES = [
     down: [
       { n: 1, r: 0, c: 2, len: 5, clue: 'Hard work' },
       { n: 2, r: 0, c: 3, len: 5, clue: 'Snow house' },
-      { n: 3, r: 0, c: 4, len: 4, clue: 'Far down' },
+      { n: 3, r: 0, c: 4, len: 4, clue: 'Like the ocean floor' },
       { n: 4, r: 1, c: 1, len: 4, clue: 'Had on' },
       { n: 5, r: 2, c: 0, len: 3, clue: 'To the ___ degree' },
     ],
