@@ -243,6 +243,14 @@ export default function StageRoll({
                     {standRows[0].cap ? <i>{standRows[0].cap}</i> : null}
                   </span>
                   {standRows[0].of > 1 ? <span className="srl-trk"><span style={{ width: `${Math.max(4, Math.min(100, standRows[0].rank === 1 ? 100 : Number(standRows[0].pct) || 0))}%` }} /></span> : null}
+                  {/* YOUR GROUP TOO (owner, 2026-11-22): the closed bar shows both standings,
+                      the whole site's and the group's; opening it loads the rest. */}
+                  {gs ? (
+                    <span className="srl-sr1 grp">
+                      <b><span className="nm">{gs.name}</span>#{gs.rank}<small>of {gs.n}</small></b>
+                      <i>Your group</i>
+                    </span>
+                  ) : null}
                 </span>
               ) : (
               <span className="srl-chips" aria-hidden="true">
@@ -433,6 +441,7 @@ const CSS = `
 .srl-sr1 b .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;padding-bottom:.12em;margin:0 .3em -.12em 0;}
 .srl-sr1 b small{flex:none;margin-left:.3em;font-size:13px;font-weight:700;}
 .srl-sr1 i{flex:none;font-style:normal;font-size:12px;font-weight:800;line-height:1.3;white-space:nowrap;}
+.srl-sr1.grp{padding-top:7px;border-top:1px solid color-mix(in srgb,var(--sst-ink) 14%,transparent);}
 .srl-trk{position:relative;display:block;height:8px;border-radius:99px;background:color-mix(in srgb,var(--sst-ink) 14%,transparent);overflow:hidden;}
 .srl-trk span{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--sst-ink);}
 .srl-bar b{display:block;width:100%;font-size:20px;font-weight:800;letter-spacing:-.015em;line-height:1.15;padding:.08em 0 .2em;margin:-.08em 0 -.2em;white-space:nowrap;overflow:hidden;font-variant-numeric:tabular-nums;}
