@@ -798,7 +798,11 @@ refCv.addEventListener('pointerup',refUp);refCv.addEventListener('pointercancel'
 refCv.addEventListener('wheel',e=>{e.preventDefault();const p=rzAt(e);rzZoom(e.deltaY<0?1.25:1/1.25,p[0],p[1]);},{passive:false});
 $('rzIn').onclick=()=>rzZoom(1.6);$('rzOut').onclick=()=>rzZoom(1/1.6);$('rzLab').onclick=()=>{RZ.s=1;rzClamp();rzUi();req();};
 rzUi();
-root.querySelectorAll('#refSeg button').forEach(b=>b.onclick=()=>{refTab=b.dataset.r;root.querySelectorAll('#refSeg button').forEach(x=>x.classList.toggle('on',x===b));$('refCap').textContent=refTab==='pic'?'The finished picture. Zoom in to see detail. Tap it to jump there.':refTab==='val'?'Pieces nobody has placed. Darker is worth more.':'Everything placed so far, by everyone.';req();});
+/* One switch for the view tab, shared by the panel here and the pop-out window (owner, 2026-11-22:
+   the Picture / Crowd / Value controls go with the pop-out). */
+function setRefTab(r){refTab=r;root.querySelectorAll('#refSeg button').forEach(x=>x.classList.toggle('on',x.dataset.r===r));$('refCap').textContent=refTab==='pic'?'The finished picture. Zoom in to see detail. Tap it to jump there.':refTab==='val'?'Pieces nobody has placed. Darker is worth more.':'Everything placed so far, by everyone.';
+  try{if(popW&&!popW.closed)popW.document.querySelectorAll('[data-pr]').forEach(x=>x.classList.toggle('on',x.dataset.pr===r));}catch(err){}popKey='';req();}
+root.querySelectorAll('#refSeg button').forEach(b=>b.onclick=()=>setRefTab(b.dataset.r));
 let refState=0;
 function setRef(n){refState=n;const r=$('ref');r.classList.toggle('big',n===1);r.classList.toggle('mini',n===2);$('refSize').textContent=n===0?'Larger':'Hide';clampRef();req();}
 $('refSize').onclick=()=>setRef((refState+1)%3);
@@ -806,7 +810,7 @@ $('refSize').onclick=()=>setRef((refState+1)%3);
    picture opens in its own window, drawn by this page: the same tab (Picture, Crowd, Value), the whole
    mural, the board's view boxed; a click there jumps the board. The panel here tucks away meanwhile and
    comes back when that window closes. */
-let popW=null,popCv=null,popBase=null,popKey='',popTimer=0;
+let popW=null,popCv=null,popBase=null,popKey='',popTimer=0;const POPTOP=56;
 /* THE POP-OUT ZOOMS (owner, 2026-11-20: "you need to be able to zoom in on the pop-out window for
    mural"). PZ is the part of the picture the window shows: s times closer than fit, centred on
    (cx, cy) in picture pixels. Wheel, pinch and the +/- buttons zoom; drag pans when zoomed; a tap
@@ -818,7 +822,7 @@ function pzUi(){if(!popW||popW.closed)return;const d=popW.document,l=d.getElemen
 function pzZoom(f,px,py){const s0=PZ.s,s1=Math.max(1,Math.min(PZ.max,s0*f));if(s1===s0)return;if(px===undefined){px=PZ.cx;py=PZ.cy;}PZ.cx=px+(PZ.cx-px)*s0/s1;PZ.cy=py+(PZ.cy-py)*s0/s1;PZ.s=s1;pzClamp();pzUi();popDraw();}
 function popDraw(){
   if(!popW||popW.closed||!popCv)return;
-  const d=popW.document,ww=d.documentElement.clientWidth||600,wh=d.documentElement.clientHeight||400,dp=Math.min(2,popW.devicePixelRatio||1);
+  const d=popW.document,ww=d.documentElement.clientWidth||600,wh=Math.max(60,(d.documentElement.clientHeight||400)-POPTOP),dp=Math.min(2,popW.devicePixelRatio||1);
   const k0=Math.min(ww/W,wh/H),cw=Math.max(50,Math.floor(W*k0)),ch=Math.max(50,Math.floor(H*k0));
   if(popCv.width!==Math.round(cw*dp)||popCv.height!==Math.round(ch*dp)){popCv.width=Math.round(cw*dp);popCv.height=Math.round(ch*dp);popCv.style.width=cw+'px';popCv.style.height=ch+'px';popKey='';}
   const w=popCv.width,h=popCv.height,vm=refTab==='val'?valueMap():null;
@@ -834,17 +838,21 @@ function popDraw(){
 function popClosed(){clearInterval(popTimer);popW=null;popCv=null;$('ref').classList.remove('popped');const b=$('refPop');if(b)b.title='Pop the picture out to its own window';req();}
 function popOut(){
   if(popW&&!popW.closed){popW.close();popClosed();return;}
-  const w=window.open('','mural_viewfinder','popup,width=760,height='+Math.round(760*H/W+40));
+  const w=window.open('','mural_viewfinder','popup,width=760,height='+Math.round(760*H/W+40+POPTOP));
   if(!w){setMsg('Your browser blocked the window. Allow pop-ups for this site to pop the picture out.');return;}
-  popW=w;const d=w.document;d.title=K.name+': Picture';
+  if(refState===2)setRef(0);popW=w;const d=w.document;d.title=K.name+': Picture';
   PZ.s=Math.max(1,RZ.s);PZ.cx=RZ.cx;PZ.cy=RZ.cy;pzClamp();
-  d.body.innerHTML='';d.body.style.cssText='margin:0;background:'+(C.bd||'#e9e7e1')+';display:flex;align-items:center;justify-content:center;height:100vh;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none';
+  d.body.innerHTML='';d.body.style.cssText='margin:0;background:'+(C.bd||'#e9e7e1')+';display:flex;align-items:center;justify-content:center;height:100vh;box-sizing:border-box;padding-top:'+POPTOP+'px;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none';
   popCv=d.createElement('canvas');popCv.style.touchAction='none';d.body.appendChild(popCv);
   const bar=d.createElement('div');bar.style.cssText='position:fixed;right:12px;bottom:12px;display:flex;gap:4px;padding:4px;border-radius:999px;background:rgba(21,23,28,.82);box-shadow:0 4px 14px rgba(0,0,0,.25);font:600 14px Manrope,system-ui,sans-serif';
   const bs='border:0;background:transparent;color:#fff;min-width:34px;height:34px;border-radius:999px;font:inherit;font-size:18px;cursor:pointer;padding:0 8px';
   bar.innerHTML='<button id="pzOut" title="Zoom out" style="'+bs+'">−</button><button id="pzLab" title="Back to the whole mural" style="'+bs+';font-size:13px;min-width:46px">Fit</button><button id="pzIn" title="Zoom in" style="'+bs+'">+</button>';
   d.body.appendChild(bar);
-  const st=d.createElement('style');st.textContent='#pzOut:disabled,#pzIn:disabled{opacity:.35;cursor:default}button:hover:not(:disabled){background:rgba(255,255,255,.14)!important}';d.head.appendChild(st);
+  const tb=d.createElement('div');tb.style.cssText='position:fixed;left:50%;top:10px;transform:translateX(-50%);display:flex;gap:2px;padding:4px;border-radius:999px;background:rgba(21,23,28,.82);box-shadow:0 4px 14px rgba(0,0,0,.25);font:800 13px Manrope,system-ui,sans-serif';
+  tb.innerHTML=[['pic','Picture'],['crowd','Crowd'],['val','Value']].map(t=>'<button data-pr="'+t[0]+'"'+(refTab===t[0]?' class="on"':'')+' style="'+bs+';font-size:13px;padding:0 14px">'+t[1]+'</button>').join('');
+  d.body.appendChild(tb);
+  tb.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>setRefTab(b.dataset.pr));
+  const st=d.createElement('style');st.textContent='#pzOut:disabled,#pzIn:disabled{opacity:.35;cursor:default}button:hover:not(:disabled){background:rgba(255,255,255,.14)!important}[data-pr].on,[data-pr].on:hover{background:#fff!important;color:#15171c}';d.head.appendChild(st);
   d.getElementById('pzIn').onclick=()=>pzZoom(1.6);d.getElementById('pzOut').onclick=()=>pzZoom(1/1.6);d.getElementById('pzLab').onclick=()=>{PZ.s=1;pzClamp();pzUi();popDraw();};
   const ptr=new Map();let g=null;
   popCv.addEventListener('pointerdown',(e)=>{popCv.setPointerCapture(e.pointerId);ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -861,11 +869,15 @@ function popOut(){
   popCv.addEventListener('wheel',(e)=>{e.preventDefault();const p=pzAt(e);pzZoom(e.deltaY<0?1.25:1/1.25,p[0],p[1]);},{passive:false});
   w.addEventListener('keydown',(e)=>{if(e.key==='+'||e.key==='=')pzZoom(1.6);else if(e.key==='-'||e.key==='_')pzZoom(1/1.6);else if(e.key==='0'){PZ.s=1;pzClamp();pzUi();popDraw();}});
   w.addEventListener('resize',()=>{popKey='';popDraw();});
-  w.addEventListener('beforeunload',()=>setTimeout(popClosed,0));
+  w.addEventListener('beforeunload',()=>setTimeout(popClosed,0));w.addEventListener('pagehide',()=>setTimeout(popClosed,0));
   popTimer=setInterval(()=>{if(!popW||popW.closed)popClosed();},1000);
   $('ref').classList.add('popped');$('refPop').title='Bring the picture back';pzUi();popDraw();
 }
 $('refPop').onclick=popOut;
+/* While the picture is out, the panel here shrinks to one small button that brings it back; closing
+   the window does the same on its own (owner, 2026-11-22). */
+{const rb=document.createElement('button');rb.className='pill on';rb.id='refBack';rb.type='button';rb.textContent='Bring Back Picture';rb.title='Close the picture window and show the picture here again';
+  rb.onclick=()=>{try{if(popW&&!popW.closed)popW.close();}catch(err){}popClosed();};$('ref').appendChild(rb);}
 $('updo').onclick=()=>{clearTimeout(updT);$('updo').classList.remove('show');};
 cleanups.push(()=>{try{if(popW&&!popW.closed)popW.close();}catch(e){}clearInterval(popTimer);});
 const refEl=$('ref');let rdrag=null;
