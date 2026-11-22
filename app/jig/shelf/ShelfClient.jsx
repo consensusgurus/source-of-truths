@@ -324,12 +324,15 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
                 <button key={k} type="button" className={shape === k ? 'on' : ''} aria-pressed={shape === k} onClick={() => setShape(k)}>{lab}</button>
               ))}
             </div>
+            <span className="jp-selw">
             <select className="jp-sel" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort the pictures">
               <option value="new">Newest</option>
               <option value="old">Oldest</option>
               <option value="todo">Not done at this size</option>
               <option value="big">Best for big sizes</option>
             </select>
+            <svg className="jp-selc" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </span>
             <label className="jp-search">
               <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" strokeWidth="1.8" /><path d="M11 11l3.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg>
               <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Dogs, Venice, waterfalls" aria-label="Search the jigsaw pictures" />
@@ -518,7 +521,10 @@ const CSS = `
 .jp-sp{flex:1;}
 .jp-search{display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border:1px solid var(--stg-line);border-radius:10px;background:var(--stg-surf);color:var(--stg-mute);width:240px;box-sizing:border-box;}
 .jp-search input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:14px;font-weight:600;color:var(--stg-ink);}
-.jp-sel{font:inherit;font-size:13px;font-weight:800;height:40px;padding:0 10px;border:1px solid var(--stg-line);border-radius:10px;background:var(--stg-surf);color:var(--stg-ink);}
+.jp-selw{position:relative;display:inline-flex;align-items:center;flex:none;color:var(--stg-ink);}
+.jp-sel{font:inherit;font-size:13px;font-weight:800;height:40px;padding:0 36px 0 14px;border:1px solid var(--stg-line);border-radius:10px;background:var(--stg-surf);color:var(--stg-ink);-webkit-appearance:none;-moz-appearance:none;appearance:none;cursor:pointer;}
+.jp-sel:hover{border-color:var(--stg-ink);}
+.jp-selc{position:absolute;right:14px;top:50%;margin-top:-6px;pointer-events:none;}
 .jp-row2{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:4px 0 14px;}
 .jp-row2 .jp-topics{margin:0;}
 .jp-topics{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px;}
@@ -586,7 +592,8 @@ a.jp-card:focus-visible{outline:3px solid var(--stg-ink);outline-offset:4px;bord
   .jp-nophone{display:none;}
   .jp-long{display:none;}
   .jp-short{display:inline;}
-  .jp-sel{flex:1;}
+  .jp-selw{flex:1;}
+  .jp-sel{width:100%;}
   .jp-topics{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;}
   .jp-topics button{flex:none;}
   .jp-grid{grid-template-columns:minmax(0,1fr);gap:18px;}
@@ -607,8 +614,9 @@ html.lc-on:not(.lc-focus) .jp-top{display:none;}
 .jp-hero{position:relative;min-height:500px;overflow:hidden;display:flex;align-items:flex-end;background:var(--stg-surf);}
 .jp-heroimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
 .jp-hero .jp-cut{position:absolute;inset:0;width:100%;height:100%;}
-.jp-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(22,18,14,.92) 0%,rgba(22,18,14,.55) 40%,rgba(22,18,14,0) 70%);}
-.jp-htx{position:relative;max-width:600px;padding:56px;display:flex;flex-direction:column;gap:14px;}
+.jp-hero{--jp-gut:calc(max(0px, (100% - 1360px) / 2) + 32px);}
+.jp-shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(22,18,14,.92) 0%,rgba(22,18,14,.88) var(--jp-gut),rgba(22,18,14,.55) calc(var(--jp-gut) + 520px),rgba(22,18,14,0) calc(var(--jp-gut) + 900px));}
+.jp-htx{position:relative;max-width:600px;padding:56px 56px 56px var(--jp-gut);display:flex;flex-direction:column;gap:14px;}
 .jp-htx,.jp-htx *{color:#f4ead8;}
 .jp-eyb{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:.75;}
 .jp-hero h1{margin:0;font-size:64px;line-height:1.04;font-weight:800;letter-spacing:-0.03em;padding-bottom:.06em;}
@@ -661,11 +669,11 @@ html:not(.lc-on) .jp-ladder,html.lc-focus .jp-ladder{top:0;}
 .jp-faq .jp-qa{background:transparent;}
 .jp-more a{background:transparent;}
 @media (max-width:1100px){.jp-steps button{width:76px;font-size:14px;}}
-@media (max-width:900px){.jp-hero{min-height:440px;}.jp-hero h1{font-size:44px;}.jp-htx{padding:28px 24px;}.jp-wrap{padding:0 18px 32px;}.jp-ladder{margin:0 -18px 14px;padding:16px 18px 14px;}.jp-table>.jp-crumb{padding:10px 18px;}.jp-top{padding-left:18px;padding-right:18px;}.jp-pictured{right:18px;max-width:calc(100% - 36px);}}
+@media (max-width:900px){.jp-hero{min-height:440px;}.jp-hero h1{font-size:44px;}.jp-htx{padding:28px 24px 28px 18px;}.jp-wrap{padding:0 18px 32px;}.jp-ladder{margin:0 -18px 14px;padding:16px 18px 14px;}.jp-table>.jp-crumb{padding:10px 18px;}.jp-top{padding-left:18px;padding-right:18px;}.jp-pictured{right:18px;max-width:calc(100% - 36px);}}
 @media (max-width:640px){
   .jp-hero{min-height:420px;}
   .jp-shade{background:linear-gradient(0deg,rgba(22,18,14,.95) 0%,rgba(22,18,14,.45) 58%,rgba(22,18,14,0) 85%);}
-  .jp-htx{padding:20px 16px 56px;gap:10px;}
+  .jp-htx{padding:20px 14px 56px;gap:10px;}
   .jp-hero h1{font-size:36px;}
   .jp-hero .jp-lede{font-size:14.5px;}
   .jp-btns{flex-direction:column;align-items:stretch;}
