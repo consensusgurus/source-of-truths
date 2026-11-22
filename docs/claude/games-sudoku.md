@@ -489,3 +489,71 @@ single stray tap. So, in `lib/sudoku-auto-advance.js`:
 The pre-stage toolbar button in each client (only drawn off the stage) has no "Turn off?" label; it simply
 needs the two taps.
 
+## Colossus and Mammoth: the massive sudokus, one client and one API (launched 2026-11-21)
+
+Keys/routes `colossus` and `mammoth`, category **Sudoku**, tally games exactly as Search is
+(`unit: 'points'`, `solvesOnScore`, `bestRun`, `miss: null`). Colossus is a board of 61 ordinary
+9x9 sudokus; Mammoth is a board of 257 6x6 sudokus (boxes two rows by three). Owner named both
+(Mammoth over Idol and Legion: "colossus is pointing at size", so the 6x6 name points at size too).
+
+**The weave (`lib/mega.js megaLayout`).** Sudokus sit every `N - bh` rows and `N - bw` columns on
+one colour of a checkerboard (`(a + b) % 2 === 0`), so each overlaps its four diagonal neighbors in
+exactly one corner box. A square is in one sudoku or two, never three. Colossus is an 11 x 11
+lattice (69 x 69 squares), Mammoth 27 x 19 (84 x 78). The owner looked at a two-box "ribbon" layout
+for Mammoth and chose four-way: "user still has to solve plenty unconnected".
+
+**The owner's rules (2026-11-21), all of them load-bearing:**
+
+- **Everyone plays their own copy** ("pseudo independently", like Search). A browser never sees
+  another player's digits. This was his answer to "midnight players are advantaged": nobody can
+  take a sudoku from anybody.
+- **No digit is confirmed until the whole sudoku is done.** A full sudoku is offered to the server,
+  which answers `ok` true or false and nothing else. The page says "is full, but something is off".
+  Never mark a square right or wrong, never count the wrong ones.
+- **No time out for a wrong answer.**
+- **Hidden until solved.** A sudoku's solver count, names and payout show only after this player
+  has solved it; then a small note names up to three solvers and fades. The map shows only the
+  player's own progress. The header's "N of M solved by someone" stays (it is the close condition
+  and names no sudoku). `/api/mega` GET does carry `counts` and `by` for every sudoku; the PAGE
+  hides them. Do not surface them for unsolved sudokus.
+- **Search's timing** (`megaWindows`): a board closes when every sudoku on it has been solved by at
+  least one player, at least 24 hours and at most 72; the next opens the moment it closes; the last
+  board in the bank stays open until another is added.
+- **Mammoth keeps few clues in its middle rows** ("like Sunday Sixes"). The generator carves the
+  unshared middle rows first; `verify-mega` fails a Mammoth board where an inside sudoku keeps
+  fewer than eight empty squares of its own.
+
+**Scoring** is Search's: every sudoku is a 100 point pot split among everyone who solves it
+(`megaValue`). Points move until the board closes. Site-day results (`<game>-M-D-YY`, from
+`app/<game>/puzzles.js`) hold the points for sudokus solved that Eastern day, filed by `megaFile`
+at most every ten minutes and settled once by `megaSettle` after the close.
+
+**Storage: no table and no migration.** Rows in `outwit_picks`, `quiz_id` = the board key
+(`colossus-b1`): a player's `answers = { f: [sudoku index], d: [Eastern day], t0 }`, plus the
+`#solved` and `#settled` markers. Same shape as Search (`lib/search-server.js`).
+
+**The solution never reaches a browser.** `app/<game>/boards.js` is server-only and holds `given`
+and `sol`; the page passes `publicBoard()` (no `sol`). A second device gets the digits of sudokus
+its player has already solved from the POST answer.
+
+**Files.** `lib/mega.js` (rules, weave, schedule, the singles solver and solution counter),
+`lib/mega-server.js`, `app/api/mega/route.js`, `app/MegaClient.jsx` (one client for both, `game`
+prop), `app/colossus/` and `app/mammoth/` (`page.js`, `boards.js`, `puzzles.js`),
+`scripts/{gen,verify,wire}-mega.mjs`, `scripts/gen-mega-tiles.py`, `scripts/gen-mega-og.py`.
+
+**The generator** (`node scripts/gen-mega.mjs <game> --boards <n>`, append-only, seeded by board
+number). The weave has LOOPS (four sudokus meet around every gap), so sudokus cannot be generated
+one after another: the fill solves the whole board at once, every square carrying a candidate
+mask over all its rows, columns and boxes, always taking the tightest square. Under a second a
+board. The clues are carved so EVERY sudoku is solvable from its own printed digits by naked and
+hidden singles (so it has one solution and never needs a neighbor); a shared square stays printed
+unless both sudokus can spare it. `--days YYYY-MM-DD` extends the site days.
+
+**Runway.** Four boards each at launch: a board lasts one to three days, so that is 4 to 12 days.
+Add boards before the last one opens (`--boards 8`), then `node scripts/verify-mega.mjs`.
+
+**Not done at launch:** no difficulty ladder or Sixes-style `cost` (every sudoku is singles-only,
+with up to forty-odd hidden-single steps on Colossus); no rate limit or guess guard on POST (a
+full sudoku can be offered again and again; the owner parked cheat protection on Mural); the
+closing screen is Search's plain one, not Mural's.
+

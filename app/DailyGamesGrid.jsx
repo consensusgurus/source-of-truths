@@ -122,6 +122,8 @@ const GAMES = [
   { key: 'sumo', href: '/sumo', name: 'Sumo', tag: 'The daily greater-than sudoku', img: '/games/btn-sumo.png' },
   { key: 'bout', href: '/bout', name: 'Bout', tag: "Sumo at 6x6", img: '/games/btn-bout.png' },
   { key: 'giant', href: '/giant', name: 'Giant', tag: 'The daily 16×16 sudoku', img: '/games/btn-giant.png' },
+  { key: 'colossus', href: '/colossus', name: 'Colossus', tag: 'The giant linked sudoku', img: '/games/btn-colossus.png' },
+  { key: 'mammoth', href: '/mammoth', name: 'Mammoth', tag: 'The giant field of 6x6 sudokus', img: '/games/btn-mammoth.png' },
   { key: 'gianttoo', href: '/gianttoo', name: 'GiantToo', tag: "Giant in color, 16x16", img: '/games/btn-gianttoo.png' },
   { key: 'diag', href: '/diag', name: 'Diag', tag: 'The daily diagonal sudoku', img: '/games/btn-diag.png' },
   { key: 'diagtoo', href: '/diagtoo', name: 'DiagToo', tag: "Diag in color, 9x9", img: '/games/btn-diagtoo.png' },
@@ -271,7 +273,7 @@ const CATEGORIES = [
   // Sudoku split out of Numbers on 2026-09-01. The nine keys are exactly the
   // Sudoku circuit's pool, so the shelf, the circuit and the category are one
   // list and cannot drift apart.
-  { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sudstoo', 'sixes', 'sixestoo', 'towers', 'quilt', 'cages', 'coop', 'sando', 'snack', 'mercury', 'mercurytoo', 'fever', 'arrow', 'dart', 'polka', 'dot', 'knight', 'knighttoo', 'diag', 'diagtoo', 'frame', 'trim', 'rim', 'rimtoo', 'lip', 'liptoo', 'giant', 'gianttoo', 'sumo', 'bout', 'window', 'windowtoo', 'five', 'racecar', 'racecartoo', 'kayak', 'kayaktoo', 'whittle'] },
+  { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sudstoo', 'sixes', 'sixestoo', 'towers', 'quilt', 'cages', 'coop', 'sando', 'snack', 'mercury', 'mercurytoo', 'fever', 'arrow', 'dart', 'polka', 'dot', 'knight', 'knighttoo', 'diag', 'diagtoo', 'frame', 'trim', 'rim', 'rimtoo', 'lip', 'liptoo', 'giant', 'gianttoo', 'colossus', 'mammoth', 'sumo', 'bout', 'window', 'windowtoo', 'five', 'racecar', 'racecartoo', 'kayak', 'kayaktoo', 'whittle'] },
   { key: 'crowd', label: 'Crowd Psychology', keys: ['herd', 'poll', 'outwit', 'outrank', 'feud'] },
   { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'potluck', 'mixtape', 'mishmash', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'filing', 'redact', 'dating', 'extra', 'carmen'] },
   // Logic lost its photo, observation and moving-piece puzzles to Visual, and

@@ -174,6 +174,8 @@ export const DAILY_GAMES = [
   { key: 'sumo', href: '/sumo', name: 'Sumo', tag: 'the daily greater-than sudoku', store: 'sot_sumo_day', accent: '#8a6d0b', bg: '#faf5e6', border: 'rgba(138,109,11,0.4)' },
   { key: 'bout', href: '/bout', name: 'Bout', tag: "Sumo at 6x6", store: 'sot_bout_day', accent: '#8a6d0b', bg: '#faf5e6', border: 'rgba(138,109,11,0.4)' },
   { key: 'giant', href: '/giant', name: 'Giant', tag: 'the daily 16×16 sudoku', store: 'sot_giant_day', accent: '#3949ab', bg: '#eceefa', border: 'rgba(57,73,171,0.4)' },
+  { key: 'colossus', href: '/colossus', name: 'Colossus', tag: 'the giant linked sudoku', store: 'sot_colossus_day', accent: '#9a3412', bg: '#fdebdc', border: 'rgba(154,52,18,0.38)' },
+  { key: 'mammoth', href: '/mammoth', name: 'Mammoth', tag: 'the giant field of 6x6 sudokus', store: 'sot_mammoth_day', accent: '#1e4fa3', bg: '#e3edfc', border: 'rgba(30,79,163,0.38)' },
   { key: 'gianttoo', href: '/gianttoo', name: 'GiantToo', tag: "Giant in color, 16x16", store: 'sot_gianttoo_day', accent: '#6d28d9', bg: '#f5f0ff', border: 'rgba(109,40,217,0.4)' },
   { key: 'diag', href: '/diag', name: 'Diag', tag: 'the daily diagonal sudoku', store: 'sot_diag_day', accent: '#0e7490', bg: '#e8f6fa', border: 'rgba(14,116,144,0.4)' },
   { key: 'diagtoo', href: '/diagtoo', name: 'DiagToo', tag: "Diag in color, 9x9", store: 'sot_diagtoo_day', accent: '#0e7490', bg: '#e8f6fa', border: 'rgba(14,116,144,0.4)' },

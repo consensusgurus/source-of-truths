@@ -443,7 +443,7 @@ const BY_KEY = {
   suds: Grid9('suds'), quilt: Grid9('quilt'), cages: Grid9('cages'), sando: Grid9('sando'), towers: Grid9('towers'),
   mercury: Grid9('mercury'), arrow: Grid9('arrow'), knight: Grid9('knight'), diag: Grid9('diag'), frame: Grid9('frame'),
   window: Grid9('window'), five: Grid9('five'), racecar: Grid9('racecar'), sumo: Grid9('sumo'), rim: Grid9('rim'),
-  polka: Grid9('polka'), whittle: Grid9('whittle'), sixes: () => <Grid n={6} />, giant: () => <Grid n={16} />,
+  polka: Grid9('polka'), whittle: Grid9('whittle'), sixes: () => <Grid n={6} />, giant: () => <Grid n={16} />, colossus: () => <Grid n={9} />, mammoth: () => <Grid n={6} />,
   // Word
   emcee: Xword, encore: Xword, arcos: Xword, scour: Search, search: Search, garble: Cipher, scram: () => <Tiles word="MSARC" hit={1} />,
   // Trivia

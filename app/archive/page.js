@@ -194,6 +194,8 @@ import { PUZZLES as DIAG_FULL } from '../diag/puzzles';
 import { PUZZLES as FRAME_FULL } from '../frame/puzzles';
 import { PUZZLES as RIM_FULL } from '../rim/puzzles';
 import { PUZZLES as GIANT_FULL } from '../giant/puzzles';
+import { PUZZLES as COLOSSUS_FULL } from '../colossus/puzzles';
+import { PUZZLES as MAMMOTH_FULL } from '../mammoth/puzzles';
 import { PUZZLES as GIANTTOO_FULL } from '../gianttoo/puzzles';
 import { PUZZLES as SUMO_FULL } from '../sumo/puzzles';
 import { PUZZLES as WINDOW_FULL } from '../window/puzzles';
@@ -382,6 +384,8 @@ const FIVE = FIVE_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num,
 const RACECAR = RACECAR_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SUMO = SUMO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const GIANT = GIANT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
+const COLOSSUS = COLOSSUS_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel, sunday: false }));
+const MAMMOTH = MAMMOTH_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel, sunday: false }));
 const GIANTTOO = GIANTTOO_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const RIM = RIM_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 const SCRIPT = SCRIPT_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
@@ -633,6 +637,8 @@ const GAMES = [
   { key: 'sumo', name: 'Sumo', path: '/sumo', tag: 'The greater-than sudoku', accent: '#8a6d0b', bg: '#faf5e6', border: 'rgba(138,109,11,0.4)', src: SUMO },
   { key: 'bout', name: 'Bout', path: '/bout', tag: "Sumo at 6x6", accent: '#8a6d0b', bg: '#faf5e6', border: 'rgba(138,109,11,0.4)', src: ARCH_BOUT },
   { key: 'giant', name: 'Giant', path: '/giant', tag: 'Sudoku at sixteen', accent: '#3949ab', bg: '#eceefa', border: 'rgba(57,73,171,0.4)', src: GIANT },
+  { key: 'colossus', name: 'Colossus', path: '/colossus', tag: 'The giant linked sudoku', accent: '#9a3412', bg: '#fdebdc', border: 'rgba(154,52,18,0.38)', src: COLOSSUS },
+  { key: 'mammoth', name: 'Mammoth', path: '/mammoth', tag: 'The giant field of 6x6 sudokus', accent: '#1e4fa3', bg: '#e3edfc', border: 'rgba(30,79,163,0.38)', src: MAMMOTH },
   { key: 'gianttoo', name: 'GiantToo', path: '/gianttoo', tag: "Giant in color, 16x16", accent: '#6d28d9', bg: '#f5f0ff', border: 'rgba(109,40,217,0.4)', src: GIANTTOO },
   { key: 'rim', name: 'Rim', path: '/rim', tag: 'Nothing printed inside', accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: RIM },
   { key: 'rimtoo', name: 'RimToo', path: '/rimtoo', tag: "Rim in color, 9x9", accent: '#4d7c0f', bg: '#f1f8e6', border: 'rgba(77,124,15,0.4)', src: ARCH_RIMTOO },
