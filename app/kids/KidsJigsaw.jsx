@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Footer from '../Footer';
 import { KidsHeader, KIDS_CSS, Confetti, KidsStrip } from './KidsShell';
+import { readMyPictures, myPictureBoard } from './my-pictures';
 
 // The kids Puzzle Shelf (/kids/jigsaw; owner, 2026-11-13). It was two
 // tiles, Jigsaw and Tall Jigsaw, from 2026-11-11; now one tile opens ONE
@@ -126,14 +127,14 @@ function ShelfPic({ b, got, onPick, big }) {
   return (
     <button type="button" className={`kj-pic${b.tall ? ' tall' : ''}${big ? ' big' : ''}${got.length ? ' done' : ''}`} onClick={() => onPick(b.key)}
       title={got.length ? `${b.name} (done with ${got.join(', ')} pieces)` : b.name}>
-      <img src={`${b.img}?n=${b.num}&w=330`} alt={b.name} loading={big ? 'eager' : 'lazy'} decoding="async" />
+      <img src={b.src || `${b.img}?n=${b.num}&w=330`} alt={b.name} loading={big ? 'eager' : 'lazy'} decoding="async" />
       {got.length ? <span className="kj-tick" aria-label="Done">✓</span> : null}
       {big ? <span className="kj-nm">{b.name}</span> : null}
     </button>
   );
 }
 
-function Picker({ boards, dailyKeys, isToday, done, n, setN, onPick }) {
+function Picker({ boards, mine = [], dailyKeys, isToday, done, n, setN, onPick }) {
   const daily = dailyKeys.map((k) => boards.find((b) => b.key === k)).filter(Boolean);
   const rest = boards.filter((b) => !dailyKeys.includes(b.key));
   const got = (b) => (Array.isArray(done[b.key]) ? done[b.key] : []);
@@ -148,6 +149,14 @@ function Picker({ boards, dailyKeys, isToday, done, n, setN, onPick }) {
             </button>
           ))}
         </div>
+      </div>
+      <h2 className="kj-rowh">My pictures {mine.length ? <span>{mine.length}</span> : null}</h2>
+      <div className="kj-shelf kj-mine">
+        {mine.map((b) => <ShelfPic key={b.key} b={b} got={got(b)} onPick={onPick} />)}
+        <Link href="/kids/crayon" className="kj-pic kj-new">
+          <span className="kj-plus" aria-hidden="true">+</span>
+          <span className="kj-newt">{mine.length ? 'Color another' : 'Color your own picture'}</span>
+        </Link>
       </div>
       {daily.length ? (
         <>
@@ -174,7 +183,7 @@ function Play({ board, n, setN, onBack, onDone }) {
   const { img, tall } = board;
   const [C, R] = GRID[tall ? 'tall' : 'wide'][n];
   const BW = C * S, BH = R * S;
-  const src = `${img}?n=${board.num}&w=960`;
+  const src = board.src || `${img}?n=${board.num}&w=960`;
   const pieces = useMemo(() => cutPieces(C, R, (board.num * 7919 + n * 131) >>> 0), [C, R, board.num, n]);
   const order = useMemo(() => shuffled(pieces.length, board.num * 17 + n), [pieces.length, board.num, n]);
   const [placed, setPlaced] = useState(() => new Set());
@@ -323,7 +332,7 @@ function Play({ board, n, setN, onBack, onDone }) {
           {finished ? (
             <div className="kd-cheer show">
               You did it! {board.name}.
-              <small>Photo: {board.by}, {board.lic}, via Wikimedia Commons</small>
+              <small>{board.mine ? 'Colored by you in Crayon' : `Photo: ${board.by}, ${board.lic}, via Wikimedia Commons`}</small>
             </div>
           ) : null}
           <div className="kd-ctrls">
@@ -390,7 +399,11 @@ const JIG_CSS = `
 .kj-nm{position:absolute;left:0;right:0;bottom:0;padding:16px 10px 7px;font-family:var(--kdisp);font-weight:600;font-size:14px;line-height:1.2;color:#fff;text-align:left;background:linear-gradient(transparent,rgba(27,31,59,.78))}
 .kj-tick{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--kgreen);color:#fff;font-size:14px;font-weight:800;box-shadow:0 0 0 2px #fff}
 .kj-pic.done{border-color:var(--kgreen)}
-@media (max-width:520px){.kj-shelf{--h:64px;gap:7px}.kj-shelf.kj-today{--h:140px;gap:10px}.kj-counts button{min-width:62px;padding:6px 10px}}
+.kj-new{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--kpaper);text-decoration:none;color:var(--kink);border-style:solid}
+.kj-plus{font-family:var(--kdisp);font-size:34px;font-weight:700;line-height:1}
+.kj-newt{font-family:var(--kdisp);font-size:13px;font-weight:700;text-align:center;padding:0 6px;line-height:1.2}
+.kj-shelf.kj-mine{--h:120px}
+@media (max-width:520px){.kj-shelf{--h:64px;gap:7px}.kj-shelf.kj-mine{--h:96px}.kj-shelf.kj-today{--h:140px;gap:10px}.kj-counts button{min-width:62px;padding:6px 10px}}
 .kj-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px}
 .kj-left{font-family:var(--kdisp);font-weight:600;color:var(--kink2);margin-left:auto}
 .kj-play{display:flex;flex-direction:column;gap:18px}
@@ -439,6 +452,8 @@ export default function KidsJigsaw({ game, dailyKeys = [], dayKey, dayLabel, day
   const [n, setNState] = useState(12);
   const [done, setDone] = useState({});
   const [ready, setReady] = useState(false);
+  // My Pictures (Crayon, 2026-11-22): read from this device after mount.
+  const [mine, setMine] = useState([]);
 
   // A pick lives in the address (?pic=jig-12&n=20) so a grown-up can link a
   // kid straight to one; ?p stays the kids day number, as on every other kids
@@ -449,7 +464,9 @@ export default function KidsJigsaw({ game, dailyKeys = [], dayKey, dayLabel, day
     try {
       const q = new URLSearchParams(window.location.search);
       const qn = Number(q.get('n')); if (COUNTS.includes(qn)) nn = qn;
-      const qp = q.get('pic'); if (boards.some((b) => b.key === qp)) setSel(qp);
+      const m = readMyPictures().map(myPictureBoard);
+      setMine(m);
+      const qp = q.get('pic'); if (boards.some((b) => b.key === qp) || m.some((b) => b.key === qp)) setSel(qp);
     } catch (e) { /* ignore */ }
     setNState(nn);
     setDone(readDone());
@@ -469,7 +486,7 @@ export default function KidsJigsaw({ game, dailyKeys = [], dayKey, dayLabel, day
 
   const setN = (c) => { setNState(c); try { localStorage.setItem(N_KEY, String(c)); } catch (e) { /* ignore */ } };
   const pick = (key) => { setSel(key); try { window.scrollTo({ top: 0 }); } catch (e) { /* ignore */ } };
-  const board = sel !== 'shelf' ? boards.find((b) => b.key === sel) : null;
+  const board = sel !== 'shelf' ? (mine.find((b) => b.key === sel) || boards.find((b) => b.key === sel)) : null;
   const isDaily = !!board && dailyKeys.includes(board.key);
   // Finishing either of the day's two photos counts as the kids daily done.
   const onDone = useCallback((cnt) => {
@@ -479,7 +496,7 @@ export default function KidsJigsaw({ game, dailyKeys = [], dayKey, dayLabel, day
   }, [sel, dailyKeys, game.key, dayKey]);
 
   const sub = board
-    ? `${isDaily ? (isToday ? 'Today' : dayLabel) : 'From the shelf'} · ${board.name}`
+    ? `${isDaily ? (isToday ? 'Today' : dayLabel) : board.mine ? 'Colored by you' : 'From the shelf'} · ${board.name}`
     : `${isToday ? 'Today' : dayLabel} · ${boards.length} pictures to pick from`;
 
   return (
@@ -488,13 +505,13 @@ export default function KidsJigsaw({ game, dailyKeys = [], dayKey, dayLabel, day
       <div className="kd-wrap">
         <KidsHeader active="today" />
         <div className="kd-title">
-          <h1>{board ? (board.tall ? 'Tall Jigsaw' : 'Jigsaw') : game.title}</h1>
+          <h1>{board ? (board.mine ? 'My Picture' : board.tall ? 'Tall Jigsaw' : 'Jigsaw') : game.title}</h1>
           <span className="kd-sub">{sub}</span>
         </div>
         {board ? (
           <Play key={`${board.key}-${n}`} board={board} n={n} setN={setN} onBack={() => pick('shelf')} onDone={onDone} />
         ) : (
-          <Picker boards={boards} dailyKeys={dailyKeys} isToday={isToday} done={done} n={n} setN={setN} onPick={pick} />
+          <Picker boards={boards} mine={mine} dailyKeys={dailyKeys} isToday={isToday} done={done} n={n} setN={setN} onPick={pick} />
         )}
         <KidsStrip selfKey={game.key} dayKey={dayKey} />
         <div className="kd-foot">

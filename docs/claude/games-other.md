@@ -933,6 +933,44 @@ only, no Commons title `t` to the client).
 - **Snap maths read the letterboxed fit** (`fitOf`), and the board carries a CSS `aspect-ratio`;
   do not go back to width-only scaling.
 
+## Kids Crayon (`/kids/crayon`, launched 2026-11-22): coloring that becomes My Pictures jigsaws
+
+Owner, 2026-11-22: "a new kids game that allows kids to color with a large number of colors a given
+picture. when done, the picture goes into that person's available jig saw puzzles. they will be very
+simple outline drawings." Then: must work on iPad; save space with a small set of colors that expands
+to close shades; "built by Emma" at the bottom of the page just out of view; coloring mechanics must
+be strong; parts of a drawing must not show lines through each other. Mockup canvas
+https://claude.ai/artifact/8BH4Z6WJZkjHB77qEggwnm.
+
+- **Not a daily and not scored.** No `KIDS_DAILIES` row, no archive, only a view count
+  (`kids-crayon` in `lib/admin-quiz-titles.js`). Listed in `lib/kids.js` and on the hub in its own
+  "Make your own" section (`MAKE` in `KidsHubClient.jsx`).
+- **Pictures** live in `app/kids/crayon/pictures.js`: a 400 x 360 box, `parts` in PAINT ORDER, each
+  `[id, tag, attrs]`, the first always `back` (the frame). Each part draws its fill, its crayon
+  strokes clipped to it, then its OWN outline, so a part in front hides the lines behind it (the
+  mockup's single top outline layer showed lines through shapes; the owner flagged it). `decor` is
+  ink detail drawn last (a path with `fill:'none'` is a line, anything else is a filled dot). Keep
+  parts big and few (10 to 13).
+- **Palette:** 12 families (the 12th is gray), each opening 8 shades: 96 colors. Families 4 across
+  beside the picture from 900px (iPad landscape), 6 across stacked below on phones and iPad portrait.
+- **Tools:** Fill (tap a part), Crayon (finger drawing in Thin / Medium / Big, clipped to the part
+  the stroke STARTED in, so it never crosses a line), Eraser (tap a part: clears its fill and
+  strokes). Undo / Redo (80 steps) / Start over. Pointer events with `touch-action:none` on the
+  drawing plus a window `touchmove` guard while a stroke is live (iPad Safari). Points map through
+  `getScreenCTM`.
+- **Work in progress** autosaves per picture in `sot_kids_crayon_work`; the picker marks a started
+  picture "Keep going".
+- **Done** renders the live SVG to a 960 x 720 JPEG (drawing centred at 711 x 640 so the 3 x 2 cut
+  keeps the whole frame) and saves it to **My Pictures**, `sot_kids_my_pictures`
+  (`app/kids/my-pictures.js`, newest first, cap 24, oldest dropped on a full store). The finish card
+  links straight to `/kids/jigsaw?pic=my-<id>&n=<6|12|20|30>`. Device-only, like every kids save.
+- **Puzzle Shelf:** `KidsJigsaw.jsx` reads My Pictures after mount and shows a "My pictures" row
+  (plus a "Color your own picture" tile to `/kids/crayon`) above the day's photos. A My Pictures
+  board has `src` (the data URL), `mine: true`, key `my-<id>`, a `num` hashed from the id so the cut
+  is stable; it plays exactly like a photo, wide shape. Finish credit reads "Colored by you in Crayon".
+- **"Built by Emma"** is a line under the kids footer on `/kids/crayon` (owner, keep it there).
+- `Confetti` takes an optional `word`; Crayon cheers "WOW!" (default stays SOLVED!).
+
 ## Kids Mop and Kids Spin (`/kids/mop`, `/kids/spin`, launched 2026-11-15)
 
 Owner, 2026-11-15: "make a kids version of our mop game" and "a kids version of our game where you

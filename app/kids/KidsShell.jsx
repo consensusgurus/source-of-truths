@@ -280,7 +280,8 @@ export function KidsStrip({ selfKey, dayKey }) {
 const CHEER_MS = 4500;
 const CHEER_LETTERS = ['S', 'O', 'L', 'V', 'E', 'D', '!'];
 
-export function Confetti({ go }) {
+// `word` swaps the cheer word (Crayon says BEAUTIFUL!); default SOLVED!.
+export function Confetti({ go, word }) {
   const [on, setOn] = useState(false);
   useEffect(() => {
     if (!go) { setOn(false); return undefined; }
@@ -334,7 +335,7 @@ export function Confetti({ go }) {
         ))}
       </div>
       <div className="kd-word" role="status">
-        {CHEER_LETTERS.map((ch, i) => (
+        {(word ? Array.from(word) : CHEER_LETTERS).map((ch, i) => (
           <b key={i} style={{ color: SHAPE_HUES[i % 6], animationDelay: `${i * 0.09}s, ${1 + i * 0.09}s` }}>{ch}</b>
         ))}
       </div>

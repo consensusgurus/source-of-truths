@@ -90,6 +90,17 @@ const ACTIVITIES = [
   }),
 ];
 
+// Make your own (2026-11-22): Crayon, coloring pictures that become the
+// kid's own jigsaws on the Puzzle Shelf.
+const CRAYON_PREVIEW = [
+  '<svg viewBox="0 0 100 100"><g stroke="#1b1f3b" stroke-width="4" stroke-linejoin="round"><rect x="22" y="48" width="56" height="38" fill="#ffb3c7"/><path d="M14 50 L50 18 L86 50 Z" fill="#ff5a5f"/><rect x="43" y="62" width="14" height="24" rx="2" fill="#8e5ae0"/></g></svg>',
+  '<svg viewBox="0 0 100 100"><g stroke="#1b1f3b" stroke-width="4" stroke-linejoin="round"><path d="M64 50 L88 30 L86 50 L88 70 Z" fill="#ff9f1c"/><ellipse cx="44" cy="50" rx="30" ry="22" fill="#ffd23f"/><circle cx="30" cy="45" r="6" fill="#fff"/></g></svg>',
+  '<svg viewBox="0 0 100 100"><g stroke="#1b1f3b" stroke-width="4" stroke-linejoin="round"><path d="M30 62 L66 26 L78 38 L42 74 L26 78 Z" fill="#3a86ff"/><path d="M30 62 L42 74 L26 78 Z" fill="#fff6e0"/></g></svg>',
+];
+const MAKE = [
+  { id: 'crayon', href: '/kids/crayon', title: 'Crayon', desc: 'Color a picture with 96 colors, then play it as your own jigsaw puzzle.', tag: 'Make', ready: true, band: '#fdeaea', preview: CRAYON_PREVIEW },
+];
+
 function Tile({ a }) {
   const inner = (
     <div className="kc-tile">
@@ -223,6 +234,14 @@ export default function KidsHubClient() {
         </div>
         <div className="kc-grid">
           {KIDS_DAILIES.map((g) => <DailyTile key={g.key} g={g} done={!!done[g.key]} />)}
+        </div>
+
+        <div className="kc-sec" id="make">
+          <h2>Make your own</h2>
+          <span className="kc-sub">color a picture, then play it as your own jigsaw</span>
+        </div>
+        <div className="kc-grid">
+          {MAKE.map((a) => <Tile key={a.id} a={a} />)}
         </div>
 
         <div className="kc-sec" id="match">
