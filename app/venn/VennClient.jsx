@@ -430,8 +430,17 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
   }
   function clearAll() { if (!playing) return; setG((cur) => ({ ...cur, place: Array(N).fill(0) })); setHeld(null); }
 
+  // The file button stays pressable while the sheet is not ready, so a tap
+  // says why instead of doing nothing (a player reported it "won't click").
+  function notReadyMsg() {
+    const left = N - placedCount;
+    if (left > 0) return `File every ${PUZZLE.domain ? 'item' : 'word'} first: ${left} still in the tray.`;
+    const off = REGIONS.filter((r) => !hiddenSet.has(r) && mine[r] !== COUNTS[r]).map((r) => ZONE[r].label);
+    return `Counts are off in ${off.join(', ')}. Match each region's number, then file.`;
+  }
   function submit() {
-    if (!playing || !canSubmit) return;
+    if (!playing) return;
+    if (!canSubmit) { say(notReadyMsg()); return; }
     const wrong = g.place.map((r, i) => (r === TRUTH[i] ? null : i)).filter((x) => x != null);
     if (!wrong.length) {
       const g2 = { ...g, status: 'done', tEnd: Date.now(), t0: g.t0 || Date.now() };
@@ -579,7 +588,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
             bottom={playing ? (
               <div className="vns-tools">
                 <button type="button" className="vns-tb" onClick={clearAll} disabled={placedCount === 0}>Clear all</button>
-                <button type="button" className="vns-go" onClick={submit} disabled={!canSubmit}>File the sheet</button>
+                <button type="button" className={'vns-go' + (canSubmit ? '' : ' off')} onClick={submit} aria-disabled={!canSubmit}>File the sheet{!canSubmit && <> &middot; {placedCount < N ? 'tray first' : 'counts first'}</>}</button>
               </div>
             ) : null}
             foot={verdict ? <span style={{ color: LBAD }}>{verdict.msg}</span> : (toast || (playing
@@ -688,7 +697,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
           .vn-ob:disabled{color:${FADED};cursor:default;}
           .vn-fnote{flex:1;min-width:150px;text-align:right;font-family:${SANS};font-size:12px;font-weight:600;color:${FADED};line-height:1.4;}
           .vn-file{font-family:${SANS};font-weight:800;font-size:15px;border-radius:12px;padding:0 18px;min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;background:var(--stg-acc, ${COLORS.accent});color:var(--stg-onramp, #fff);border:1.5px solid var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}));}
-          .vn-file:disabled{background:transparent;color:${FADED};border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));cursor:not-allowed;}
+          .vn-file:disabled,.vn-file.off{background:transparent;color:${FADED};border:1.5px solid var(--stg-cell-line, rgba(28,30,36,0.4));cursor:not-allowed;}
           @media(max-width:640px){
             .vn-rules{flex-direction:column;gap:5px;margin-bottom:6px;}
             .vn-rule{background:transparent;padding:0;gap:8px;}
@@ -893,7 +902,7 @@ export default function VennClient({ puzzles = [], forceNum = null }) {
             <button type="button" className="vn-ob" onClick={clearAll} disabled={placedCount === 0}><Eraser size={14} /> Clear all</button>
             <span className="vn-fnote">Fewer sheets sent back<br />wrong rank higher.</span>
             {started && <button type="button" className="vn-ob" onClick={reveal}>Reveal (ends the day)</button>}
-            <button type="button" className="vn-file" onClick={submit} disabled={!canSubmit}>
+            <button type="button" className={'vn-file' + (canSubmit ? '' : ' off')} onClick={submit} aria-disabled={!canSubmit}>
               <Circle size={14} /> File the sheet{!canSubmit && <> &middot; {placedCount < N ? 'tray first' : 'counts first'}</>}
             </button>
           </div>
@@ -1126,5 +1135,5 @@ const VNS_CSS = `
 .pst .vns-tb{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 16px;border-radius:999px;border:1px solid var(--pst-ink);background:var(--pst-bg);font-size:14px;font-weight:800;flex:none;}
 .pst .vns-tb:disabled{opacity:.4;cursor:default;}
 .pst .vns-go{flex:1;min-height:46px;border-radius:999px;border:1px solid var(--pst-ink);background:var(--pst-acc);color:var(--pst-on-acc);font-size:15px;font-weight:800;}
-.pst .vns-go:disabled{opacity:.4;cursor:default;}
+.pst .vns-go:disabled,.pst .vns-go.off{opacity:.4;cursor:default;}
 `;
