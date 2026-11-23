@@ -5,7 +5,7 @@
 // (and, for a group member, the group's rank and field): sixteen requests at
 // once, which arrived on up to sixteen separate cold instances, each loading the
 // results table before answering (4.5 to 7 s apiece, measured). This asks the
-// SAME route in process, one run after another, so one instance loads once and
+// SAME route in process, all runs at once, so one instance loads once and
 // answers all of them. Every figure is exactly what the per-run read returned.
 //
 // Only the fields the run tiles print are passed back.
@@ -28,7 +28,10 @@ export async function GET(request) {
   const anonId = (sp.get('anonId') || '').trim();
   const email = (sp.get('email') || '').trim();
   const stats = {};
-  for (const id of ids) {
+  // IN PARALLEL inside this one instance (2026-11-23): one after another took
+  // 16 to 21 s for sixteen runs, because each waits on its own identity and group
+  // lookups. Concurrent asks share the instance's single results load.
+  await Promise.all(ids.map(async (id) => {
     const q = new URLSearchParams();
     q.set('circuit', id);
     if (group) q.set('group', group);
@@ -36,9 +39,9 @@ export async function GET(request) {
     if (email) q.set('email', email);
     try {
       const res = await combinedGET(new Request(`https://mindloftdaily.com/api/quiz/daily-combined?${q.toString()}`));
-      if (!res || res.status !== 200) continue;
+      if (!res || res.status !== 200) return;
       const d = await res.json();
-      if (!d || d.error) continue;
+      if (!d || d.error) return;
       if (group) {
         stats[id] = { players: d.siteField || 0, rank: d.siteRank || null, gfield: d.field || 0, grank: d.me && d.me.rank ? d.me.rank : null, lead: d.siteLeader || null };
       } else {
@@ -47,6 +50,6 @@ export async function GET(request) {
       }
       if (Array.isArray(d.doneAts)) stats[id].doneAts = d.doneAts;
     } catch (e) { /* one run failing leaves the rest */ }
-  }
+  }));
   return NextResponse.json({ stats }, { headers: PRIVATE });
 }
