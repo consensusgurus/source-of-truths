@@ -49,7 +49,7 @@ import { useStageTheme } from '@/lib/stage-theme';
 // and what the player actually did, and only the second means anything next to
 // the game they just played.
 import { gameStats, mmss, missWord, scoreFig as runFig } from '@/lib/daily-row-stats';
-import { isSolveOnly as isSolveOnlyRaw, scoreView, scoreText, hasProgressFig, progressFig, progressFigCell } from '@/lib/daily-games';
+import { isSolveOnly as isSolveOnlyRaw, scoreView, scoreText, scoreIsCount, scoreUnitWord, hasProgressFig, progressFig, progressFigCell } from '@/lib/daily-games';
 // NO ARBITRARY FRACTIONS (owner, 2026-10-26): a game whose 10 is a scale, not a
 // count, reads like a solve-or-not game everywhere on the ending, and its own
 // figure (moves, errors, clock) carries the comparison.
@@ -1862,8 +1862,8 @@ export default function StageFinish({
     } else if (myT != null) {
       metric = { text: mmss(myT), n: myT, kind: 'time' };
     } else if (sc && sc.o > 0 && !meSolveOnly) {
-      metric = (scoreView(me.key) || {}).v === 'points'
-        ? { text: scoreText(me.key, sc.s, sc.o), n: sc.s, post: sc.s === 1 ? ' point' : ' points' }
+      metric = (scoreView(me.key) || {}).v === 'points' && !scoreIsCount(me.key, sc.o)
+        ? { text: scoreText(me.key, sc.s, sc.o), n: sc.s, post: ` ${scoreUnitWord(me.key, sc.s)}` }
         : { text: `${sc.s} of ${sc.o}`, n: sc.s, post: ` of ${sc.o}` };
     }
 

@@ -1748,6 +1748,39 @@ hand with its own sort-based ranking table (about 15 s for the whole bank) and
 set takes over three minutes). The client branches on `PUZZLE.showdown`; old boards render exactly as
 before. `gen-hold.mjs` runs its own command line on import, so never import it from another script.
 
+**Hold CHIPS and the WHY reveal (owner, 2026-11-23; every showdown board from `CHIPS_FROM`,
+2026-11-24).** "All-or-nothing scoring felt arbitrary, the draw had no stakes, and the reveal said
+what but not why." Each hand plays for a `POT` of 100 chips and a hold BANKS its share:
+`chipsOf(win)`, the chance to win times the pot, rounded to a whole chip. The board posts
+`score` = chips banked and `total` = `boardMaxChips` (what the best holds bank), and ranks on it;
+the clock still breaks ties. Best holds (the old point) are kept as a second figure. Rules:
+
+- **The bank is NOT rewritten.** Chips come straight off the `win` values every showdown board
+  already carries, so the verifier and generator are untouched and `isChipBoard(p)` (showdown and
+  `live >= CHIPS_FROM`) is the only switch. Boards before 11-24 score one point for the best hold
+  exactly as before, in the same client.
+- **`SCORE_VIEW.hold = { v: 'points', unit: 'chips', countMax: 15 }`.** A chip total is a scale, so
+  rows print "512 chips" (`scoreUnitWord`); an older row's total is hands dealt (10, or 15 on
+  Sunday), a real count that keeps its fraction (`scoreIsCount`). Any new surface must go through
+  `scoreText`, which handles both.
+- **The headline** is `chipGrade` in the client: Perfect! only when every hold is a best hold,
+  else `endGrade` stepped on the share of the best possible (97% Great job!, 92% Good job!),
+  because a sensible hold banks most of its pot and the plain 80/50 ladder would call everything
+  great.
+- **WHY** is `holdWhy(cards, rivals, mask)` in `lib/hold-core.js`: the same exact walk as
+  `holdWins` with the drawn cards remembered at each leaf, giving for every unseen card the chance
+  to win when that card is among the cards drawn, plus, on a one-card draw, the `outs`, the
+  `splits` and the `blocked` cards (rival cards that would have won had they come, measured
+  against the rival hands as dealt). `WhyBlock` in the client draws the 52-card deck from it
+  (held, thrown, rival, unseen tinted by that chance, a dot on what came off the shuffle) under a
+  lesson written by `whyLesson`, every figure of which is one of those counts. A miss gets a
+  two-segment toggle between the hold played and the best hold. It runs in the browser on the
+  reveal only (draw five is about 40 ms), never before the Draw, so nothing leaks.
+- Check: `node scripts/verify-hold-chips.mjs` (holdWhy against holdWins on every hold of sampled
+  bank hands, the conditional chances averaging back to the chance to win, chips and the
+  SCORE_VIEW round trip).
+
+
 **Cell** (Cards, keepsAnswer, attempts 'graded', `miss: 'Tries'`, scored with lib/par.js like Taire):
 FreeCell on 32 cards (ace to eight) in six columns, free cells Mon/Tue 4, Wed/Thu 3, Fri/Sat 2;
 Sunday 40 cards in seven columns on two cells. Every player move counts one; safe autoplay is free

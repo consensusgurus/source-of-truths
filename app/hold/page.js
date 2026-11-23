@@ -49,7 +49,7 @@ const gameJsonLd = {
   alternateName: 'Hold: A Daily Poker Puzzle',
   url: `${SITE_URL}/hold`,
   description:
-    'A free daily poker puzzle: ten hands, each played against two rival hands dealt face up, and for each you choose which cards to hold before the draw. Every hold is valued by its exact chance to beat both rivals over every draw from the 37 cards nobody holds. One point for the best hold; ties break on fastest time.',
+    'A free daily poker puzzle: ten hands, each played against two rival hands dealt face up, and for each you choose which cards to hold before the draw. Every hold is valued by its exact chance to beat both rivals over every draw from the 37 cards nobody holds. Each hand plays for a 100 chip pot and your hold banks its share; ties break on fastest time.',
   genre: ['Card game', 'Poker', 'Video poker', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
