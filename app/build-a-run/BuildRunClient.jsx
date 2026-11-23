@@ -10,7 +10,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import CircuitFrame from '../circuits/CircuitFrame';
 import GameGlyph from '../GameGlyph';
-import { RUN_MAX, BUILT_MIN, getMyDay, saveMyDay, countDayEvent } from '@/lib/daily-run';
+import { RUN_MAX, BUILT_MIN, getMyDay, saveMyDay, countDayEvent, trackMyDay } from '@/lib/daily-run';
 import { catWord, hueVars, CSS as RUN_CSS } from '../run/RunPageClient';
 
 // Category order as the home's index reads it.
@@ -54,6 +54,7 @@ export default function BuildRunClient({ games = [], start = [] }) {
     if (!ready) return;
     saveMyDay(picked);
     countDayEvent(had ? 'my-day-edited' : 'my-day-saved');
+    trackMyDay(had ? 'edited' : 'saved', picked);
     window.location.href = '/my-day';
   };
 

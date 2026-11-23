@@ -1054,5 +1054,12 @@ Your Run, the site replaces that with Build Your Day. Even up in 'runs' line"), 
   runs get one fewer column there); every old "Build a Run" label reads "Build Your Day".
 - **Stats:** page-view ids `build-a-run`, `my-day`, and once-per-ET-day events `my-day-saved`,
   `my-day-edited`, `my-day-opened`, `my-day-finished` (`countDayEvent`), labelled in
-  `lib/admin-quiz-titles.js`. A dedicated admin tab is a follow-up.
+  `lib/admin-quiz-titles.js`.
+- **Who builds a day (owner, 2026-11-22):** the admin desk's **Mind Loft Daily** tab
+  (`MyDayPanel`, `/api/admin/my-day`) lists one row per player per ET day: name (or guest +
+  browser id start), New / Edited, the puzzles in order, played "n of N", status, country.
+  Written by `trackMyDay` in `lib/daily-run.js` to `/api/mld/event`, table `mld_days`
+  (migration 76): `saved` / `edited` send on every save (builder and "+ Add to My Day"),
+  `opened` once per day per progress count from `/my-day`. Best effort; a missing table
+  answers ok. Days before 2026-11-22 were never recorded (only the anonymous counts exist).
 - Saved built runs were not converted; old `/run` links keep working.

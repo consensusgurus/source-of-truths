@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from 'react';
 import CircuitFrame from '../circuits/CircuitFrame';
 import GameGlyph from '../GameGlyph';
 import { DAILY_GAME_MAP, PREMIERES, LAUNCH_DAILY } from '@/lib/daily-games';
-import { getMyDay, saveMyDay, dailyRunHref, playedToday, DAY_META, editionNow, buildableGames, countDayEvent } from '@/lib/daily-run';
+import { getMyDay, saveMyDay, dailyRunHref, playedToday, DAY_META, editionNow, buildableGames, countDayEvent, trackMyDay } from '@/lib/daily-run';
 import { dailyMeIdentity } from '../dailyMeClient';
 import { savedIdentity } from '@/lib/saved-identity';
 import { catWord, hueVars, resultText, CSS as RUN_CSS } from '../run/RunPageClient';
@@ -77,6 +77,7 @@ export default function DayClient() {
   const next = nextKey ? DAILY_GAME_MAP[nextKey] : null;
 
   useEffect(() => { if (n >= 2) countDayEvent(allDone ? 'my-day-finished' : 'my-day-opened'); }, [n, allDone]);
+  useEffect(() => { if (keys && n >= 2) trackMyDay('opened', keys, doneN); }, [keys, n, doneN]);
 
   // The back page's results: today's rows for these games, ranked the way a run is.
   useEffect(() => {
@@ -112,7 +113,7 @@ export default function DayClient() {
 
   const add = (k) => {
     const cur = getMyDay();
-    if (!cur.includes(k)) saveMyDay([...cur, k]);
+    if (!cur.includes(k)) { saveMyDay([...cur, k]); trackMyDay('edited', [...cur, k], doneN); }
     setAdded((m) => ({ ...m, [k]: true }));
   };
 

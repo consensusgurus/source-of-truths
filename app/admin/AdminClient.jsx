@@ -1089,6 +1089,9 @@ export default function AdminClient() {
           <TabButton active={tab === 'groups'} onClick={() => setTab('groups')}>
             Groups
           </TabButton>
+          <TabButton active={tab === 'myday'} onClick={() => setTab('myday')}>
+            Mind Loft Daily
+          </TabButton>
         </div>
 
         {tab === 'analytics' ? (
@@ -1099,6 +1102,8 @@ export default function AdminClient() {
             : <PartNote>Loading the daily games figures&hellip;</PartNote>
         ) : tab === 'groups' ? (
           <GroupsPanel />
+        ) : tab === 'myday' ? (
+          <MyDayPanel />
         ) : ed.loading ? (
           <PartNote>Loading&hellip;</PartNote>
         ) : ed.error ? (
@@ -2998,6 +3003,108 @@ function FeedbackPanel({ complaints, comments, busy, onDismiss, onDelete, onResp
       <div>
         <SectionHeading>Comments</SectionHeading>
         <CommentsPanel comments={comments} busy={busy} onDelete={onDelete} onRespond={onRespond} />
+      </div>
+    </div>
+  );
+}
+
+// MIND LOFT DAILY (owner, 2026-11-22): who set up a day with Build Your Day,
+// what is in it and how far they got. One row per player per ET day, newest
+// activity first, from /api/admin/my-day (mld_days, migration 76).
+function MyDayPanel() {
+  const [data, setData] = useState(null);
+  const [q, setQ] = useState('');
+  const [only, setOnly] = useState('all');
+  useEffect(() => {
+    let dead = false;
+    fetch('/api/admin/my-day', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => { if (!dead) setData(d); })
+      .catch(() => { if (!dead) setData({ error: 'Could not load Mind Loft Daily.' }); });
+    return () => { dead = true; };
+  }, []);
+  const mono = { fontFamily: 'Manrope, monospace', fontSize: 11, color: COLORS.faded };
+  const when = (iso) => (iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '');
+  const head = <SectionHeading>Mind Loft Daily</SectionHeading>;
+  if (!data) return <div>{head}<p style={mono}>Loading&hellip;</p></div>;
+  if (data.available === false) return <div>{head}<p style={mono}>The Mind Loft Daily table is not in the database yet (migration 76). Days are recorded from the moment it is applied.</p></div>;
+  if (data.error) return <div>{head}<p style={{ ...mono, color: COLORS.rust }}>{data.error}</p></div>;
+  const t = data.totals || {};
+  const needle = q.trim().toLowerCase();
+  const who = (r) => r.name || `Guest ${r.anon}`;
+  const status = (r) => (r.finished ? 'Finished' : r.done > 0 ? 'In progress' : r.opened ? 'Opened' : 'Set up only');
+  const rows = (data.rows || []).filter((r) => {
+    if (only === 'setups' && !r.setup) return false;
+    if (only === 'finished' && !r.finished) return false;
+    if (only === 'named' && !r.name) return false;
+    if (!needle) return true;
+    return who(r).toLowerCase().includes(needle) || r.puzzles.join(' ').toLowerCase().includes(needle);
+  });
+  const th = { textAlign: 'left', padding: '6px 8px', ...mono, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', borderBottom: `1px solid ${COLORS.line}` };
+  const td = { padding: '7px 8px', fontSize: 13, borderBottom: '1px solid rgba(20,22,28,0.08)', color: COLORS.ink, verticalAlign: 'top' };
+  const chip = (on) => ({ padding: '6px 10px', border: `1px solid ${on ? COLORS.ink : COLORS.line}`, background: on ? COLORS.ink : 'transparent', color: on ? COLORS.cream : COLORS.ink, fontFamily: 'Manrope, monospace', fontSize: 10, textTransform: 'uppercase', cursor: 'pointer' });
+  const exportCsv = () => downloadCsvFile('mindloft-daily-days', ['Day', 'Player', 'Signed in', 'Set up', 'Edits', 'Puzzles', 'Pages', 'Played', 'Status', 'Country', 'Last activity'],
+    (data.rows || []).map((r) => [r.day, who(r), r.signedIn ? 'Yes' : 'No', r.setup === 'new' ? 'New' : r.setup === 'edit' ? 'Edited' : '', r.edits, r.puzzles.join(' | '), r.pages, r.done, status(r), r.country, r.updatedAt]));
+  return (
+    <div>
+      {head}
+      <p style={{ ...mono, margin: '0 0 18px', lineHeight: 1.6 }}>
+        Every player who set up, edited or opened a Mind Loft Daily, one row per player per day (Eastern), newest activity first, last 60 days. A guest shows the start of their browser id. "New" is the first time that browser built a day.
+      </p>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
+        <TimeByDayStat value={(t.builders || 0).toLocaleString()} unit="players" label="Built a day (60d)" accent={COLORS.ink} />
+        <TimeByDayStat value={(t.players || 0).toLocaleString()} unit="players" label="Used it (60d)" accent={COLORS.ink} />
+        <TimeByDayStat value={(t.today || 0).toLocaleString()} unit="papers" label="Today" accent={COLORS.ember} />
+        <TimeByDayStat value={(t.setupsToday || 0).toLocaleString()} unit="set ups" label="Set up or edited, today" accent={COLORS.ember} />
+        <TimeByDayStat value={(t.finishedToday || 0).toLocaleString()} unit="finished" label="Finished, today" accent={COLORS.ember} />
+        <TimeByDayStat value={(t.week || 0).toLocaleString()} unit="papers" label="Last 7 days" accent={COLORS.rust} />
+        <TimeByDayStat value={(t.finished7d || 0).toLocaleString()} unit="finished" label="Finished, 7d" accent={COLORS.rust} />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 3fr) minmax(220px, 1fr)', gap: 24, alignItems: 'start' }}>
+        <div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
+            {[['all', 'All'], ['setups', 'Set ups'], ['finished', 'Finished'], ['named', 'Named players']].map(([k, l]) => (
+              <button key={k} onClick={() => setOnly(k)} style={chip(only === k)}>{l}</button>
+            ))}
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search player or puzzle"
+              style={{ marginLeft: 'auto', padding: '6px 10px', border: `1px solid ${COLORS.line}`, fontSize: 12, minWidth: 180 }} />
+            <button onClick={exportCsv} style={chip(true)}>↓ CSV</button>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead><tr><th style={th}>Day</th><th style={th}>Player</th><th style={th}>Set up</th><th style={th}>Puzzles</th><th style={{ ...th, textAlign: 'right' }}>Played</th><th style={th}>Status</th><th style={th}>Last activity</th></tr></thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={`${r.player}|${r.day}`}>
+                    <td style={{ ...td, ...mono, whiteSpace: 'nowrap' }}>{r.day}</td>
+                    <td style={td}>
+                      <strong>{who(r)}</strong>
+                      <div style={mono}>{r.signedIn ? 'Account' : 'Guest'}{r.country ? ` · ${r.country}` : ''}</div>
+                    </td>
+                    <td style={{ ...td, ...mono }}>{r.setup === 'new' ? 'New' : r.setup === 'edit' ? 'Edited' : ''}{r.edits > 1 ? ` (${r.edits} edits)` : ''}</td>
+                    <td style={{ ...td, fontSize: 12, lineHeight: 1.5 }}>{r.puzzles.length ? r.puzzles.join(', ') : <span style={mono}>Not sent yet</span>}</td>
+                    <td style={{ ...td, textAlign: 'right', whiteSpace: 'nowrap' }}>{r.done} of {r.pages}</td>
+                    <td style={{ ...td, color: r.finished ? COLORS.forest : COLORS.ink, fontWeight: r.finished ? 700 : 400 }}>{status(r)}</td>
+                    <td style={{ ...td, ...mono, whiteSpace: 'nowrap' }}>{when(r.updatedAt)}</td>
+                  </tr>
+                ))}
+                {!rows.length ? <tr><td style={td} colSpan={7}>No days recorded yet.</td></tr> : null}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <strong style={{ fontSize: 14, display: 'block', marginBottom: 8 }}>Most picked, last 7 days</strong>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <tbody>
+              {(data.top || []).map((g) => (
+                <tr key={g.key}><td style={td}>{g.name}</td><td style={{ ...td, textAlign: 'right' }}>{g.count}</td></tr>
+              ))}
+              {!(data.top || []).length ? <tr><td style={td}>Nothing yet.</td></tr> : null}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
