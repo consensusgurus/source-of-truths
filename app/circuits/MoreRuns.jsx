@@ -30,6 +30,16 @@ import { circuitKeysFor } from '@/lib/circuits';
 import { DAILY_GAME_MAP, liveDailyKeys } from '@/lib/daily-games';
 import { gameActive } from '@/lib/game-active';
 import { claimPop, popSpent } from '@/lib/pop-budget';
+import { getMyDayItems, RUN_ITEM } from '@/lib/daily-run';
+
+// THE WAY BACK TO THE PAPER (owner feedback, 2026-11-23): a run that is a page
+// of this reader's Mind Loft Daily ends with "Back to Your Paper" where Build
+// Your Day would sit, so the next page is one tap away. Read after mount.
+function useInPaper(self) {
+  const [on, setOn] = useState(false);
+  useEffect(() => { setOn(!!self && getMyDayItems().includes(RUN_ITEM + self)); }, [self]);
+  return on;
+}
 
 export const RUN_ORDER = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'dojocolor', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye', 'oddjobs'];
 export const RUNS_POP_STORE = 'sot_runs_pop';
@@ -90,6 +100,7 @@ function Row({ id, cls = 'mr' }) {
 // play next" card), so it is not listed twice (owner, 2026-11-04).
 export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = 'rgba(255,255,255,.14)', style, onShare = null, copied = false, shareLabel = 'Share your score', skip = null }) {
   const open = useOpenRuns(self);
+  const inPaper = useInPaper(self);
   if (!open) return null;
   const ids = skip ? open.filter((id) => !(RUN_DOORS[id] && RUN_DOORS[id].href === skip)) : open;
   // The only open run is the one offered above: no list, but the builder
@@ -110,7 +121,9 @@ export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = '
       {/* BUILD YOUR OWN RUN (owner, 2026-11-07): the last thing on every run
           ending, below Share Your Score. Someone who just finished a run is
           the likeliest person to build one. */}
-      <a className="mr-share mr-build" href="/build-a-run">Build Your Day</a>
+      {inPaper
+        ? <a className="mr-share mr-build" href="/my-day">Back to Your Paper</a>
+        : <a className="mr-share mr-build" href="/build-a-run">Build Your Day</a>}
     </div>
   );
 }

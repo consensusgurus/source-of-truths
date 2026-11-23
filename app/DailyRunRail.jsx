@@ -11,19 +11,30 @@
 // in StageChrome, which puts it on every daily.
 import React, { useEffect, useState } from 'react';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { readDailyRun, dailyRunHref, playedToday, readRunMeta, builtRunHref, isDayMeta } from '@/lib/daily-run';
+import { readDailyRun, dailyRunHref, playedToday, readRunMeta, builtRunHref, isDayMeta, getMyDayItems, isRunItem } from '@/lib/daily-run';
+import { validItem, itemDone, itemHref, itemName } from './my-day/dayRuns';
 
 export default function DailyRunRail({ gameKey }) {
   const [keys, setKeys] = useState([]);
   const [played, setPlayed] = useState({});
   // A BUILT run (owner, 2026-11-07) carries its name and maker, &rn= and &rb=.
   const [meta, setMeta] = useState(null);
+  // MIND LOFT DAILY WITH RUN PAGES (owner, 2026-11-23): the paper's whole order,
+  // games and runs, so "Page n of N" and the next page count the runs too.
+  const [paper, setPaper] = useState(null);
 
   useEffect(() => { setKeys(readDailyRun(window.location.search)); setMeta(readRunMeta(window.location.search)); }, []);
 
   useEffect(() => {
     if (!keys.length) return undefined;
-    const read = () => setPlayed(Object.fromEntries(keys.map((k) => [k, playedToday(k)])));
+    const read = () => {
+      setPlayed(Object.fromEntries(keys.map((k) => [k, playedToday(k)])));
+      if (isDayMeta(readRunMeta(window.location.search))) {
+        const items = getMyDayItems().filter(validItem);
+        // Only when the saved paper still holds every game on this link.
+        setPaper(items.some(isRunItem) && keys.every((k) => items.includes(k)) ? items.map((x) => [x, itemDone(x)]) : null);
+      }
+    };
     read();
     const id = setInterval(read, 1500);
     return () => clearInterval(id);
@@ -37,14 +48,31 @@ export default function DailyRunRail({ gameKey }) {
   const order = [...keys.slice(at + 1), ...keys.slice(0, at)];
   const nextKey = order.find((k) => !played[k]) || null;
   const next = nextKey ? DAILY_GAME_MAP[nextKey] : null;
-  const doneCount = keys.filter((k) => played[k]).length;
-  const allDone = doneCount === keys.length;
+  let doneCount = keys.filter((k) => played[k]).length;
+  let allDone = doneCount === keys.length;
+  let total = keys.length;
+  let pageAt = at;
+  // A paper with run pages: the next page is the next unread one in the
+  // paper's own order, game or run, and the paper is complete only once the
+  // runs are finished too.
+  let nextPage = null;
+  if (paper) {
+    const order2 = paper.map((x) => x[0]);
+    const me = order2.indexOf(gameKey);
+    const left = [...paper.slice(me + 1), ...paper.slice(0, me)].filter(([x, d]) => !d && x !== gameKey);
+    nextPage = left.length ? left[0][0] : null;
+    total = paper.length;
+    pageAt = me;
+    doneCount = paper.filter(([x, d]) => (x === gameKey ? thisDone : d)).length;
+    allDone = doneCount === total;
+  }
+  const nextRun = nextPage && isRunItem(nextPage) ? nextPage : null;
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="drr" role="navigation" aria-label="Your run">
-        <span className="drr-eb">{meta && meta.name ? meta.name : 'Your run'} · {isDayMeta(meta) ? 'Page ' : ''}{at + 1} of {keys.length}</span>
+        <span className="drr-eb">{meta && meta.name ? meta.name : 'Your run'} · {isDayMeta(meta) ? 'Page ' : ''}{pageAt + 1} of {total}</span>
         <span className={'drr-chips' + (keys.length > 8 ? ' drr-long' : '')}>
           {keys.map((k) => (
             <a key={k} href={dailyRunHref(k, keys, meta)} className={'drr-c' + (k === gameKey ? ' now' : '') + (played[k] ? ' done' : '')}>
@@ -68,6 +96,12 @@ export default function DailyRunRail({ gameKey }) {
               <span className="drr-bt"><b>Run complete</b><small>{keys.length} games played</small></span>
               <a className="drr-go" href="/tests">IQ tests</a>
               <a className="drr-go alt" href="/">Home</a>
+            </>
+          ) : nextRun ? (
+            /* The next page of the paper is a whole run: it opens on its own page. */
+            <>
+              <span className="drr-bt"><b>Next in your paper: {itemName(nextRun)}</b><small>{doneCount} of {total} read</small></span>
+              <a className="drr-go" href={itemHref(nextRun, keys)}>Play</a>
             </>
           ) : next ? (
             <>

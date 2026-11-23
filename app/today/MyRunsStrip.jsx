@@ -6,17 +6,33 @@
 // server paint and the first client paint agree (both render the button only).
 import { useEffect, useState } from 'react';
 import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { listMyRuns, builtRunHref, playedToday } from '@/lib/daily-run';
+import { listMyRuns, builtRunHref, playedToday, getMyDayItems, editionNow } from '@/lib/daily-run';
+import { validItem, itemDone, itemName } from '../my-day/dayRuns';
 
 export default function MyRunsStrip() {
   const [runs, setRuns] = useState([]);
+  // THE READER'S PAPER LEADS MY RUNS (owner feedback, 2026-11-23: "when I build a
+  // run I'm not sure where I can see it"). Building now saves a Mind Loft Daily,
+  // so it is the first row here, then any older built or shared runs.
+  const [day, setDay] = useState(null);
   useEffect(() => {
     setRuns(listMyRuns().slice(0, 6).map((r) => ({ ...r, played: r.keys.filter((k) => playedToday(k)).length })));
+    const items = getMyDayItems().filter(validItem);
+    setDay(items.length >= 2 ? { items, done: items.filter((x) => itemDone(x)).length, ed: editionNow() } : null);
   }, []);
   return (
     <div className="mrs">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      {runs.length ? <div className="mrs-h">My Runs</div> : null}
+      {runs.length || day ? <div className="mrs-h">My Runs</div> : null}
+      {day ? (
+        <a className="mrs-r" href="/my-day">
+          <span className="mrs-t">
+            <b>Mind Loft Daily</b>
+            <small>Your paper · {day.ed.name} Edition · {day.items.map(itemName).filter(Boolean).join(', ')}</small>
+          </span>
+          <span className={'mrs-s' + (day.done === day.items.length ? ' done' : '')}>{day.done === day.items.length ? 'Read' : day.done ? `${day.done} of ${day.items.length}` : 'Open'}</span>
+        </a>
+      ) : null}
       {runs.map((r) => (
         <a key={r.id} className="mrs-r" href={builtRunHref(r.keys, { name: r.name, by: r.by })}>
           <span className="mrs-t">
@@ -26,7 +42,7 @@ export default function MyRunsStrip() {
           <span className={'mrs-s' + (r.played === r.keys.length ? ' done' : '')}>{r.played === r.keys.length ? 'Played' : r.played ? `${r.played} of ${r.keys.length}` : 'Play'}</span>
         </a>
       ))}
-      <a className="mrs-b" href="/build-a-run">+ Build Your Day</a>
+      <a className="mrs-b" href="/build-a-run">{day ? 'Edit My Day' : '+ Build Your Day'}</a>
     </div>
   );
 }

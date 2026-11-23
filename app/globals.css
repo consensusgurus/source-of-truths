@@ -1612,6 +1612,22 @@ html:is([data-stage-pastel^='dark'], [data-stage-tone^='dark']) :is(.stf-curtain
    the answers are drawn on it instead of on the old page. */
 html:has(.loft-back, .stf:not(.stf-bv), .sst-page, .srl) :is(.pst, .wst, .bks){display:none !important;}
 
+/* A FULL-SCREEN STAGE OWNS THE SCROLL (owner report, 2026-11-23: on the Sunday
+   Chef, in the home-screen app on an iPhone, "I can scroll down but it snaps me
+   back up to the top of the screen before I can select", fine on the shorter
+   weekday boards). The stage is a fixed, full-window box that scrolls itself,
+   over a page that is ALSO scrollable underneath (the gate, the about text, the
+   foot). iOS can hand a drag to the page underneath instead, and the stage then
+   only rubber-bands and springs back to its top. While a stage is up and no
+   ending has replaced it, the page under it does not scroll, and the stage
+   keeps its own overscroll, so every drag lands on the board. The exclusions
+   are the ending rule's above, so an ending always scrolls normally. An inline
+   stage (.inl, desktop with the navigation showing) is part of the page and is
+   left alone. */
+html:has(:is(.pst, .wst, .bks):not(.inl)):not(:has(.loft-back, .stf:not(.stf-bv), .sst-page, .srl)),
+html:has(:is(.pst, .wst, .bks):not(.inl)):not(:has(.loft-back, .stf:not(.stf-bv), .sst-page, .srl)) body{overflow:hidden;}
+:is(.pst, .wst, .bks):not(.inl){overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+
 /* A QUIZ'S HITS WEAR ITS SUBJECT COLOUR (owner, 2026-11-12, "Quiz Stage
    Restyle", option 2). The two site looks paint --stg-acc-tint as a neutral
    wash on every stage; on a quiz page (.qz-stage, set by every quiz client's

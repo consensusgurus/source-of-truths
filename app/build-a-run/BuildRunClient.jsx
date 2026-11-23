@@ -7,10 +7,13 @@
 // ceiling), in order, no name. Save My Day keeps them in this browser
 // (lib/daily-run.js saveMyDay) and opens the paper at /my-day. Nothing is
 // saved on the server. ?g=a,b prefills it; with no ?g it opens on the saved day.
+// RUNS ARE PAGES TOO (owner feedback, 2026-11-23): the Runs chip lists the
+// designed runs, and a run sits in the order like any puzzle (`run:<id>`).
 import { useEffect, useMemo, useState } from 'react';
 import CircuitFrame from '../circuits/CircuitFrame';
 import GameGlyph from '../GameGlyph';
-import { RUN_MAX, BUILT_MIN, getMyDay, saveMyDay, countDayEvent, trackMyDay } from '@/lib/daily-run';
+import { RUN_MAX, BUILT_MIN, getMyDayItems, saveMyDay, countDayEvent, trackMyDay, isRunItem } from '@/lib/daily-run';
+import { dayRunList, dayRun, RunMark } from '../my-day/dayRuns';
 import { catWord, hueVars, CSS as RUN_CSS } from '../run/RunPageClient';
 
 // Category order as the home's index reads it.
@@ -18,27 +21,38 @@ const CAT_ORDER = ['Word', 'Numbers', 'Logic', 'Visual', 'Sudoku', 'Trivia', 'Ge
 
 export default function BuildRunClient({ games = [], start = [] }) {
   const byKey = useMemo(() => Object.fromEntries(games.map((g) => [g.key, g])), [games]);
+  // The runs are read after mount (their doors live in a client module), so
+  // the server paint and the first client paint agree.
+  const [runs, setRuns] = useState([]);
+  useEffect(() => { setRuns(dayRunList()); }, []);
+  const known = (x) => (isRunItem(x) ? !!dayRun(x) : !!byKey[x]);
   const [picked, setPicked] = useState(start);
   const [cat, setCat] = useState('All');
   const [q, setQ] = useState('');
   const [had, setHad] = useState(false);
   // No ?g: open on the day this browser already keeps, so Edit is the same page.
   useEffect(() => {
-    const mine = getMyDay().filter((k) => byKey[k]);
+    const mine = getMyDayItems().filter(known);
     if (mine.length) setHad(true);
     if (!start.length && mine.length) setPicked(mine);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const cats = useMemo(() => {
     const have = new Set(games.map((g) => g.cat));
-    return ['All', ...CAT_ORDER.filter((c) => have.has(c)), ...[...have].filter((c) => !CAT_ORDER.includes(c))];
+    return ['All', 'Runs', ...CAT_ORDER.filter((c) => have.has(c)), ...[...have].filter((c) => !CAT_ORDER.includes(c))];
   }, [games]);
   const list = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return games
-      .filter((g) => (cat === 'All' || g.cat === cat) && (!needle || g.name.toLowerCase().includes(needle) || (g.tag || '').toLowerCase().includes(needle)))
+    const hit = (name, tag) => !needle || name.toLowerCase().includes(needle) || (tag || '').toLowerCase().includes(needle);
+    // Runs lead All and fill the Runs chip; a category chip is games only.
+    const runRows = cat === 'All' || cat === 'Runs'
+      ? runs.filter((r) => hit(r.name, r.sub)).map((r) => ({ key: r.item, name: r.name, tag: r.sub, run: true }))
+      : [];
+    const gameRows = cat === 'Runs' ? [] : games
+      .filter((g) => (cat === 'All' || g.cat === cat) && hit(g.name, g.tag))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [games, cat, q]);
+    return [...runRows, ...gameRows];
+  }, [games, runs, cat, q]);
 
   const toggle = (k) => setPicked((p) => (p.includes(k) ? p.filter((x) => x !== k) : (p.length >= RUN_MAX ? p : [...p, k])));
   const move = (i, d) => setPicked((p) => {
@@ -54,7 +68,7 @@ export default function BuildRunClient({ games = [], start = [] }) {
     if (!ready) return;
     saveMyDay(picked);
     countDayEvent(had ? 'my-day-edited' : 'my-day-saved');
-    trackMyDay(had ? 'edited' : 'saved', picked);
+    trackMyDay(had ? 'edited' : 'saved', picked.filter((x) => !isRunItem(x)));
     window.location.href = '/my-day';
   };
 
@@ -64,21 +78,22 @@ export default function BuildRunClient({ games = [], start = [] }) {
       <div className="br">
         <div className="br-head">
           {/* The header carries the page's name; no second title under it. */}
-          <p className="br-sub">Pick the puzzles you want, as many as you like. They arrive every day as one paper, in this order.</p>
+          <p className="br-sub">Pick the puzzles and runs you want, as many as you like. They arrive every day as one paper, in this order.</p>
         </div>
 
         <section aria-label="Your day, in order">
-          <div className="bb-lab"><span>Your Day, In Order</span><span>{picked.length === 1 ? '1 Puzzle' : `${picked.length} Puzzles`}{full ? '' : ' · No Limit'}</span></div>
+          <div className="bb-lab"><span>Your Day, In Order</span><span>{picked.length === 1 ? '1 Page' : `${picked.length} Pages`}{full ? '' : ' · No Limit'}</span></div>
           <div className="br-card bb-tray">
-            {!picked.length ? <div className="br-msg">Tap puzzles below to add them.</div> : null}
+            {!picked.length ? <div className="br-msg">Tap puzzles or runs below to add them.</div> : null}
             {picked.map((k, i) => {
-              const g = byKey[k];
+              const run = isRunItem(k) ? dayRun(k) : null;
+              const g = run || byKey[k];
               if (!g) return null;
               return (
                 <div key={k} className="bb-t">
                   <span className="bb-n">{i + 1}</span>
-                  <span className="br-sw sm" style={hueVars(k)}><GameGlyph gameKey={k} size={15} /></span>
-                  <span className="br-rt"><b>{g.name}</b><small>{catWord(g.cat)}</small></span>
+                  {run ? <RunMark item={k} size={15} sm /> : <span className="br-sw sm" style={hueVars(k)}><GameGlyph gameKey={k} size={15} /></span>}
+                  <span className="br-rt"><b>{g.name}</b><small>{run ? 'Run' : catWord(g.cat)}</small></span>
                   <button type="button" className="bb-ic" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move ${g.name} up`}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6" /></svg>
                   </button>
@@ -95,25 +110,25 @@ export default function BuildRunClient({ games = [], start = [] }) {
         </section>
 
         <section aria-label="Add puzzles">
-          <div className="bb-lab"><span>Add Puzzles</span>{full ? <span>That is every puzzle a day can hold</span> : null}</div>
+          <div className="bb-lab"><span>Add Puzzles and Runs</span>{full ? <span>That is every puzzle a day can hold</span> : null}</div>
           <div className="bb-chips">
             {cats.map((c) => (
               <button key={c} type="button" className={'bb-chip' + (cat === c ? ' on' : '')} aria-pressed={cat === c} onClick={() => setCat(c)}>{c === 'All' ? 'All' : catWord(c)}</button>
             ))}
           </div>
           <div className="bb-search">
-            <label htmlFor="bb-q" className="bb-sr">Search puzzles</label>
-            <input id="bb-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search puzzles" autoComplete="off" />
+            <label htmlFor="bb-q" className="bb-sr">Search puzzles and runs</label>
+            <input id="bb-q" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search puzzles and runs" autoComplete="off" />
           </div>
           <div className="br-card bb-list">
-            {!list.length ? <div className="br-msg">No puzzles match.</div> : null}
+            {!list.length ? <div className="br-msg">Nothing matches.</div> : null}
             {list.map((g) => {
               const on = picked.includes(g.key);
               return (
                 <button key={g.key} type="button" className={'bb-g' + (on ? ' on' : '')} aria-pressed={on}
                   aria-label={`${on ? 'Remove' : 'Add'} ${g.name}`} disabled={!on && full} onClick={() => toggle(g.key)}>
-                  <span className="br-sw" style={hueVars(g.key)}><GameGlyph gameKey={g.key} size={18} /></span>
-                  <span className="br-rt"><b>{g.name}</b><small>{catWord(g.cat)} · {g.tag}</small></span>
+                  {g.run ? <RunMark item={g.key} /> : <span className="br-sw" style={hueVars(g.key)}><GameGlyph gameKey={g.key} size={18} /></span>}
+                  <span className="br-rt"><b>{g.name}</b><small>{g.run ? 'Run' : catWord(g.cat)} · {g.tag}</small></span>
                   <span className={'bb-dot' + (on ? ' on' : '')} aria-hidden="true">
                     {on
                       ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5 9-10" /></svg>
@@ -127,7 +142,7 @@ export default function BuildRunClient({ games = [], start = [] }) {
 
         <div className="bb-bar">
           <p className="br-tiny bb-anon">Your day is kept on this device and waits for you every day. Change it any time.</p>
-          <button type="button" className="br-go" onClick={go} disabled={!ready}>{ready ? 'Save My Day' : `Pick at least ${BUILT_MIN} puzzles`}</button>
+          <button type="button" className="br-go" onClick={go} disabled={!ready}>{ready ? 'Save My Day' : `Pick at least ${BUILT_MIN}`}</button>
         </div>
       </div>
     </CircuitFrame>

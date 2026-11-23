@@ -13,8 +13,8 @@
 
 import { useEffect, useState } from 'react';
 import { categoryColor, softGround } from '@/lib/category-ramp';
-import { DAILY_GAME_MAP } from '@/lib/daily-games';
-import { getMyDay, playedToday, editionNow } from '@/lib/daily-run';
+import { getMyDayItems, editionNow } from '@/lib/daily-run';
+import { validItem, itemDone, itemName } from '../my-day/dayRuns';
 import { rampFor, daySpectrumSlots } from '@/lib/circuits';
 
 const WORD = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve'];
@@ -178,8 +178,9 @@ export function DailyTile({ className = '' }) {
   const [st, setSt] = useState(null);
   useEffect(() => {
     const read = () => {
-      const keys = getMyDay().filter((k) => DAILY_GAME_MAP[k]);
-      setSt({ keys, played: new Set(keys.filter((k) => playedToday(k))), ed: editionNow() });
+      // The whole paper, run pages included (owner, 2026-11-23).
+      const keys = getMyDayItems().filter(validItem);
+      setSt({ keys, played: new Set(keys.filter((k) => itemDone(k))), ed: editionNow() });
     };
     read();
     const vis = () => { if (document.visibilityState === 'visible') read(); };
@@ -208,7 +209,7 @@ export function DailyTile({ className = '' }) {
       {keys ? (
         <span className={'rgt-legs' + (shown.length > 5 ? ' many' : '')} aria-hidden="true">
           {shown.map((k) => (
-            <span key={k} className={'rgt-leg' + (st.played.has(k) ? ' on' : '')} style={{ '--lc': softGround(hue, 0.45) }}>{LEG_SHORT[k] || DAILY_GAME_MAP[k].name}</span>
+            <span key={k} className={'rgt-leg' + (st.played.has(k) ? ' on' : '')} style={{ '--lc': softGround(hue, 0.45) }}>{LEG_SHORT[k] || itemName(k)}</span>
           ))}
           {n > shown.length ? <span className="rgt-leg" style={{ '--lc': softGround(hue, 0.45) }}>+{n - shown.length}</span> : null}
         </span>

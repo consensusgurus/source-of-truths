@@ -11,12 +11,15 @@
 // Evening, Night Edition); the puzzles and the date stay on the Eastern day.
 // No time estimates anywhere (owner: "I don't like the time requirement").
 // Each page is the game's own daily, opened with ?run= so the rail hands the
-// reader to the next page and back here (app/DailyRunRail.jsx).
+// reader to the next page and back here (app/DailyRunRail.jsx). A page can also
+// be a whole run (owner, 2026-11-23): it opens the run's own page, is read once
+// the run is finished today, and the run's ending offers the way back here.
 import { useEffect, useMemo, useState } from 'react';
 import CircuitFrame from '../circuits/CircuitFrame';
 import GameGlyph from '../GameGlyph';
 import { DAILY_GAME_MAP, PREMIERES, LAUNCH_DAILY } from '@/lib/daily-games';
-import { getMyDay, saveMyDay, dailyRunHref, playedToday, DAY_META, editionNow, buildableGames, countDayEvent, trackMyDay } from '@/lib/daily-run';
+import { getMyDayItems, saveMyDay, playedToday, isRunItem, editionNow, buildableGames, countDayEvent, trackMyDay } from '@/lib/daily-run';
+import { validItem, itemDone, itemHref, itemName, dayRun, RunMark, runVars } from './dayRuns';
 import { dailyMeIdentity } from '../dailyMeClient';
 import { savedIdentity } from '@/lib/saved-identity';
 import { catWord, hueVars, resultText, CSS as RUN_CSS } from '../run/RunPageClient';
@@ -44,7 +47,8 @@ const LAUNCHED = (() => {
 })();
 
 export default function DayClient() {
-  const [keys, setKeys] = useState(null);
+  // `items` is the whole paper (games and run pages); `keys` its games only.
+  const [items, setItems] = useState(null);
   const [played, setPlayed] = useState({});
   const [me, setMe] = useState('');
   const [ed, setEd] = useState(null);
@@ -55,9 +59,9 @@ export default function DayClient() {
 
   useEffect(() => {
     const read = () => {
-      const k = getMyDay();
-      setKeys(k);
-      setPlayed(Object.fromEntries(k.map((x) => [x, playedToday(x)])));
+      const k = getMyDayItems().filter(validItem);
+      setItems(k);
+      setPlayed(Object.fromEntries(k.map((x) => [x, itemDone(x)])));
       setEd(editionNow());
       setDay(etDay());
     };
@@ -70,19 +74,23 @@ export default function DayClient() {
     return () => { document.removeEventListener('visibilitychange', vis); window.removeEventListener('pageshow', read); };
   }, []);
 
-  const n = keys ? keys.length : 0;
-  const doneN = keys ? keys.filter((k) => played[k]).length : 0;
+  const keys = useMemo(() => (items ? items.filter((x) => !isRunItem(x)) : null), [items]);
+  const n = items ? items.length : 0;
+  const doneN = items ? items.filter((k) => played[k]).length : 0;
   const allDone = n >= 2 && doneN === n;
-  const nextKey = keys ? keys.find((k) => !played[k]) || null : null;
-  const next = nextKey ? DAILY_GAME_MAP[nextKey] : null;
+  const nextKey = items ? items.find((k) => !played[k]) || null : null;
+  const pageVars = (k) => (isRunItem(k) ? runVars(k) : hueVars(k));
 
   useEffect(() => { if (n >= 2) countDayEvent(allDone ? 'my-day-finished' : 'my-day-opened'); }, [n, allDone]);
-  useEffect(() => { if (keys && n >= 2) trackMyDay('opened', keys, doneN); }, [keys, n, doneN]);
+  // The admin row counts games (mld_days stores game keys only).
+  const gamesDone = keys ? keys.filter((k) => played[k]).length : 0;
+  useEffect(() => { if (keys && n >= 2) trackMyDay('opened', keys, gamesDone); }, [keys, n, gamesDone]);
 
   // The back page's results: today's rows for these games, ranked the way a run is.
   useEffect(() => {
     if (!allDone || !keys) return undefined;
     let alive = true;
+    if (!keys.length) { setBoard({}); setWeek({}); return undefined; }
     const { anonId, email } = dailyMeIdentity();
     const q = new URLSearchParams({ keys: keys.join(','), full: '1', fresh: '1' });
     if (anonId) q.set('anonId', anonId);
@@ -112,8 +120,8 @@ export default function DayClient() {
   }, [allDone, keys, week]);
 
   const add = (k) => {
-    const cur = getMyDay();
-    if (!cur.includes(k)) { saveMyDay([...cur, k]); trackMyDay('edited', [...cur, k], doneN); }
+    const cur = getMyDayItems();
+    if (!cur.includes(k)) { saveMyDay([...cur, k]); trackMyDay('edited', [...cur, k].filter((x) => !isRunItem(x)), doneN); }
     setAdded((m) => ({ ...m, [k]: true }));
   };
 
@@ -127,7 +135,7 @@ export default function DayClient() {
   const dateLine = day ? longDay(day) : '';
 
   // Not read yet: the masthead alone, so the page never flashes the invite.
-  if (!keys || !ed) {
+  if (!items || !ed) {
     return (
       <CircuitFrame label="Mind Loft Daily" bar={{ title: 'Mind Loft Daily' }}>
         <style dangerouslySetInnerHTML={{ __html: RUN_CSS + CSS }} />
@@ -144,7 +152,7 @@ export default function DayClient() {
           {mast(`${dateLine} · ${ed.name} Edition`)}
           <section className="br-card br-pad dl-inv">
             <h2>Your puzzles. One paper. Every day.</h2>
-            <p>Pick the puzzles you love once. Every day they arrive here as one paper, played straight through, page by page.</p>
+            <p>Pick the puzzles and runs you love once. Every day they arrive here as one paper, played straight through, page by page.</p>
           </section>
           <div className="br-acts">
             <a className="br-go dl-go" href="/build-a-run">Build Your Day</a>
@@ -176,7 +184,17 @@ export default function DayClient() {
             </section>
             <section className="br-card" aria-label="Your results">
               <div className="br-hh"><span>Page</span><span>Result</span><span>Rank</span></div>
-              {keys.map((k) => {
+              {items.map((k) => {
+                if (isRunItem(k)) {
+                  const r = dayRun(k);
+                  return (
+                    <a key={k} className="br-hrow dl-hrow" href={r.href}>
+                      <span className="br-gn"><RunMark item={k} size={15} sm />{r.name}</span>
+                      <span className="br-v win">Finished</span>
+                      <span className="br-v" />
+                    </a>
+                  );
+                }
                 const g = DAILY_GAME_MAP[k];
                 const p = myPer[k];
                 return (
@@ -222,29 +240,30 @@ export default function DayClient() {
             <section className="br-card dl-front" aria-label="Today's paper">
               <div className="br-ch"><h2>{weekday(day)}&rsquo;s Paper</h2><span>{doneN} of {n} read</span></div>
               <div className="dl-strip" aria-hidden="true">
-                {keys.map((k) => <span key={k} className={played[k] ? 'on' : ''} style={hueVars(k)} />)}
+                {items.map((k) => <span key={k} className={played[k] ? 'on' : ''} style={pageVars(k)} />)}
               </div>
               <div className="br-pad">
-                <a className="br-go dl-go" href={dailyRunHref(nextKey, keys, DAY_META)}>
-                  {!doneN ? 'Open the Paper' : ed.id === 'night' ? `Finish the Paper: ${next.name}` : `Keep Reading: ${next.name}`}
+                <a className="br-go dl-go" href={itemHref(nextKey, keys)}>
+                  {!doneN ? 'Open the Paper' : ed.id === 'night' ? `Finish the Paper: ${itemName(nextKey)}` : `Keep Reading: ${itemName(nextKey)}`}
                 </a>
               </div>
             </section>
             <section className="br-card" aria-label="Today's edition">
               <div className="br-ch"><h2>Today&rsquo;s Edition</h2><a className="dl-edit" href="/build-a-run">Edit My Day</a></div>
-              {keys.map((k, i) => {
-                const g = DAILY_GAME_MAP[k];
+              {items.map((k, i) => {
+                const run = isRunItem(k) ? dayRun(k) : null;
+                const g = run ? null : DAILY_GAME_MAP[k];
                 return (
-                  <a key={k} className={'br-row' + (played[k] ? ' done' : '')} href={dailyRunHref(k, keys, DAY_META)}>
+                  <a key={k} className={'br-row' + (played[k] ? ' done' : '')} href={itemHref(k, keys)}>
                     <span className="dl-pg">{i + 1}</span>
-                    <span className="br-sw" style={hueVars(k)}><GameGlyph gameKey={k} size={18} /></span>
-                    <span className="br-rt"><b>{g.name}</b><small>{catWord(g.cat)} · {g.tag}</small></span>
+                    {run ? <RunMark item={k} /> : <span className="br-sw" style={hueVars(k)}><GameGlyph gameKey={k} size={18} /></span>}
+                    <span className="br-rt">{run ? <><b>{run.name}</b><small>Run · {run.sub}</small></> : <><b>{g.name}</b><small>{catWord(g.cat)} · {g.tag}</small></>}</span>
                     {played[k] ? <span className="br-chip">Read</span> : k === nextKey ? <span className="dl-next">Next</span> : null}
                   </a>
                 );
               })}
             </section>
-            <p className="br-tiny">Each puzzle also counts on its own daily board, first try only.</p>
+            <p className="br-tiny">Each puzzle also counts on its own daily board, first try only. A run page is read once you finish the run today.</p>
           </>
         )}
       </div>

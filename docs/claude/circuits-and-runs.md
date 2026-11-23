@@ -1063,3 +1063,28 @@ Your Run, the site replaces that with Build Your Day. Even up in 'runs' line"), 
   `opened` once per day per progress count from `/my-day`. Best effort; a missing table
   answers ok. Days before 2026-11-22 were never recorded (only the anonymous counts exist).
 - Saved built runs were not converted; old `/run` links keep working.
+
+## Runs are pages of Mind Loft Daily; My Runs leads with the paper (owner feedback, 2026-11-23)
+
+Player note: "is there any chance we can add runs to this? I like doing certain runs in the morning
+or first then a few games then back to some runs", and "when I build a run I'm not sure where I can
+see it? I don't see a 'my runs' section anywhere".
+
+- **A page can be a run.** `ml_my_day` now stores `items` (the whole paper in order: game keys and
+  `run:<id>`, where id is a `RUN_DOORS` key in `app/circuits/RunDoorPop.jsx`) beside `keys` (its games
+  only). `getMyDayItems()` reads the paper; `getMyDay()` still returns games only, so the `?run=` rail,
+  the combined board and `/api/mld/event` (games only) are unchanged. Old saves with only `keys` read fine.
+- **Client half:** `app/my-day/dayRuns.js` (`dayRun`, `validItem`, `itemDone`, `itemHref`, `itemName`,
+  `RunMark`, `runVars`). A run page is read when `runDoneToday(id)` says so; it opens the run's own
+  page (`RUN_DOORS[id].href`). Client components only (RUN_DOORS is in a 'use client' module).
+- **Build Your Day** has a Runs chip (and runs lead All); a run sits in the order like any puzzle.
+- **The paper** lists run pages with a stacked-cards mark in the run's accent, "Run · <legs>", and the
+  back page shows them as Finished. The paper is complete only when its runs are finished too.
+- **The rail** (`DailyRunRail`) on a paper game counts run pages in "Page n of N" and, when the next
+  unread page is a run, offers "Next in your paper: <Run>".
+- **The way back:** `MoreRunsList` swaps Build Your Day for "Back to Your Paper" (/my-day) when the
+  ending's run is in the reader's paper.
+- **My Runs:** `MyRunsStrip` (My Puzzles) leads with a Mind Loft Daily row whenever a paper is saved,
+  then older built/shared runs, then "Edit My Day" (or "+ Build Your Day"). Every index door that read
+  Build Your Day (home index, phone Everything Else, the puzzle page's index) reads "Mind Loft Daily" and
+  opens /my-day once a paper is saved (`app/today/useMyDayDoor.js`).

@@ -110,6 +110,8 @@ import StageFooter from '../StageFooter';
 import HomeAbout from './HomeAbout';
 import { saveHomeSnap, releaseHomeSnap } from '@/lib/home-snapshot';
 import MyRunsStrip from './MyRunsStrip';
+import useMyDayDoor from './useMyDayDoor';
+import { rememberHomeSpot, takeBackTarget } from '@/lib/home-back';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = "Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif";
@@ -1105,6 +1107,8 @@ export default function StageToday({ seed = null } = {}) {
   // the band could show one group while the tiles showed another. Remembered
   // per browser, and read in an effect like everything else kept on device.
   const [grpPick, setGrpPick] = useState('');
+  // Build Your Day opens the reader's paper once one is saved (owner feedback, 2026-11-23).
+  const dayDoor = useMyDayDoor();
   // Which board the Leaderboards + Stats pane shows: 'all' or a group code.
   const [lbScope, setLbScope] = useState('all');
   // ?groupinvite=1 forces the no-group invite into view for a look, which is
@@ -1441,6 +1445,42 @@ export default function StageToday({ seed = null } = {}) {
       else window.history.replaceState(null, '', url);
     } catch (e) {}
   }, [picked, pane]);
+  // BACK TO WHERE YOU WERE (owner feedback, 2026-11-23, lib/home-back.js). A tap
+  // on a game tile notes the open pane, so the puzzle page's back pill returns
+  // to it; landing from that pill, the tile of the game just played is brought
+  // into view, which is its band within the pane.
+  useEffect(() => {
+    const onTap = (e) => {
+      // Any link off the home: the desktop tiles and rows (.sty-g, .sty-lr), the
+      // phone pane's tiles (.mph-g) and the rest all count.
+      const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a) return;
+      let u = null;
+      try { u = new URL(a.href, window.location.href); } catch (er) { u = null; }
+      if (u && u.origin === window.location.origin && u.pathname !== '/') rememberHomeSpot(String(window.location.hash || ''));
+    };
+    document.addEventListener('click', onTap, true);
+    const path = takeBackTarget();
+    const timers = [];
+    if (path && String(window.location.hash || '')) {
+      const find = () => {
+        const all = document.querySelectorAll('a[href]');
+        for (const a of all) {
+          let p = '';
+          try { p = new URL(a.href, window.location.href).pathname; } catch (er) { p = ''; }
+          if (p === path && a.offsetParent !== null) return a;
+        }
+        return null;
+      };
+      const land = (last) => {
+        const el = find();
+        if (el) { try { el.scrollIntoView({ block: 'center', behavior: 'instant' }); } catch (er) { try { el.scrollIntoView(); } catch (x) {} } return; }
+        if (!last) timers.push(setTimeout(() => land(true), 500));
+      };
+      timers.push(setTimeout(() => land(false), 250));
+    }
+    return () => { document.removeEventListener('click', onTap, true); timers.forEach(clearTimeout); };
+  }, []);
   useEffect(() => {
     const onPop = () => {
       try {
@@ -3075,7 +3115,7 @@ export default function StageToday({ seed = null } = {}) {
       {ixBtn(QUIZ_ID, 'Quizzes', 'var(--stg-mute)', 'sty-ixq')}
       {ixBtn(CIRC_ID, 'Runs', 'var(--stg-mute)', 'sty-ixe1')}
       {/* BUILD A RUN SITS RIGHT UNDER RUNS (owner, 2026-11-07). A door, not a pane. */}
-      <a className="sty-ixb sty-ixbr" href="/build-a-run" style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('buildrun', null)}<span>Build Your Day</span></a>
+      <a className="sty-ixb sty-ixbr" href={dayDoor.href} style={{ '--cc': 'var(--stg-mute)', '--cci': 'var(--stg-mute)' }}><i aria-hidden="true" />{ixRing('buildrun', null)}<span>{dayDoor.label}</span></a>
       {/* DESKTOP INDEX ORDER (owner, 2026-10-13): Circuits, Quizzes, Puzzle Archive
           and Leaderboards + Stats are one group; the tests, Kids and the lists
           are their own group below; Most Appreciated comes last. The phone
@@ -5282,7 +5322,7 @@ export default function StageToday({ seed = null } = {}) {
                 <div className="mph-list mt m3">
                   <button type="button" onClick={() => goPane(QUIZ_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.3 2.4c-.5.2-.8.6-.8 1.1v.5" /><path d="M12 17h.01" /></svg><b>Quizzes</b></button>
                   <button type="button" onClick={() => mOpen(CIRC_ID)}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 4v16" /><path d="M5 5h11l-2 4 2 4H5" /></svg><b>Runs<em>{circuits.filter(runFull).length} of {circuits.length}</em></b></button>
-                  <a href="/build-a-run"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><b>Build Your Day</b></a>
+                  <a href={dayDoor.href}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg><b>{dayDoor.label}</b></a>
                   <a href={withTq('/jig/shelf')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 9h4a2 2 0 1 1 4 0h4v4a2 2 0 1 1 0 4v3H4z" /><path d="M4 4h16" /></svg><b>Jigsaw Puzzles</b></a>
                   <a href={withTq('/archive')}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="5" rx="1" /><path d="M5 9v10h14V9M10 13h4" /></svg><b>Puzzle Archive</b></a>
                   <a href="/kids"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /></svg><b>Kids</b></a>

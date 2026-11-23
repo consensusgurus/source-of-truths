@@ -3084,3 +3084,27 @@ question database Back from a game skipped the database. Rules now:
   first page, not home.
 - Next's app router patches pushState/replaceState and copies its own state in, so call them with
   your own data or `null`, never `window.history.state` (that carries `__NA` and skips the patch).
+
+## The back pill returns to the pane a game was opened from (owner feedback, 2026-11-23)
+
+Player note (plays in the iPhone home-screen app, so there is no browser Back): "would it be possible
+to have a button that brings you back to the category you were just in? ... maybe with the sub
+category selected too?" `lib/home-back.js`:
+
+- The home (`StageToday`) notes the open pane's hash (`#cat=<id>` or `#all`) in sessionStorage
+  `ml_back` on any tap of a same-site link; a tap with no pane hash clears it.
+- `StageTopBar`'s back pill, when its target is the home (`/` or `/?tq`), goes to `/` + that hash, and
+  stamps `ml_back_go` with the page's path. Covers every phone stage and the game gate header.
+- The home, landing with a pane hash and `ml_back_go`, scrolls the tile for that path into view
+  (centred), which puts the reader on its band (the "sub category"). Session only: a fresh launch
+  starts on the home as before. The desktop brand logo still goes to bare `/`.
+
+## A full-screen stage owns the scroll (owner report, 2026-11-23)
+
+Report: on the Sunday Chef, in the iPhone home-screen app, "I can scroll down but it snaps me back up
+to the top of the screen before I can select" (weekday boards fine). The stage (`.pst`, `.wst`,
+`.bks`, not `.inl`) is a fixed full-window scroller over a page that also scrolls; iOS can hand the
+drag to the page underneath and the stage only rubber-bands back. `globals.css` now sets
+`overflow:hidden` on html and body while a non-inline stage is mounted and no ending is on screen (the
+same exclusions as the ending rule above it), and `overscroll-behavior:contain` on the stage. Not
+reproducible in desktop Chromium's iPhone emulation, so confirm on a real phone next Sunday.

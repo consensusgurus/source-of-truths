@@ -46,6 +46,7 @@ import { sharedGet } from './sharedGet';
 import { meRequest } from './quizMeClient';
 import useMyGames from './useMyGames';
 import { CommunityPill } from './community/CommunityLinks';
+import useMyDayDoor from './today/useMyDayDoor';
 
 const MIN_W = 1100;
 const CAT_FIXED = ['Word', 'Numbers', 'Logic', 'Visual', 'Sudoku', 'Trivia', 'Geography', 'Table Games', 'Arcade', 'Crowd Psychology'];
@@ -643,6 +644,9 @@ export default function LayoutCInner({ gameKey }) {
     return { done: d, inprog: p };
   }, [statusRaw, games, day, tick]);   // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Build Your Day opens the reader's paper once one is saved (owner feedback,
+  // 2026-11-23). Called above the early return, so the hook order never changes.
+  const dayDoor = useMyDayDoor();
   if (!game || !host || !flag) return null;
 
   const blocks = orderedCats.map(({ cat, games: gs }) => ({
@@ -888,7 +892,7 @@ export default function LayoutCInner({ gameKey }) {
             {ixDoor('/community/peers', 'Puzzle Peers')}
             {ixHash('sty-quizzes', 'Quizzes')}
             {ixLink('sty-circs', 'Runs', 'var(--stg-mute)', 'lc-ee')}
-            {ixDoor('/build-a-run', 'Build Your Day')}
+            {ixDoor(dayDoor.href, dayDoor.label)}
             {ixDoor('/archive', 'Puzzle Archive')}
             {/* Jigsaw Puzzles (the old Jigsaw Puzzle Shelf, renamed with the 2026-11-21 portal), under the archive (owner, 2026-11-18). Keep in step with StageToday. */}
             {ixDoor('/jig/shelf', 'Jigsaw Puzzles')}

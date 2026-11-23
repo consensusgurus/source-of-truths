@@ -15,6 +15,7 @@ import { nextLook, nextMainLook, LOOK_NAMES } from '@/lib/stage-look';
 import { soakNav } from '@/lib/tile-flood';
 import { useStageHelp } from '@/lib/stage-help';
 import { shareForCredit } from '@/lib/share-credit';
+import { homeBackHref, markBackNav } from '@/lib/home-back';
 
 // `allLooks` is for the gauntlet and run stages, which keep all five looks;
 // every other page flips between light with color and dark with color.
@@ -25,6 +26,11 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
   // The clock and How to play moved to the foot row under the board
   // (app/StageFoot.jsx) so the board gets the room. Only the runs (allLooks),
   // which have no foot row, still draw the ? up here; `helpHere` forces it.
+  // BACK TO THE PANE YOU CAME FROM (owner feedback, 2026-11-23, lib/home-back.js):
+  // a page whose way back is the home goes to the category it was opened from.
+  // Read after mount, so the server paint and the first client paint agree.
+  const [backTo, setBackTo] = React.useState(href);
+  React.useEffect(() => { setBackTo(homeBackHref(href)); }, [href]);
   const registered = useStageHelp();
   const help = (helpHere ?? allLooks) ? (onHelp || registered) : null;
   // SHARE (owner, 2026-10-28: "a share button with an arrow. That prompts share
@@ -129,7 +135,7 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
   return (
     <div ref={barRef} className={'stb' + (title ? ' has-t' : '')} style={{ color: ink }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
-      <BrandFit><a className="stb-home" href={href} aria-label={href === '/' ? 'Back to Mind Loft home' : 'Back'} onClick={(e) => soakNav(e, href)}>
+      <BrandFit><a className="stb-home" href={backTo} aria-label={href === '/' ? 'Back to Mind Loft home' : 'Back'} onClick={(e) => { if (backTo !== href) markBackNav(); soakNav(e, backTo); }}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
         <MindLoftMark size={16} ink={ink} accent="var(--stg-brand,#7dd3fc)" />
         <span>Mind <span>Loft</span></span>
