@@ -29,12 +29,16 @@ def fold(s):
     s = unicodedata.normalize('NFD', s.lower()).encode('ascii', 'ignore').decode()
     return re.sub(r'[^a-z0-9]+', ' ', s).strip()
 
+# One person listed under two names (scripts/bacon-cast-fixes.json "merge_names":
+# [other spelling, name to show]) becomes one actor.
+MERGE = {fold(a): b for a, b in json.load(open('scripts/bacon-cast-fixes.json')).get('merge_names', [])}
+
 def clean(c):
     c = re.sub(r'\s*\([^)]*\)\s*$', '', c.strip()).strip()
     c = re.sub(r'\s+', ' ', c)
     if not c or c.startswith('(') or len(c) > 40 or len(fold(c)) < 3:
         return None
-    return c
+    return MERGE.get(fold(c), c)
 
 films = collections.OrderedDict()
 seen_href = set()
@@ -88,6 +92,7 @@ for t, y0, y1 in FIX.get('set_year', []):
 for t, y, cast in FIX.get('add_films', []):
     films.setdefault((t, y), list(cast))
 for t, y, n in FIX['add_cast']:
+    n = MERGE.get(fold(n), n)
     if (t, y) in films and all(fold(c) != fold(n) for c in films[(t, y)]):
         films[(t, y)].append(n)
 

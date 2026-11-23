@@ -1,4 +1,4 @@
-{"_note":"Corrections to the Wikipedia film data, applied by scripts/gen-bacon-graph.py. drop_films: TV movies, compilation documentaries, re-cuts and other rows that are not ordinary theatrical films. drop_cast: a name the source lists for a film the person is not in. add_cast: a principal player the source left out. add_films: a film the source left out entirely, [title, year, [cast in billing order]]. set_year: [title, source year, release year]. chain_avoid: a real but uncredited or cameo credit that may be played but is never shown in an ending chain (read by scripts/gen-bacon.py). Add a line when a player or reviewer reports one, then rebuild the graph and re-run scripts/verify-bacon.mjs.",
+{"_note":"Corrections to the Wikipedia film data, applied by scripts/gen-bacon-graph.py. drop_films: TV movies, compilation documentaries, re-cuts and other rows that are not ordinary theatrical films. drop_cast: a name the source lists for a film the person is not in. add_cast: a principal player the source left out. add_films: a film the source left out entirely, [title, year, [cast in billing order]]. set_year: [title, source year, release year]. merge_names: [other spelling, name to show] for one person the source lists under two names. chain_avoid: a real but uncredited or cameo credit that may be played but is never shown in an ending chain (read by scripts/gen-bacon.py). Add a line when a player or reviewer reports one, then rebuild the graph and re-run scripts/verify-bacon.mjs.",
 "drop_films":[
   ["High School Musical", 2006],
   ["High School Musical 2", 2007],
@@ -39,6 +39,9 @@
   ["The Longest Day", 1962, "Peter van Eyck"],
   ["The Longest Day", 1962, "Wolfgang Preiss"],
   ["The Longest Day", 1962, "George Segal"]],
+"merge_names":[
+  ["Curt Jurgens", "Curd Jürgens"],
+  ["Fabian Forte", "Fabian"]],
 "set_year":[
   ["Knockaround Guys", 2001, 2002]],
 "chain_avoid":[
