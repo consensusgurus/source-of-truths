@@ -61,8 +61,8 @@ function layout(items, W, H) {
   const rects = squarify(items.map((it) => it.n), 0, 0, W + GAP, H + GAP).map((r) => ({ x: r.x, y: r.y, w: Math.max(0, r.w - GAP), h: Math.max(0, r.h - GAP) }));
   const PAD = 5;
   const boxes = rects.map((r) => {
-    const label = r.w >= 96 && r.h >= 58;
-    const top = label ? 26 : PAD;
+    const label = r.w >= 58 && r.h >= 44;
+    const top = label ? (W < 600 ? 22 : 26) : PAD;
     return { ...r, label, ix: r.x + PAD, iy: r.y + top, iw: Math.max(0, r.w - PAD * 2), ih: Math.max(0, r.h - top - PAD) };
   });
   // Each box takes the biggest square that fits its own questions, so every box is
@@ -210,15 +210,18 @@ export default function QdbMap({ db, dbKey, topics, ink, dark, focus: focus0 = n
       if (g.roundRect) g.roundRect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1, rr); else g.rect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
       g.stroke();
       const s = b.s;
-      const cs = Math.max(1, Math.round(s) - (s >= 3.5 ? 1 : 0));
+      // Big squares sit on whole pixels with a 1px gap; small ones (phones) keep their
+      // fractional pitch with a hairline gap, so a box never reads as one solid block.
+      const whole = s >= 3.5;
+      const cs = whole ? Math.max(1, Math.round(s) - 1) : Math.max(0.5, s - (s >= 1.6 ? 0.5 : 0));
       const hl = hover && hover.bi === bi && !ft ? hover.li : -1;
       let i = 0;
       for (let li = 0; li < it.lanes.length; li++) {
         const L = it.lanes[li];
         const dim = hl >= 0 && hl !== li;
         for (let j = 0; j < L.n; j++, i++) {
-          const cx = Math.round(b.ix + (i % b.cols) * s);
-          const cy = Math.round(b.iy + Math.floor(i / b.cols) * s);
+          const cx = whole ? Math.round(b.ix + (i % b.cols) * s) : b.ix + (i % b.cols) * s;
+          const cy = whole ? Math.round(b.iy + Math.floor(i / b.cols) * s) : b.iy + Math.floor(i / b.cols) * s;
           let v = L.st[j];
           const fresh = v & 4; v &= 3;
           let show = v && (cx + cy) / span <= p * 1.05;
@@ -354,7 +357,8 @@ export default function QdbMap({ db, dbKey, topics, ink, dark, focus: focus0 = n
                 <button key={items[i].id} type="button" className="qm-lab" style={{ left: b.x + 8, top: b.y + 5, width: b.w - 16 }}
                   onClick={() => (ft ? setSel(items[i].id) : (setFocus(items[i].id), setSel(null)))}>
                   <span className="qm-ln">{items[i].label}</span>
-                  <span className="qm-lp">{pctTxt(pctOf(items[i].a, items[i].n))}%{items[i].a >= items[i].n ? ' ✓' : ''}</span>
+                  {/* A narrow box gives its room to the name; its percent is in the list. */}
+                  {b.w >= 130 ? <span className="qm-lp">{pctTxt(pctOf(items[i].a, items[i].n))}%{items[i].a >= items[i].n ? ' ✓' : ''}</span> : null}
                 </button>
               ) : null)) : null}
               {tip ? (
@@ -416,7 +420,7 @@ export default function QdbMap({ db, dbKey, topics, ink, dark, focus: focus0 = n
 const CSS = `
 .qm{position:fixed;inset:0;z-index:92;background:var(--qm-bg);color:var(--qm-ink);font-family:'Manrope',system-ui,sans-serif;display:flex;flex-direction:column;overflow:hidden;animation:qm-in .28s ease-out;}
 @keyframes qm-in{from{opacity:0;transform:scale(.985);}to{opacity:1;transform:none;}}
-.qm button{font:inherit;color:inherit;}
+.qm button{font-family:inherit;color:inherit;}
 .qm-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:max(16px, env(safe-area-inset-top)) 26px 0;}
 .qm-hl{min-width:0;}
 .qm-eye{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;}

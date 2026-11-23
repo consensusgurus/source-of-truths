@@ -149,10 +149,10 @@ export default function DayClient() {
       <CircuitFrame label="Mind Loft Daily" bar={{ title: 'Mind Loft Daily' }}>
         <style dangerouslySetInnerHTML={{ __html: RUN_CSS + CSS }} />
         <div className="br dl" style={edVars}>
-          {mast(`${dateLine} · ${ed.name} Edition`)}
+          {mast(`${dateLine} · ${ed.name}`)}
           <section className="br-card br-pad dl-inv">
-            <h2>Your puzzles. One paper. Every day.</h2>
-            <p>Pick the puzzles and runs you love once. Every day they arrive here as one paper, played straight through, page by page.</p>
+            <h2>Your puzzles. Every day.</h2>
+            <p>Pick the puzzles and runs you love once. Every day they wait here for you, played straight through, one after another.</p>
           </section>
           <div className="br-acts">
             <a className="br-go dl-go" href="/build-a-run">Build Your Day</a>
@@ -172,18 +172,18 @@ export default function DayClient() {
     <CircuitFrame label="Mind Loft Daily" progress={n ? doneN / n : 0} bar={{ title: 'Mind Loft Daily', sub: day ? weekday(day) : null }}>
       <style dangerouslySetInnerHTML={{ __html: RUN_CSS + CSS }} />
       <div className="br dl" style={edVars}>
-        {mast(allDone ? `Final Edition · ${dateLine}` : `${dateLine} · ${ed.name} Edition`)}
-        <div className="dl-greet"><span>{hello}</span><span>{n} Pages</span></div>
+        {mast(allDone ? `${dateLine} · All Done` : `${dateLine} · ${ed.name}`)}
+        <div className="dl-greet"><span>{hello}</span><span>{n} Puzzles</span></div>
 
         {allDone ? (
           <>
-            <section className="br-band dl-band" aria-label="Your paper">
-              <span className="br-bl">{weekday(day)}&rsquo;s Paper</span>
-              <b className="br-bv">All {n} Pages Read</b>
-              <span className="br-bs">{myRank ? `#${myRank} of ${Math.max(field, myRank)} who read this paper today` : board ? (board.me ? 'Choose a name to take a rank on the board' : 'Your results are landing') : 'Reading the board'}</span>
+            <section className="br-band dl-band" aria-label="Your day">
+              <span className="br-bl">{weekday(day)}&rsquo;s Puzzles</span>
+              <b className="br-bv">All {n} Done</b>
+              <span className="br-bs">{myRank ? `#${myRank} of ${Math.max(field, myRank)} who finished their day today` : board ? (board.me ? 'Choose a name to take a rank on the board' : 'Your results are landing') : 'Loading the board'}</span>
             </section>
             <section className="br-card" aria-label="Your results">
-              <div className="br-hh"><span>Page</span><span>Result</span><span>Rank</span></div>
+              <div className="br-hh"><span>Puzzle</span><span>Result</span><span>Rank</span></div>
               {items.map((k) => {
                 if (isRunItem(k)) {
                   const r = dayRun(k);
@@ -200,7 +200,7 @@ export default function DayClient() {
                 return (
                   <a key={k} className="br-hrow dl-hrow" href={g.href}>
                     <span className="br-gn"><span className="br-sw sm" style={hueVars(k)}><GameGlyph gameKey={k} size={15} /></span>{g.name}</span>
-                    <span className="br-v win">{resultText(k, p) || (board ? 'Read' : '...')}</span>
+                    <span className="br-v win">{resultText(k, p) || (board ? 'Done' : '...')}</span>
                     <span className="br-v">{p && p.rank ? `#${p.rank} of ${p.field || p.rank}` : ''}</span>
                   </a>
                 );
@@ -211,7 +211,7 @@ export default function DayClient() {
                 {cols.map(([h, list]) => (
                   <div key={h} className="dl-col">
                     <div className="dl-ch">{h}</div>
-                    {!list.length ? <p className="dl-none">{h === 'What’s Popular' && !week ? 'Reading the counts' : 'Nothing new today'}</p> : null}
+                    {!list.length ? <p className="dl-none">{h === 'What’s Popular' && !week ? 'Loading the counts' : 'Nothing new today'}</p> : null}
                     {list.map((k) => {
                       const g = DAILY_GAME_MAP[k];
                       return (
@@ -237,19 +237,19 @@ export default function DayClient() {
           </>
         ) : (
           <>
-            <section className="br-card dl-front" aria-label="Today's paper">
-              <div className="br-ch"><h2>{weekday(day)}&rsquo;s Paper</h2><span>{doneN} of {n} read</span></div>
+            <section className="br-card dl-front" aria-label="Today's puzzles">
+              <div className="br-ch"><h2>{weekday(day)}&rsquo;s Puzzles</h2><span>{doneN} of {n} done</span></div>
               <div className="dl-strip" aria-hidden="true">
                 {items.map((k) => <span key={k} className={played[k] ? 'on' : ''} style={pageVars(k)} />)}
               </div>
               <div className="br-pad">
                 <a className="br-go dl-go" href={itemHref(nextKey, keys)}>
-                  {!doneN ? 'Open the Paper' : ed.id === 'night' ? `Finish the Paper: ${itemName(nextKey)}` : `Keep Reading: ${itemName(nextKey)}`}
+                  {!doneN ? 'Start Your Day' : ed.id === 'night' ? `Finish Your Day: ${itemName(nextKey)}` : `Keep Going: ${itemName(nextKey)}`}
                 </a>
               </div>
             </section>
-            <section className="br-card" aria-label="Today's edition">
-              <div className="br-ch"><h2>Today&rsquo;s Edition</h2><a className="dl-edit" href="/build-a-run">Edit My Day</a></div>
+            <section className="br-card" aria-label="Today's lineup">
+              <div className="br-ch"><h2>Today&rsquo;s Lineup</h2><a className="dl-edit" href="/build-a-run">Edit My Day</a></div>
               {items.map((k, i) => {
                 const run = isRunItem(k) ? dayRun(k) : null;
                 const g = run ? null : DAILY_GAME_MAP[k];
@@ -258,12 +258,12 @@ export default function DayClient() {
                     <span className="dl-pg">{i + 1}</span>
                     {run ? <RunMark item={k} /> : <span className="br-sw" style={hueVars(k)}><GameGlyph gameKey={k} size={18} /></span>}
                     <span className="br-rt">{run ? <><b>{run.name}</b><small>Run · {run.sub}</small></> : <><b>{g.name}</b><small>{catWord(g.cat)} · {g.tag}</small></>}</span>
-                    {played[k] ? <span className="br-chip">Read</span> : k === nextKey ? <span className="dl-next">Next</span> : null}
+                    {played[k] ? <span className="br-chip">Done</span> : k === nextKey ? <span className="dl-next">Next</span> : null}
                   </a>
                 );
               })}
             </section>
-            <p className="br-tiny">Each puzzle also counts on its own daily board, first try only. A run page is read once you finish the run today.</p>
+            <p className="br-tiny">Each puzzle also counts on its own daily board, first try only. A run counts as done once you finish it today.</p>
           </>
         )}
       </div>

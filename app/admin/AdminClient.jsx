@@ -3054,10 +3054,10 @@ function MyDayPanel() {
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 18 }}>
         <TimeByDayStat value={(t.builders || 0).toLocaleString()} unit="players" label="Built a day (60d)" accent={COLORS.ink} />
         <TimeByDayStat value={(t.players || 0).toLocaleString()} unit="players" label="Used it (60d)" accent={COLORS.ink} />
-        <TimeByDayStat value={(t.today || 0).toLocaleString()} unit="papers" label="Today" accent={COLORS.ember} />
+        <TimeByDayStat value={(t.today || 0).toLocaleString()} unit="days" label="Today" accent={COLORS.ember} />
         <TimeByDayStat value={(t.setupsToday || 0).toLocaleString()} unit="set ups" label="Set up or edited, today" accent={COLORS.ember} />
         <TimeByDayStat value={(t.finishedToday || 0).toLocaleString()} unit="finished" label="Finished, today" accent={COLORS.ember} />
-        <TimeByDayStat value={(t.week || 0).toLocaleString()} unit="papers" label="Last 7 days" accent={COLORS.rust} />
+        <TimeByDayStat value={(t.week || 0).toLocaleString()} unit="days" label="Last 7 days" accent={COLORS.rust} />
         <TimeByDayStat value={(t.finished7d || 0).toLocaleString()} unit="finished" label="Finished, 7d" accent={COLORS.rust} />
       </div>
 

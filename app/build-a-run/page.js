@@ -10,11 +10,11 @@ import { buildableGames, parseRunKeys } from '@/lib/daily-run';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Build Your Day: Your Own Daily Puzzle Paper | Mind Loft',
-  description: 'Pick the free daily puzzles you love, as many as you like, and Mind Loft Daily hands them to you every day as one paper, played straight through.',
+  title: 'Build Your Day: Your Own Daily Puzzle Lineup | Mind Loft',
+  description: 'Pick the free daily puzzles you love, as many as you like, and Mind Loft Daily hands them to you every day, played straight through.',
   alternates: { canonical: '/build-a-run' },
-  openGraph: { title: 'Build Your Day · Mind Loft', description: 'Pick your daily puzzles once. Get them every day as one paper.', url: '/build-a-run', type: 'website', siteName: 'Mind Loft', images: [{ url: '/run/card', width: 1200, height: 630, alt: 'Build your day of daily puzzles on Mind Loft' }] },
-  twitter: { card: 'summary_large_image', title: 'Build Your Day · Mind Loft', description: 'Pick your daily puzzles once. Get them every day as one paper.', images: ['/run/card'] },
+  openGraph: { title: 'Build Your Day · Mind Loft', description: 'Pick your daily puzzles once. Get them every day.', url: '/build-a-run', type: 'website', siteName: 'Mind Loft', images: [{ url: '/run/card', width: 1200, height: 630, alt: 'Build your day of daily puzzles on Mind Loft' }] },
+  twitter: { card: 'summary_large_image', title: 'Build Your Day · Mind Loft', description: 'Pick your daily puzzles once. Get them every day.', images: ['/run/card'] },
 };
 
 function etTodayServer() {

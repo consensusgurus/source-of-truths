@@ -122,7 +122,7 @@ export function MoreRunsList({ self, ink = '#eef2fa', mute = '#9aa8c4', line = '
           ending, below Share Your Score. Someone who just finished a run is
           the likeliest person to build one. */}
       {inPaper
-        ? <a className="mr-share mr-build" href="/my-day">Back to Your Paper</a>
+        ? <a className="mr-share mr-build" href="/my-day">Back to Your Day</a>
         : <a className="mr-share mr-build" href="/build-a-run">Build Your Day</a>}
     </div>
   );

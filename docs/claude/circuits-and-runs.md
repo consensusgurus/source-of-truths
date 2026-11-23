@@ -1064,6 +1064,13 @@ Your Run, the site replaces that with Build Your Day. Even up in 'runs' line"), 
   answers ok. Days before 2026-11-22 were never recorded (only the anonymous counts exist).
 - Saved built runs were not converted; old `/run` links keep working.
 
+- **NO NEWSPAPER WORDING (owner, 2026-11-23: "dump the paper reference ... Your puzzles. Every day.").**
+  Reader-facing copy never says paper, edition, page, front/back page, or read. The tagline is
+  "Your puzzles. Every day."; the masthead line is the date plus Morning/Afternoon/Evening/Night
+  (no "Edition"); the set is "<Weekday>'s Puzzles" and "Today's Lineup"; buttons are Start Your Day,
+  Keep Going, Finish Your Day, See Your Results; finished items say Done. Code names (`EDITIONS`,
+  `editionNow`, `paper` variables) stay as they are.
+
 ## Runs are pages of Mind Loft Daily; My Runs leads with the paper (owner feedback, 2026-11-23)
 
 Player note: "is there any chance we can add runs to this? I like doing certain runs in the morning

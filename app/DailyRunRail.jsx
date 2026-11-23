@@ -72,7 +72,7 @@ export default function DailyRunRail({ gameKey }) {
     <>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="drr" role="navigation" aria-label="Your run">
-        <span className="drr-eb">{meta && meta.name ? meta.name : 'Your run'} · {isDayMeta(meta) ? 'Page ' : ''}{pageAt + 1} of {total}</span>
+        <span className="drr-eb">{meta && meta.name ? meta.name : 'Your run'} · {pageAt + 1} of {total}</span>
         <span className={'drr-chips' + (keys.length > 8 ? ' drr-long' : '')}>
           {keys.map((k) => (
             <a key={k} href={dailyRunHref(k, keys, meta)} className={'drr-c' + (k === gameKey ? ' now' : '') + (played[k] ? ' done' : '')}>
@@ -80,7 +80,7 @@ export default function DailyRunRail({ gameKey }) {
             </a>
           ))}
         </span>
-        {meta ? <a className="drr-x" href={builtRunHref(keys, meta)}>{isDayMeta(meta) ? 'Front Page' : 'Run page'}</a> : null}
+        {meta ? <a className="drr-x" href={builtRunHref(keys, meta)}>{isDayMeta(meta) ? 'Your Day' : 'Run page'}</a> : null}
         <a className={meta ? 'drr-x drr-x2' : 'drr-x'} href={(DAILY_GAME_MAP[gameKey] || {}).href || '/'}>{isDayMeta(meta) ? 'Leave' : 'Leave run'}</a>
       </div>
       {thisDone ? (
@@ -88,8 +88,8 @@ export default function DailyRunRail({ gameKey }) {
           {allDone && meta ? (
             /* A built run ends on its own page: the head-to-head and the board. */
             <>
-              <span className="drr-bt"><b>{isDayMeta(meta) ? 'Paper complete' : 'Run complete'}</b><small>{isDayMeta(meta) ? 'Every page read' : meta.by ? `See how you did against ${meta.by}` : 'See how you did'}</small></span>
-              <a className="drr-go" href={builtRunHref(keys, meta)}>{isDayMeta(meta) ? 'See the Back Page' : 'See Results'}</a>
+              <span className="drr-bt"><b>{isDayMeta(meta) ? 'Day complete' : 'Run complete'}</b><small>{isDayMeta(meta) ? 'Every puzzle done' : meta.by ? `See how you did against ${meta.by}` : 'See how you did'}</small></span>
+              <a className="drr-go" href={builtRunHref(keys, meta)}>{isDayMeta(meta) ? 'See Your Results' : 'See Results'}</a>
             </>
           ) : allDone ? (
             <>
@@ -100,7 +100,7 @@ export default function DailyRunRail({ gameKey }) {
           ) : nextRun ? (
             /* The next page of the paper is a whole run: it opens on its own page. */
             <>
-              <span className="drr-bt"><b>Next in your paper: {itemName(nextRun)}</b><small>{doneCount} of {total} read</small></span>
+              <span className="drr-bt"><b>Next in your day: {itemName(nextRun)}</b><small>{doneCount} of {total} done</small></span>
               <a className="drr-go" href={itemHref(nextRun, keys)}>Play</a>
             </>
           ) : next ? (

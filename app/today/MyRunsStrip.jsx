@@ -28,9 +28,9 @@ export default function MyRunsStrip() {
         <a className="mrs-r" href="/my-day">
           <span className="mrs-t">
             <b>Mind Loft Daily</b>
-            <small>Your paper · {day.ed.name} Edition · {day.items.map(itemName).filter(Boolean).join(', ')}</small>
+            <small>Your day · {day.ed.name} · {day.items.map(itemName).filter(Boolean).join(', ')}</small>
           </span>
-          <span className={'mrs-s' + (day.done === day.items.length ? ' done' : '')}>{day.done === day.items.length ? 'Read' : day.done ? `${day.done} of ${day.items.length}` : 'Open'}</span>
+          <span className={'mrs-s' + (day.done === day.items.length ? ' done' : '')}>{day.done === day.items.length ? 'Done' : day.done ? `${day.done} of ${day.items.length}` : 'Open'}</span>
         </a>
       ) : null}
       {runs.map((r) => (

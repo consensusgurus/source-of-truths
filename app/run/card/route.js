@@ -44,8 +44,8 @@ function builder() {
     cat: 'Word', url: 'mindloftdaily.com/build-a-run', rightW: 420, rightPad: '22px 24px',
     left: [
       chip('Mind Loft Daily', 'Word'),
-      d({ fontSize: 64, fontWeight: 800, lineHeight: 1.04, letterSpacing: -2, marginTop: 30 }, 'Your puzzles. One paper.'),
-      label('Pick the free dailies you love once. They arrive every day as one paper.', { marginTop: 18, fontSize: 25, lineHeight: 1.35 }),
+      d({ fontSize: 64, fontWeight: 800, lineHeight: 1.04, letterSpacing: -2, marginTop: 30 }, 'Your puzzles. Every day.'),
+      label('Pick the free dailies you love once. They arrive here every day.', { marginTop: 18, fontSize: 25, lineHeight: 1.35 }),
       cta('Build Your Day'),
     ],
     right: gamesPanel(demo),

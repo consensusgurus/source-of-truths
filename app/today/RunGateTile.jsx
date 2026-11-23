@@ -160,7 +160,7 @@ export function MoreRunsTile({ rest, open, onToggle, players, colorOf }) {
         ))}
       </span>
       <a className="rgt-cs rgt-build" href="/build-a-run" onClick={(e) => e.stopPropagation()}>
-        <span className="ld"><b>+ Build Your Day</b></span><span className="ct">Your own paper &rarr;</span>
+        <span className="ld"><b>+ Build Your Day</b></span><span className="ct">Your puzzles, every day &rarr;</span>
       </a>
     </div>
   );
@@ -191,7 +191,7 @@ export function DailyTile({ className = '' }) {
   const hue = st ? st.ed.colour : '#7dd3fc';
   const n = keys ? keys.length : 0;
   const doneN = keys ? keys.filter((k) => st.played.has(k)).length : 0;
-  const go = !keys ? 'Build Your Day' : doneN === n ? 'See the Back Page' : doneN ? 'Keep Reading' : 'Open the Paper';
+  const go = !keys ? 'Build Your Day' : doneN === n ? 'See Your Results' : doneN ? 'Keep Going' : 'Start Your Day';
   const shown = keys ? keys.slice(0, n > DAY_LEGS ? DAY_LEGS - 1 : DAY_LEGS) : [];
   return (
     <a className={'rgt rgt-day' + (className ? ' ' + className : '')} href={keys ? '/my-day' : '/build-a-run'}
@@ -200,7 +200,7 @@ export function DailyTile({ className = '' }) {
         <span className="rgt-hd">
           <span className="rgt-tx">
             <b className="rgt-name">Mind Loft Daily</b>
-            <span className="rgt-hl">{keys ? `${st.ed.name} Edition \u00b7 ${doneN} of ${n} Read` : 'Your Puzzles. One Paper. Every Day.'}</span>
+            <span className="rgt-hl">{keys ? `${st.ed.name} \u00b7 ${doneN} of ${n} Done` : 'Your Puzzles. Every Day.'}</span>
           </span>
           <RunEmblem id="daily" />
         </span>

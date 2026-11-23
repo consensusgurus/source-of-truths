@@ -935,4 +935,7 @@ to that topic), and **See Your Map** on a database game's end screen.
   recent keys plus every done key of the topics in play (still capped at 4,000 by the route),
   so "Play what is left" really serves the grey squares first.
 - Daily gauntlet answers do NOT mark squares yet (the map is database play only).
+- **New topics join the map by themselves** (owner, 2026-11-23, with new categories coming): the map
+  reads `QDBS[db].topics` and the pool, so a topic added there gets its own box, colour, subtopics and
+  progress with no map change. A narrow box shows its name only (its percent is in the side list).
 

@@ -78,7 +78,7 @@ export default function BuildRunClient({ games = [], start = [] }) {
       <div className="br">
         <div className="br-head">
           {/* The header carries the page's name; no second title under it. */}
-          <p className="br-sub">Pick the puzzles and runs you want, as many as you like. They arrive every day as one paper, in this order.</p>
+          <p className="br-sub">Pick the puzzles and runs you want, as many as you like. They arrive every day, in this order.</p>
         </div>
 
         <section aria-label="Your day, in order">
