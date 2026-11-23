@@ -961,3 +961,21 @@ Kids > game. The sitemap gained a `kids` segment (`kidsEntries` in `lib/sitemap-
 `/sitemaps/kids.xml`); kids pages had never been in the sitemap before. `scripts/verify-kids-seo.mjs`
 (found by verify-all) fails a kids page without its row, metadata call or `<KidsSeo>`. A NEW kids page:
 one row, those two lines in its page.js.
+
+## Search Console gap pass: two hub pages and a quiz index refresh (2026-11-23)
+
+From the owner's 12-month Performance export (to 2026-11-22). Puzzle queries were ranking 5 to 10
+with no page that owned the phrase, so Google matched one game or quiz at a time.
+
+- **/acrostic-puzzles** (`app/acrostic-puzzles/page.js`): CategoryLanding with its own page record,
+  under Crosswords, roster Anon + Arcos off `liveDailyKeys`. NOT a set: Anon and Arcos sit in two
+  different daily groups and moving them would reshuffle the home shelves. Target: "daily acrostic".
+- **/which-is-closer** (`app/which-is-closer/`): every visible quiz with `format: 'closer'`, read at
+  render time, grouped United States / Sports / World. Target: "which is closer" (~580 impressions,
+  position ~6, zero clicks before). Blurbs are printed with em dashes swapped out at render.
+- **Foot-nav links:** a category record may carry `related: [[href, name]]`; CategoryLanding prints
+  them in "More puzzles". Crosswords links the acrostic hub, Geography games links Which Is Closer.
+- **lib/quiz-seo.js:** `OBSERVED_2026_11` adds the 32 quizzes that earned impressions but had been
+  noindexed; `MAP_FAMILY` keeps the Erase no-outline siblings and Mexico states indexable.
+  Added, not replaced: the export caps at 1,000 page rows.
+- Titles: Giant now says "Giant Sudoku", Jesters says "Jester Logic Puzzle" (the searched words).

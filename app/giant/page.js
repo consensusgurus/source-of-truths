@@ -17,7 +17,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // solutions never reach a browser.
 
 export const metadata = {
-  title: 'Free Daily 16x16 Sudoku: Giant | Mind Loft',
+  title: 'Free Daily Giant Sudoku, 16x16: Giant | Mind Loft',
   description:
     'A free daily 16×16 sudoku (hexadoku): place 1 to 9 and A to G once in every row, column and box. One logical solution and a new board every day.',
   alternates: { canonical: '/giant' },
@@ -43,7 +43,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Giant',
-  alternateName: 'Giant: Daily 16×16 Sudoku (Hexadoku)',
+  alternateName: 'Giant: Daily Giant Sudoku, 16×16 (Hexadoku)',
   url: `${SITE_URL}/giant`,
   description:
     'A free daily 16×16 sudoku: sixteen rows, columns and 4×4 boxes, each holding the symbols 1 to 9 and A to G exactly once. Each board has one solution reachable by pure logic. Solve it for a perfect score, and ties break on fastest time.',

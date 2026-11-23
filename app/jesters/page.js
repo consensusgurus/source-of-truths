@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // with its own backtracking solver, so the answer never ships.
 
 export const metadata = {
-  title: 'Daily Logic Puzzle, Seat the Court: Jesters | Mind Loft',
+  title: 'Free Daily Jester Logic Puzzle, Seat the Court: Jesters | Mind Loft',
   description:
     'A free daily placement puzzle in the Star Battle family: seat a jester in every row, column and colored court, with no two jesters touching. Exactly one solution, pure deduction. A new court every day, growing from 8x8 on Monday to an 11x11 Sunday Edition.',
   alternates: { canonical: '/jesters' },
@@ -61,7 +61,7 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Jesters',
-  alternateName: 'Jesters: Daily Court-Placement Logic Puzzle',
+  alternateName: 'Jesters: Daily Jester Logic Puzzle',
   url: `${SITE_URL}/jesters`,
   description:
     'A free daily Star Battle-style logic puzzle: seat a jester in every row, every column and every colored court, with no two jesters touching, even diagonally. The board grows through the week, 8x8 on Monday and Tuesday, 9x9 midweek, 10x10 on Friday and Saturday and an 11x11 Sunday Edition. Every board is machine-verified to have exactly one solution reachable by pure deduction. No guessing.',
