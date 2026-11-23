@@ -1287,6 +1287,16 @@ week inventory to fill earlier days and create new harder thursdays and other da
   sentences (Hemingway, Henry, Poe, Burroughs) build in minutes. Verify every passage on Wikisource (Gutenberg was down).
   This run reached Dec 8: Woolf, Trollope, Sabatini, Carroll, Doyle, Crane, London and Arrowsmith all failed, and each failure
   costs about ten minutes. Pick candidate passages by running them through the generator one at a time (--out), not in a chain.
+- **Second pass, 2026-11-22/23 ("stock everything through the 15th")**: Picks reached Dec 15 (56 more pool rows, no photos,
+  a separate reviewer re-read every price; 2 rows dropped). Anon reached Dec 13 (Crane, Paine, Hawthorne, Hammett, Lincoln);
+  Dec 14 and 15 did not build: Potter, Chopin, Buchan, Andersen and Roosevelt each built against the bank as it stood, then
+  failed at `cover` once the boards before them took their words. The open vocabulary is thinning under WORD_CAP 3 (407 words
+  at cap); each new board makes the next harder, so probe the LAST date against the bank AFTER the earlier ones are appended.
+  Weekday boards fail far more often than Sunday ones (the Sunday band allows more, shorter answers). Passage text with double
+  quotation marks keeps them, escaped (`\"`); the letter indexes ignore punctuation. `polio` joined OPEN_BLOCK (disease word).
+  Encore's Dec 13 Sunday still would not fill with a 12-restart, 250k-node budget per shape over about three hours: the
+  3-letter answers are the limit (none of the common 3-letter words is missing from the banks), so Encore stays at Dec 12
+  until the owner rules on the answer cap or the Sunday shapes.
 - **Picks** is the binding constraint for Price Check: a day deals 9 items, and about 4 of them must be curator rows (retail list
   prices or auction lots priced near the cars). The pool ran dry of curator rows at Dec 8. Since 2026-11-22 Picks
   rows need no photo, so a restock is a price read per row.

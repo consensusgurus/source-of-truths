@@ -96,7 +96,7 @@ penis vagina boobs breast breasts nipple rape raped rapist kill killer killed ki
 nazi nazis drug drugs cocaine heroin meth weed stoned drunk suicide terror terrorist
 dick cock butt butts anal oral erotic fetish horny lust kinky dildo
 hottie batman yuck mini fiat anyways alright gonna wanna kinda iphone ipad google yahoo ebay amazon twitter facebook nike adidas pepsi cola
-aids hiv covid ebola cancer tumor
+aids hiv covid ebola cancer tumor polio
 `.trim().split(/\s+/));
 
 // ---- dictionaries ------------------------------------------------------------
