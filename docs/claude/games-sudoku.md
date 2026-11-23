@@ -562,3 +562,38 @@ with up to forty-odd hidden-single steps on Colossus); no rate limit or guess gu
 full sudoku can be offered again and again; the owner parked cheat protection on Mural); the
 closing screen is Search's plain one, not Mural's.
 
+### Grid focus, the update ticker and the closing screen (owner, 2026-11-22)
+
+Owner: "make it easy to identify the grid you're working in. Maybe alternate pastels to match what
+you're working on, and provide counts if you're in a specific grid, with option to move between two
+overlapping ones", then from the community ideas "Update ticker, closing screen, colors with tints
+too", then "Implement". Mockup: project doc `claude/colossus-mammoth-grid-focus-mockup-2026-11-22.md`.
+
+- **Names and colours** (`lib/mega.js megaLayout`: `names`, `hues`, `near`). A sudoku is its lattice
+  row as a letter and its column as a number (D4). `hues` is one of four site pastels (rose, sky,
+  mint, gold from `REGION_RAMP`, built in `app/mega-hues.js`): no two overlapping sudokus share one,
+  and neither do neighbours on a row. Players now see names, never "Sudoku 12".
+- **The current sudoku** (`G.cur`) is the full pastel inside a heavy ink outline with its name on the
+  top edge; its four overlapping neighbours are outlined in their own colours. **Tint All is the
+  default** (soft wash on every other sudoku, shared boxes split diagonally); Tint Current is a toggle
+  in the footer (`sot_mega_tint`). Peers (row, column, box) are marked inside the current sudoku only.
+- **The focus bar** under the header takes the current pastel: name, Empty and Yours counts, a
+  progress bar, Center, and one chip per overlapping neighbour with its Empty count. On a picked
+  shared square that chip reads "Switch To E5". Tapping the picked shared square again switches too,
+  and Tab on a keyboard. A tap inside the current sudoku never switches by accident.
+- **The pad counts digits PLACED** in the current sudoku ("7 Left", "Done", "1 Extra"), never digits
+  right, so the no-right-or-wrong rule holds. Do not change it to count correct digits.
+- **The update ticker** (`announce` in MegaClient): a refresh that brings new solves shows a note top
+  left for nine seconds. Names and counts only, NEVER which sudoku. It also gives solved by someone,
+  nobody has cracked, and the player's estimate with the drop when pots split.
+- **The closing screen** is `app/MegaWall.jsx`, one full pastel screen like the Mural wall: headline
+  ("61 Sudokus. 34 Solvers. 31 Hours."), the board filling in first-crack order in the first solver's
+  colour (First Solver / How Many / Yours), a treemap with every guest their own block and hover or
+  tap details, Your Part, Top Points, By Country. It opens by itself when a board is over and first on
+  any return to a closed board. Data: `GET /api/mega?wall=1` (`megaWall`), refused with 403 while a
+  board is open, because who solved what stays hidden until then.
+- **Solve times.** A player's row now carries `t` (ms per solve) beside `f` and `d`. Solves from
+  before 2026-11-23 have none and fall back to the player's `t0`, so "first solver" on boards open
+  across that date is approximate for the earlier solves.
+- `countriesOf` moved unchanged from the Mural wall route to `lib/player-countries.js`; both use it.
+

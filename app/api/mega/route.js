@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { findQuizIdentity } from '@/lib/quiz-identity';
 import { MEGA, etDayNum } from '@/lib/mega';
-import { megaBoard, megaSchedule, megaCrowd, publicCrowd, megaFile, megaSettle, solvesOf, pubId, layoutOf, gridDigits } from '@/lib/mega-server';
+import { megaBoard, megaSchedule, megaCrowd, publicCrowd, megaFile, megaSettle, megaWall, solvesOf, timesOf, pubId, layoutOf, gridDigits } from '@/lib/mega-server';
 
 // /api/mega: the crowd behind Colossus and Mammoth, the massive sudokus.
 //
@@ -19,6 +19,7 @@ import { megaBoard, megaSchedule, megaCrowd, publicCrowd, megaFile, megaSettle, 
 // POST { game, board, anonId, email?, solve?: { g, d }, force? }
 //   `solve` offers one FULL sudoku: g its index, d its digits row by row. The
 //   server compares them with the solution (which never reaches a browser) and
+//   (GET ?wall=1 is the closing screen's data, served for a closed board only.)
 //   answers `ok` true or false and nothing more about it: no square is marked
 //   right or wrong (owner, 2026-11-21). A correct one is added to the player's
 //   row while the board is open. Every answer carries the player's solved list
@@ -45,6 +46,16 @@ export async function GET(request) {
   const game = str(searchParams.get('game'), 20);
   const bw = await boardAndWindow(game, searchParams.get('board'));
   if (!bw) return NextResponse.json({ error: 'No board' }, { status: 404, headers: NO_STORE });
+  if (searchParams.get('wall')) {
+    // The closing wall: a closed board only (who solved what stays hidden until then).
+    try {
+      const wall = await megaWall(game, bw.board, bw.win);
+      if (!wall) return NextResponse.json({ error: 'Still open' }, { status: 403, headers: NO_STORE });
+      return NextResponse.json(wall, { headers: { 'Cache-Control': 'public, max-age=600, s-maxage=86400, stale-while-revalidate=86400' } });
+    } catch (e) {
+      return NextResponse.json({ error: 'Try again in a moment.' }, { status: 503, headers: NO_STORE });
+    }
+  }
   try {
     const crowd = await megaCrowd(game, bw.board, bw.win);
     if (crowd.closed) { try { await megaSettle(game, bw.board, crowd); } catch (e) { /* next asker settles */ } }
@@ -80,6 +91,7 @@ export async function POST(request) {
     .select('id, answers').eq('quiz_id', board.key).eq('anon_id', who.key).limit(1);
   const row = rows && rows[0];
   const have = solvesOf(row, N);
+  const times = timesOf(row, N);
   const t0 = (row && row.answers && Number(row.answers.t0)) || Date.now();
   const open = !(win.closes && win.closes <= Date.now());
 
@@ -92,10 +104,10 @@ export async function POST(request) {
   }
   let grew = false;
   if (open) {
-    if (ok && !have.has(g)) { have.set(g, etDayNum()); grew = true; }
+    if (ok && !have.has(g)) { have.set(g, etDayNum()); times.set(g, Date.now()); grew = true; }
     if (grew || (!row && ok)) {
       const f = [...have.keys()];
-      const answers = { f, d: f.map((i) => have.get(i)), t0 };
+      const answers = { f, d: f.map((i) => have.get(i)), t: f.map((i) => times.get(i) || t0), t0 };
       const res = row
         ? await supabaseAdmin.from('outwit_picks').update({ answers, user_id: who.userId }).eq('id', row.id)
         : await supabaseAdmin.from('outwit_picks').insert({ quiz_id: board.key, anon_id: who.key, user_id: who.userId, answers });
