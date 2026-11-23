@@ -520,6 +520,9 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
   const markLoaded = useCallback((m) => setLoaded((b) => (b[m] ? b : { ...b, [m]: true })), []);
   const wallSet = useMemo(() => new Set((PUZZLE.walls || []).map(([x, y]) => y * PUZZLE.w + x)), [PUZZLE.walls, PUZZLE.w]);
   const playable = PUZZLE.w * PUZZLE.h - (PUZZLE.walls ? PUZZLE.walls.length : 0);
+  // GATES (boards from 2026-11-25): square index -> how many mascots must be
+  // eaten before it opens. The number drawn on a gate is that mascot's number.
+  const gateAt = useMemo(() => new Map((PUZZLE.gates || []).map((gt) => [gt.y * PUZZLE.w + gt.x, gt.after])), [PUZZLE.gates, PUZZLE.w]);
   const railFrac = NPEL > 1 ? Math.min(g.pi, NPEL - 1) / (NPEL - 1) : 0;
   const ctr = (v) => v * PITCH + SQ / 2;
   const trailD = chompTrail(g.body, PITCH, SQ);
@@ -560,6 +563,17 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
       statusSub = `The ${LABEL[CAST[k]]} ${rel} is solid until its turn.`;
       break;
     }
+    if (!statusSub) {
+      for (const [gi, after] of gateAt) {
+        if (g.pi >= after) continue;
+        const gx = gi % PUZZLE.w, gy = Math.floor(gi / PUZZLE.w);
+        const dx = gx - hx, dy = gy - hy;
+        if (Math.abs(dx) + Math.abs(dy) !== 1) continue;
+        const rel = dx < 0 ? 'to your left' : dx > 0 ? 'to your right' : dy < 0 ? 'above you' : 'below you';
+        statusSub = `The gate ${rel} opens once the ${LABEL[CAST[after - 1]]} is eaten.`;
+        break;
+      }
+    }
   } else if (cleared) {
     statusMain = `All ${NPEL} eaten in ${nf(g.moves)} moves.`;
     statusSub = 'Your result is recorded.';
@@ -570,7 +584,8 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
     statusMain = `Boxed in with ${g.pi} of ${NPEL} eaten. The ${nextName} was next.`;
     statusSub = 'Your result is recorded.';
   }
-  const boardLabel = `Chomp board, ${PUZZLE.w} by ${PUZZLE.h}. ${g.pi} of ${NPEL} mascots eaten${nextName ? `, the ${nextName} is next` : ''}. ${g.body.length} of ${playable} squares covered.`;
+  const shutGates = [...gateAt.values()].filter((a) => g.pi < a).length;
+  const boardLabel = `Chomp board, ${PUZZLE.w} by ${PUZZLE.h}${gateAt.size ? `, ${shutGates} of ${gateAt.size} gates still shut` : ''}. ${g.pi} of ${NPEL} mascots eaten${nextName ? `, the ${nextName} is next` : ''}. ${g.body.length} of ${playable} squares covered.`;
 
   // Restart while playing, Try again once the run is over. Drawn in one place on
   // a desktop (the status row) and another on a phone (the foot), the same
@@ -708,7 +723,31 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
   }
 
   // ---- rules ---------------------------------------------------------------
-  const rulesBody = (
+  // THE GATES ERA (boards from 2026-11-25, owner 2026-11-23: "still far too
+  // easy"). These boards carry gates, and the rules no longer announce that the
+  // route is unique and fills every square: that was the biggest shortcut on the
+  // page. Older boards keep the copy they were played with.
+  const GATED = gateAt.size > 0;
+  const rulesBody = GATED ? (
+    <DailyRules
+      accent={COLORS.accent}
+      accentSoft={COLORS.accentSoft}
+      lead={`Eat today's ${NPEL} mascots in order. Every square you touch stays yours, so your own trail is the maze. Today's board has ${gateAt.size} gates.`}
+      banner={`Everyone gets the same board today${PUZZLE.sunday ? ", and today's Sunday Edition carries an extra gate" : ''}.`}
+      sub="The bulldog always goes first. Everything after it is a fresh order every day."
+      steps={[
+        <>Move one square at a time with the <b>arrow keys</b> or the pad. Nothing moves until you do.</>,
+        <>Your body <b>never shrinks</b>. Where you have been is a wall for the rest of the run.</>,
+        <>A mascot whose turn has not come is <b>solid</b>. You cannot cross the tiger to reach the gamecock.</>,
+        <>A <b>gate</b> shows a number. It is shut, and solid, until you have eaten that mascot. Then it opens for good, and you will need a way back to it.</>,
+        <>Bleachers are bolted down. You can never enter one.</>,
+        <>Steering into a wall is <b>refused</b>, not punished, and costs no move. The run ends only when the head has nowhere legal left to go.</>,
+        <>Boxed in early? <b>Give up</b> ends the run and <b>records it as it stands</b>, and then <b>Try again</b> re-deals the same board. <b>Restart</b> does both in one press. Every attempt counts, so another run can only help.</>,
+      ]}
+      knack="The move that feels obvious, the square with the fewest ways out, is often the wrong one here. Before you take it, check you can still get back to every gate and every corner you have left behind."
+      footer={`Eat all ${NPEL} to solve it. Every attempt counts here, and your fastest solve of the day takes the board, with fewer moves breaking a tie. Giving up or restarting records the run as it stood. Every day is an 8x8 board with three gates, and the Sunday Edition carries four.`}
+    />
+  ) : (
     <DailyRules
       accent={COLORS.accent}
       accentSoft={COLORS.accentSoft}
@@ -808,6 +847,17 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
                       }
                       const pi = pelAt.get(idx);
                       if (pi !== undefined) return null;
+                      const gAfter = gateAt.get(idx);
+                      if (gAfter !== undefined && !g.occ[idx]) {
+                        const open = g.pi >= gAfter;
+                        return (
+                          <span key={idx} className={'chx-sq gate' + (open ? ' open' : '')} style={sq(x, y)} role="img"
+                            aria-label={open ? 'Gate, open' : `Gate, shut until the ${LABEL[CAST[gAfter - 1]]}, number ${gAfter}, is eaten`}>
+                            {!open && <><i /><i /><i /></>}
+                            <b>{gAfter}</b>
+                          </span>
+                        );
+                      }
                       return <span key={idx} className={'chx-sq' + (g.occ[idx] ? ' mine' : '')} style={sq(x, y)} />;
                     })}
                     <svg className="chx-gt" viewBox={`0 0 ${W * U} ${H * U}`} preserveAspectRatio="none" aria-hidden="true">
@@ -1008,9 +1058,13 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
                     const x = idx % PUZZLE.w, y = Math.floor(idx / PUZZLE.w);
                     const wall = wallSet.has(idx);
                     const mine = !wall && !!g.occ[idx];
+                    const gAfter = mine ? undefined : gateAt.get(idx);
+                    const gShut = gAfter !== undefined && g.pi < gAfter;
                     return (
-                      <span key={idx} className={`ch-sq${mine ? ' is-mine' : ''}${wall ? ' is-wall' : ''}`}
-                        style={{ left: x * PITCH, top: y * PITCH, width: SQ, height: SQ, borderRadius: SQR }} />
+                      <span key={idx} className={`ch-sq${mine ? ' is-mine' : ''}${wall ? ' is-wall' : ''}${gAfter !== undefined ? (gShut ? ' is-gate' : ' is-gate-open') : ''}`}
+                        style={{ left: x * PITCH, top: y * PITCH, width: SQ, height: SQ, borderRadius: SQR }}>
+                        {gAfter !== undefined && <b className="ch-gate-n">{gAfter}</b>}
+                      </span>
                     );
                   })}
                   {/* the gator: one continuous accent body, then the head */}
@@ -1221,17 +1275,16 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
           <p style={{ margin: '0 0 9px' }}>
             Chomp is a daily route puzzle. A handful of mascots sit on a small board and have to be eaten in order,
             and every square you touch belongs to you for the rest of the run. Nothing chases you and nothing is on a timer.
-            The only obstacle is the trail you have already laid, which is why the shortest line to the fourth mascot is
-            so often the line that walls off the fifth. The board is as tight as it can be: there is exactly ONE route that
-            eats the whole cast, it uses every square on the board, and nothing is spare. One wrong turn in forty-eight
-            moves and the run is over.
+            The main obstacle is the trail you have already laid, which is why the shortest line to the fourth mascot is
+            so often the line that walls off the fifth. Bolted-down bleachers block some squares for good, and gates block
+            others until you have eaten the mascot they name, so a corner you pass early may be one you have to come back for.
+            One wrong turn and the run is over.
           </p>
           <p style={{ margin: '0 0 9px' }}>
             Eat the whole cast and the board is solved. Everybody plays the same board on the same day, every attempt
             counts, and your fastest solve takes the board, with fewer moves breaking a tie. Giving up records the run as
             it stood. The bulldog always leads and the rest are dealt fresh each
-            day. Each mascot is a signpost on the one route, so the cast gets shorter through the week, from ten on Monday
-            to eight on Saturday; the Sunday Edition moves up to a bigger 8x8 board and puts the whole cast on it.
+            day. Every day is an 8x8 board with three gates, and the Sunday Edition carries a fourth.
           </p>
           <p style={{ margin: 0 }}>
             More daily puzzles: <a href="/parker" style={{ color: ACC_INK }}>Parker</a>,{' '}
@@ -1296,6 +1349,10 @@ export default function ChompClient({ puzzles = [], forceNum = null }) {
         .ch-sq { position: absolute; box-sizing: border-box; background: var(--stg-b1, #f1f3f7); border: 1px solid var(--stg-line, #cdd3dd); }
         .ch-sq.is-mine { background: var(--stg-acc-tint, rgba(15,118,110,.18)); }
         .ch-sq.is-wall { background: var(--stg-sq-d, #94a1b5) repeating-linear-gradient(180deg, transparent 0 30%, var(--stg-ground, #fff) 30% 36%, transparent 36% 64%, var(--stg-ground, #fff) 64% 70%, transparent 70% 100%); border-color: var(--stg-sq-d, #94a1b5); }
+        .ch-sq.is-gate { background: var(--stg-ground, #fff) repeating-linear-gradient(90deg, transparent 0 18%, var(--stg-line2, #cdd3dd) 18% 26%); border: 1px solid var(--stg-ink, #0f1420); display: flex; align-items: center; justify-content: center; }
+        .ch-sq.is-gate-open { display: flex; align-items: center; justify-content: center; }
+        .ch-gate-n { min-width: 44%; height: 44%; padding: 0 3px; box-sizing: border-box; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-family: ${SANS}; font-size: 12px; font-weight: 800; background: var(--stg-ink, #0f1420); color: var(--stg-ground, #fff); }
+        .ch-sq.is-gate-open .ch-gate-n { background: transparent; color: var(--stg-mute, #525c70); border: 1px solid var(--stg-line, #cdd3dd); font-weight: 700; }
         .ch-trail { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
         .ch-pel { position: absolute; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 0 solid var(--stg-ink, #0f1420); }
         .ch-pel.is-next { background: var(--stg-surf, #fff); }
@@ -1402,6 +1459,12 @@ const CHX_CSS = `
 .chx-sq.wall i{position:absolute;left:18%;right:18%;height:11%;border-radius:999px;background:var(--pst-bg);}
 .chx-sq.wall i:first-child{top:30%;}
 .chx-sq.wall i:last-child{top:59%;}
+.chx-sq.gate{background:var(--pst-bg);border:1px solid var(--pst-ink);z-index:2;display:flex;align-items:center;justify-content:center;}
+.chx-sq.gate i{position:absolute;top:16%;bottom:16%;width:8%;border-radius:999px;background:var(--pst-ink);opacity:.35;}
+.chx-sq.gate i:nth-child(1){left:22%;}.chx-sq.gate i:nth-child(2){left:46%;}.chx-sq.gate i:nth-child(3){left:70%;}
+.chx-sq.gate b{position:relative;min-width:44%;height:44%;padding:0 3px;box-sizing:border-box;border-radius:999px;background:var(--pst-ink);color:var(--pst-bg);font-size:calc(100cqw / var(--chx-w) * .22);font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;}
+.chx-sq.gate.open{background:var(--pst-cell);border-color:var(--pst-cell-line);z-index:0;}
+.chx-sq.gate.open b{background:transparent;color:var(--pst-mute);border:1px solid var(--pst-cell-line);font-weight:700;}
 .chx-gt{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:1;}
 .chx-ms{z-index:2;background:var(--pst-bg);border:1px solid var(--pst-cell-line);display:flex;align-items:center;justify-content:center;}
 .chx-ms.nx{background:var(--pst-acc);border-color:var(--pst-ink);box-shadow:inset 0 0 0 1px var(--pst-ink);}

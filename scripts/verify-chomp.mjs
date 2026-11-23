@@ -148,8 +148,41 @@ const O_RUNGS = [
   { w: 7, h: 7, cast: 7, forks: 22, red: 3, walls: 3 },
   { w: 7, h: 7, cast: 7, forks: 23, red: 1, walls: 3 },   // Sat
 ];
+// THE GATES ERA (2026-11-25, owner 2026-11-23: "still far too easy", then
+// "implement" on the Harder A mockup). The obstacle-era boards were unique and
+// full-coverage and STILL easy, and the reason was measurable: the generator laid
+// its route in Warnsdorff order (always step to the square with the fewest ways
+// on), which is exactly how a person plays a fill-every-square board by feel. So
+// the true route was the one you walk without thinking. Over the 23 obstacle-era
+// boards live 2026-11-07..11-30, a player who keeps the board in one piece, never
+// strands a square, and otherwise takes the tightest square went wrong 0.6 times
+// per board, and NEVER on 14 of the 23.
+//
+// So this era (scripts/gen-chomp-gates.mjs) scrambles the route after building
+// it and adds GATES: { x, y, after } squares, shut until `after` mascots have
+// been eaten (lib/chomp-engine gateShut). Every day is 8x8 with 3 bleachers; 3
+// gates on a weekday, 4 on Sunday. The cast is no longer a weekday rung: a
+// scrambled route needs 8-11 signposts to stay unique, and the TRAPS gate below
+// is what sets difficulty now.
+//
+// TRAPS is the one new metric, and it is not a bot in the sense the header warns
+// about: it does not try to clear the board. It walks the TRUE route and, at each
+// square, asks what the feel player would do there. A trap is a square where
+// that player's choice is not the route's. It is the metric that read 0 on the
+// boards the owner found trivial, which no earlier metric did.
+const GATED_FROM = '2026-11-25';
+const G_RUNGS = [
+  { w: 8, h: 8, walls: 3, gates: 4, traps: 8, forks: 19, red: 3 },   // Sun
+  { w: 8, h: 8, walls: 3, gates: 3, traps: 7, forks: 19, red: 3 },   // Mon
+  { w: 8, h: 8, walls: 3, gates: 3, traps: 7, forks: 19, red: 3 },
+  { w: 8, h: 8, walls: 3, gates: 3, traps: 7, forks: 19, red: 3 },
+  { w: 8, h: 8, walls: 3, gates: 3, traps: 7, forks: 19, red: 3 },
+  { w: 8, h: 8, walls: 3, gates: 3, traps: 7, forks: 19, red: 3 },
+  { w: 8, h: 8, walls: 3, gates: 3, traps: 7, forks: 19, red: 3 },   // Sat
+];
+const isGated = (p) => p.live >= GATED_FROM;
 const isObst = (p) => p.live >= OBST_FROM;
-const uRungOf = (p) => (isObst(p) ? O_RUNGS : U_RUNGS)[dowOf(p)];
+const uRungOf = (p) => (isGated(p) ? G_RUNGS : isObst(p) ? O_RUNGS : U_RUNGS)[dowOf(p)];
 const isUnique = (p) => p.live >= UNIQUE_FROM;
 
 const FIRST_MASCOT = 'bulldog';
@@ -227,8 +260,10 @@ const floorOf = (p) => legsOf(p).reduce((a, b) => a + b, 0);
 // shared helpers. `reach` treats unreached mascots as PASSABLE on purpose: they
 // are the destinations, not walls, for the purposes of that question. Blocking
 // them makes the check unsatisfiable, a bug that shipped once.
+const gateShutAt = (p, q, x, y) => (p.gates || []).some((g) => g.x === x && g.y === y && q < g.after);
 const blocker = (p, occ) => (q, x, y) => {
   if (!insideOf(p, x, y) || occ[idxOf(p, x, y)]) return true;
+  if (gateShutAt(p, q, x, y)) return true;
   for (let k = q + 1; k < p.pellets.length; k++) if (p.pellets[k][0] === x && p.pellets[k][1] === y) return true;
   return false;
 };
@@ -403,7 +438,23 @@ function carefulClears(p) {
     prevNum = p.num;
     if (p.live <= prevLive) why.push('live date not strictly increasing');
     prevLive = p.live;
-    if (isUnique(p)) {
+    if (isGated(p)) {
+      const rung = uRungOf(p);
+      if (p.w !== rung.w || p.h !== rung.h) why.push(`board is ${p.w}x${p.h}, expected ${rung.w}x${rung.h}`);
+      if (!Array.isArray(p.cast) || p.cast.length < CAST_MIN || p.cast.length > CAST_MAX) {
+        why.push(`cast of ${p.cast && p.cast.length}, outside ${CAST_MIN}-${CAST_MAX}`);
+      }
+      const gs = p.gates || [];
+      if (gs.length !== rung.gates) why.push(`carries ${gs.length} gate(s), expected ${rung.gates} on a ${DOW[dowOf(p)]}`);
+      const taken = new Set([idxOf(p, p.start[0], p.start[1]), ...p.pellets.map((c) => idxOf(p, c[0], c[1])), ...wallsOf(p).map((c) => idxOf(p, c[0], c[1]))]);
+      for (const g of gs) {
+        if (!insideOf(p, g.x, g.y)) why.push(`gate ${g.x},${g.y} off the board`);
+        if (taken.has(idxOf(p, g.x, g.y))) why.push(`gate ${g.x},${g.y} sits on the start, a mascot, a bleacher or another gate`);
+        taken.add(idxOf(p, g.x, g.y));
+        if (!Number.isInteger(g.after) || g.after < 1 || g.after >= p.pellets.length) why.push(`gate ${g.x},${g.y} opens after ${g.after}, outside 1-${p.pellets.length - 1}`);
+      }
+    } else if (isUnique(p)) {
+      if (p.gates) why.push('a pre-gate board carries a gates field');
       const rung = uRungOf(p);
       if (p.w !== rung.w || p.h !== rung.h) why.push(`board is ${p.w}x${p.h}, expected ${rung.w}x${rung.h} on a ${DOW[dowOf(p)]}`);
       if (p.cast && p.cast.length !== rung.cast) why.push(`cast of ${p.cast.length}, expected ${rung.cast} on a ${DOW[dowOf(p)]}`);
@@ -534,12 +585,20 @@ const MINS = new Map();
     for (const p of sun) {
       // From the obstacle era the Sunday is the peak by SIZE, BLEACHERS and FORKS
       // (8x8, 4 walls, forks >= 28), and its cast is the O_RUNGS nine.
+      if (isGated(p)) {
+        if ((p.gates || []).length !== G_RUNGS[0].gates) bad.push(`#${p.num} Sunday carries ${(p.gates || []).length} gates, not ${G_RUNGS[0].gates}`);
+        if (p.w !== 8 || p.h !== 8) bad.push(`#${p.num} Sunday is ${p.w}x${p.h}, not 8x8`);
+        continue;
+      }
       const sunCast = isObst(p) ? uRungOf(p).cast : MASCOTS.length;
       if (p.cast.length !== sunCast) bad.push(`#${p.num} Sunday fields ${p.cast.length}, not its ${sunCast}`);
       if (p.w !== 8 || p.h !== 8) bad.push(`#${p.num} Sunday is ${p.w}x${p.h}, not the 8x8 Edition`);
     }
-    if (wk.some((p) => p.cast.length >= MASCOTS.length)) bad.push('a weekday fields the full cast, so Sunday is not the peak');
-    if (wk.some((p) => p.w > 7 || p.h > 7)) bad.push('a weekday is bigger than 7x7, so Sunday is not the peak');
+    const wkOld = wk.filter((p) => !isGated(p));
+    if (wkOld.some((p) => p.cast.length >= MASCOTS.length)) bad.push('a weekday fields the full cast, so Sunday is not the peak');
+    if (wkOld.some((p) => p.w > 7 || p.h > 7)) bad.push('a weekday is bigger than 7x7, so Sunday is not the peak');
+    // GATES ERA: every day is 8x8, so Sunday is the peak by its extra gate and its higher traps floor
+    for (const p of wk.filter(isGated)) if ((p.gates || []).length >= G_RUNGS[0].gates) bad.push(`#${p.num} weekday carries as many gates as a Sunday`);
   }
   let sunAll = [];
   for (const rows of eras) {
@@ -782,7 +841,9 @@ function forksOn(p, route) {
     // Each is a signpost the board did not need. The cap falls through the week,
     // which is what makes Saturday and Sunday lean and Monday generous.
     let red = 0;
+    const gateKeys = new Set((p.gates || []).map((g) => g.after - 1));
     for (let i = 0; i < p.pellets.length; i++) {
+      if (gateKeys.has(i)) continue;   // a gate opens on it, so it is not spare whatever the count says
       const q = { ...p, pellets: p.pellets.filter((_, k) => k !== i) };
       const c2 = countWinning(q, 2, 900000);
       if (!c2.capped && c2.n === 1) red += 1;
@@ -802,7 +863,8 @@ function forksOn(p, route) {
 
 // ---------- 6c. the uniqueness ramp: signposts fall, Sunday grows -----------
 (function uniqueRamp() {
-  const rows = PUZZLES.filter(isUnique);
+  // The gates era has no cast rung (see GATED_FROM), so the ramp is judged on the era before it.
+  const rows = PUZZLES.filter((p) => isUnique(p) && !isGated(p));
   if (!rows.length) return;
   const bad = [];
   const order = [1, 2, 3, 4, 5, 6];        // Mon..Sat; Sunday ramps by board size
@@ -824,6 +886,90 @@ function forksOn(p, route) {
   }
   if (bad.length) fail('uramp', bad.slice(0, 5).join('; '));
   else ok('uramp', `signposts fall ${order.map((d, i) => `${DOW[d]} ${casts[i]}`).join(', ')}, and Sunday grows to 8x8 with the whole cast of ${MASCOTS.length}`);
+})();
+
+// ---------- 6d. THE GATES ERA: traps, and gates that are not decoration ----
+// Written out fresh, like every search here; scripts/gen-chomp-gates.mjs has its
+// own copy. The feel player at each square of the TRUE route: drop any move that
+// cuts the open squares (gates and later mascots included) into two pieces, or
+// leaves an open square with fewer than two ways in (the last mascot excepted,
+// where the route ends); then take the square with the fewest open neighbours.
+// A TRAP is a square where every such pick differs from the route.
+function trapsOn(p, route) {
+  const C = p.w * p.h, K = p.pellets.length, vis = new Uint8Array(C);
+  seedWalls(p, vis);
+  const last = idxOf(p, p.pellets[K - 1][0], p.pellets[K - 1][1]);
+  const bl = blocker(p, vis);
+  const openN = (x, y) => DIRS.filter((d) => insideOf(p, x + d[0], y + d[1]) && !vis[idxOf(p, x + d[0], y + d[1])]).length;
+  const intact = (hx, hy) => {
+    const hi = idxOf(p, hx, hy), seen = new Uint8Array(C), st = [hi];
+    seen[hi] = 1; let tot = 0, got = 0;
+    for (let i = 0; i < C; i++) if (!vis[i]) tot += 1;
+    for (let i = 0; i < st.length; i++) {
+      const c = st[i], cx = c % p.w, cy = (c - cx) / p.w;
+      for (const d of DIRS) {
+        const nx = cx + d[0], ny = cy + d[1];
+        if (!insideOf(p, nx, ny)) continue;
+        const j = idxOf(p, nx, ny);
+        if (vis[j] || seen[j]) continue;
+        seen[j] = 1; got += 1; st.push(j);
+      }
+    }
+    if (got !== tot) return false;
+    for (let i = 0; i < C; i++) {
+      if (vis[i] || i === last) continue;
+      const cx = i % p.w, cy = (i - cx) / p.w;
+      let n = 0;
+      for (const d of DIRS) {
+        const nx = cx + d[0], ny = cy + d[1];
+        if (!insideOf(p, nx, ny)) continue;
+        const j = idxOf(p, nx, ny);
+        if (!vis[j] || j === hi) n += 1;
+      }
+      if (n < 2) return false;
+    }
+    return true;
+  };
+  let x = p.start[0], y = p.start[1], pi = 0, traps = 0;
+  vis[idxOf(p, x, y)] = 1;
+  for (const t of route) {
+    const legal = DIRS.filter((d) => !bl(pi, x + d[0], y + d[1]));
+    if (legal.length > 1) {
+      const keep = legal.filter((d) => { const j = idxOf(p, x + d[0], y + d[1]); vis[j] = 1; const r = intact(x + d[0], y + d[1]); vis[j] = 0; return r; });
+      if (keep.length > 1) {
+        const sc = keep.map((d) => { const j = idxOf(p, x + d[0], y + d[1]); vis[j] = 1; const n = openN(x + d[0], y + d[1]); vis[j] = 0; return { d, n }; });
+        const lo = Math.min(...sc.map((s) => s.n));
+        if (!sc.some((s) => s.n === lo && s.d[0] === t[0] && s.d[1] === t[1])) traps += 1;
+      }
+    }
+    const nx = x + t[0], ny = y + t[1];
+    if (nx === p.pellets[pi][0] && ny === p.pellets[pi][1]) pi += 1;
+    vis[idxOf(p, nx, ny)] = 1; x = nx; y = ny;
+  }
+  return traps;
+}
+
+(function gatesEra() {
+  const rows = PUZZLES.filter(isGated);
+  if (!rows.length) { note('gates', 'no gates-era boards yet'); return; }
+  const thin = [], easier = [], unmeasured = [], tr = [];
+  for (const p of rows) {
+    const rung = uRungOf(p);
+    const sr = shortestRoute(p);
+    if (!sr.route) { unmeasured.push(`#${p.num}`); continue; }
+    const withG = trapsOn(p, sr.route);
+    const noG = trapsOn({ ...p, gates: [] }, sr.route);
+    tr.push(withG);
+    if (withG < rung.traps) thin.push(`#${p.num} (${p.live}, ${DOW[dowOf(p)]}) has ${withG} traps, needs ${rung.traps}`);
+    // A gate that only REMOVES wrong options makes the board easier. Not allowed.
+    if (withG < noG) easier.push(`#${p.num} (${p.live}) has ${withG} traps with its gates and ${noG} without`);
+  }
+  if (thin.length) fail('gates', `too readable: ${thin.slice(0, 5).join('; ')}`);
+  if (easier.length) fail('gates', `gates make it easier: ${easier.slice(0, 5).join('; ')}`);
+  if (unmeasured.length) fail('gates', `no route found for ${unmeasured.join(', ')}`);
+  if (!thin.length && !easier.length && !unmeasured.length) {
+    ok('gates', `${rows.length} gated boards, ${Math.min(...tr)}-${Math.max(...tr)} traps each (the obstacle era averaged 0.6), and no board's gates make it easier`);
+  }
 })();
 
 // ---------- 7. scoring ------------------------------------------------------

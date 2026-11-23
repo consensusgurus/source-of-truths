@@ -20,8 +20,14 @@ export function ctx(p) {
   const occ = new Uint8Array(C);
   for (const [x, y] of (p.walls || [])) occ[idx(x, y)] = 1;
   const K = p.pellets.length;
+  // GATES (2026-11-25 on): shut until `after` mascots are eaten. Like a later
+  // mascot, a shut gate is solid for movement but passable for the reach test
+  // below, because it opens later; that keeps the prune sound.
+  const gateAfter = new Int16Array(C).fill(-1);
+  for (const g of (p.gates || [])) gateAfter[idx(g.x, g.y)] = g.after;
   const bl = (q, x, y) => {
     if (!inside(x, y) || occ[idx(x, y)]) return true;
+    if (gateAfter[idx(x, y)] > q) return true;
     for (let k = q + 1; k < K; k++) if (p.pellets[k][0] === x && p.pellets[k][1] === y) return true;
     return false;
   };
