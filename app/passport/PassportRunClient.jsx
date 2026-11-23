@@ -701,7 +701,7 @@ export default function PassportRunClient({ puzzles = [], puzzle, sections = [],
   const [similar, setSimilar] = useState(null);
   useEffect(() => {
     if (!done) return;
-    const id = otherRuns('passport').map((x) => x.key).find((x) => x !== 'triviaencore' && !runDoneToday(x));
+    const id = otherRuns('passport').map((x) => x.key).find((x) => x !== 'triviaencore' && x !== 'triviafinale' && !runDoneToday(x));
     setSimilar(id && RUN_DOORS[id] ? { name: RUN_DOORS[id].name, href: RUN_DOORS[id].href } : null);
   }, [done]);
 

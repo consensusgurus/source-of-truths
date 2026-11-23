@@ -81,7 +81,7 @@ for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) {
   if (ya.length > 4 && norm(x.q).includes(` ${ya} `) && shared.length) warns.push(`possible mirror: ${x.tag} names "${y.a}", the answer to ${y.tag}`);
 }
 
-const BANKS = ['streak', 'deep', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'art', 'history'];
+const BANKS = ['streak', 'deep', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'art', 'history', 'foodie', 'orbit', 'bond', 'gene', 'pulse', 'eureka', 'music', 'books', 'nature', 'tech', 'myth'];
 const other = [];
 for (const g of BANKS) {
   try {

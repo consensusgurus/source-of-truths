@@ -30,6 +30,16 @@ import { PUZZLES as historyPuzzles } from '../../../history/puzzles';
 import { QUESTION_MAP as historyQuestions } from '../../../history/questions';
 import { PUZZLES as foodiePuzzles } from '../../../foodie/puzzles';
 import { QUESTION_MAP as foodieQuestions } from '../../../foodie/questions';
+import { PUZZLES as musicPuzzles } from '../../../music/puzzles';
+import { QUESTION_MAP as musicQuestions } from '../../../music/questions';
+import { PUZZLES as booksPuzzles } from '../../../books/puzzles';
+import { QUESTION_MAP as booksQuestions } from '../../../books/questions';
+import { PUZZLES as naturePuzzles } from '../../../nature/puzzles';
+import { QUESTION_MAP as natureQuestions } from '../../../nature/questions';
+import { PUZZLES as techPuzzles } from '../../../tech/puzzles';
+import { QUESTION_MAP as techQuestions } from '../../../tech/questions';
+import { PUZZLES as mythPuzzles } from '../../../myth/puzzles';
+import { QUESTION_MAP as mythQuestions } from '../../../myth/questions';
 import { PUZZLES as gramPuzzles } from '../../../gram/puzzles';
 import { QUESTION_MAP as gramQuestions } from '../../../gram/questions';
 import { PUZZLES as vocabPuzzles } from '../../../vocab/puzzles';
@@ -102,6 +112,11 @@ const BANKS = {
   sci: { puzzles: sciPuzzles, questions: sciQuestions, tiers: ['Hypothesis', 'Experiment', 'Observation', 'Analysis', 'Discovery'] },
   art: { puzzles: artPuzzles, questions: artQuestions, tiers: ['Sketch', 'Draft', 'Study', 'Gallery', 'Masterpiece'] },
   foodie: { puzzles: foodiePuzzles, questions: foodieQuestions, tiers: ['Snack', 'Appetizer', 'Main Course', 'Chef\'s Table', 'Tasting Menu'] },
+  music: { puzzles: musicPuzzles, questions: musicQuestions, tiers: ["Opening Act","Single","Album","Headliner","Hall of Fame"] },
+  books: { puzzles: booksPuzzles, questions: booksQuestions, tiers: ["Preface","Chapter One","Page Turner","Bookworm","Librarian"] },
+  nature: { puzzles: naturePuzzles, questions: natureQuestions, tiers: ["Backyard","Trailhead","Field Guide","Naturalist","Expedition"] },
+  tech: { puzzles: techPuzzles, questions: techQuestions, tiers: ["Power On","Beta","Launch","Power User","Architect"] },
+  myth: { puzzles: mythPuzzles, questions: mythQuestions, tiers: ["Mortal","Hero","Demigod","Titan","Olympian"] },
   history: { puzzles: historyPuzzles, questions: historyQuestions, tiers: ['Living memory', 'The textbook', 'The archive', 'The footnotes', 'The primary sources'] },
   gram: { puzzles: gramPuzzles, questions: gramQuestions, tiers: ['Draft', 'Edit', 'Revise', 'Proof', 'Polish'] },
   vocab: { puzzles: vocabPuzzles, questions: vocabQuestions, tiers: ['Everyday', 'Educated', 'Literary', 'Learned', 'Lexicon'] },
@@ -295,6 +310,19 @@ async function shareMetadata({ params }) {
       twitter: { card: 'summary_large_image', title: hook, description: 'One wrong answer ends the quiz. Then the next one starts. How far do you get?' },
     };
   }
+  if (c.id === 'triviafinale') {
+    const url = `${SITE_URL}${runHref(c.id)}`;
+    const hook = 'Trivia Finale: the last five quizzes. One life each.';
+    return {
+      title: 'Trivia Finale: Five More Daily Trivia Quizzes | Mind Loft',
+      description:
+        'The last five daily trivia quizzes, the ones today\'s Trivia Gauntlet and Trivia Encore left out, played back to back as one run. Twenty-five questions each, twenty seconds a question, one life in each. Free, no signup.',
+      alternates: { canonical: runHref(c.id) },
+      robots: { index: false, follow: true },
+      openGraph: { title: hook, description: 'One wrong answer ends that quiz, the next one starts on its own, and you get one scorecard at the end.', url, type: 'website', siteName: 'Mind Loft' },
+      twitter: { card: 'summary_large_image', title: hook, description: 'One wrong answer ends the quiz. Then the next one starts. How far do you get?' },
+    };
+  }
   if (c.id === 'triviaencore') {
     const url = `${SITE_URL}${runHref(c.id)}`;
     const hook = 'Trivia Encore: five more quizzes. One life each.';
@@ -340,6 +368,15 @@ function encoreFor(today) {
     .filter((k) => BANKS[k] && dayFor(BANKS[k], today))
     .map((k) => ({ key: k, name: (DAILY_GAME_MAP[k] || {}).name || k }));
   return games.length >= 2 ? { games, href: runHref('triviaencore') } : null;
+}
+
+// The Trivia Finale's games for the day (owner, 2026-11-23): the five banks in
+// neither the Gauntlet nor the Encore, offered on the finish of either. Same filter.
+function finaleFor(today) {
+  const games = circuitKeysFor('triviafinale', today)
+    .filter((k) => BANKS[k] && dayFor(BANKS[k], today))
+    .map((k) => ({ key: k, name: (DAILY_GAME_MAP[k] || {}).name || k }));
+  return games.length >= 2 ? { games, href: runHref('triviafinale') } : null;
 }
 
 // The Gauntlet's games for the day, offered on the ENCORE's finish to a
@@ -449,7 +486,7 @@ export default function CircuitRunPage({ params }) {
       // The game's slot in the circuit's CANONICAL key list, not in today's
       // shuffled run. The ladder colours by this so a game keeps its colour
       // from one day to the next even though its position moves.
-      slot: circuitSlotFor(circuit.id === 'triviaencore' ? 'gauntlet' : circuit.id, key),
+      slot: circuitSlotFor(circuit.id === 'triviaencore' || circuit.id === 'triviafinale' ? 'gauntlet' : circuit.id, key),
       quizId: day.quizId,
       num: day.num,
       topic: day.topic || '',
@@ -487,6 +524,7 @@ export default function CircuitRunPage({ params }) {
         boards={circuit.id === 'gauntlet' ? todayBoards(today) : null}
         encore={circuit.id === 'gauntlet' ? encoreFor(today) : null}
         gauntlet={circuit.id === 'triviaencore' ? gauntletFor(today) : null}
+        finale={circuit.id === 'gauntlet' || circuit.id === 'triviaencore' ? finaleFor(today) : null}
       />
     </Suspense>
   );

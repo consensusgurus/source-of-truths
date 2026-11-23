@@ -20,8 +20,8 @@ const round = (n) => (n >= 1000 ? `${Math.floor(n / 1000).toLocaleString('en-US'
 const HUB = {
   trivia: {
     title: (n) => `Trivia Database: ${round(n)} Free Trivia Questions and Answers | Mind Loft`,
-    description: 'Free trivia questions and answers in 11 topics: general knowledge, geography, sports, history, science, movies, and more. Gentle to tough, no signup.',
-    social: 'Thousands of multiple choice trivia questions in 11 topics. Play any topic in Practice, Gauntlet, or Sprint mode, from gentle to tough.',
+    description: 'Free trivia questions and answers in 16 topics: general knowledge, geography, sports, history, science, movies, music, and more. Gentle to tough, no signup.',
+    social: 'Thousands of multiple choice trivia questions in 16 topics. Play any topic in Practice, Gauntlet, or Sprint mode, from gentle to tough.',
     about: 'Trivia',
     faq: (n) => [
       { q: 'Are these trivia questions free?', a: 'Yes. Every question is free to play in your browser on a phone or a computer, with no app and no signup. Your record (what you have seen, your best scores, and the questions you missed) stays in this browser.' },

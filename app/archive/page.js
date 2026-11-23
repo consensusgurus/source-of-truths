@@ -213,6 +213,11 @@ import { PUZZLES as BOND_FULL } from '../bond/puzzles';
 import { PUZZLES as ART_FULL } from '../art/puzzles';
 import { PUZZLES as HISTORY_FULL } from '../history/puzzles';
 import { PUZZLES as FOODIE_FULL } from '../foodie/puzzles';
+import { PUZZLES as MUSIC_FULL } from '../music/puzzles';
+import { PUZZLES as BOOKS_FULL } from '../books/puzzles';
+import { PUZZLES as NATURE_FULL } from '../nature/puzzles';
+import { PUZZLES as TECH_FULL } from '../tech/puzzles';
+import { PUZZLES as MYTH_FULL } from '../myth/puzzles';
 import { PUZZLES as POTLUCK_FULL } from '../potluck/puzzles';
 import { PUZZLES as MIXTAPE_FULL } from '../mixtape/puzzles';
 import { PUZZLES as MISHMASH_FULL } from '../mishmash/puzzles';
@@ -401,6 +406,11 @@ const BOND = BOND_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId,
 const ART = ART_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const HISTORY = HISTORY_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const FOODIE = FOODIE_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const MUSIC = MUSIC_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const BOOKS = BOOKS_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const NATURE = NATURE_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const TECH = TECH_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const MYTH = MYTH_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const POTLUCK = POTLUCK_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const MIXTAPE = MIXTAPE_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const MISHMASH = MISHMASH_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
@@ -656,6 +666,11 @@ const GAMES = [
   { key: 'bond', name: 'Bond', path: '/bond', tag: 'Chemistry, one life', accent: '#047857', bg: '#d1fae5', border: 'rgba(4,120,87,0.4)', src: BOND },
   { key: 'art', name: 'Art', path: '/art', tag: 'Arts and culture, one life', accent: '#9d174d', bg: '#fbeef3', border: 'rgba(157,23,77,0.4)', src: ART },
   { key: 'foodie', name: 'Foodie', path: '/foodie', tag: 'Food and drink, one life', accent: '#c2410c', bg: '#fbefe7', border: 'rgba(194,65,12,0.4)', src: FOODIE },
+  { key: 'music', name: 'Music', path: '/music', tag: 'Rock to classical, one life', accent: '#be185d', bg: '#fbe8f0', border: 'rgba(190,24,93,0.4)', src: MUSIC },
+  { key: 'books', name: 'Books', path: '/books', tag: 'Novels, poems, and plays, one life', accent: '#92400e', bg: '#f7ece2', border: 'rgba(146,64,14,0.4)', src: BOOKS },
+  { key: 'nature', name: 'Nature', path: '/nature', tag: 'Animals, plants, and weather, one life', accent: '#15803d', bg: '#e6f4ea', border: 'rgba(21,128,61,0.4)', src: NATURE },
+  { key: 'tech', name: 'Tech', path: '/tech', tag: 'Internet, games, and gadgets, one life', accent: '#0369a1', bg: '#e3f1f9', border: 'rgba(3,105,161,0.4)', src: TECH },
+  { key: 'myth', name: 'Myth', path: '/myth', tag: 'Myths, legends, and faiths, one life', accent: '#6d28d9', bg: '#efe9fb', border: 'rgba(109,40,217,0.4)', src: MYTH },
   { key: 'history', name: 'History', path: '/history', tag: 'History, one life', accent: '#854d0e', bg: '#f8f1e4', border: 'rgba(133,77,14,0.4)', src: HISTORY },
   { key: 'potluck', name: 'Potluck', path: '/potluck', tag: 'Three quizzes, one score', accent: '#b4532a', bg: '#fdf1ea', border: 'rgba(180,83,42,0.4)', src: POTLUCK },
   { key: 'mixtape', name: 'Mixtape', path: '/mixtape', tag: 'Three more quizzes, one score', accent: '#9d2f6b', bg: '#fbeef5', border: 'rgba(157,47,107,0.4)', src: MIXTAPE },

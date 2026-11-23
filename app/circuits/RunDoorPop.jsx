@@ -50,7 +50,7 @@ export const RUN_DOORS = {
   },
   gauntlet: {
     href: '/trivia', name: 'Trivia Gauntlet', eyebrow: 'Daily run · Six categories',
-    body: 'Six daily trivia quizzes back to back, one life in each: a topic in depth, a streak of anything at all, and four that rotate daily through food and drink, geography, science, sport, the arts, history, business, the screen and famous lines.',
+    body: 'Six daily trivia quizzes back to back, one life in each: a topic in depth, a streak of anything at all, and four that rotate daily through fourteen subjects, from geography, science, and sport to music, books, and myth.',
     go: 'Run all six', accent: '#7dd3fc',
     tags: [['Deep', '#7dd3fc'], ['Atlas', '#6ee7b7'], ['Sci', '#5eead4'], ['Art', '#fb7185'], ['Sport', '#bef264'], ['Streak', '#e879f9']],
   },
@@ -62,6 +62,14 @@ export const RUN_DOORS = {
     body: 'The five trivia quizzes that sat out today\u2019s Gauntlet, back to back, one life in each.',
     go: 'Take the Encore', accent: '#e8b43a',
     tags: [['Encore', '#e8b43a']],
+  },
+  // THE TRIVIA FINALE (owner, 2026-11-23): the third trivia run. Its quizzes change
+  // daily, so MoreRuns reads them live from lib/circuits; these tags are a fallback.
+  triviafinale: {
+    href: '/triviafinale', name: 'Trivia Finale', eyebrow: 'Daily run \u00b7 Five quizzes',
+    body: 'The last five trivia quizzes of the day, the ones the Gauntlet and the Encore left out, back to back, one life in each.',
+    go: 'Take the Finale', accent: '#c4b5fd',
+    tags: [['Finale', '#c4b5fd']],
   },
   // THE SCIENCE GAUNTLET (2026-10-30): once a day on the gate of any of its five.
   science: {

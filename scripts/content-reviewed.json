@@ -317,5 +317,30 @@
     "through": "2026-12-31",
     "on": "2026-11-12",
     "note": "first ledger entry: 12-04..12-31 photos, captions and credits read against Commons by separate reviewers; four people photos replaced and re-read"
+  },
+  "music": {
+    "through": "2026-12-14",
+    "on": "2026-11-23",
+    "note": "Launch bank 2026-11-23..12-14 (550 questions). Written lane by lane by one set of authors, then every question read by a separate reviewer for the game (answer key, distractors, stem, contested or changeable facts, giveaways, duplicates, tier), fixes applied and the bank rebuilt before launch. Open items the reviewer left for a person are listed in docs/claude/games-trivia.md."
+  },
+  "books": {
+    "through": "2026-12-14",
+    "on": "2026-11-23",
+    "note": "Launch bank 2026-11-23..12-14 (550 questions). Written lane by lane by one set of authors, then every question read by a separate reviewer for the game (answer key, distractors, stem, contested or changeable facts, giveaways, duplicates, tier), fixes applied and the bank rebuilt before launch. Open items the reviewer left for a person are listed in docs/claude/games-trivia.md."
+  },
+  "nature": {
+    "through": "2026-12-14",
+    "on": "2026-11-23",
+    "note": "Launch bank 2026-11-23..12-14 (550 questions). Written lane by lane by one set of authors, then every question read by a separate reviewer for the game (answer key, distractors, stem, contested or changeable facts, giveaways, duplicates, tier), fixes applied and the bank rebuilt before launch. Open items the reviewer left for a person are listed in docs/claude/games-trivia.md."
+  },
+  "tech": {
+    "through": "2026-12-14",
+    "on": "2026-11-23",
+    "note": "Launch bank 2026-11-23..12-14 (550 questions). Written lane by lane by one set of authors, then every question read by a separate reviewer for the game (answer key, distractors, stem, contested or changeable facts, giveaways, duplicates, tier), fixes applied and the bank rebuilt before launch. Open items the reviewer left for a person are listed in docs/claude/games-trivia.md."
+  },
+  "myth": {
+    "through": "2026-12-14",
+    "on": "2026-11-23",
+    "note": "Launch bank 2026-11-23..12-14 (550 questions). Written lane by lane by one set of authors, then every question read by a separate reviewer for the game (answer key, distractors, stem, contested or changeable facts, giveaways, duplicates, tier), fixes applied and the bank rebuilt before launch. Open items the reviewer left for a person are listed in docs/claude/games-trivia.md."
   }
 }

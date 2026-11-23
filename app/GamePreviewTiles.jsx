@@ -96,6 +96,26 @@ const Foodie = () => (
   <g><circle cx={150} cy={44} r={26} className="w" /><circle cx={150} cy={44} r={16} className="m" />
     <path d="M114 10v22M110 10v14a4 4 0 0 0 8 0v-14M114 32v44" className="s3" /><path d="M186 10c-8 6 -8 26 0 28v38" className="s3" /></g>
 );
+// The five Trivia Finale gauntlets (2026-11-23).
+const Music = () => (
+  <g><path d="M134 16l44 -8v40" className="s3" /><path d="M134 16v44" className="s3" />
+    <ellipse cx={124} cy={62} rx={12} ry={9} className="d" /><ellipse cx={168} cy={50} rx={12} ry={9} className="m" /></g>
+);
+const Books = () => (
+  <g><rect x={112} y={14} width={18} height={60} rx={2} className="d" /><rect x={133} y={22} width={16} height={52} rx={2} className="m" />
+    <rect x={152} y={10} width={14} height={64} rx={2} className="w" /><path d="M172 20l16 4l-12 50l-16 -4z" className="m" /><rect x={106} y={74} width={88} height={5} className="d" /></g>
+);
+const Nature = () => (
+  <g><path d="M150 8c22 6 34 22 30 42c-4 16 -18 24 -34 22c-16 -2 -26 -14 -24 -30c2 -18 14 -30 28 -34z" className="m" />
+    <path d="M148 14c-2 22 -2 42 -10 64" className="s3" /><path d="M146 34l14 -8M144 48l16 -6M142 60l-10 -8" className="s3" /></g>
+);
+const Tech = () => (
+  <g><rect x={124} y={18} width={52} height={52} rx={6} className="d" /><rect x={138} y={32} width={24} height={24} rx={3} className="w" />
+    {[134, 150, 166].map((x) => <path key={x} d={`M${x} 8v10M${x} 70v10`} className="s3" />)}{[30, 44, 58].map((y) => <path key={y} d={`M114 ${y}h10M176 ${y}h10`} className="s3" />)}</g>
+);
+const Myth = () => (
+  <g><path d="M158 4l-34 44h24l-8 32l36 -46h-24z" className="m" /><path d="M110 70c10 -8 20 -8 30 0M162 70c10 -8 20 -8 28 0" className="s3" /></g>
+);
 const Art = () => (
   <g><path d="M150 8c-24 0 -42 16 -42 34s16 32 34 32c8 0 8 -8 4 -12s0 -10 8 -10h14c12 0 20 -6 20 -16c0 -16 -16 -28 -38 -28z" className="w" />
     <circle cx={128} cy={34} r={6} className="d" /><circle cx={146} cy={22} r={6} className="m" /><circle cx={166} cy={26} r={6} className="d" /><circle cx={130} cy={54} r={6} className="m" /></g>
@@ -810,7 +830,7 @@ const Ping = () => (
 export const TILE_BY_KEY = {
   // Trivia
   sport: Sport, biz: Biz, script: Script, quotes: Quotes, sci: Sci, pulse: Pulse, gene: Gene, orbit: Orbit, eureka: Eureka, bond: Bond,
-  foodie: Foodie, art: Art, history: History, streak: Streak, deep: Deep, dating: Dating, extra: Extra, bracket: Bracket, listed: Listed,
+  foodie: Foodie, music: Music, books: Books, nature: Nature, tech: Tech, myth: Myth, art: Art, history: History, streak: Streak, deep: Deep, dating: Dating, extra: Extra, bracket: Bracket, listed: Listed,
   clade: Clade, dossier: Dossier, bacon: Bacon, resume: Resume, filing: Filing, redact: Redact, niche: Niche, potluck: Potluck, mixtape: Mixtape, mishmash: Mishmash,
   focus: Focus, thread: Thread, slot: Slot, circa: Circa, tape: Tape,
   // Geography

@@ -16,7 +16,7 @@ import { register } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DAILY_KEYS, DAILY_GAME_MAP, RETIRED_DAILY } from '../lib/daily-games.js';
+import { DAILY_KEYS, DAILY_GAME_MAP, RETIRED_DAILY, LAUNCH_DAILY } from '../lib/daily-games.js';
 import {
   CIRCUITS, ALL_CIRCUITS, CIRCUIT_NAME_LISTS,
   circuitById, circuitKeysFor, isMarquee,
@@ -286,7 +286,27 @@ const FOODIE_FROM_LOCAL = '2026-10-27';
 // THE EVEN SPLIT (owner, 2026-11-15): four pool banks in the Gauntlet (six
 // quizzes with Streak and Deep), five in the Encore. Same window and anchor.
 const EVEN_FROM_LOCAL = '2026-11-15';
+// THE TRIVIA FINALE (owner, 2026-11-23). Launch day 2026-11-23: the Finale is the
+// five new banks and the other two runs deal the nine as before. From 2026-11-24
+// fourteen banks, the window moving FIVE a day: four to the Gauntlet, the next
+// five to the Encore, the last five to the Finale.
+const FINALE_FROM_LOCAL = '2026-11-23';
+const SHUFFLE_FROM_LOCAL = '2026-11-24';
+const FINALE_NEW = ['music', 'books', 'nature', 'tech', 'myth'];
+const SPLIT_POOL_V3 = ['atlas', 'music', 'sci', 'sport', 'books', 'art', 'script', 'nature', 'history', 'biz', 'tech', 'quotes', 'foodie', 'myth'];
+const launchedLocal = (k, iso) => !(LAUNCH_DAILY[k] && iso < LAUNCH_DAILY[k]);
 function splitLocal(c, iso) {
+  if (iso >= SHUFFLE_FROM_LOCAL) {
+    const live = SPLIT_POOL_V3.filter((k) => DAILY_GAME_MAP[k] && !(RETIRED_DAILY[k] && RETIRED_DAILY[k] <= iso) && launchedLocal(k, iso));
+    const n = live.length;
+    const days = Math.round((Date.UTC(+iso.slice(0, 4), +iso.slice(5, 7) - 1, +iso.slice(8, 10)) - Date.UTC(2026, 10, 24)) / 86400000);
+    const at = (((days * 5) % n) + n) % n;
+    const seat = (k) => (live.indexOf(k) - at + n) % n;
+    if (c.split === 'fin') return live.filter((k) => seat(k) >= 9);
+    if (c.split === 'out') return live.filter((k) => seat(k) >= 4 && seat(k) < 9);
+    return c.keys.filter((k) => !SPLIT_POOL_V3.includes(k) || seat(k) < 4);
+  }
+  if (c.split === 'fin') return iso === FINALE_FROM_LOCAL ? FINALE_NEW.slice() : [];
   if (c.split === 'out' && iso < SPLIT_FROM) return iso === '2026-10-14' ? ['sci', 'art', 'history'] : [];
   if (c.split === 'in' && iso < SPLIT_FROM) return c.before.keys.slice();
   const v2 = iso >= FOODIE_FROM_LOCAL;
@@ -298,7 +318,44 @@ function splitLocal(c, iso) {
   const inn = [];
   for (let i = 0; i < (iso >= EVEN_FROM_LOCAL ? 4 : 5) && i < n; i += 1) inn.push(live[(at + i) % n]);
   if (c.split === 'out') return live.filter((k) => !inn.includes(k));
-  return c.keys.filter((k) => !SPLIT_POOL.includes(k) || inn.includes(k));
+  return c.keys.filter((k) => !SPLIT_POOL_V3.includes(k) || inn.includes(k));
+}
+{
+  // The fourth era: fourteen banks over three runs, every one of them moving daily.
+  const g = CIRCUITS.find((c) => c.split === 'in');
+  const e = CIRCUITS.find((c) => c.split === 'out');
+  const fi = CIRCUITS.find((c) => c.split === 'fin');
+  if (!fi) fails.push('no circuit carries split: fin (the Trivia Finale)');
+  if (g && e && fi) {
+    const seen = { g: {}, e: {}, f: {} };
+    let prev = null;
+    for (let i = 0; i < 28; i += 1) {
+      const iso = new Date(Date.UTC(2026, 10, 24) + i * 86400000).toISOString().slice(0, 10);
+      const gk = circuitKeysFor(g.id, iso), ek = circuitKeysFor(e.id, iso), fk = circuitKeysFor(fi.id, iso);
+      if (gk.length !== 6) fails.push(`${g.id}: ${iso} plays ${gk.length}, expected 6`);
+      if (ek.length !== 5) fails.push(`${e.id}: ${iso} plays ${ek.length}, expected 5`);
+      if (fk.length !== 5) fails.push(`${fi.id}: ${iso} plays ${fk.length}, expected 5`);
+      if (!gk.includes('streak') || !gk.includes('deep')) fails.push(`${iso}: Streak and Deep must stay in the Gauntlet`);
+      const all = [...gk.filter((k) => SPLIT_POOL_V3.includes(k)), ...ek, ...fk];
+      if (new Set(all).size !== all.length) fails.push(`${iso}: a bank is in two trivia runs`);
+      if ([...all].sort().join() !== [...SPLIT_POOL_V3].sort().join()) fails.push(`${iso}: the three trivia runs do not cover the fourteen banks`);
+      for (const [tag, ks] of [['g', gk], ['e', ek], ['f', fk]]) for (const k of ks) seen[tag][k] = (seen[tag][k] || 0) + 1;
+      // "everything other than streak / deep will shuffle daily": no run keeps yesterday's lineup
+      const sig = [gk, ek, fk].map((ks) => [...ks].sort().join());
+      if (prev) sig.forEach((x, j) => { if (x === prev[j]) fails.push(`${iso}: a trivia run has the same banks as the day before`); });
+      prev = sig;
+      for (const ks of [ek, fk]) { const nw = ks.filter((k) => FINALE_NEW.includes(k)).length; if (nw === 0 || nw === ks.length) fails.push(`${iso}: a trivia run is all old or all new banks`); }
+    }
+    for (const k of SPLIT_POOL_V3) {
+      if (seen.g[k] !== 8) fails.push(`${k}: in the Gauntlet ${seen.g[k] || 0} of 28 days, expected 8`);
+      if (seen.e[k] !== 10) fails.push(`${k}: in the Encore ${seen.e[k] || 0} of 28 days, expected 10`);
+      if (seen.f[k] !== 10) fails.push(`${k}: in the Finale ${seen.f[k] || 0} of 28 days, expected 10`);
+    }
+    if (circuitKeysFor(fi.id, '2026-11-22').length) fails.push(`${fi.id}: plays before it launched`);
+    if ([...circuitKeysFor(fi.id, FINALE_FROM_LOCAL)].sort().join() !== [...FINALE_NEW].sort().join()) fails.push(`${fi.id}: launch day is not the five new banks`);
+    if (circuitKeysFor(g.id, FINALE_FROM_LOCAL).some((k) => FINALE_NEW.includes(k)) || circuitKeysFor(e.id, FINALE_FROM_LOCAL).some((k) => FINALE_NEW.includes(k))) fails.push('launch day: a new bank is outside the Finale');
+    if (circuitKeysFor(g.id, FINALE_FROM_LOCAL).length !== 6 || circuitKeysFor(e.id, FINALE_FROM_LOCAL).length !== 5) fails.push('launch day: the Gauntlet and the Encore must still deal six and five');
+  }
 }
 {
   // every pool bank plays five days in eight in the Gauntlet and three in the
@@ -484,7 +541,7 @@ for (const c of CIRCUITS) {
   if (live.join(',') !== want.join(',')) {
     fails.push(`${c.id}: circuitKeysFor returned [${live.join(',')}], expected [${want.join(',')}]`);
   }
-  if (live.length < (c.solo ? 1 : 2) && !(c.solo && !LAUNCHED(c.keys[0])) && !(c.split === 'out' && todayIso < SPLIT_FROM)) {
+  if (live.length < (c.solo ? 1 : 2) && !(c.solo && !LAUNCHED(c.keys[0])) && !(c.split === 'out' && todayIso < SPLIT_FROM) && !(c.split === 'fin' && todayIso < FINALE_FROM_LOCAL)) {
     fails.push(`${c.id}: only ${live.length} live game(s) today — the band needs at least 2 to render a run`);
   }
   if (!c.rotate && !c.split && live.length < datedKeys.length) {

@@ -31,6 +31,11 @@ import { PUZZLES as sciPuzzles } from '../../sci/puzzles';
 import { PUZZLES as artPuzzles } from '../../art/puzzles';
 import { PUZZLES as historyPuzzles } from '../../history/puzzles';
 import { PUZZLES as foodiePuzzles } from '../../foodie/puzzles';
+import { PUZZLES as musicPuzzles } from '../../music/puzzles';
+import { PUZZLES as booksPuzzles } from '../../books/puzzles';
+import { PUZZLES as naturePuzzles } from '../../nature/puzzles';
+import { PUZZLES as techPuzzles } from '../../tech/puzzles';
+import { PUZZLES as mythPuzzles } from '../../myth/puzzles';
 import { PUZZLES as streakPuzzles } from '../../streak/puzzles';
 import { PUZZLES as pulsePuzzles } from '../../pulse/puzzles';
 import { PUZZLES as genePuzzles } from '../../gene/puzzles';
@@ -51,7 +56,7 @@ import { PUZZLES as backPuzzles } from '../../back/puzzles';
 const DAYS = {
   deep: deepPuzzles, atlas: atlasPuzzles, sport: sportPuzzles, biz: bizPuzzles,
   script: scriptPuzzles, quotes: quotesPuzzles, streak: streakPuzzles,
-  sci: sciPuzzles, art: artPuzzles, history: historyPuzzles, foodie: foodiePuzzles,
+  sci: sciPuzzles, art: artPuzzles, history: historyPuzzles, foodie: foodiePuzzles, music: musicPuzzles, books: booksPuzzles, nature: naturePuzzles, tech: techPuzzles, myth: mythPuzzles,
   gram: gramPuzzles, vocab: vocabPuzzles, spell: spellPuzzles, origin: originPuzzles, idiom: idiomPuzzles,
   pulse: pulsePuzzles, gene: genePuzzles, orbit: orbitPuzzles, eureka: eurekaPuzzles, bond: bondPuzzles,
   // The Math Gauntlet's five (2026-10-09). Without these the math circuit had

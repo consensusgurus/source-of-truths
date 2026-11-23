@@ -939,3 +939,91 @@ to that topic), and **See Your Map** on a database game's end screen.
   reads `QDBS[db].topics` and the pool, so a topic added there gets its own box, colour, subtopics and
   progress with no map change. A narrow box shows its name only (its percent is in the side list).
 
+## The Trivia Finale and Music, Books, Nature, Tech, Myth (owner, 2026-11-23; opened that day)
+
+Owner: "what would be another one beyond encore?" (Trivia Finale), "how can we split them cleanly ...
+maybe so that gauntlet has one more?" (6 / 5 / 5 over sixteen categories), then "build Finale with
+the five new banks", "everything other than streak / deep will shuffle daily", and "do not send a
+pop-up for anything other than the Run itself".
+
+**Five new 25-question gauntlets on Foodie's shape** (five tiers of five lanes, one life, twenty
+seconds, `miss: 'Asked'`, no Sunday Edition), each also its own Trivia daily:
+
+| Key | Lanes, in order |
+|---|---|
+| `music` | Rock & Pop, Hip-Hop & R&B, Classical & Jazz, Country & Folk, Instruments & Theory |
+| `books` | Classics, Modern Fiction, Children's & YA, Authors, Poetry & Plays |
+| `nature` | Mammals, Birds & Sea Life, Plants, Weather & Earth, Record Holders |
+| `tech` | Internet & Apps, Video Games, Gadgets, Computing History, Founders & Companies |
+| `myth` | Greek & Roman, Norse & Celtic, World Religions, Folklore & Legends, Monsters & Heroes |
+
+- **One config, two scripts.** `scripts/finale-games.mjs` holds every game's lanes, colours, tier
+  names, copy and glyph. `scripts/mkfinale.mjs` scaffolded `gen-<key>.mjs`, `verify-<key>.mjs`, the
+  client and the page from Foodie's (re-run only before the games diverge; after launch edit the
+  clients). `scripts/wire-finale.mjs` is the anchored site wiring, 45 edits hung off Foodie's entries:
+  it is the list of what a new 25-question gauntlet has to touch.
+- **Banks:** 22 days, 2026-11-23 to 2026-12-14, 550 questions each, from `scripts/<key>-lanes/`.
+  Written to `scripts/finale-lanes-brief.md`, one author per lane, then every question read by a
+  separate reviewer per game to `scripts/finale-review-brief.md` (243 of the 2,750 changed: no wrong
+  answer keys in four banks and one in Nature; the rest contested or present-tense stems, true
+  distractors, same-day giveaways and facts repeated across lanes). The ledger says so.
+- **FACTS ALREADY ASKED ELSEWHERE (owner ruling, 2026-11-23).** The other trivia banks held 37,040
+  questions when these were written, and about 46% of a naturally written lane repeated a banked
+  fact. Ruling: "a fact asked in another game may be asked again in new words; never the same
+  wording, and never twice inside the new banks." `trivia-lane-check.mjs` now also reads Foodie, the
+  five science banks and these five; its "already in" lines are a wording check, not a ban.
+- **What the reviewers left for a person** (each is the commonly told version, kept on purpose):
+  Music: Mood Indigo's co-credits, John Lomax beside Alan, Elvis's 1953 private acetates. Books:
+  Stendhal's red and black, Beth March's cause of death, the rejection count for A Wrinkle in Time.
+  Nature: polar bear vs Kodiak as largest bear, the approximate figures (bowhead ~200 years, bamboo
+  ~3 ft a day), and Darwin's bark spider, which Deep (`d135q13`) dates to 2010 where the reviewer
+  remembered 2009. Tech: the first banner ad buyer, the 176 original emoji, Virtua Fighter and the
+  Adventure Easter egg as "first". Myth: the qilin's horn count, satyrs as goat-men, the Chimera's
+  layout, and Monsters & Heroes leaning on the two Hindu epics (12 questions, no repeated fact).
+- **No tile PNGs**, like Sci, Art, History and Foodie (the stage look draws the glyph). Share cards
+  are baked: `public/og/<key>.png`.
+
+**THE ROTATION IS FOURTEEN BANKS OVER THREE RUNS** (`lib/circuits.js`, `triviaSplit`).
+
+- **Launch day, 2026-11-23 (`FINALE_FROM`):** the Finale is exactly the five new banks; the Gauntlet
+  and Encore deal the nine as they would have, so neither changed that day.
+- **From 2026-11-24 (`FINALE_SHUFFLE_FROM`):** `TRIVIA_POOL_V3`, fourteen banks alternating old and
+  new. Four go to the Gauntlet (six quizzes with Streak and Deep), the next five to the Encore, the
+  last five to the Finale. **The window moves `TRIVIA_STRIDE` = 5 banks a day, not one**, which is the
+  owner's "shuffle daily": every run's lineup changes every day. Five shares no factor with fourteen,
+  so the window starts on every bank once in fourteen days: each bank plays the Gauntlet exactly 4
+  days in 14 and each of the other two runs 5. `triviaSplit(day)` returns `{ in, out, fin }` and is
+  still the only copy of the selection; a circuit carries `split: 'in' | 'out' | 'fin'`.
+- `scripts/verify-circuits.mjs` has its own date math for the fourth era (`splitLocal`) and proves,
+  over 28 days: 6 / 5 / 5, Streak and Deep in the Gauntlet, no bank in two runs, the three covering
+  the fourteen, 8 / 10 / 10 appearances per bank, no run repeating yesterday's banks, no Encore or
+  Finale all old or all new, and the launch-day lineup.
+- The Gauntlet's `keys` is sixteen long and both other runs' fourteen; the new banks were APPENDED so
+  no older bank changed its slot. `LADDER_RAMP` stays eleven steps: a run's stage colours come from
+  `daySpectrumSlots` by position (owner, 2026-11-08), and a new bank's own stage wraps onto an
+  existing step (Tech sky, Nature mint, Books lime, Myth gold, Music orange).
+
+**THE TRIVIA FINALE** is circuit `triviafinale`, at `/triviafinale` by a rewrite (never create
+`app/triviafinale/page.js`), on the same run page and RunClient as the Encore: towers, `score:
+'correct'`, its own board, trophy "Final Bow" (bronze), title ladder `triviafinale` (the Encore's
+cutoffs, 125 asked). It has no combined-with-the-Gauntlet board; that stays the Encore's.
+
+- **Where it shows:** `SHOWN` and `LEAD_ORDER` (circuits.js), `CIRC_LEAD`, `FOLD_RUNS`, `RUN_TAGS`,
+  `PILL_CIRCUITS`, `RUN_SHORT` (StageToday), `LEAD_CIRCUITS` (TodayClient), `RUN_ORDER` and
+  `LIVE_ROSTER` (MoreRuns), `RUN_DOORS` (RunDoorPop), `RUN_LANDINGS` and `GAUNTLET_SEO` (run-seo, so
+  it is indexed at its short address and in the sitemap), its drawing in CircuitArt and RunGateTile,
+  `RUN_DB` and the Trivia Database's "today" links (qdb.js), lib/multiple-choice.js.
+- **The finish order:** the Gauntlet still offers the Encore first (EncorePop and its end-card door).
+  With the Encore done or absent, the Gauntlet's "Play similar" card is the Finale; the Encore's is
+  the Finale too (`finale` prop from `finaleFor(today)` in the run page). No new pop-up was built.
+- **THE ONLY POP-UP IS THE RUN'S** (owner). `PREMIERE_RUNS` carries one `triviafinale` card
+  (2026-11-23 to 12-02) naming the five banks as members, which stamps them seen. None of the five
+  has a `PREMIERES` line, and none may be given one. `LAUNCH_PIN` (an order pin, not a pop-up) leads
+  the still-to-play list with them for their first days, and `LAUNCH_DAILY` keeps all five off every
+  roster until 2026-11-23. Each new daily's gate shows the run's door (`RunDoorPop id="triviafinale"`).
+- **The databases:** five new Trivia Database topics (`music`, `books`, `nature`, `technology`,
+  `mythology`), sixteen in all. A bank's questions join the day after they run, so each topic opened
+  with the Deep subjects already mapped to it (`DEEP_PARENT` lists these slugs first): until a topic
+  has questions of its own, its page prints those (`samples`).
+- Also fixed in this pass: the Trivia Database's "today" link for the Encore pointed at `/encore`
+  (the crossword), now `/triviaencore`.

@@ -106,6 +106,7 @@ const RUN_TAG = {
   pricecheck: 'Five price guesses, one card',
   gauntlet: 'Six trivia categories, one life each',
   triviaencore: 'The five trivia banks that sat out the Gauntlet',
+  triviafinale: 'The last five trivia banks of the day',
   passport: 'Ping, sizes, Flank, Span, a passport',
 };
 const RUN_GLYPH = 'M3 7h8v4H3zM13 13h8v4h-8zM11 9h4v6';

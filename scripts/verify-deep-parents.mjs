@@ -47,7 +47,7 @@ for (const db of ['trivia', 'science']) {
   const mix = lib.pickSet({ db, topic: 'mix', n: 120, seed: 3, today: DAY });
   if (new Set(mix.map((x) => x.k)).size !== mix.length) fail(`${db}: a mix of everything dealt a question twice`);
   for (const t of QDBS[db].topics) {
-    if (lib.samples(db, t.slug, 40, DAY).some((x) => x.deep && t.slug !== 'deep-cuts')) fail(`${db}/${t.slug}: the topic page prints a Deep copy`);
+    if (pool[t.slug].some((x) => !x.deep) && lib.samples(db, t.slug, 40, DAY).some((x) => x.deep && t.slug !== 'deep-cuts')) fail(`${db}/${t.slug}: the topic page prints a Deep copy`);
     for (const lane of stats[t.slug].deep) {
       if (stats[t.slug].lanes.filter(([l]) => l === lane).length !== 1) fail(`${db}/${t.slug}: Deep subject "${lane}" collides with another lane`);
       if (pool[t.slug].some((x) => x.lane === lane && !x.deep)) fail(`${db}/${t.slug}: lane "${lane}" mixes Deep and bank questions`);

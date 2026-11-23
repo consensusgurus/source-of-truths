@@ -97,6 +97,7 @@ const nextConfig = {
       { source: '/english', destination: '/circuits/english/run' },
       { source: '/science', destination: '/circuits/science/run' },
       { source: '/triviaencore', destination: '/circuits/triviaencore/run' },
+      { source: '/triviafinale', destination: '/circuits/triviafinale/run' },
     ];
   },
   async redirects() {
@@ -121,6 +122,7 @@ const nextConfig = {
       { source: '/circuits/english/run', destination: '/english', permanent: true },
       { source: '/circuits/science/run', destination: '/science', permanent: true },
       { source: '/circuits/triviaencore/run', destination: '/triviaencore', permanent: true },
+      { source: '/circuits/triviafinale/run', destination: '/triviafinale', permanent: true },
       // 2026-10-12: the rotating Sudoku circuit was retired for Enter the Dojo.
       { source: '/circuits/sudoku', destination: '/dojo', permanent: true },
       // The Valet Gauntlet was retired (owner, 2026-10-18). Parker, Impound and

@@ -49,6 +49,22 @@ const ART = {
       </g>
     </>
   ),
+  // TRIVIA FINALE (owner, 2026-11-23): the same stage with the curtain drawn back,
+  // a star over the last question card, and five pips for its five quizzes.
+  triviafinale: (
+    <>
+      <path d="M40 14 H200" strokeWidth="4" />
+      <path d="M44 16 C50 44 46 74 50 96 M54 16 C58 40 60 60 64 74 C56 80 52 88 50 96" {...T} />
+      <path d="M196 16 C190 44 194 74 190 96 M186 16 C182 40 180 60 176 74 C184 80 188 88 190 96" {...T} />
+      <rect className="k" x="98" y="40" width="44" height="50" rx="6" />
+      <text x="120" y="76" fontSize="30" {...TX}>?</text>
+      <path d="M120 16 l3.4 7 7.6 1 -5.5 5.4 1.3 7.6 -6.8 -3.6 -6.8 3.6 1.3 -7.6 -5.5 -5.4 7.6 -1z" stroke="none" fill="currentColor" />
+      <path d="M36 98 H204" strokeWidth="3" />
+      <g stroke="none" fill="currentColor">
+        <circle cx="96" cy="110" r="4" /><circle cx="108" cy="110" r="4" /><circle cx="120" cy="110" r="4" /><circle cx="132" cy="110" r="4" /><circle cx="144" cy="110" r="4" />
+      </g>
+    </>
+  ),
   // SCIENCE GAUNTLET (2026-10-30): an Erlenmeyer flask, half full, five pips.
   science: (
     <>

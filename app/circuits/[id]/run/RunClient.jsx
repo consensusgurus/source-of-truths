@@ -204,13 +204,17 @@ function endingReplay() {
   try { return new URLSearchParams(window.location.search).get('ending') === '1'; } catch (e) { return false; }
 }
 
-export default function RunClient({ circuitId, circuitName, dateLabel, sections = [], boards = null, encore = null, gauntlet = null }) {
+export default function RunClient({ circuitId, circuitName, dateLabel, sections = [], boards = null, encore = null, gauntlet = null, finale = null }) {
   const N = sections.length;
   // THE TRIVIA ENCORE (owner, 2026-10-14). The Encore is the three banks that
   // sat out today's Gauntlet. On the Gauntlet its pop-up and end-card door
   // come first, and the more-runs / more-trivia cards wait for the Encore's
   // own finish. On the Encore the board also shows the combined total.
   const ENCORE = circuitId === 'triviaencore';
+  // THE TRIVIA FINALE (owner, 2026-11-23): the third trivia run. It plays and ends
+  // like the Encore, without the Encore's combined-with-the-Gauntlet board.
+  const FINALE = circuitId === 'triviafinale';
+  const finaleOn = !FINALE && finale && Array.isArray(finale.games) && finale.games.length >= 2;
   const GAUNT = circuitId === 'gauntlet';
   const ENGLISH = circuitId === 'english';
   const SCIENCE = circuitId === 'science';
@@ -225,7 +229,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // Which POP-UPS come after a finished run: on the Gauntlet only when there
   // is no Encore left to offer today, and on the Encore only once the
   // Gauntlet is done (until then its own nudge back takes the slot).
-  const afterCards = (ENCORE && (!backAvail || gauntDone === true)) || circuitId === 'math' || ENGLISH || SCIENCE || (GAUNT && (!encoreOn || encoreDone));
+  const afterCards = FINALE || (ENCORE && (!backAvail || gauntDone === true)) || circuitId === 'math' || ENGLISH || SCIENCE || (GAUNT && (!encoreOn || encoreDone));
   // The inline more-runs LIST is always on the trivia and math endings, so
   // the other trivia run is listed whenever it is unplayed (owner, 2026-10-14).
   const listCards = afterCards || ENCORE || GAUNT;
@@ -311,7 +315,12 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       setSimilarRun({ name: 'Trivia Encore', href: (encore && encore.href) || '/triviaencore', parts: RUN_DOORS.triviaencore.eyebrow.replace(/^Daily run \u00b7 /, ''), fill: pastelOf(RUN_DOORS.triviaencore.accent) });
       return;
     }
-    const id = otherRuns(circuitId).find((x) => x !== 'triviaencore' && !runDoneToday(x));
+    // Then the Finale, from either of the other two trivia runs, while it is open today.
+    if (finaleOn && !runDoneToday('triviafinale')) {
+      setSimilarRun({ name: 'Trivia Finale', href: finale.href || '/triviafinale', parts: RUN_DOORS.triviafinale.eyebrow.replace(/^Daily run \u00b7 /, ''), fill: pastelOf(RUN_DOORS.triviafinale.accent) });
+      return;
+    }
+    const id = otherRuns(circuitId).find((x) => x !== 'triviaencore' && x !== 'triviafinale' && !runDoneToday(x));
     // The pastel card names the run's parts (owner, 2026-11-04: Gram · Vocab · Spell ...).
     setSimilarRun(id && RUN_DOORS[id] ? {
       name: RUN_DOORS[id].name, href: RUN_DOORS[id].href, fill: pastelOf(RUN_DOORS[id].accent),
@@ -347,7 +356,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
       // THE GAUNTLETS CLIMB ON THE ENDING ITSELF (owner, 2026-10-25: match the
       // other runs). The stage ending sweeps, counts and climbs the title
       // ladder, so the separate curtain no longer plays before it.
-      if (!(circuitId === 'gauntlet' || circuitId === 'math' || circuitId === 'triviaencore' || circuitId === 'english' || circuitId === 'science')) setCurtain(true);
+      if (!(circuitId === 'gauntlet' || circuitId === 'math' || circuitId === 'triviaencore' || circuitId === 'triviafinale' || circuitId === 'english' || circuitId === 'science')) setCurtain(true);
     }
   }, [hydrated, done]);
 
@@ -960,11 +969,11 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
   // THE TOWERS (owner approved 2026-10-10) are the Trivia and Math Gauntlets'
   // presentation only. Every other run (Judged, Price Check, Passport) renders
   // exactly as it did: the gutter ladder, the scorecard ladder, all of it.
-  const TOWERS = circuitId === 'gauntlet' || circuitId === 'math' || ENCORE || ENGLISH || SCIENCE;
+  const TOWERS = circuitId === 'gauntlet' || circuitId === 'math' || ENCORE || FINALE || ENGLISH || SCIENCE;
   const endLanded = !TOWERS || endSettled || !endOpen;
   const MATHRUN = circuitId === 'math';
   // The two Gauntlets end on the board at the top of the card (owner, 2026-10-17).
-  const BTOP = GAUNT || MATHRUN || ENCORE || ENGLISH || SCIENCE;
+  const BTOP = GAUNT || MATHRUN || ENCORE || FINALE || ENGLISH || SCIENCE;
   const upIdx = upNext ? sections.findIndex((s) => s.key === upNext.key) : -1;
 
   // THE RACE PANEL, built once and drawn by both play layouts. Same markup
@@ -1933,7 +1942,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                     challenge={isChallengeableRun(circuitId) && !r.practice
                       ? { score: cleared, total: askable, n: runToken(), t: runSecs > 0 ? Math.round(runSecs) : null }
                       : null}
-                    similar={GAUNT || ENCORE ? similarRun : null}
+                    similar={GAUNT || ENCORE || FINALE ? similarRun : null}
                     boardHref={runSummaryHref(circuitId)}
                     boardState={boardQ.state}
                     polymath={MC_IDS.includes(circuitId) && !r.practice
@@ -2149,13 +2158,13 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                           <MissList sections={sections} results={r.results} colourOf={(s) => rampFor(s.slot)} />
                         </div>
                       ) : null}
-                      {GAUNT || ENCORE ? null : door('next', 'Play similar', 'Open puzzles and two more circuits',
+                      {GAUNT || ENCORE || FINALE ? null : door('next', 'Play similar', 'Open puzzles and two more circuits',
                         { onClick: () => setNextOpen((v) => !v), 'aria-expanded': nextOpen, 'aria-controls': 'rn-next' })}
                       {door('again', 'Try again for practice', 'The same questions, nothing posted', { onClick: startPractice })}
                       {nextOpen ? <div className="rn-dwide" id="rn-next"><RunNextUp circuitId={circuitId} /></div> : null}
                       {door('board', 'Stats + leaderboard', rankSub,
                         { onClick: () => setBoardOpen((v) => !v), 'aria-expanded': boardOpen, 'aria-controls': 'rn-bd' })}
-                      <a className={`rn-door${GAUNT || ENCORE ? ' rn-dall' : ''}`} href="/">
+                      <a className={`rn-door${GAUNT || ENCORE || FINALE ? ' rn-dall' : ''}`} href="/">
                         <span className="rn-dtx"><span className="rn-dnm">All daily puzzles</span><span className="rn-dsb">Back to today&rsquo;s slate</span></span>
                         <span className="rn-dar" aria-hidden="true">&rsaquo;</span>
                       </a>
@@ -2210,7 +2219,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
                   <McCard circuitId={circuitId} right={cleared} />
                 ) : null}
 
-                {GAUNT || ENCORE ? (
+                {GAUNT || ENCORE || FINALE ? (
                   <TriviaMoreList
                     self={circuitId}
                     otherOpen={GAUNT ? encoreOn : backAvail}
@@ -2288,7 +2297,7 @@ export default function RunClient({ circuitId, circuitName, dateLabel, sections 
         />
       ) : null}
       {afterCards && (
-        <GauntletMorePop circuitId={ENCORE ? 'gauntlet' : circuitId} ready={hydrated && done && !curtain && endLanded} results={r.results} sections={sections} boards={boards} onOpenChange={setDoorUp} onShown={() => setMoreShown(true)} />
+        <GauntletMorePop circuitId={ENCORE || FINALE ? 'gauntlet' : circuitId} ready={hydrated && done && !curtain && endLanded} results={r.results} sections={sections} boards={boards} onOpenChange={setDoorUp} onShown={() => setMoreShown(true)} />
       )}
     </div>
   );

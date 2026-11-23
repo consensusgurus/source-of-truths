@@ -41,7 +41,7 @@ function useInPaper(self) {
   return on;
 }
 
-export const RUN_ORDER = ['gauntlet', 'triviaencore', 'english', 'science', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'dojocolor', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye', 'oddjobs'];
+export const RUN_ORDER = ['gauntlet', 'triviaencore', 'triviafinale', 'english', 'science', 'math', 'pricecheck', 'passport', 'judged', 'dojo', 'dojocolor', 'crossed', 'room', 'spacecadet', 'duediligence', 'eagleeye', 'oddjobs'];
 export const RUNS_POP_STORE = 'sot_runs_pop';
 
 const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
@@ -66,7 +66,7 @@ function useOpenRuns(self, ready = true) {
 // The two trivia runs rotate their roster daily, so their sub line names
 // TODAY's quizzes rather than a static list. Rows only render after the
 // effect in useOpenRuns, so reading the day here never meets the server render.
-const LIVE_ROSTER = { gauntlet: true, triviaencore: true };
+const LIVE_ROSTER = { gauntlet: true, triviaencore: true, triviafinale: true };
 function subOf(id) {
   const D = RUN_DOORS[id];
   if (LIVE_ROSTER[id]) {

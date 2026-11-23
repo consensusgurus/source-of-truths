@@ -88,7 +88,7 @@ import {
   Club, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, UserPlus, Gavel, Shield,
   Flame, Frame, Contrast, Layers, FileText, Waypoints, Anchor, PenLine, Gamepad2, Zap, Sigma, Sandwich,
   ArrowLeftRight, Gem, Map as MapIcon, Divide, TableProperties, TrendingUp, Milestone, Plane, CornerUpRight,
-  Palette, Landmark, UtensilsCrossed, Eye,
+  Palette, Landmark, UtensilsCrossed, Eye, Music, BookOpen, Leaf, Cpu,
   Clapperboard, Quote, CookingPot, Disc3, Shuffle, ZoomIn, Axe, Truck, Rows3, Boxes, MoveDiagonal, Crop, Scan, MoveDownRight,
 } from 'lucide-react';
 import ReportIssue from './ReportIssue';
@@ -117,7 +117,7 @@ const DEFEAT_GAMES = new Set(['four', 'mate', 'check', 'taire', 'chain', 'turn',
 // "still to play" list for their first FOUR days so players actually meet
 // them; after `until` (ET, inclusive) the canonical order resumes. Keep in
 // sync with the same pin in app/api/quiz/daily-order/route.js.
-const LAUNCH_PIN = { keys: ['glimpse', 'colossus', 'mammoth', 'search', 'mural', 'muraltoo', 'bot', 'peg', 'crate', 'machine', 'plow', 'mow', 'poll', 'dash', 'errands', 'bag', 'seated', 'pack', 'chef', 'mop', 'spot', 'witness', 'defuse', 'filing', 'resume', 'carmen', 'mercurytoo', 'tangled', 'simon', 'bacon', 'tape', 'saw', 'swap', 'slide', 'spin', 'connect', 'fill', 'pairs', 'mixtape', 'mishmash', 'sudoclue', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'mahj', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
+const LAUNCH_PIN = { keys: ['music', 'books', 'nature', 'tech', 'myth', 'glimpse', 'colossus', 'mammoth', 'search', 'mural', 'muraltoo', 'bot', 'peg', 'crate', 'machine', 'plow', 'mow', 'poll', 'dash', 'errands', 'bag', 'seated', 'pack', 'chef', 'mop', 'spot', 'witness', 'defuse', 'filing', 'resume', 'carmen', 'mercurytoo', 'tangled', 'simon', 'bacon', 'tape', 'saw', 'swap', 'slide', 'spin', 'connect', 'fill', 'pairs', 'mixtape', 'mishmash', 'sudoclue', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'mahj', 'roll', 'topple', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'arcos', 'squash', 'herd', 'gift', 'scour', 'jig', 'window', 'five', 'racecar', 'scram', 'hold', 'cell', 'swindle', 'foodie', 'sci', 'art', 'history', 'sumo', 'arrow', 'giant', 'ergo', 'potluck', 'gap', 'series', 'back', 'dario', 'snake', 'lamps', 'clade', 'dossier', 'judges', 'duet', 'pricer', 'dealer', 'realtor', 'agent', 'curator', 'yose', 'crib', 'snug', 'frame', 'rim', 'diag', 'junkyard', 'slot', 'impound', 'whittle', 'finesse', 'sums', 'hinge', 'blitzed', 'thread', 'focus', 'script', 'quotes', 'knight', 'flank', 'biz', 'encore', 'calc', 'sport', 'atlas', 'towers', 'mercury', 'polka', 'queen', 'shoe', 'niche', 'sixes', 'plot', 'barter', 'sando', 'cages', 'quilt', 'defend', 'blitz', 'docket', 'sweep', 'chomp', 'blocks', 'anon', 'deep', 'paths', 'redact', 'strata', 'suffice', 'turn', 'chain', 'hands', 'glyph', 'babel'], until: '2026-10-19' };
 function etTodayEC() {
   try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
   catch (e) { return new Date().toISOString().slice(0, 10); }
@@ -316,6 +316,11 @@ export const GAME_META = {
   bond: { accent: '#047857', badgeBg: '#047857', badgeInk: T.white, Fin: FlaskConical },
   art: { accent: '#9d174d', badgeBg: '#9d174d', badgeInk: T.white, Fin: Palette },
   foodie: { accent: '#c2410c', badgeBg: '#c2410c', badgeInk: T.white, Fin: UtensilsCrossed },
+  music: { accent: '#be185d', badgeBg: '#be185d', badgeInk: T.white, Fin: Music },
+  books: { accent: '#92400e', badgeBg: '#92400e', badgeInk: T.white, Fin: BookOpen },
+  nature: { accent: '#15803d', badgeBg: '#15803d', badgeInk: T.white, Fin: Leaf },
+  tech: { accent: '#0369a1', badgeBg: '#0369a1', badgeInk: T.white, Fin: Cpu },
+  myth: { accent: '#6d28d9', badgeBg: '#6d28d9', badgeInk: T.white, Fin: Zap },
   history: { accent: '#854d0e', badgeBg: '#854d0e', badgeInk: T.white, Fin: Landmark },
   potluck: { accent: '#b4532a', badgeBg: '#b4532a', badgeInk: T.white, Fin: CookingPot },
   mixtape: { accent: '#9d2f6b', badgeBg: '#9d2f6b', badgeInk: T.white, Fin: Disc3 },
@@ -535,6 +540,11 @@ const ALL_DAILY_GAMES = [
   { key: 'bond', cat: 'trivia',   name: 'Bond', tag: 'Chemistry', blurb: 'Ten chemistry questions, gimme to expert: the elements, then compounds and reactions. One wrong answer ends the run.', href: '/bond' },
   { key: 'art', cat: 'trivia',   name: 'Art', tag: 'Arts and culture', blurb: 'Twenty-five arts and culture questions, gimme to expert, five lanes a round from the gallery and the concert hall to the bookshelf and the skyline. One wrong answer ends the run.', href: '/art' },
   { key: 'foodie', cat: 'trivia',   name: 'Foodie', tag: 'Food and drink', blurb: 'Twenty-five food and drink questions, gimme to expert, five lanes a round from dishes of the world and the pantry to the bar, the kitchen and the history of what we eat. One wrong answer ends the run.', href: '/foodie' },
+  { key: 'music', cat: 'trivia',   name: 'Music', tag: 'Rock to classical', blurb: 'Twenty-five music questions, gimme to expert, five lanes a round: rock and pop, hip-hop and R&B, classical and jazz, country and folk, and instruments and theory. One wrong answer ends the run.', href: '/music' },
+  { key: 'books', cat: 'trivia',   name: 'Books', tag: 'Novels, poems, and plays', blurb: 'Twenty-five books questions, gimme to expert, five lanes a round: classics, modern fiction, children\'s and young adult books, authors, and poetry and plays. One wrong answer ends the run.', href: '/books' },
+  { key: 'nature', cat: 'trivia',   name: 'Nature', tag: 'Animals, plants, and weather', blurb: 'Twenty-five nature questions, gimme to expert, five lanes a round: mammals, birds and sea life, plants, weather and earth, and record holders. One wrong answer ends the run.', href: '/nature' },
+  { key: 'tech', cat: 'trivia',   name: 'Tech', tag: 'Internet, games, and gadgets', blurb: 'Twenty-five technology questions, gimme to expert, five lanes a round: the internet and apps, video games, gadgets, computing history, and founders and companies. One wrong answer ends the run.', href: '/tech' },
+  { key: 'myth', cat: 'trivia',   name: 'Myth', tag: 'Myths, legends, and faiths', blurb: 'Twenty-five mythology and religion questions, gimme to expert, five lanes a round: Greek and Roman myth, Norse and Celtic myth, world religions, folklore and legends, and monsters and heroes. One wrong answer ends the run.', href: '/myth' },
   { key: 'history', cat: 'trivia',   name: 'History', tag: 'History', blurb: 'Twenty-five history questions, gimme to expert, five lanes a round from the ancient world and the Middle Ages to empires, wars and the modern era. One wrong answer ends the run.', href: '/history' },
   { key: 'potluck', cat: 'trivia',  name: 'Potluck', tag: 'Three quizzes, one score', blurb: 'Three quizzes a day from the catalog, one to type, one to match and one to spot, each from a different subject. Each is worth 10; turn it in whenever you are done.', href: '/potluck' },
   { key: 'mixtape', cat: 'trivia',  name: 'Mixtape', tag: 'Three more quizzes, one score', blurb: 'Three quizzes a day from the catalog, one to type, one to match and one to spot, each from a different subject, back to back. Each is worth 10.', href: '/mixtape' },
