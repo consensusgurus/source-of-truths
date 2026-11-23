@@ -903,3 +903,36 @@ system day was in neither Science topic.
   `lanePages` skips a topic's `deep` lanes, so there is no second URL with the same fifteen questions.
 - A parent topic with more than twelve subtopics shows them in the compact searchable grid that Deep
   Cuts already used (`manyLanes` in QdbPortal).
+
+## The Progress Map on the question databases (owner, 2026-11-23)
+
+Owner: "an amazing full screen visualization for players in the various databases that show
+progress to completion." Built as `app/QdbMap.jsx`, a full-screen overlay opened from:
+the **Your Progress Map** tile on every database hub (first tile in the `.qd-mine` row, with a
+thin progress bar), the **Your <Topic> Map** tile on every topic and subtopic page (opens zoomed
+to that topic), and **See Your Map** on a database game's end screen.
+
+- **One square per question.** Every question the database can serve today, as a treemap of
+  topics sized by count (or, zoomed in, of the topic's lanes). Each box picks its own square size
+  so it fills edge to edge. Squares sit in deal order (lanes biggest first, each lane oldest
+  first), so a topic fills from its top-left. Right = the topic colour (site pastel, softened
+  12% on light looks), missed = a faint tint, not yet = grey. 1px ink box outlines, no dashes.
+- **On opening:** the answered squares sweep in diagonally (1.3s), then the squares answered
+  since the last look pop. Headline % counts up; a rank chip (Newcomer, Explorer, Regular,
+  Scholar, Expert, Sage, Oracle, Completist at 0/1/5/10/25/50/75/100%); a topic-coloured bar
+  with milestone ticks (1, 10, 25, 50, 75, 100) and "Next stop".
+- **Tap a topic** to zoom to its lanes; tap a lane for a card with **Play what is left**.
+  The side list has every topic (or lane) with a right/missed bar. Esc or Back steps out.
+- **Layout:** `GET /api/trivia/map?db=<db>&d=<ET day>` returns keys only (no question text),
+  grouped by topic and lane. Edge-cached a day; the `d` param keys the cache by day. ~300KB raw
+  for Trivia, small gzipped.
+- **The record** is `lib/qdb-done.js`, localStorage `sot_qdb_done`: `{ d: {'bank:id': 1 right |
+  2 missed}, f: [fresh keys], bf: {db: 1} }`. ONE record for all four databases, so a science
+  question answered in the Science Database is done in Trivia's Science topic too. On first read
+  per database it folds in the older per-database record (`storeKey(db)`: the 4,000 seen keys,
+  missed list) so nobody opens to a blank wall. Every database answer calls `markDone`.
+- **Deals now skip answered questions beyond 4,000.** `QdbPortal.seenFor()` sends the page's
+  recent keys plus every done key of the topics in play (still capped at 4,000 by the route),
+  so "Play what is left" really serves the grey squares first.
+- Daily gauntlet answers do NOT mark squares yet (the map is database play only).
+

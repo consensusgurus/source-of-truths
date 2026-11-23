@@ -35,6 +35,8 @@ import { useGauntletLook, stagePalette, useStageChrome } from './GauntletScreens
 import { nextLook } from '@/lib/stage-look';
 import { softGround, RAMP_INK } from '@/lib/category-ramp';
 import { mathText } from './MathText';
+import QdbMap from './QdbMap';
+import { readDone, markDone, doneKeysFor } from '@/lib/qdb-done';
 import { QDBS, QDB_KEYS, MODES, DIFFICULTY, COUNTS, ENDLESS_N, SPRINT_SECONDS, storeKey, setupKey, MISS_CAP, laneLabel } from '@/lib/qdb';
 
 const fmt = (n) => Number(n || 0).toLocaleString('en-US');
@@ -85,6 +87,9 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
   const [laneQ, setLaneQ] = useState('');
   // Topics picked on a hub (owner, 2026-11-21: "a way to select multiple topics").
   const [picked, setPicked] = useState(() => new Set());
+  // THE PROGRESS MAP (owner, 2026-11-23), full screen over the page: { focus } or null.
+  const [map, setMap] = useState(null);
+  const mapAfterGame = useRef(null);
   // BROWSER BACK CLOSES A GAME FIRST (owner, 2026-11-21: Back from a game "takes
   // you all the way back home instead of database first page"). A game opens in
   // place, so starting one adds a history step; Back (or Leave) pops it and lands
@@ -96,13 +101,21 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
     try { window.history.pushState({ qdbGame: 1 }, '', window.location.href); gameStep.current = true; } catch (e) {}
   }, [game]);
   useEffect(() => {
-    const onPop = () => { if (gameStep.current) { gameStep.current = false; setGame(null); } };
+    const onPop = () => {
+      if (gameStep.current) { gameStep.current = false; setGame(null); }
+      if (mapAfterGame.current) { const m = mapAfterGame.current; mapAfterGame.current = null; setMap(m); }
+    };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
   const leaveGame = useCallback(() => {
     if (gameStep.current) { try { window.history.back(); return; } catch (e) {} }
     setGame(null);
+  }, []);
+  // From a game's end screen: close the game (its history step first), then open the map.
+  const mapFromGame = useCallback((focus) => {
+    if (gameStep.current) { mapAfterGame.current = { focus }; try { window.history.back(); return; } catch (e) { mapAfterGame.current = null; } }
+    setGame(null); setMap({ focus });
   }, []);
 
   useEffect(() => {
@@ -117,6 +130,28 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
     return n2;
   });
 
+  // The deal's `seen`: this page's recent keys, then every answered key of the
+  // topics in play (lib/qdb-done.js), so the map's grey squares come first.
+  const seenFor = useCallback((slug, ts) => {
+    const want = slug === 'mix' ? (ts && ts.length ? ts : db.topics.map((t) => t.slug)) : [slug];
+    const banks = db.topics.filter((t) => want.includes(t.slug)).flatMap((t) => t.banks);
+    // Deep subjects play under their parent topics too (2026-11-23), so their answered keys count.
+    if (dbKey === 'trivia' || dbKey === 'science') banks.push('deep');
+    return [...new Set([...(readStore(dbKey).s || []), ...doneKeysFor(banks)])].slice(0, SEEN_CAP);
+  }, [db, dbKey]);
+  // How much of this database (or of one topic) this browser has answered.
+  const doneOf = useMemo(() => {
+    if (!hydrated) return null;
+    const d = readDone(dbKey).d;
+    const bank = {};
+    for (const t of db.topics) for (const b of t.banks) (bank[b] = bank[b] || []).push(t.slug);
+    const per = {};
+    for (const k of Object.keys(d)) { const ts = bank[k.slice(0, k.indexOf(':'))]; if (ts) for (const t of ts) per[t] = (per[t] || 0) + 1; }
+    const all = topics.reduce((a, t) => a + Math.min(per[t.slug] || 0, t.own != null ? t.own : t.n), 0);
+    return { all, per };
+  }, [hydrated, store, db, dbKey, topics]);
+  const mapPct = (a, n) => { const p = n ? (a / n) * 100 : 0; return p <= 0 ? '0' : p < 10 ? p.toFixed(1).replace(/\.0$/, '') : String(Math.floor(p)); };
+
   const start = useCallback(async (slug, opts = {}) => {
     const t = slug === 'mix' ? { slug: 'mix', label: db.mix, color: db.ground } : topics.find((x) => x.slug === slug);
     if (!t) return;
@@ -130,7 +165,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
       const r = opts.ids
         ? await fetch(`/api/trivia/set?db=${dbKey}&ids=${encodeURIComponent(opts.ids.join(','))}`)
         : await fetch('/api/trivia/set', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ db: dbKey, t: slug, ts: opts.topics || [], l: opts.lanes || [], lv: endless || mode === 'sprint' ? 'ramp' : setup.level, n, s: Math.floor(Math.random() * 1000), seen: (readStore(dbKey).s || []).slice(0, SEEN_CAP) }) });
+          body: JSON.stringify({ db: dbKey, t: slug, ts: opts.topics || [], l: opts.lanes || [], lv: endless || mode === 'sprint' ? 'ramp' : setup.level, n, s: Math.floor(Math.random() * 1000), seen: seenFor(slug, opts.topics) }) });
       const d = await r.json();
       if (!d || !Array.isArray(d.qs) || !d.qs.length) throw new Error('empty');
       setGame({ qs: d.qs, mode, endless, title: opts.title || t.label, color: t.color, slug, key: `${slug}|${mode}|${mode === 'sprint' || endless ? 0 : n}`, lanes: opts.lanes || [], retry: !!opts.ids, level: setup.level });
@@ -138,9 +173,10 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
       setErr(`Those ${db.many} could not be loaded. Try again in a moment.`);
     }
     setLoading(false);
-  }, [setup, topics, db, dbKey]);
+  }, [setup, topics, db, dbKey, seenFor]);
 
   const onAnswer = useCallback((q, right) => {
+    markDone(q.k, right);
     setStore((s0) => {
       // Every answered key joins `s` (newest first, SEEN_CAP): the server deals those last.
       const s = { t: { ...s0.t }, l: { ...s0.l }, b: s0.b, m: s0.m, s: [q.k, ...(s0.s || []).filter((k) => k !== q.k)].slice(0, SEEN_CAP) };
@@ -237,6 +273,7 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
   const others = QDB_KEYS.filter((k) => k !== dbKey).map((k) => QDBS[k]);
   const showLanes = topic ? topic.lanes.filter(([l]) => !laneQ || l.toLowerCase().includes(laneQ.toLowerCase())) : [];
   const manyLanes = topic && topic.lanes.length > 12;
+  const topicOwn = topic ? (topic.own != null ? topic.own : topic.n) : 0;
 
   return (
     <div className={`qd${dark ? ' dk' : ''}`} style={{ '--qd-bg': pal.bg, '--qd-ink': pal.ink, '--qd-tile': pal.tile || `color-mix(in srgb, ${pal.ink} 8%, transparent)` }}>
@@ -273,6 +310,11 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
             </ul>
             {err ? <p className="qd-err" role="alert">{err}</p> : null}
             <div className="qd-mine">
+              <button type="button" className="qd-tile sm qd-maptile" onClick={() => setMap({ focus: null })}>
+                <span className="qd-tname">Your Progress Map</span>
+                <span className="qd-tsub">{doneOf && doneOf.all ? `${mapPct(doneOf.all, total)}% of ${fmt(total)} ${db.many} answered` : `All ${fmt(total)} ${db.many}, one square each`}</span>
+                <span className="qd-mapbar" aria-hidden="true"><i style={{ width: `${doneOf && total ? Math.max(doneOf.all ? 1.5 : 0, (doneOf.all / total) * 100) : 0}%` }} /></span>
+              </button>
               <button type="button" className="qd-tile sm" disabled={!store.m.length || loading} onClick={() => start('mix', { mode: 'practice', n: 25, ids: store.m.slice(0, 25), title: 'Your missed ' + db.many })}>
                 <span className="qd-tname">Retry My Misses</span>
                 <span className="qd-tsub">{hydrated && store.m.length ? `${fmt(store.m.length)} saved from your games` : 'Every miss comes back here'}</span>
@@ -327,6 +369,11 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
               }) : null}
               {topic.daily ? <> New ones every day in <a href={topic.daily.href}>{topic.daily.name}</a>.</> : null}
             </p>
+            <button type="button" className="qd-tile sm qd-maptile qd-mapsolo" onClick={() => setMap({ focus: topic.slug })}>
+              <span className="qd-tname">Your {topic.label} Map</span>
+              <span className="qd-tsub">{doneOf && doneOf.per[topic.slug] ? `${mapPct(Math.min(doneOf.per[topic.slug], topicOwn), topicOwn)}% of ${fmt(topicOwn)} ${db.many} answered` : `All ${fmt(topicOwn)} ${db.many}, one square each`}</span>
+              <span className="qd-mapbar" aria-hidden="true"><i style={{ width: `${doneOf && topicOwn ? Math.min(100, ((doneOf.per[topic.slug] || 0) / topicOwn) * 100) : 0}%` }} /></span>
+            </button>
           </>
         )}
       </main>
@@ -430,14 +477,16 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
       ) : null}
       <StageFooter />
 
-      {game ? <Player key={game.key + game.qs[0].k} db={db} dbKey={dbKey} game={game} onAnswer={onAnswer} onDone={onDone} onExit={leaveGame}
+      {map ? <QdbMap db={db} dbKey={dbKey} topics={topics} ink={pal.ink} dark={dark} focus={map.focus} onClose={() => setMap(null)}
+        onPlay={(slug, ls, title) => start(slug, { lanes: ls, title: title || undefined })} /> : null}
+      {game ? <Player key={game.key + game.qs[0].k} db={db} dbKey={dbKey} game={game} onAnswer={onAnswer} onDone={onDone} onExit={leaveGame} onMap={() => mapFromGame(game.slug === 'mix' ? null : game.slug)}
         onAgain={() => start(game.slug, { mode: game.mode, lanes: game.lanes, title: game.title, n: game.endless ? undefined : game.qs.length, ids: game.retry ? store.m.slice(0, 25) : undefined })} /> : null}
     </div>
   );
 }
 
 // ---- one game, on the gauntlet stage ----
-function Player({ db, dbKey, game, onAnswer, onDone, onExit, onAgain }) {
+function Player({ db, dbKey, game, onAnswer, onDone, onExit, onAgain, onMap }) {
   const { qs, mode } = game;
   const timed = mode === 'gauntlet';
   const Q_MS = db.qSeconds * 1000;
@@ -547,6 +596,7 @@ function Player({ db, dbKey, game, onAnswer, onDone, onExit, onAgain }) {
             <span className="qd-play"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z" fill="currentColor" /></svg><span>Start</span></span>
           </button>
           <div className="qd-endrow">
+            <button type="button" className="qd-tile sm" onClick={onMap}><span className="qd-tname">See Your Map</span></button>
             <button type="button" className="qd-tile sm" onClick={onExit}><span className="qd-tname">Change Topic or Mode</span></button>
             {db.today.slice(0, 1).map((d) => <a key={d.href} className="qd-tile sm" href={d.href}><span className="qd-tname">Today&apos;s {d.name}</span></a>)}
           </div>
@@ -653,6 +703,11 @@ html.lc-on:not(.lc-focus) .qd-top{display:none;}
 .qd-gsub{font-size:15px;font-weight:700;opacity:.82;text-align:center;line-height:1.4;}
 .qd-play{display:inline-flex;align-items:center;gap:9px;margin-top:4px;font-size:19px;font-weight:800;}
 .qd-mine{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+/* THE MAP'S DOOR (2026-11-23): the Progress Map tile carries a thin bar of how much is answered. */
+.qd-maptile{position:relative;}
+.qd-mapbar{display:block;width:100%;height:6px;margin-top:8px;border-radius:3px;overflow:hidden;background:color-mix(in srgb, var(--qd-ink) 12%, transparent);}
+.qd-mapbar i{display:block;height:100%;background:var(--qd-ink);border-radius:3px;}
+.qd-mapsolo{align-self:center;width:min(420px, 100%);margin-top:-12px;}
 .qd-rec{margin:-8px 0 0;text-align:center;font-size:13.5px;font-weight:700;opacity:.78;line-height:1.5;}
 .qd-rec a{font-weight:800;}
 .qd-fold{margin-top:54px;border-top:1px solid color-mix(in srgb, var(--qd-ink) 22%, transparent);padding:46px 20px 60px;}
