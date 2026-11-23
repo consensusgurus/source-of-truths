@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
-import { findQuizIdentity } from '@/lib/quiz-identity';
+import { resolvePlayerKeys } from '@/lib/quiz-identity';
 import { etDayNum } from '@/lib/search';
 import { BOARD_BY_NUM, searchSchedule, searchCrowd, publicCrowd, searchFile, searchSettle, findsOf, pubId } from '@/lib/search-server';
 
@@ -50,13 +50,17 @@ export async function GET(request) {
   }
 }
 
+// Who is syncing: the account when this browser resolves to one (by email, by
+// the browser the name was claimed on, or by this browser's own attributed
+// rows), else this browser as a guest. `anons` lists every browser tied to the
+// account, so finds made on any of them fold into the one account row.
 async function playerOf({ anonId, email }) {
   const anon = typeof anonId === 'string' && /^[A-Za-z0-9_-]{6,64}$/.test(anonId) ? anonId : null;
-  let user = null;
-  try { user = await findQuizIdentity(supabaseAdmin, { email, anonId: anon }); } catch (e) { user = null; }
-  if (user && user.id && user.username) return { key: `u:${user.id}`, userId: user.id, name: user.username, anon };
+  let who = null;
+  try { who = await resolvePlayerKeys(supabaseAdmin, { email, anonId: anon }); } catch (e) { who = null; }
+  if (who && who.userId && who.username) return { key: `u:${who.userId}`, userId: who.userId, name: who.username, anon, anons: who.anons || [] };
   if (!anon) return null;
-  return { key: `a:${anon}`, userId: null, name: null, anon };
+  return { key: `a:${anon}`, userId: null, name: null, anon, anons: [] };
 }
 
 const lastFiled = new Map(); // player key -> ms, per server instance
@@ -70,35 +74,52 @@ export async function POST(request) {
   const who = await playerOf({ anonId: str(body.anonId, 64), email: str(body.email) || null });
   if (!who) return NextResponse.json({ error: 'No player' }, { status: 400, headers: NO_STORE });
   const N = board.items.length;
+  // This player's row plus, for an account, the guest rows its other browsers
+  // left (owner via the Idea Board, 2026-11-23: finds did not carry across
+  // devices and one player showed as two). Those fold into the account row.
+  const keys = [...new Set([who.key, ...(who.userId && who.anon ? [`a:${who.anon}`] : []), ...who.anons.map((a) => `a:${a}`)])];
   const { data: rows } = await supabaseAdmin.from('outwit_picks')
-    .select('id, answers').eq('quiz_id', board.key).eq('anon_id', who.key).limit(1);
-  const row = rows && rows[0];
+    .select('id, anon_id, answers').eq('quiz_id', board.key).in('anon_id', keys).limit(50);
+  const row = (rows || []).find((r) => r.anon_id === who.key) || null;
+  const strays = who.userId ? (rows || []).filter((r) => r.anon_id !== who.key) : [];
   const have = findsOf(row, N);
-  const t0 = (row && row.answers && Number(row.answers.t0)) || Date.now();
+  let t0 = (row && row.answers && Number(row.answers.t0)) || Date.now();
+  for (const r of strays) {
+    for (const [i, d] of findsOf(r, N)) if (!have.has(i) || d < have.get(i)) have.set(i, d);
+    const t = r.answers && Number(r.answers.t0);
+    if (t && t < t0) t0 = t;
+  }
+  const known = new Set(have.keys()); // already counted by the crowd
   const open = !(win.closes && win.closes <= Date.now());
   let grew = false;
   if (open && Array.isArray(body.found)) {
     const today = etDayNum();
     for (const i of body.found.slice(0, N)) if (Number.isInteger(i) && i >= 0 && i < N && !have.has(i)) { have.set(i, today); grew = true; }
-    if (grew || !row) {
-      const f = [...have.keys()];
-      const answers = { f, d: f.map((i) => have.get(i)), t0 };
-      const res = row
-        ? await supabaseAdmin.from('outwit_picks').update({ answers, user_id: who.userId }).eq('id', row.id)
-        : await supabaseAdmin.from('outwit_picks').insert({ quiz_id: board.key, anon_id: who.key, user_id: who.userId, answers });
-      if (res && res.error) return NextResponse.json({ error: 'Try again in a moment.' }, { status: 503, headers: NO_STORE });
-    }
-    const due = !lastFiled.has(who.key) || Date.now() - lastFiled.get(who.key) > 10 * 60 * 1000;
-    if (have.size && (body.force || (grew && due))) {
-      lastFiled.set(who.key, Date.now());
-      try {
-        const crowd = await searchCrowd(board, win);
-        // The counts were read a moment ago; count this player's new finds in.
-        const counts = crowd.counts.slice();
-        if (grew) for (const i of body.found) if (Number.isInteger(i) && i >= 0 && i < N && !findsOf(row, N).has(i)) counts[i] = Math.max(1, counts[i] + 1);
-        await searchFile(board, who, have, counts);
-      } catch (e) { /* filed on the next sync or when the board settles */ }
-    }
+  }
+  if (grew || strays.length || (open && !row)) {
+    const f = [...have.keys()];
+    const answers = { f, d: f.map((i) => have.get(i)), t0 };
+    const res = row
+      ? await supabaseAdmin.from('outwit_picks').update({ answers, user_id: who.userId }).eq('id', row.id)
+      : await supabaseAdmin.from('outwit_picks').insert({ quiz_id: board.key, anon_id: who.key, user_id: who.userId, answers });
+    if (res && res.error) return NextResponse.json({ error: 'Try again in a moment.' }, { status: 503, headers: NO_STORE });
+  }
+  if (strays.length) {
+    await supabaseAdmin.from('outwit_picks').delete().in('id', strays.map((r) => r.id));
+    // Their guest day results go too; the account's are refiled below.
+    const guestAnons = strays.map((r) => String(r.anon_id).slice(2));
+    try { await supabaseAdmin.from('quiz_results').delete().like('quiz_id', 'search-%').is('user_id', null).in('anon_id', guestAnons); } catch (e) { /* refiled rows win */ }
+  }
+  const due = !lastFiled.has(who.key) || Date.now() - lastFiled.get(who.key) > 10 * 60 * 1000;
+  if (have.size && (strays.length || (open && (body.force || (grew && due))))) {
+    lastFiled.set(who.key, Date.now());
+    try {
+      const crowd = await searchCrowd(board, win);
+      // The counts were read a moment ago; count this player's new finds in.
+      const counts = crowd.counts.slice();
+      for (const i of have.keys()) if (!known.has(i)) counts[i] = Math.max(1, counts[i] + 1);
+      await searchFile(board, who, have, counts);
+    } catch (e) { /* filed on the next sync or when the board settles */ }
   }
   const f = [...have.keys()].sort((a, b) => a - b);
   return NextResponse.json({ me: pubId(who.key), name: who.name, found: f, open }, { headers: NO_STORE });

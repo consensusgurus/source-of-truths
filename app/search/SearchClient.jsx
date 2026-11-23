@@ -9,7 +9,8 @@
 // The board is a fixed full-screen layer drawn on a canvas, only the squares
 // in view, so a 100 by 100 grid stays smooth on a phone. Mouse: drag across a
 // word to circle it, wheel or trackpad to move around, Ctrl + wheel or the
-// buttons to zoom, right drag to pan. Touch: drag to move around, pinch to
+// buttons to zoom, right drag (or Space + drag, Shift + wheel, arrow keys,
+// dragging the little map, or a circling drag held at an edge) to pan. Touch: drag to move around, pinch to
 // zoom, and tap a word's first letter and then its last to circle it. Any
 // stroke is graded from its letters alone (each entry is in the grid exactly
 // once, scripts/verify-search.mjs). No clock and no Give up, as on Mural.
@@ -108,6 +109,10 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
   const dirty = useRef(false);
   const themeRef = useRef(theme); themeRef.current = theme;
   const spaceDown = useRef(false);
+  const edge = useRef({ vx: 0, vy: 0, raf: 0 }); // auto-pan while a circling drag sits at an edge
+  const miniDrag = useRef(false);
+  const [panHint, setPanHint] = useState(false); // desktop only, until the first pan
+  const hintRef = useRef(false);
 
   // ---- saves ----------------------------------------------------------------
   useEffect(() => {
@@ -448,7 +453,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
       return;
     }
     const dx = x - p.x, dy = y - p.y;
-    if (g.kind === 'pan') { view.current.ox += dx; view.current.oy += dy; p.x = x; p.y = y; clampView(); redraw(); return; }
+    if (g.kind === 'pan') { p.x = x; p.y = y; panBy(dx, dy); return; }
     if (g.kind === 'maybe') {
       if (Math.hypot(x - g.x, y - g.y) > 9) { g.kind = 'pan'; g.moved = true; setAnchor(null); dragSel.current = null; }
       p.x = x; p.y = y; return;
@@ -456,6 +461,8 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
     if (g.kind === 'select') {
       if (!g.moved && Math.hypot(x - g.x, y - g.y) > view.current.s * 0.35) g.moved = true;
       if (!inGrid(g.r, g.c)) return;
+      g.last = [x, y];
+      if (g.moved) setEdge(x, y);
       const at = cellAt(x, y);
       const [r1, c1] = snap(g.r, g.c, at.fx, at.fy);
       if (g.moved) { dragSel.current = { r0: g.r, c0: g.c, r1, c1 }; setRead(lettersOf(g.r, g.c, r1, c1)); redraw(); }
@@ -464,6 +471,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
   function onUp(e) {
     const p = ptrs.current.get(e.pointerId);
     ptrs.current.delete(e.pointerId);
+    stopEdge();
     const g = gesture.current;
     if (!p || !g) return;
     if (g.kind === 'pinch') { if (ptrs.current.size === 0) { gesture.current = null; saveView(); } else gesture.current = { kind: 'pan', moved: true }; return; }
@@ -480,12 +488,46 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
     if (an && searchCells(an.r, an.c, r, c)) { setAnchor(null); setRead(''); grade(an.r, an.c, r, c); return; }
     setAnchor({ r, c }); setRead(P.grid[r][c] + '...');
   }
-  function onCancel(e) { ptrs.current.delete(e.pointerId); gesture.current = null; dragSel.current = null; redraw(); }
+  function panBy(dx, dy) {
+    view.current.ox += dx; view.current.oy += dy; clampView(); redraw();
+    if (hintRef.current) { hintRef.current = false; setPanHint(false); try { localStorage.setItem('sot_search_panhint', '1'); } catch (e) {} }
+  }
+  // PC panning (Idea Board, 2026-11-23: "on pc, you can't scroll left and
+  // right"): a circling drag held near an edge slides the board that way, so a
+  // long title can run off screen and still be circled in one stroke.
+  function edgeTick() {
+    const e = edge.current;
+    if (!e.vx && !e.vy) { e.raf = 0; return; }
+    panBy(e.vx, e.vy);
+    const g = gesture.current, sel = dragSel.current;
+    if (g && g.kind === 'select' && g.last) {
+      const at = cellAt(g.last[0], g.last[1]);
+      const [r1, c1] = snap(g.r, g.c, at.fx, at.fy);
+      if (sel) { dragSel.current = { r0: g.r, c0: g.c, r1, c1 }; setRead(lettersOf(g.r, g.c, r1, c1)); redraw(); }
+    }
+    e.raf = requestAnimationFrame(edgeTick);
+  }
+  function setEdge(x, y) {
+    const st = stageRef.current; if (!st) return;
+    const W = st.clientWidth, H = st.clientHeight, M = 48, SP = 14;
+    const f = (p, L) => (p < M ? (M - p) / M : (p > L - M ? -(p - (L - M)) / M : 0));
+    const e = edge.current;
+    e.vx = Math.max(-1, Math.min(1, f(x, W))) * SP; e.vy = Math.max(-1, Math.min(1, f(y, H))) * SP;
+    if ((e.vx || e.vy) && !e.raf) e.raf = requestAnimationFrame(edgeTick);
+  }
+  function stopEdge() { const e = edge.current; e.vx = 0; e.vy = 0; if (e.raf) cancelAnimationFrame(e.raf); e.raf = 0; }
+  function onCancel(e) { stopEdge(); ptrs.current.delete(e.pointerId); gesture.current = null; dragSel.current = null; redraw(); }
   function onWheel(e) {
     e.preventDefault();
     const [x, y] = local(e);
-    if (e.ctrlKey || e.metaKey) zoomAt(Math.exp(-e.deltaY * 0.0022), x, y);
-    else { view.current.ox -= e.deltaX; view.current.oy -= e.deltaY; clampView(); redraw(); }
+    // Lines (Firefox) and pages come in other units; a mouse wheel with Shift
+    // held moves sideways, as it does on any page.
+    const st = stageRef.current;
+    const unit = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? (st ? st.clientHeight : 600) : 1);
+    let dx = e.deltaX * unit, dy = e.deltaY * unit;
+    if (e.shiftKey && !dx) { dx = dy; dy = 0; }
+    if (e.ctrlKey || e.metaKey) zoomAt(Math.exp(-dy * 0.0022), x, y);
+    else panBy(-dx, -dy);
     clearTimeout(onWheel.t); onWheel.t = setTimeout(saveView, 300);
   }
   useEffect(() => {
@@ -494,12 +536,25 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
     const kd = (e) => {
       if (e.key === 'Escape') { setAnchor(null); setRead(''); dragSel.current = null; redraw(); }
       if (e.code === 'Space' && e.target === document.body) { spaceDown.current = true; e.preventDefault(); }
+      // Arrow keys move the board (not while typing in the list's search box).
+      const tag = e.target && e.target.tagName;
+      if (/^Arrow/.test(e.key) && tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+        const st = stageRef.current; if (!st) return;
+        const step = Math.round(Math.min(st.clientWidth, st.clientHeight) * (e.shiftKey ? 0.5 : 0.2));
+        const d = { ArrowLeft: [step, 0], ArrowRight: [-step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] }[e.key];
+        if (d) { e.preventDefault(); panBy(d[0], d[1]); clearTimeout(onWheel.t); onWheel.t = setTimeout(saveView, 300); }
+      }
     };
     const ku = (e) => { if (e.code === 'Space') spaceDown.current = false; };
     window.addEventListener('keydown', kd); window.addEventListener('keyup', ku);
-    return () => { cv.removeEventListener('wheel', onWheel); window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku); };
+    try { if (window.matchMedia('(pointer: fine)').matches && !localStorage.getItem('sot_search_panhint')) { hintRef.current = true; setPanHint(true); } } catch (e) { /* no hint */ }
+    return () => { stopEdge(); cv.removeEventListener('wheel', onWheel); window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated]);
+  // The little map: click to jump, or hold and drag to slide the view around.
+  function onMiniDown(e) { miniDrag.current = true; panBy(0, 0); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} onMini(e); }
+  function onMiniMove(e) { if (miniDrag.current) onMini(e); }
+  function onMiniUp() { if (miniDrag.current) { miniDrag.current = false; saveView(); } }
   function onMini(e) {
     const rect = miniRef.current.getBoundingClientRect();
     const c = ((e.clientX - rect.left) / rect.width) * SIZE, r = ((e.clientY - rect.top) / rect.height) * SIZE;
@@ -589,6 +644,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
 .trl .toast b i{font-style:normal;font-weight:700;opacity:.65;margin-left:6px;font-size:14px}
 .trl .toast span{display:block;font-size:13px;font-weight:700;margin-top:2px;opacity:.85}
 @keyframes trlIn{from{opacity:0;transform:translate(-50%,-8px) scale(.96)}to{opacity:1;transform:translate(-50%,0)}}
+.trl .panhint{position:absolute;left:12px;bottom:58px;pointer-events:none;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--card);border:1px solid var(--line);opacity:.92}
 .trl .zoom{position:absolute;left:12px;bottom:12px;display:flex;border:1px solid var(--line);border-radius:999px;background:var(--card);box-shadow:0 2px 10px rgba(0,0,0,.12);overflow:hidden}
 .trl .zoom button{-webkit-appearance:none;appearance:none;border:0;border-radius:0;margin:0;background:transparent;font:800 15px/1 ${SANS};height:42px;min-width:46px;padding:0 12px;cursor:pointer}
 .trl .zoom button+button{border-left:1px solid var(--line)}
@@ -750,7 +806,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
       <div className="body help">
         <p>One enormous word search a day, on one big topic. Today it is <b>{fmt(N)} {P.theme.toLowerCase()}</b> hidden in a {SIZE} by {SIZE} grid. Each one runs in a straight line in any of the eight directions, backward too, with its spaces and punctuation dropped.</p>
         <p><b>To circle one:</b> drag across it with a mouse, or tap its first letter and then its last. A wrong line costs nothing.</p>
-        <p><b>To move around:</b> scroll or drag with two fingers on a trackpad, drag with one finger on a phone, pinch or use the zoom buttons. The little map in the corner jumps you anywhere.</p>
+        <p><b>To move around:</b> on a computer, scroll (hold Shift to scroll sideways), right drag or hold Space and drag, use the arrow keys, or drag the little map in the corner. A circling drag held at the edge of the board slides it along. On a trackpad, drag with two fingers; on a phone, drag with one finger and pinch to zoom.</p>
         <p><b>The list</b> stays behind the List button. Open it any time to see what is hidden, or play without it.</p>
         <p><b>Scoring:</b> everyone has the same grid, and every entry is a pot of <b>{SEARCH_POT} points</b> split evenly among the players who find it. Find one alone and you keep all {SEARCH_POT}; share it with one other player and you each get 50; a title forty players found pays 3. The standings rank points first and total finds second.</p>
         <p>Each find tells you how many players found it before you. Values move as the crowd catches up: Refresh (or wait two minutes) to see the latest.</p>
@@ -797,12 +853,13 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
             <span>{toast.line}</span>
           </div>
         )}
+        {panHint && <div className="panhint">To move: right drag, Shift + wheel, arrow keys, or drag the little map</div>}
         <div className="zoom" role="group" aria-label="Zoom">
           <button onClick={() => zoomBtn(1 / 1.35)} aria-label="Zoom out">&minus;</button>
           <button onClick={fit} aria-label="Show the whole grid">Fit</button>
           <button onClick={() => zoomBtn(1.35)} aria-label="Zoom in">+</button>
         </div>
-        <div className="mini" onClick={onMini} title="Jump anywhere on the grid"><canvas ref={miniRef} /></div>
+        <div className="mini" onPointerDown={onMiniDown} onPointerMove={onMiniMove} onPointerUp={onMiniUp} onPointerCancel={onMiniUp} title="Click or drag to move around the grid"><canvas ref={miniRef} /></div>
         {!live && hydrated && (
           <div className="arch">This board is closed: finds here are for fun. <button className="lnk" onClick={() => setPanel('final')}>Final results</button>{!isCurrent && <> · <a href="/search">The open board</a></>}</div>
         )}

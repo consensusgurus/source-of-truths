@@ -20,7 +20,7 @@ export async function GET(request) {
   const email = str(searchParams.get('email')) || null;
   if (!anonId && !email) return NextResponse.json({ notices: [] }, { headers: NO_STORE });
   const out = await guard(async () => {
-    const viewer = await viewerOf(supabaseAdmin, { anonId, email });
+    const viewer = await viewerOf(supabaseAdmin, { anonId, email }, { lite: true });
     if (!viewer.user) return { notices: [] };
     return { notices: await noticesFor(supabaseAdmin, viewer.user.id) };
   });

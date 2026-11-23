@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { isAdmin } from '@/lib/admin-auth';
 import {
-  guard, refuse, cleanDay, gameOf, puzzleOf, viewerOf, resultOf, postsOf, cheeredBy, feelOf,
+  guard, refuse, cleanDay, gameOf, viewerOf, postsOf, cheeredBy, feelOf,
   addPost, cheerPost, setFeel, report, setHidden, deleteItem, publicPost, POST_MAX,
 } from '@/lib/community';
+import { puzzleOf, resultOf } from '@/lib/community-talk';
 
 // /api/community/talk: one puzzle's Post-Game Talk (owner, 2026-11-18).
 //   GET  ?game=<key>&date=<M-D-YY>&anonId=&email=

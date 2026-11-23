@@ -41,15 +41,21 @@ export async function GET(request) {
   const sort = searchParams.get('sort') === 'new' ? 'new' : 'top';
   const admin = isAdmin();
   const out = await guard(async () => {
-    const viewer = await viewerOf(supabaseAdmin, { anonId, email });
+    // Side by side (2026-11-23): who is asking, and the board itself.
+    const [viewer, all] = await Promise.all([
+      viewerOf(supabaseAdmin, { anonId, email }, { lite: true }),
+      ideasOf(supabaseAdmin, { sort, includeHidden: admin, limit: 300 }),
+    ]);
     const uid = viewer.user ? viewer.user.id : null;
-    const all = await ideasOf(supabaseAdmin, { sort, includeHidden: admin, limit: 300 });
     const counts = { all: 0 };
     for (const s of Object.keys(IDEA_STAGES)) counts[s] = 0;
     for (const i of all) if (!i.hidden) { counts.all += 1; counts[i.stage] = (counts[i.stage] || 0) + 1; }
     const shown = all.filter((i) => (!stage || i.stage === stage) && (!kind || i.kind === kind));
-    const voted = await votedBy(supabaseAdmin, uid, shown.map((i) => i.id));
-    const cm = await commentsOf(supabaseAdmin, shown.map((i) => i.id), { includeHidden: admin });
+    const ids = shown.map((i) => i.id);
+    const [voted, cm] = await Promise.all([
+      votedBy(supabaseAdmin, uid, ids),
+      commentsOf(supabaseAdmin, ids, { includeHidden: admin }),
+    ]);
     return {
       ideas: shown.map((i) => {
         const mine = !!uid && i.user_id === uid;
@@ -98,7 +104,7 @@ export async function POST(request) {
       await setHidden(supabaseAdmin, 'comment', id, body.hidden !== false);
       return { ok: true };
     }
-    const viewer = await viewerOf(supabaseAdmin, { anonId: str(body.anonId, 64) || null, email: str(body.email) || null });
+    const viewer = await viewerOf(supabaseAdmin, { anonId: str(body.anonId, 64) || null, email: str(body.email) || null }, { lite: true });
     if (action === 'seen') {
       if (viewer.user) await markSeen(supabaseAdmin, viewer.user.id, Array.isArray(body.ids) ? body.ids : []);
       return { ok: true };
