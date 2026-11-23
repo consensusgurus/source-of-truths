@@ -3621,12 +3621,23 @@ their own copy; the shared mural is the union of everyone's FIRST placements.
   not need to apply as strict of picture rules ... ideally limit that somewhat"): a photo is passed
   over when more than 20% of its pieces are flat or one flat block is over 2.5% of the pieces, and if none
   of four candidates pass the least flat one is used.
-- **Grades:** corner 1, edge 2, detailed 3, busy 4, plain 6, flat color in a patch under 10 pieces
-  8, a block of 10 to 49 = 10, a block of 50 or more = 12. **Value**, in this order: the grade; while
-  nobody has placed the piece, +5% per whole hour the mural has been open, capped at double; minus
+- **Grades (the points scale), FLATTER FROM 2026-11-23** (owner: "for the next mural and going
+  forward, flatten the point awards a bit. Currently it is very difficult to catch up to someone who
+  just filled in the 12 point piece area"). Every board MADE from that change on grades corner 2,
+  edge 3, detailed 4, busy 5, plain 6, flat patch under 10 pieces 7, a block of 10 to 49 = 8,
+  a block of 50 or more = 10 (`MURAL_SCALE_FLAT`). A board made before it (the board open on
+  11-23 and everything on the shelf) keeps the original scale `MURAL_SCALE_V1`: corner 1, edge 2,
+  detailed 3, busy 4, plain 6, patch 8, block 10, large block 12, and scores exactly as it did. The
+  grade character IS the base points and is written into `mural_boards.grades` when the board is
+  made, so the change needed no migration: `mural_place()` reads the digit as before. A board's
+  scale is read off its first piece (always a corner: 1 = V1, 2 = flat; `muralScaleOf`), which
+  drives the grade names and the rules table (the markup carries the flat numbers, the engine
+  rewrites them for a V1 board). Within one scale no two kinds of piece may share a grade.
+  **Value**, in this order: the grade; minus
   20% per neighbor (of four) already in place on the crowd's mural or your own, floor 20%; doubled
-  if you are the first on the site. Rounded, minimum 1. `pieceValue()` in `lib/mural-shared.js`
-  and `mural_place()` in migration 69 are the same formula and must stay so.
+  if you are the first on the site. Rounded, minimum 1 (no age bonus since migration 72).
+  `pieceValue()` in `lib/mural-shared.js` and `mural_place()` (migration 74) are the same formula
+  and must stay so.
 - **Strict first, decided by the database when you place** (the partial unique index
   `mural_places_first`), not at the next refresh. The client shows its own estimate at once and
   corrects it from the server's answer ("Someone got there first").

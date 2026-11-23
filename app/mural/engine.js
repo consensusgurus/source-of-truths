@@ -13,7 +13,7 @@
 // not counted. Nothing here pops up over the board mid game.
 
 import {
-  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, MURAL_GRADE_NAMES, gradeAt, pieceValue, muralWhoKey, muralLaunched, muralHeld, muralFirstOpens, parseMuralId, MURAL_MIN_MS, muralDateLabel, privateMuralId,
+  MURAL_COLS, MURAL_ROWS, MURAL_KINDS, muralGradeNames, muralScaleOf, gradeAt, pieceValue, muralWhoKey, muralLaunched, muralHeld, muralFirstOpens, parseMuralId, MURAL_MIN_MS, muralDateLabel, privateMuralId,
 } from '@/lib/mural-shared';
 import { openMemorial } from './memorial';
 import { holdThemeColor } from '@/lib/theme-color-hold';
@@ -260,7 +260,9 @@ export function bootMural(root, cfg) {
   };
 
   function start(env) {
-const COLS=env.board.cols||MURAL_COLS,ROWS=env.board.rows||MURAL_ROWS,TOTAL=COLS*ROWS,UPDATE=120,GN=MURAL_GRADE_NAMES,GRADES=env.board.grades;
+const COLS=env.board.cols||MURAL_COLS,ROWS=env.board.rows||MURAL_ROWS,TOTAL=COLS*ROWS,UPDATE=120,GRADES=env.board.grades,GN=muralGradeNames(GRADES),SCALE=muralScaleOf(GRADES);
+/* THE RULES TABLE FOLLOWS THE BOARD'S SCALE (owner, 2026-11-23: flatter points from the next mural on). The markup carries the flat scale; a board made before it shows its own numbers. */
+try{root.querySelectorAll('[data-grade]').forEach(td=>{const v=SCALE[td.getAttribute('data-grade')];if(v)td.textContent=String(v);});const ex=$('mrlExample');if(ex){const L=SCALE.large,a=Math.round(L*.8*10)/10;ex.innerHTML='<b>Example.</b> A large block piece ('+L+'), with one neighbor in place (minus 20%, so '+a+'), placed first (doubled): '+pieceValue({grade:L,hours:0,neighbours:1,first:true})+' points.';}}catch(e){}
 const img=env.img,want=COLS/ROWS;
 let cw0=img.naturalWidth,ch0=Math.round(cw0/want);if(ch0>img.naturalHeight){ch0=img.naturalHeight;cw0=Math.round(ch0*want);}
 const cx0=Math.floor((img.naturalWidth-cw0)/2),cy0=Math.floor((img.naturalHeight-ch0)/2);

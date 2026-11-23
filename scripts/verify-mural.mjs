@@ -114,6 +114,19 @@ for (const frag of ['greatest(0.2, 1 - 0.2 * n)', '(1 + least(1, 0.05 * hrs)) * 
   if (!sql.includes(frag)) fail(`migration 69 no longer carries "${frag}"; pieceValue() and the SQL must agree`);
 }
 
+// 5b. the flatter scale (owner, 2026-11-23): new boards grade on MURAL_SCALE_FLAT, old boards keep V1
+for (const [nm, sc] of [['V1', S.MURAL_SCALE_V1], ['flat', S.MURAL_SCALE_FLAT]]) {
+  const order = ['corner', 'edge', 'detailed', 'busy', 'plain', 'small', 'medium', 'large'];
+  for (let i = 1; i < order.length; i++) if (!(sc[order[i]] > sc[order[i - 1]])) fail(`${nm} scale: ${order[i]} must outrank ${order[i - 1]}`);
+  if (new Set(Object.values(sc)).size !== order.length) fail(`${nm} scale: two kinds share a grade`);
+  for (const v of Object.values(sc)) if (!(v >= 1 && v <= 35)) fail(`${nm} scale: ${v} does not fit one base-36 character`);
+}
+eq(S.MURAL_SCALE_V1.corner, 1, 'V1 corner is 1 (muralScaleOf reads it)');
+if (S.MURAL_SCALE_FLAT.corner === 1) fail('flat corner must not be 1, or a flat board reads as V1');
+eq(S.muralScaleOf('1' + '2'.repeat(10)), S.MURAL_SCALE_V1, 'a board starting 1 is V1');
+eq(S.muralScaleOf('2' + '3'.repeat(10)), S.MURAL_SCALE_FLAT, 'a board starting 2 is flat');
+if (!(S.MURAL_SCALE_FLAT.large / S.MURAL_SCALE_FLAT.detailed < S.MURAL_SCALE_V1.large / S.MURAL_SCALE_V1.detailed)) fail('the flat scale is not flatter than V1');
+
 // 6. the registry rows
 for (const k of ['mural', 'muraltoo']) {
   const g = DAILY_GAME_MAP[k];
