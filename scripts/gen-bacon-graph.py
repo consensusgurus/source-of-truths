@@ -7,7 +7,7 @@
 #
 # Kept: films released 1930 to 2022 with at least one cast name, and not marked
 # "upcoming" (the 2023 rows were scraped before release and their casts are
-# incomplete). Cast names are cleaned (a trailing "(actor)" or "(narrator)"
+# incomplete; 2023 to 2025 come from IMDb instead, see below). Cast names are cleaned (a trailing "(actor)" or "(narrator)"
 # dropped, "(voices)" rows removed) and merged on a folded key so "Timothee
 # Chalamet" and "Timothée Chalamet" are one person; the spelling shown is the
 # most common one, accented forms winning a tie. Two different films sharing a
@@ -100,6 +100,21 @@ for t, y, n in FIX['add_cast']:
     n = MERGE.get(fold(n), n)
     if (t, y) in films and all(fold(c) != fold(n) for c in films[(t, y)]):
         films[(t, y)].append(n)
+
+# Films after the Wikipedia list ends (2023 to 2025), from IMDb
+# (scripts/bacon-imdb-films.json, built by scripts/gen-bacon-imdb-new.py).
+if not NO_IMDB:
+    try:
+        NEWF = json.load(open('scripts/bacon-imdb-films.json'))
+    except FileNotFoundError:
+        NEWF = []
+    for t, y, cast in NEWF:
+        if (t, y) not in films:
+            films[(t, y)] = []
+            for n in cast:
+                n = MERGE.get(fold(n), n)
+                if all(fold(c) != fold(n) for c in films[(t, y)]):
+                    films[(t, y)].append(n)
 
 # Longer casts from IMDb (scripts/bacon-imdb-cast.json, built by
 # scripts/gen-bacon-imdb.py), added after the Wikipedia names so billing

@@ -139,7 +139,7 @@ HEAD = '''// Puzzle data for Bacon, the daily link-two-actors-through-their-film
 // A board is a start actor and a target actor. The player builds a chain:
 // name a film the current actor is in, then an actor in that film's cast, and
 // so on, until the target is reached, in at most seven films. The film graph
-// is public/bacon/graph.json (American films 1930 to 2022 with their principal
+// is public/bacon/graph.json (films 1930 to 2025, mostly American, with their principal
 // cast as Wikipedia lists it, lengthened from IMDb's datasets;
 // scripts/gen-bacon-graph.py and scripts/gen-bacon-imdb.py).
 //

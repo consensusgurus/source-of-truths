@@ -10,7 +10,7 @@
 // Fewest films ranks highest, then the clock. Runs on the shared stage shell
 // (app/SimpleDaily.jsx).
 //
-// The film graph is public/bacon/graph.json (American films 1930 to 2022 with
+// The film graph is public/bacon/graph.json (films 1930 to 2025, mostly American, with
 // their principal cast, scripts/gen-bacon-graph.py), fetched once by the
 // browser and cached. It holds no answers; the day's pair and par come from
 // app/bacon/puzzles.js through the server page.
@@ -314,7 +314,7 @@ const GAME = {
       <>Start from today&rsquo;s first actor. <b>Name a film</b> they were in, then <b>type an actor</b> from that film&rsquo;s cast. That actor is your new link.</>,
       <>Keep going until you reach the <b>target</b>, in <b>seven films or fewer</b>. Par is the fewest films in our list that can do it.</>,
       <>A film your actor was not in, or an actor who was not in the film, is a <b>strike</b>. Three strikes end the day. Typing something that is not in the list costs nothing, and <b>Undo</b> is free.</>,
-      <><b>What the list covers:</b> American films from 1930 to 2022, no TV, with each film&rsquo;s main billed cast (about the top ten). Small, uncredited, and cameo parts are often missing, so a real co-star can still count as a strike. Spot a missing one? Email m@mindloftdaily.com and we will add it.</>,
+      <><b>What the list covers:</b> films from 1930 to 2025, mostly American, no TV, with each film&rsquo;s main billed cast (about the top ten). Small, uncredited, and cameo parts are often missing, so a real co-star can still count as a strike. Spot a missing one? Email m@mindloftdaily.com and we will add it.</>,
     ],
     knack: 'Head for a busy actor first. Someone who has made a film a year for decades is one step from almost everybody.',
     footer: 'Casts come from Wikipedia and IMDb. A solve ranks on films used, then on the clock. The Sunday Edition starts from a classic star. Information courtesy of IMDb (https://www.imdb.com). Used with permission.',

@@ -45,7 +45,7 @@ A.forEach((n, i) => { if (typeof n !== 'string' || !n.trim()) fail(`graph: actor
 const filmKey = new Map();
 const byActor = A.map(() => []);
 F.forEach(([t, y, ids], fi) => {
-  if (typeof t !== 'string' || !t || !Number.isInteger(y) || y < 1930 || y > 2022) fail(`graph: film ${fi} title/year`);
+  if (typeof t !== 'string' || !t || !Number.isInteger(y) || y < 1930 || y > 2025) fail(`graph: film ${fi} title/year`);
   if (!Array.isArray(ids) || !ids.length || ids.some((a) => !Number.isInteger(a) || a < 0 || a >= A.length)) fail(`graph: film ${fi} cast`);
   const k = `${t}|${y}`;
   if (filmKey.has(k)) fail(`graph: duplicate film ${k}`);

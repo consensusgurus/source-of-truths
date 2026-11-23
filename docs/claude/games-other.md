@@ -2429,6 +2429,15 @@ who was in the film is the game). Trivia, skills Memory and Planning, on the Sim
   keep it. The licence is personal and non-commercial: revisit before ads go live (Raptive).
   The longer casts shortened 7 future boards' pars, so boards from 2026-12-06 on were
   regenerated; boards 1 to 29 (through 2026-12-05) were kept exactly.
+- **2023 to 2025 films from IMDb (owner, 2026-11-22).** The Wikipedia list ends at 2022.
+  `scripts/gen-bacon-imdb-new.py` (extract also needs title.ratings) writes
+  `scripts/bacon-imdb-films.json`: films 2023 to 2025 with 20,000+ IMDb votes, not documentaries,
+  primary title equal to original title, not already listed, and 3+ billed actors already in the
+  graph (2 at 50,000+ votes). 443 films added (graph 26,085 films, 37,023 actors, 1.09 MB
+  gzipped). Run it after gen-bacon-imdb.py, against the same `--no-imdb` graph. verify-bacon
+  now allows years up to 2025. Wake Up Dead Man (2025) linked Glenn Close and Josh Brolin at par
+  1, so boards from 2026-12-19 on were regenerated (1 to 42 kept). Copy now says "films from 1930
+  to 2025, mostly American" (How to play step 4, the Bacon FAQ in lib/puzzle-sets.js).
 - **Hand fixes** live in `scripts/bacon-cast-fixes.json`: drop_films, drop_cast, add_cast,
   add_films, set_year, chain_avoid, and merge_names ([other spelling, name to show], e.g. Curt
   Jurgens into Curd Jürgens).
