@@ -44,20 +44,10 @@ function vibrate(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch
 const TITLE = { ab: 'Which costs more?', ou: 'Over or under?', tags: 'Match the tags' };
 const freshSave = () => ({ v: 1, answers: [], t0: Date.now(), tEnd: null, status: 'playing' });
 
-function Photo({ item }) {
-  const [bad, setBad] = useState(false);
-  return (
-    <span className={`pk-ph${item.fit === 'contain' ? ' pk-ct' : ''}`}>
-      {item.img && !bad ? <img src={item.img} alt="" loading="eager" decoding="async" onError={() => setBad(true)} /> : <i aria-hidden="true">{(item.cat || '').slice(0, 14)}</i>}
-    </span>
-  );
-}
-
 function Card({ item, label, price = false, state = 'idle', onClick = null, badge = null }) {
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag type={onClick ? 'button' : undefined} className={`pk-card pk-${state}`} onClick={onClick || undefined}>
-      <Photo item={item} />
       <span className="pk-txt">
         {label ? <span className="pk-lab">{label}</span> : null}
         <span className="pk-name">{item.name}</span>
@@ -230,7 +220,6 @@ export default function PicksGame({ day, quizId, num, practice = false, onDone }
           const ok = revealed && placed[k] === k;
           return (
             <button key={k} type="button" className={`pk-trow${revealed ? (ok ? ' pk-win' : ' pk-lose') : ''}${!revealed && sel != null ? ' pk-aim' : ''}`} onClick={() => tapItem(k)} disabled={revealed}>
-              <Photo item={it} />
               <span className="pk-txt">
                 <span className="pk-name">{it.name}</span>
                 <span className="pk-sub">{revealed ? (ok ? 'Right' : `It was ${fmtCents(it.price)}`) : (it.cat || '')}</span>
@@ -287,19 +276,6 @@ export default function PicksGame({ day, quizId, num, practice = false, onDone }
       ) : (
         <div className="pk-hint pk-tap">{kind === 'ab' ? (i === 0 ? 'Tap the one that costs more.' : 'Tap the one that costs more. The winner stays on top.') : 'Is the real price over or under the line?'}</div>
       )}
-      <Credits items={kind === 'ab' ? [chain[i].top, chain[i].bot] : kind === 'ou' ? [day.ou.item] : day.tags} />
-    </div>
-  );
-}
-
-function Credits({ items }) {
-  const list = items.filter((x) => x && x.credit);
-  if (!list.length) return null;
-  return (
-    <div className="pk-cred">
-      {list.map((x, n) => (
-        <span key={n}>{x.creditUrl ? <a href={x.creditUrl} target="_blank" rel="noopener noreferrer">{x.credit}</a> : x.credit}</span>
-      ))}
     </div>
   );
 }
@@ -327,15 +303,11 @@ const CSS = `
 .pk-pin span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pk-title{margin:2px 0 0;font-size:24px;font-weight:800;letter-spacing:-.01em}
 .pk-pair,.pk-ou,.pk-tags{display:flex;flex-direction:column;gap:10px}
-.pk-card{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:10px;border-radius:18px;border:1px solid var(--ink);background:var(--tile);color:var(--ink);font:inherit;position:relative;transition:transform .15s,opacity .25s,background .25s,border-color .25s}
+.pk-card{display:flex;gap:12px;align-items:center;width:100%;min-height:84px;text-align:left;padding:14px 16px;border-radius:18px;border:1px solid var(--ink);background:var(--tile);color:var(--ink);font:inherit;position:relative;transition:transform .15s,opacity .25s,background .25s,border-color .25s}
 button.pk-card{cursor:pointer}button.pk-card:active{transform:scale(.985)}
 .pk-card.pk-held{border-width:2px;background:var(--card);color:var(--cink)}
 .pk-card.pk-win{border-width:3px;background:var(--card);color:var(--cink)}
 .pk-card.pk-lose{border-color:color-mix(in srgb,var(--ink) 35%,transparent);background:transparent;opacity:.72}
-.pk-ph{width:92px;height:92px;flex:none;border-radius:12px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center}
-.pk-ph img{width:100%;height:100%;object-fit:cover;display:block}
-.pk-ph.pk-ct img{object-fit:contain;padding:4px}
-.pk-ph i{font-style:normal;font-size:10.5px;font-weight:700;color:#23404f;text-align:center;padding:4px}
 .pk-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 .pk-lab{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
 .pk-name{font-size:16px;font-weight:800;line-height:1.2}
@@ -351,9 +323,8 @@ button.pk-card{cursor:pointer}button.pk-card:active{transform:scale(.985)}
 .pk-big:disabled{cursor:default}
 .pk-big.pk-win{border-width:3px;background:var(--card);color:var(--cink)}
 .pk-big.pk-lose{opacity:.55;background:transparent}
-.pk-trow{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:8px 10px;border-radius:16px;border:1px solid var(--ink);background:var(--tile);color:var(--ink);font:inherit;cursor:pointer;transition:all .2s}
-.pk-trow .pk-ph{width:56px;height:56px;border-radius:10px}
-.pk-trow .pk-name{font-size:14.5px}
+.pk-trow{display:flex;gap:10px;align-items:center;width:100%;min-height:60px;text-align:left;padding:10px 14px;border-radius:16px;border:1px solid var(--ink);background:var(--tile);color:var(--ink);font:inherit;cursor:pointer;transition:all .2s}
+.pk-trow .pk-trow .pk-name{font-size:14.5px}
 .pk-trow.pk-aim{border-width:2px}
 .pk-trow.pk-win{border-width:3px;background:var(--card);color:var(--cink)}
 .pk-trow.pk-lose{background:transparent}
@@ -381,7 +352,5 @@ button.pk-card{cursor:pointer}button.pk-card:active{transform:scale(.985)}
 .pk-no{padding:4px 10px;border-radius:10px;border:1px solid var(--ink)}
 .pk-go{width:100%;height:56px;border-radius:28px;border:0;background:var(--ink);color:var(--ground);font:800 17px Manrope,system-ui,sans-serif;cursor:pointer;margin-top:4px}
 .pk-go.pk-off{opacity:.35;cursor:default}
-.pk-cred{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:10.5px;font-weight:600;opacity:.65;margin-top:2px}
-.pk-cred a{color:inherit}
 @media(min-width:900px){.pk{padding-top:10px}.pk-title{font-size:28px}}
 `;

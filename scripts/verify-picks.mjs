@@ -24,7 +24,9 @@ const rowOf = (ref) => {
 // Pool rows are checked here with the field, photo and price rules the
 // Dealer and Curator banks keep in verify-price-banks.mjs.
 {
-  const POOL_FIELDS = { dealer: ['name', 'cat', 'maker', 'href', 'img', 'credit', 'creditUrl'], curator: ['kind', 'name', 'href', 'img', 'credit', 'creditUrl'] };
+  // Picks shows no photos (owner, 2026-11-22), so a pool row needs no img or
+  // credit. A row that still carries one keeps the Commons rules below.
+  const POOL_FIELDS = { dealer: ['name', 'cat', 'maker', 'href'], curator: ['kind', 'name', 'href'] };
   const BANNED = /googleusercontent\.com|ggpht\.com|fbcdn\.net|cdninstagram\.com|fbsbx\.com/i;
   const names = new Map();
   for (const k of ['dealer', 'agent', 'curator']) for (const p of banks[k]) if (p.name) names.set(String(p.name).toLowerCase(), `${k} ${p.live}`);
@@ -40,8 +42,8 @@ const rowOf = (ref) => {
     for (const f of POOL_FIELDS[p.key]) if (p[f] == null || p[f] === '') bad(`missing ${f}`);
     if (!Number.isInteger(p.price) || p.price <= 0) bad('price must be positive integer cents');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(p.gathered || '')) bad('gathered must be YYYY-MM-DD');
-    if (!/^https:\/\/commons\.wikimedia\.org\/wiki\/Special:FilePath\/.+/.test(p.img || '')) bad('img must be a Wikimedia Commons Special:FilePath URL');
-    if (!/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/.test(p.creditUrl || '')) bad('creditUrl must be the Commons File: page');
+    if (p.img && !/^https:\/\/commons\.wikimedia\.org\/wiki\/Special:FilePath\/.+/.test(p.img)) bad('img must be a Wikimedia Commons Special:FilePath URL');
+    if (p.img && !/^https:\/\/commons\.wikimedia\.org\/wiki\/File:/.test(p.creditUrl || '')) bad('creditUrl must be the Commons File: page');
     if (BANNED.test(p.img || '') || /\.(webp|avif)(\?|$)/i.test(p.img || '')) bad('img on a banned host or format');
     if (!/^https:\/\//.test(p.href || '')) bad('href must be https');
     if (p.key === 'curator') {
@@ -53,7 +55,7 @@ const rowOf = (ref) => {
     const nm = String(p.name || '').toLowerCase();
     if (names.has(nm)) bad(`name repeats ${names.get(nm)}`); else names.set(nm, id);
     const ship = shipFor(p.key, p);
-    if (!ship || !ship.name || !ship.asOf || !ship.imgs || !ship.imgs.length) bad('the item card does not build');
+    if (!ship || !ship.name || !ship.asOf) bad('the item card does not build');
     else {
       const dollars = Math.floor(p.price / 100).toLocaleString('en-US');
       if ([ship.name, ship.cat, ship.line, ...(ship.facts || [])].join(' ').includes(dollars) && p.price >= 10000) bad(`the card text shows the price (${dollars})`);
@@ -90,7 +92,7 @@ for (const d of PUZZLES || []) {
     const hit = rowOf(r);
     if (!hit) { bad(`ref ${r} is not a Dealer, Agent or Curator row or a Picks pool id`); continue; }
     const ship = shipFor(hit.k, hit.p);
-    if (!ship || !ship.name || !(ship.imgs && ship.imgs[0] && ship.imgs[0].src)) bad(`ref ${r} ships no name or photo`);
+    if (!ship || !ship.name) bad(`ref ${r} ships no name`);
     if (!Number.isInteger(hit.p.price) || hit.p.price <= 0) bad(`ref ${r} has no integer-cent price`);
     items[r] = { ...ship, price: hit.p.price, key: hit.k, lot: hit.p.kind === 'auction' };
     if (hit.pool && hit.p.kind !== 'auction') {

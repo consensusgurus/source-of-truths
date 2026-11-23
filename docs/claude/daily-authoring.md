@@ -1288,4 +1288,5 @@ week inventory to fill earlier days and create new harder thursdays and other da
   This run reached Dec 8: Woolf, Trollope, Sabatini, Carroll, Doyle, Crane, London and Arrowsmith all failed, and each failure
   costs about ten minutes. Pick candidate passages by running them through the generator one at a time (--out), not in a chain.
 - **Picks** is the binding constraint for Price Check: a day deals 9 items, and about 4 of them must be curator rows (retail list
-  prices or auction lots priced near the cars). The pool ran dry of curator rows at Dec 8.
+  prices or auction lots priced near the cars). The pool ran dry of curator rows at Dec 8. Since 2026-11-22 Picks
+  rows need no photo, so a restock is a price read per row.

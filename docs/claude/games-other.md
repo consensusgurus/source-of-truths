@@ -2327,6 +2327,12 @@ shown on reveal), then the house (typed guess). No day theme.
 
 ## Price Check from 2026-11-07: one item, six Picks, one house (owner, 2026-11-06)
 
+**Picks shows no photos (owner, 2026-11-22: "dump the pictures from picks").** Cards and tag rows are name, facts and
+price only, and the Commons credit line is gone. A new pool row needs no `img`, `credit` or `creditUrl`
+(verify-picks no longer requires them; a row that still carries an `img` keeps the Commons rules). This removes the
+slowest part of a Picks restock: finding a same-generation Commons photo for every item. Pricer, Realtor and the
+end-of-run item pop-up keep their photos.
+
 The run is three legs from 2026-11-07: Pricer (the everyday item), **Picks** (six quick calls) and
 Realtor (the house), scored 15/20/15 out of 50. Days before keep the five tags at 10 each.
 
