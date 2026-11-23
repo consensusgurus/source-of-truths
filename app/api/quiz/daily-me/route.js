@@ -9,7 +9,8 @@ import { scoreOutrankGame } from '@/lib/outrank-score';
 import { scoreFeudGame } from '@/lib/feud-score';
 import { scoreHerdGame } from '@/lib/herd-score';
 import { scorePollGame } from '@/lib/poll-score';
-import { GAME_PUZZLES, etTodayServer, suffixFromRequest, gamesForSuffix } from '@/lib/daily-slate';
+import { etTodayServer, suffixFromRequest, gamesForSuffix } from '@/lib/daily-index';
+import { ADAPTIVE_PUZZLES as GAME_PUZZLES } from '@/lib/adaptive-puzzles';
 
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';

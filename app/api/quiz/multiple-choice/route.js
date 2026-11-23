@@ -5,7 +5,7 @@ import { fetchAllRows } from '@/lib/fetch-all';
 import { QUIZ_RESULT_COL_TIERS, isMissingColumn } from '@/lib/quiz-results-cache';
 import { findQuizIdentity } from '@/lib/quiz-identity';
 import { scoreGame, rowsWithinDay } from '@/lib/daily-combined';
-import { gamesForSuffix, suffixOfDate, etTodayServer } from '@/lib/daily-slate';
+import { gamesForSuffix, suffixOfDate, etTodayServer } from '@/lib/daily-index';
 import { circuitKeysFor } from '@/lib/circuits';
 import { MC_RUNS, MC_IDS, MC_FROM, MC_PERIOD_IDS, periodRange, addDays } from '@/lib/multiple-choice';
 

@@ -14,7 +14,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { loadQuizResultsCached } from '@/lib/quiz-results-cache';
 import { DAILY_KEYS } from '@/lib/daily-combined';
-import { etTodayServer, suffixOfDate, gamesForSuffix } from '@/lib/daily-slate';
+import { etTodayServer, suffixOfDate, gamesForSuffix } from '@/lib/daily-index';
 import { DISPLAY_CIRCUITS } from '@/lib/circuits';
 import { GET as combinedGET } from '../../quiz/daily-combined/route';
 import { summarize } from '../../quiz/board/route';

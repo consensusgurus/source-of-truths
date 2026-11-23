@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { gamesForSuffix, etTodayServer, suffixOfDate } from '@/lib/daily-slate';
+import { gamesForSuffix, etTodayServer, suffixOfDate } from '@/lib/daily-index';
 import { liveDailyKeys, DAILY_GAME_MAP } from '@/lib/daily-games';
 
 // LAST MONDAY'S BOARDS, for the entry door's Sunday card (owner, 2026-10-18).
