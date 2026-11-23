@@ -53,6 +53,21 @@ database (Micro, near its Disk IO budget) and faster home and end screens.
   community first (Community, Post-Game Talk, Groups, Loft Shop, Puzzle Peers), then Quizzes, Runs,
   Build a Run, then the rest; same on the phone tiles and the puzzle-page sidebar.
 
+- 2026-11-23 (data audit, docs: claude/data-usage-audit-2026-11-23.md in the Mind Loft project):
+  - `runs` board: the cron writes every run's tile figures (players, site leader, doneAts) for today,
+    plus yesterday's doneAts (computed once per day, carried forward, a failed run retried). The home
+    reads it once instead of 16 public per-run reads and 16 yesterday reads. Falls back to the old
+    per-run reads when missing, over 10 minutes old or another day.
+  - `/api/quiz/run-stats?ids=..&group=..&<identity>`: the reader's own and group run figures in ONE
+    read, by calling daily-combined's GET in process per run (same output as the per-run reads, one
+    instance instead of up to 16 cold ones). Group members now also get today's finish times from
+    `runs`, which the group payload never carried.
+  - `/api/boards?name=overall&part=overall`: the rail's slim read (no games, pool, overallAll).
+  - `/api/quiz/totals?view=home` (day figures only) and `?view=leaders&ids=` (permanent picks);
+    `/api/quiz/recent?limit=150` on the home; `/api/quiz/me?ids=0` from app/quizMeClient.js (no
+    playedIds/completedIds; /quizzes and Stat Hub fetch the full profile themselves) and an in-flight
+    join so a second identical read never fires while the first is on the wire.
+
 ## Next phases (one page at a time, evenings, watch logs 15 minutes after each)
 
 1. Home overall leaderboard and the leaderboard page read `/api/boards?name=overall`, show `asOf`.

@@ -1599,11 +1599,14 @@ export default function StageToday({ seed = null } = {}) {
   const [totals, setTotals] = useState(null);
   useEffect(() => {
     let alive = true;
-    fetch('/api/quiz/recent')
+    // limit=150: the feed shows ten dailies (data audit, 2026-11-23); was 1,000 rows.
+    fetch('/api/quiz/recent?limit=150')
       .then((r) => r.json())
       .then((d) => { if (alive && d && Array.isArray(d.plays)) setFeed(d.plays); })
       .catch(() => {});
-    fetch('/api/quiz/totals')
+    // view=home: the day's figures only (data audit, 2026-11-23). The full
+    // payload was 2.1 MB; the permanent quizzes' leaders come with the picks below.
+    fetch('/api/quiz/totals?view=home')
       .then((r) => r.json())
       .then((d) => { if (alive && d && !d.error) setTotals(d); })
       .catch(() => {});
@@ -2650,6 +2653,7 @@ export default function StageToday({ seed = null } = {}) {
   // want each run's players today.
   const [listRuns, setListRuns] = useState(false);
   const runAsked = useRef(null);
+  const runsBoardP = useRef(null);
   const runGrp = grpOne && !grpOne.failed && grpOne.code ? grpOne : null;
   useEffect(() => {
     if (grp === undefined) return undefined;
@@ -2660,6 +2664,7 @@ export default function StageToday({ seed = null } = {}) {
     if (!ids.size) return undefined;
     if (!runAsked.current) runAsked.current = new Set();
     const qs = identityQs();
+    const todo = [];
     for (const id of ids) {
       const c = circuits.find((x) => x.id === id);
       if (!c) continue;
@@ -2667,37 +2672,95 @@ export default function StageToday({ seed = null } = {}) {
       const ask = `${id}|${full ? 1 : 0}|${runGrp ? runGrp.code : ''}`;
       if (runAsked.current.has(ask)) continue;
       runAsked.current.add(ask);
-      const url = runGrp
-        ? `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}&group=${encodeURIComponent(runGrp.code)}${qs ? '&' + qs : ''}`
-        : `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}${full && qs ? '&' + qs : ''}`;
-      // Yesterday's board once per run: a finished day, so it caches long.
-      if (!runAsked.current.has('y|' + id)) {
-        runAsked.current.add('y|' + id);
-        try {
-          const [Y, M, D] = etToday().split('-').map(Number);
-          const yd = new Date(Date.UTC(Y, M - 1, D - 1));
-          const ysuf = `${yd.getUTCMonth() + 1}-${yd.getUTCDate()}-${yd.getUTCFullYear() % 100}`;
-          fetch(`/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}&date=${ysuf}`)
-            .then((r) => (r.ok ? r.json() : null))
-            .then((d) => { if (circLive.current && d && Array.isArray(d.doneAts)) setRunDone((m) => ({ ...m, [id]: { ...(m[id] || {}), y: d.doneAts } })); })
-            .catch(() => {});
-        } catch (e) { /* no yesterday read */ }
+      // Personal: the read carries the reader (their rank, or their group's).
+      todo.push({ id, full, personal: !!runGrp || !!(full && qs) });
+    }
+    if (!todo.length) return undefined;
+    const setStat = (id, d) => {
+      // WHO LEADS THE RUN (owner, 2026-11-07: "i want the runs to show the
+      // leader just as the individual puzzles do"): site #1, never a score.
+      const top = Array.isArray(d.overall) ? d.overall.find((r) => r && r.rank === 1 && r.username) : null;
+      const v = runGrp
+        ? { players: d.siteField || 0, rank: d.siteRank || null, gfield: d.field || 0, grank: d.me && d.me.rank ? d.me.rank : null, lead: d.siteLeader || null }
+        : { players: d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0), rank: d.me && d.me.rank ? d.me.rank : null, lead: top ? top.username : null };
+      setRunStat((m) => ({ ...m, [id]: v }));
+      if (Array.isArray(d.doneAts)) setRunDone((m) => ({ ...m, [id]: { ...(m[id] || {}), t: d.doneAts } }));
+    };
+    // THE ORIGINAL PER-RUN READS, kept as the fallback when the prebuilt board or
+    // the batched read is missing or late.
+    const perRun = (list) => {
+      for (const { id, full } of list) {
+        const url = runGrp
+          ? `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}&group=${encodeURIComponent(runGrp.code)}${qs ? '&' + qs : ''}`
+          : `/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}${full && qs ? '&' + qs : ''}`;
+        // Yesterday's board once per run: a finished day, so it caches long.
+        if (!runAsked.current.has('y|' + id)) {
+          runAsked.current.add('y|' + id);
+          try {
+            const [Y, M, D] = etToday().split('-').map(Number);
+            const yd = new Date(Date.UTC(Y, M - 1, D - 1));
+            const ysuf = `${yd.getUTCMonth() + 1}-${yd.getUTCDate()}-${yd.getUTCFullYear() % 100}`;
+            fetch(`/api/quiz/daily-combined?circuit=${encodeURIComponent(id)}&date=${ysuf}`)
+              .then((r) => (r.ok ? r.json() : null))
+              .then((d) => { if (circLive.current && d && Array.isArray(d.doneAts)) setRunDone((m) => ({ ...m, [id]: { ...(m[id] || {}), y: d.doneAts } })); })
+              .catch(() => {});
+          } catch (e) { /* no yesterday read */ }
+        }
+        fetch(url)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => { if (circLive.current && d) setStat(id, d); })
+          .catch(() => {});
       }
-      fetch(url)
+    };
+    // ONE PREBUILT READ FOR EVERY RUN TILE (data audit, 2026-11-23). The boards
+    // job writes `runs` every two minutes: each run's players, site leader and
+    // finish times, today's and yesterday's. That replaces the per-run public
+    // reads and all sixteen yesterday reads. The reader's own and group figures
+    // stay live, asked for in one batched read instead of one per run.
+    let tsuf = '';
+    try { const [Y, M, D] = etToday().split('-').map(Number); tsuf = `${M}-${D}-${Y % 100}`; } catch (e) { tsuf = ''; }
+    if (!runsBoardP.current) {
+      runsBoardP.current = fetch('/api/boards?name=runs').then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    }
+    runsBoardP.current.then((b) => {
+      if (!circLive.current) return;
+      const ok = b && b.today && typeof b.today === 'object' && b.date === tsuf
+        && b.asOf && Date.now() - b.asOf < 10 * 60 * 1000;
+      if (!ok) { perRun(todo); return; }
+      const mine = [];
+      for (const t of todo) {
+        const y = b.yesterday ? b.yesterday[t.id] : null;
+        const td = b.today[t.id];
+        if (Array.isArray(y)) runAsked.current.add('y|' + t.id);
+        const patch = {};
+        if (Array.isArray(y)) patch.y = y;
+        if (td && Array.isArray(td.doneAts)) patch.t = td.doneAts;
+        if (patch.y || patch.t) setRunDone((m) => ({ ...m, [t.id]: { ...(m[t.id] || {}), ...patch } }));
+        if (t.personal) mine.push(t);
+        else if (td) setRunStat((m) => ({ ...m, [t.id]: { players: td.players || 0, rank: null, lead: td.lead || null } }));
+        else perRun([t]);
+      }
+      if (!mine.length) return;
+      const q = 'ids=' + encodeURIComponent(mine.map((t) => t.id).join(','))
+        + (runGrp ? '&group=' + encodeURIComponent(runGrp.code) : '') + (qs ? '&' + qs : '');
+      fetch('/api/quiz/run-stats?' + q)
         .then((r) => (r.ok ? r.json() : null))
         .then((d) => {
-          if (!circLive.current || !d) return;
-          // WHO LEADS THE RUN (owner, 2026-11-07: "i want the runs to show the
-          // leader just as the individual puzzles do"): site #1, never a score.
-          const top = Array.isArray(d.overall) ? d.overall.find((r) => r && r.rank === 1 && r.username) : null;
-          const v = runGrp
-            ? { players: d.siteField || 0, rank: d.siteRank || null, gfield: d.field || 0, grank: d.me && d.me.rank ? d.me.rank : null, lead: d.siteLeader || null }
-            : { players: d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0), rank: d.me && d.me.rank ? d.me.rank : null, lead: top ? top.username : null };
-          setRunStat((m) => ({ ...m, [id]: v }));
-          if (Array.isArray(d.doneAts)) setRunDone((m) => ({ ...m, [id]: { ...(m[id] || {}), t: d.doneAts } }));
+          if (!circLive.current) return;
+          const st = d && d.stats ? d.stats : null;
+          if (!st) { perRun(mine); return; }
+          const miss = [];
+          for (const t of mine) {
+            const v = st[t.id];
+            if (!v) { miss.push(t); continue; }
+            const { doneAts, ...rest } = v;
+            setRunStat((m) => ({ ...m, [t.id]: rest }));
+            if (Array.isArray(doneAts)) setRunDone((m) => ({ ...m, [t.id]: { ...(m[t.id] || {}), t: doneAts } }));
+          }
+          if (miss.length) perRun(miss);
         })
-        .catch(() => {});
-    }
+        .catch(() => { if (circLive.current) perRun(mine); });
+    });
     return undefined;
   }, [runsMq, listRuns, circPane, circuits, grp, runGrp && runGrp.code]);
   // On a phone the index is a sideways strip, so a pane opened from the cap has
@@ -2731,13 +2794,24 @@ export default function StageToday({ seed = null } = {}) {
   // PERMANENT QUIZZES UNDER GEOGRAPHY AND TRIVIA (owner, 2026-10-16). Fetched
   // once, the first time either pane is open, so no other pane pays for it.
   const [picks, setPicks] = useState(null);
+  const [pqLeaders, setPqLeaders] = useState(null);
   const wantPicks = paneOn === 'Geography' || paneOn === 'Trivia';
   useEffect(() => {
     if (!wantPicks || picks) return undefined;
     let alive = true;
     fetch('/api/quiz/permanent-picks')
       .then((r) => r.json())
-      .then((d) => { if (alive && d && Array.isArray(d.geography)) setPicks(d); })
+      .then((d) => {
+        if (!alive || !d || !Array.isArray(d.geography)) return;
+        setPicks(d);
+        // Their all-time leaders, for exactly these quizzes (data audit, 2026-11-23).
+        const ids = [...(d.geography || []), ...(d.trivia || [])].map((q) => q && q.id).filter(Boolean);
+        if (!ids.length) { setPqLeaders({}); return; }
+        fetch('/api/quiz/totals?view=leaders&ids=' + encodeURIComponent(ids.join(',')))
+          .then((r) => r.json())
+          .then((x) => { setPqLeaders((x && x.leaders) || {}); })
+          .catch(() => { setPqLeaders({}); });
+      })
       .catch(() => {});
     return () => { alive = false; };
   }, [wantPicks, picks]);
@@ -3248,7 +3322,7 @@ export default function StageToday({ seed = null } = {}) {
     // of computing the whole day again for this reader; the reader's own row
     // comes from the board the page already holds (`board.me`). Anything off
     // (missing, more than 10 minutes old, another day) falls back to the live read.
-    fetch('/api/boards?name=overall').then((r) => (r.ok ? r.json() : null)).then((d) => {
+    fetch('/api/boards?name=overall&part=overall').then((r) => (r.ok ? r.json() : null)).then((d) => {
       const ok = d && Array.isArray(d.overall) && d.asOf && Date.now() - d.asOf < 10 * 60 * 1000
         && (!board || !board.date || !d.date || d.date === board.date);
       if (!ok) return live();
@@ -3717,7 +3791,7 @@ export default function StageToday({ seed = null } = {}) {
     const list = picks ? (cat === 'Geography' ? picks.geography : picks.trivia) : null;
     if (picks && (!list || !list.length)) return null;
     const max = list ? list.reduce((a, q) => Math.max(a, q.plays), 0) : 0;
-    const leaders = totals && totals.leaders ? totals.leaders : null;
+    const leaders = pqLeaders;
     return (
       <div className="sty-pqs">
         <div className="sty-pqh">Also try our permanent quizzes:</div>

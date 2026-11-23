@@ -35,7 +35,11 @@ function startOfEasternTodayUTC() {
 // feed + Last Played board. `attempt` is that PLAYER's chronological attempt
 // number of that quiz (1 = first time), computed by counting their earlier rows
 // for the same quiz; `isAnon` flags a play with no signed account.
-export async function GET() {
+export async function GET(request) {
+  // ?limit=N (data audit, 2026-11-23): the home shows ten plays and was
+  // downloading a thousand. Rows kept are computed exactly as before.
+  let limit = 1000;
+  try { const n = parseInt(new URL(request.url).searchParams.get('limit') || '', 10); if (n > 0) limit = Math.min(1000, n); } catch (e) { limit = 1000; }
   try {
     // Egress fix (2026-07-12): both reads below now come from the shared
     // in-process quiz_results cache instead of fresh Supabase queries.
@@ -51,7 +55,7 @@ export async function GET() {
       .slice(-1200)
       .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
       .slice(0, 1000);
-    const recent = data.filter((r) => !HIDDEN_QUIZ_IDS.has(r.quiz_id));
+    const recent = data.filter((r) => !HIDDEN_QUIZ_IDS.has(r.quiz_id)).slice(0, limit);
 
     // Today's play count per quiz id, so the live feed can show "(x25)" beside
     // each game (owner, 2026-08-04). Cached rows are in id (insertion) order,

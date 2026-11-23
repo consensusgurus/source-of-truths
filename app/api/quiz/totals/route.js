@@ -40,7 +40,17 @@ function startOfEasternTodayUTC() {
   return Date.parse(`${ymd}T04:00:00.000Z`);
 }
 
-export async function GET() {
+export async function GET(request) {
+  // SLIM VIEWS (data audit, 2026-11-23). The full payload is 2.1 MB, and the home
+  // reads about 1% of it. view=home is the day's figures only; view=leaders is
+  // the all-time leader for the ids asked for. Same numbers, same cache rules.
+  let view = '';
+  let wantIds = null;
+  try {
+    const sp = new URL(request.url).searchParams;
+    view = sp.get('view') || '';
+    if (view === 'leaders') wantIds = (sp.get('ids') || '').split(',').map((x) => x.trim()).filter(Boolean).slice(0, 200);
+  } catch (e) { view = ''; }
   try {
     // Shared in-process cache (egress fix 2026-07-12); the single pass below
     // is order-independent, so id order instead of quiz_id order is fine.
@@ -171,6 +181,14 @@ export async function GET() {
         }
       }
       if (best) { toughest = best; break; }
+    }
+    if (view === 'home') {
+      return NextResponse.json({ total: rows.length, today, todayPlayers: todayPlayers.size, totalTime, todayTime, todayByQuiz }, { headers: CACHE_HEADERS });
+    }
+    if (view === 'leaders') {
+      const sub = {};
+      for (const id of wantIds || []) if (leaders[id]) sub[id] = leaders[id];
+      return NextResponse.json({ leaders: sub }, { headers: CACHE_HEADERS });
     }
     return NextResponse.json({ total: rows.length, today, todayPlayers: todayPlayers.size, totalCorrect, totalPerfect, totalTime, todayTime, byQuiz, recent7, recent12h, todayByQuiz, trendingByQuiz, trendingWindowH, leaders, leaderKeys, topLeaders, toughest }, { headers: CACHE_HEADERS });
   } catch (e) {

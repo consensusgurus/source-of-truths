@@ -73,6 +73,42 @@ export async function GET(request) {
     catch (e) { errors.push(String(e.message || e)); }
   }
 
+  // 1b. THE RUN TILES' FIGURES (data audit, 2026-11-23). The home used to ask
+  // for every run twice (today, and yesterday for its finish times): 32 reads per
+  // visit. One board now carries, per run, what those tiles print: players, the
+  // site leader and the finish times, today's and yesterday's. Yesterday is final,
+  // so it is computed once per day and carried forward after that.
+  try {
+    const today1 = {};
+    for (const c of DISPLAY_CIRCUITS) {
+      const d = built[`circuit-${c.id}`];
+      if (!d) continue;
+      const top = Array.isArray(d.overall) ? d.overall.find((r) => r && r.rank === 1 && r.username) : null;
+      today1[c.id] = {
+        players: d.overallField || (Array.isArray(d.overall) ? d.overall.length : 0),
+        lead: top ? top.username : null,
+        doneAts: Array.isArray(d.doneAts) ? d.doneAts : [],
+      };
+    }
+    const [Y, M, D] = today.split('-').map(Number);
+    const yd = new Date(Date.UTC(Y, M - 1, D - 1));
+    const ysuf = `${yd.getUTCMonth() + 1}-${yd.getUTCDate()}-${yd.getUTCFullYear() % 100}`;
+    const prevRuns = await readBoard(supabaseAdmin, 'runs').catch(() => null);
+    const yesterday = (prevRuns && prevRuns.ydate === ysuf && prevRuns.yesterday && typeof prevRuns.yesterday === 'object')
+      ? { ...prevRuns.yesterday } : {};
+    // Only the runs not already carried (a run that failed last time is retried).
+    {
+      for (const c of DISPLAY_CIRCUITS) {
+        if (Array.isArray(yesterday[c.id])) continue;
+        try {
+          const d = await combined(`circuit=${encodeURIComponent(c.id)}&date=${ysuf}`);
+          yesterday[c.id] = Array.isArray(d.doneAts) ? d.doneAts : [];
+        } catch (e) { errors.push(String(e.message || e)); }
+      }
+    }
+    if (Object.keys(today1).length) built.runs = { date: suffix, ydate: ysuf, today: today1, yesterday };
+  } catch (e) { errors.push('runs: ' + String(e.message || e)); }
+
   // 2. Every one of today's puzzles, from one pass over the shared results cache.
   try {
     const games = gamesForSuffix(DAILY_KEYS, suffix, today);

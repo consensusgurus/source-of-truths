@@ -48,6 +48,11 @@ const RANK = { light: 0, history: 1, full: 2 };
 
 let pending = null; // { key, anonId, email, mode, waiters, timer }
 let settled = null; // { key, mode, at, data }
+// IN FLIGHT (data audit, 2026-11-23): once a window flushes, `pending` is gone and
+// `settled` is not set until the answer lands, so a caller arriving in between
+// (a cold read takes seconds) used to fire a second identical request. It now
+// joins the one in flight.
+let inflight = null; // { key, mode, promise }
 
 function parse(url) {
   const q = url.indexOf('?');
@@ -67,6 +72,10 @@ function build({ anonId, email, mode }) {
   if (email) p.set('email', email);
   if (mode === 'light') p.set('light', '1');
   else if (mode === 'history') p.set('history', '1');
+  // ids=0 (data audit, 2026-11-23): no caller of this helper reads playedIds /
+  // completedIds (the full play history, 93% of a light answer). /quizzes and the
+  // Stat Hub, which do, fetch the profile themselves.
+  p.set('ids', '0');
   return '/api/quiz/me?' + p.toString();
 }
 
@@ -80,15 +89,22 @@ function wrap(data) {
 function flush(p) {
   if (pending === p) pending = null;
   if (p.timer) { clearTimeout(p.timer); p.timer = null; }
-  fetch(build(p))
+  const fl = { key: p.key, mode: p.mode, promise: null };
+  fl.promise = fetch(build(p))
     .then((r) => r.json())
     .then((data) => {
+      if (inflight === fl) inflight = null;
       settled = { key: p.key, mode: p.mode, at: Date.now(), data };
       for (const w of p.waiters) w.resolve(wrap(data));
+      return data;
     })
     .catch((err) => {
+      if (inflight === fl) inflight = null;
       for (const w of p.waiters) w.reject(err);
+      throw err;
     });
+  fl.promise.catch(() => {});
+  inflight = fl;
 }
 
 export function meRequest(url) {
@@ -98,7 +114,9 @@ export function meRequest(url) {
   if (req.fresh) {
     const key = req.anonId + '|' + req.email;
     settled = null;
-    return fetch(url).then((r) => {
+    inflight = null;
+    const fu = url + (/[?&]ids=/.test(url) ? '' : (url.includes('?') ? '&' : '?') + 'ids=0');
+    return fetch(fu).then((r) => {
       if (!r.ok) return r;
       return r.json().then((data) => {
         settled = { key, mode: req.mode, at: Date.now(), data };
@@ -117,6 +135,11 @@ export function meRequest(url) {
     RANK[settled.mode] >= RANK[req.mode]
   ) {
     return Promise.resolve(wrap(settled.data));
+  }
+
+  // Join a request already on the wire, if it asked for at least as much.
+  if (inflight && inflight.key === key && RANK[inflight.mode] >= RANK[req.mode]) {
+    return inflight.promise.then(wrap);
   }
 
   // Join the request already forming for this player, upgrading its mode if this
@@ -138,6 +161,7 @@ export function meRequest(url) {
 // that does not.
 export function invalidateQuizMe() {
   settled = null;
+  inflight = null;
 }
 
 if (typeof window !== 'undefined') {

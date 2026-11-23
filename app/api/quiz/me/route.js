@@ -72,6 +72,8 @@ export async function GET(request) {
   const light = searchParams.get('light') === '1' || searchParams.get('light') === 'true';
   const history = searchParams.get('history') === '1' || searchParams.get('history') === 'true';
   const fresh = searchParams.get('fresh') === '1' || searchParams.get('fresh') === 'true';
+  // ids=0: leave out the full play history (data audit, 2026-11-23).
+  const noIds = searchParams.get('ids') === '0';
   // full=1: the Stat Hub's exact path (live rank movement per game, live
   // trophies). Everything else reads the IQ snapshot with the asker
   // recomputed fresh, which is what cut this route's CPU (owner 2026-10-19).
@@ -120,6 +122,7 @@ export async function GET(request) {
     // profile.signed is `signed || !p.isAnon`, so it catches a registered player
     // whether they were resolved by email or by an anon id already claimed by an
     // account. Anything other than a found, unclaimed, non-fresh guest is live.
+    if (noIds) { delete profile.playedIds; delete profile.completedIds; }
     const cacheable = profile.found && !profile.signed && !fresh;
     return NextResponse.json(profile, {
       headers: cacheable ? CACHE_HEADERS : NO_STORE_HEADERS,

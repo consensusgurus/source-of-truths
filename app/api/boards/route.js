@@ -33,12 +33,18 @@ function cached(name) {
 }
 
 export async function GET(request) {
-  const name = (new URL(request.url).searchParams.get('name') || '').trim();
+  const sp = new URL(request.url).searchParams;
+  const name = (sp.get('name') || '').trim();
+  // part=overall (data audit, 2026-11-23): just the day's ranked list, for the
+  // home rail. The full overall board also carries every game's standings and the
+  // picks pool (about 90% of its 361 KB), which the rail never reads.
+  const part = sp.get('part') || '';
   if (!BOARD_NAME_RE.test(name)) return NextResponse.json({ error: 'unknown board' }, { status: 400, headers: MISS });
   const [board, index] = await Promise.all([cached(name), cached('index')]);
   if (!board) return NextResponse.json({ error: 'not built yet', name }, { status: 404, headers: MISS });
   const current = index && index.names && board.h && index.names[name] === board.h;
   const asOf = current ? Math.max(Number(index.at) || 0, Number(board.at) || 0) : (Number(board.at) || 0);
   const { h, ...out } = board;
+  if (part === 'overall') { delete out.games; delete out.pool; delete out.overallAll; delete out.priceField; delete out.stageField; }
   return NextResponse.json({ ...out, asOf }, { headers: CACHE });
 }
