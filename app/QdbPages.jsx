@@ -84,7 +84,7 @@ const catCrumb = { trivia: { label: 'Trivia', href: '/trivia-games' }, math: { l
 
 function totalOf(db) {
   const stats = poolStats(db, etToday());
-  return Object.values(stats).reduce((a, s) => a + s.n, 0);
+  return Object.values(stats).reduce((a, s) => a + s.own, 0);
 }
 
 export function hubMetadata(db) {
@@ -104,7 +104,7 @@ export function HubPage({ db }) {
   const h = HUB[db];
   const today = etToday();
   const topics = topicCards(db, poolStats(db, today));
-  const total = topics.reduce((a, t) => a + t.n, 0);
+  const total = topics.reduce((a, t) => a + t.own, 0);
   const faq = h.faq(total);
   // Two sample questions for the page's showcase, from two different topics.
   const showcase = topics.slice(0, 6).map((t) => samples(db, t.slug, 3, today)[1]).filter(Boolean).slice(0, 2);

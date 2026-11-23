@@ -875,3 +875,31 @@ and English ... same SEO, same style" added two more. One engine, three database
   databases; a gauntlet daily's end card (EndFirst via StageStick, `BANK_DB`) and its StageTail
   line point at its topic; the Trivia Gauntlet, Trivia Encore, Science, English and Math runs end
   with a button to their database (GauntletEndStage `dbLink`, RunClient `RUN_DB`).
+
+## Deep subjects are cross-filed under their parent topics (owner, 2026-11-23)
+
+Owner, asked where Deep's questions end up in the databases: "yes, map deep subjects." Until this
+pass a Deep day lived only under Deep Cuts, so an Ancient Rome day was not in History and a solar
+system day was in neither Science topic.
+
+- **The map is `DEEP_PARENT` in `lib/trivia-topics.js`**: every Deep subject to a list of topic slugs,
+  FIRST EXISTING ONE WINS (`deepParent`). Music, book, animal, technology and mythology subjects list
+  a topic that does not exist yet (`music`, `books`, `nature`, `technology`, `mythology`) ahead of
+  their present home, so they move by themselves the day such a topic joins `TRIVIA_TOPICS`.
+  `DEEP_NO_PARENT` holds the five subjects with no honest parent (Chess, Thanksgiving, Christmas
+  Traditions, Magic and Illusion, Calendars and Timekeeping). `DEEP_SCIENCE` is the same idea for the
+  Science Database's own topics.
+- **A NEW DEEP SUBJECT NEEDS A LINE IN ONE OF THOSE LISTS.** `scripts/verify-deep-parents.mjs`
+  (auto-discovered by verify-all) fails a subject that is in neither; `--counts` prints what each
+  topic gained as of today.
+- **How a copy behaves** (`lib/qdb-library.js` `build`): the subject becomes a subtopic of the parent
+  topic, named for the subject (`<Subject>: Deep Cut` where the topic already has a lane of that name,
+  as Movies and TV has Television). Every such item is `deep: 1`. In the Trivia Database it is also
+  `x: 1`, because the same question (same key, `deep:<id>`) is already under Deep Cuts.
+- **Counted once, dealt once, printed once.** `poolStats` gives `n` (what the topic plays) and `own`
+  (without the `x` copies); the hub total and its FAQ sum `own`. A mix that includes Deep Cuts (a mix
+  of everything always does) leaves the copies out. A topic's own page prints only its own questions
+  (`samples` without a lane skips `deep`). **A Deep subject keeps ONE page, the one under Deep Cuts:**
+  `lanePages` skips a topic's `deep` lanes, so there is no second URL with the same fifteen questions.
+- A parent topic with more than twelve subtopics shows them in the compact searchable grid that Deep
+  Cuts already used (`manyLanes` in QdbPortal).
