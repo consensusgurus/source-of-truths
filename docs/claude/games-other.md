@@ -2412,7 +2412,26 @@ who was in the film is the game). Trivia, skills Memory and Planning, on the Sim
   casts incomplete: Dune: Part Two had no Austin Butler), as are " 3D" re-releases. Names merge on a
   folded key (Timothee / Timothée). Films are stored best known first so the type-ahead offers them
   first. A player who names a real co-star missing from the listed principal cast gets a strike;
-  that is the known cost of the data, stated in the rules ("the main cast Wikipedia lists").
+  that is the known cost of the data, stated in the rules ("casts from Wikipedia and IMDb").
+- **Longer casts from IMDb (owner, 2026-11-22).** Player report: Sean Connery was in The Longest
+  Day (Wikipedia listed 4 of its stars). Owner chose IMDb. `scripts/gen-bacon-imdb.py` reads an
+  extract of IMDb's non-commercial datasets (title.basics, title.principals, name.basics; the
+  sandbox cannot reach datasets.imdbws.com, so the owner downloads them and the extract is cut on
+  his machine) and writes `scripts/bacon-imdb-cast.json`, extra names per "<title>|<year>", which
+  `gen-bacon-graph.py` appends after the Wikipedia cast. IMDb's principals file holds about the top
+  10 billed only. Matching is strict (folded title, year within one, 2+ shared Wikipedia cast
+  names, ties skipped); 23,651 of 25,642 films matched, 120,517 names added, actors 26,077 to
+  35,331, graph 0.70 MB to 1.06 MB gzipped. Names two IMDb people share in the matched films are
+  held back, as are one-film people. Rebuild order: `gen-bacon-graph.py movies.json --no-imdb
+  --out /tmp/wiki-graph.json`, then `gen-bacon-imdb.py <extract dir> /tmp/wiki-graph.json`, then
+  `gen-bacon-graph.py movies.json`. The IMDb credit ("Information courtesy of IMDb
+  (https://www.imdb.com). Used with permission.") is in the rules footer and the About block;
+  keep it. The licence is personal and non-commercial: revisit before ads go live (Raptive).
+  The longer casts shortened 7 future boards' pars, so boards from 2026-12-06 on were
+  regenerated; boards 1 to 29 (through 2026-12-05) were kept exactly.
+- **Hand fixes** live in `scripts/bacon-cast-fixes.json`: drop_films, drop_cast, add_cast,
+  add_films, set_year, chain_avoid, and merge_names ([other spelling, name to show], e.g. Curt
+  Jurgens into Curd Jürgens).
 - **Boards** (`app/bacon/puzzles.js`, `scripts/gen-bacon.py`, append-only) name actors BY NAME, so
   a graph rebuild never breaks a board, and store `par` plus one shortest `chain` shown on the
   ending. Starts and targets come only from `scripts/bacon-stars.json` (hand-kept household names):

@@ -22,7 +22,12 @@
 # never breaks a board, and scripts/verify-bacon.mjs re-proves every par.
 import json, re, sys, unicodedata, collections
 
-src = sys.argv[1] if len(sys.argv) > 1 else 'movies.json'
+args = [a for a in sys.argv[1:] if not a.startswith('--')]
+src = args[0] if args else 'movies.json'
+NO_IMDB = '--no-imdb' in sys.argv
+OUT = sys.argv[sys.argv.index('--out') + 1] if '--out' in sys.argv else 'public/bacon/graph.json'
+if '--out' in sys.argv:
+    args.remove(OUT)
 rows = json.load(open(src))
 
 def fold(s):
@@ -96,6 +101,26 @@ for t, y, n in FIX['add_cast']:
     if (t, y) in films and all(fold(c) != fold(n) for c in films[(t, y)]):
         films[(t, y)].append(n)
 
+# Longer casts from IMDb (scripts/bacon-imdb-cast.json, built by
+# scripts/gen-bacon-imdb.py), added after the Wikipedia names so billing
+# order holds.
+if not NO_IMDB:
+    try:
+        IMDB = json.load(open('scripts/bacon-imdb-cast.json'))
+    except FileNotFoundError:
+        IMDB = {}
+    for k, names in IMDB.items():
+        t, y = k.rsplit('|', 1)
+        key = (t, int(y))
+        if key in films:
+            have = {fold(c) for c in films[key]}
+            have |= {fold(n) for tt, yy, n in FIX['drop_cast'] if (tt, yy) == key}
+            for n in names:
+                n = MERGE.get(fold(n), n)
+                if fold(n) not in have:
+                    films[key].append(n)
+                    have.add(fold(n))
+
 # A " 3D" re-release of a film already listed is the same film.
 for (t, y) in list(films):
     if t.endswith(' 3D') and any(k[0] == t[:-3] for k in films):
@@ -132,5 +157,5 @@ for (t, y), cast in films.items():
     out.append((fame, t, y, ids))
 out.sort(key=lambda x: (-x[0], x[1], x[2]))
 graph = {'v': 1, 'actors': actors, 'films': [[t, y, ids] for _, t, y, ids in out]}
-json.dump(graph, open('public/bacon/graph.json', 'w'), ensure_ascii=False, separators=(',', ':'))
-print(f'wrote public/bacon/graph.json: {len(out)} films, {len(actors)} actors')
+json.dump(graph, open(OUT, 'w'), ensure_ascii=False, separators=(',', ':'))
+print(f'wrote {OUT}: {len(out)} films, {len(actors)} actors')

@@ -316,7 +316,7 @@ const GAME = {
       <>A film your actor was not in, or an actor who was not in the film, is a <b>strike</b>. Three strikes end the day. Typing something that is not in the list costs nothing, and <b>Undo</b> is free.</>,
     ],
     knack: 'Head for a busy actor first. Someone who has made a film a year for decades is one step from almost everybody.',
-    footer: 'Films are American releases from 1930 to 2022, with the main cast Wikipedia lists for each. A solve ranks on films used, then on the clock. The Sunday Edition starts from a classic star.',
+    footer: 'Films are American releases from 1930 to 2022, with casts from Wikipedia and IMDb. A solve ranks on films used, then on the clock. The Sunday Edition starts from a classic star. Information courtesy of IMDb (https://www.imdb.com). Used with permission.',
   }),
   pitch: (P) => `Link ${P.from} to ${P.to} through their films.`,
   shareLine: (P, s, won, el) => `Bacon #${P.num}${P.sunday ? ' · Sunday' : ''} · ${P.from} to ${P.to} · ${won ? `${plural(films(s))} (par ${P.par}) · ${el}` : 'not solved'}\n${won ? Array.from({ length: films(s) }, () => '\u{1F3AC}').join('') : '⬜'}`,
@@ -325,6 +325,7 @@ const GAME = {
   about: [
     'Bacon is a free daily movie trivia game from Mind Loft, played like Six Degrees of Kevin Bacon. Every day it names two actors. You link them through films: name a film the first actor was in, type a co-star from it, and keep going until you reach the second actor.',
     'Par is the fewest films that can link the pair, and the fewer you use, the higher you rank, with the clock breaking a tie. A wrong film or a wrong co-star is a strike, and three strikes end the day. Weekdays pair stars of today; the Sunday Edition starts from a classic Hollywood star.',
+    <>Casts come from Wikipedia and IMDb. Information courtesy of IMDb (<a href="https://www.imdb.com" rel="nofollow noopener" target="_blank" style={{ color: 'inherit', fontWeight: 800 }}>www.imdb.com</a>). Used with permission.</>,
     <>More film trivia: try <a href="/script" style={{ color: 'inherit', fontWeight: 800 }}>Script</a>, <a href="/thread" style={{ color: 'inherit', fontWeight: 800 }}>Thread</a> and <a href="/quotes" style={{ color: 'inherit', fontWeight: 800 }}>Quotes</a>.</>,
   ],
 };

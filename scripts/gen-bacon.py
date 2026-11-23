@@ -140,7 +140,8 @@ HEAD = '''// Puzzle data for Bacon, the daily link-two-actors-through-their-film
 // name a film the current actor is in, then an actor in that film's cast, and
 // so on, until the target is reached, in at most seven films. The film graph
 // is public/bacon/graph.json (American films 1930 to 2022 with their principal
-// cast as Wikipedia lists it; scripts/gen-bacon-graph.py).
+// cast as Wikipedia lists it, lengthened from IMDb's datasets;
+// scripts/gen-bacon-graph.py and scripts/gen-bacon-imdb.py).
 //
 // Fields: from / to are actor names exactly as the graph spells them. par is
 // the fewest films that link them. chain is one shortest chain, actor, [film,
