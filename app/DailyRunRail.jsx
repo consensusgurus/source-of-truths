@@ -144,7 +144,12 @@ html[data-stage-pastel] .stg-top:has(.stg-sim) .drr{padding-left:14px;padding-ri
 .drr-c.done{color:var(--stg-mute,#8a93a6);}
 .drr-x{margin-left:auto;color:var(--stg-mute,#8a93a6);font-weight:700;text-decoration:none;}
 .drr-x2{margin-left:0;}
-.drr-bar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;width:min(520px,calc(100vw - 24px));
+/* ABOVE THE ENDING (owner report, 2026-11-23: finishing a game in Mind Loft
+   Daily "doesn't suggest the next one in line"). The phone ending (StageStick
+   .sst) is a full-screen layer at z-index 9000 that stays up, so at 60 this bar
+   was drawn underneath it and never seen. 9500 sits above the ending and below
+   the safe-area strip (10000). */
+.drr-bar{position:fixed;left:50%;bottom:max(14px,calc(env(safe-area-inset-bottom) + 8px));transform:translateX(-50%);z-index:9500;width:min(520px,calc(100vw - 24px));
   display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--stg-ink,#0f172a);color:var(--stg-ground,#fff);
   box-shadow:0 14px 34px -10px rgba(0,0,0,.45);font-family:'Manrope',system-ui,sans-serif;animation:drrUp .45s cubic-bezier(.2,.9,.3,1.2) both;}
 .drr-bt{display:flex;flex-direction:column;line-height:1.25;min-width:0;}
