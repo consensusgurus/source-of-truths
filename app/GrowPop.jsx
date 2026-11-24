@@ -24,6 +24,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
+import MindLoftMark from './MindLoftMark';
 import { SHARE_URL } from '@/lib/site';
 import { withRef, ensureMyRefCode } from '@/lib/referrals';
 import { readRunParam } from '@/lib/circuits';
@@ -70,15 +71,6 @@ function busy() {
 }
 
 const bare = (u) => String(u || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
-
-function HouseMark() {
-  return (
-    <svg className="grw-mk" width="22" height="20" viewBox="0 0 44 40" aria-hidden="true">
-      <path d="M22 2 L42 14 L42 38 L2 38 L2 14 Z" fill="currentColor" />
-      <path d="M10 34 L10 22 L22 30 L34 22 L34 34" fill="none" stroke="var(--g-card)" strokeWidth="4" strokeLinejoin="round" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 export default function GrowPop() {
   const [open, setOpen] = useState(false);
@@ -213,7 +205,7 @@ export default function GrowPop() {
         <button type="button" ref={closeRef} className="grw-x" onClick={close} aria-label="Close">
           <X size={18} strokeWidth={2.4} />
         </button>
-        <div className="grw-brand"><HouseMark /><span>Mind Loft</span></div>
+        <div className="grw-brand"><MindLoftMark size={20} ink={dark ? '#e9edf4' : '#0b0c0e'} accent="#7dd3fc" title="" /><span>Mind Loft</span></div>
 
         <div className="grw-tk">
           <span className="grw-notch l" aria-hidden="true" />
@@ -276,7 +268,6 @@ const CSS = `
   background:transparent;border:0;border-radius:10px;color:var(--g-ink2);cursor:pointer}
 .grw-x:hover{color:var(--g-ink)}
 .grw-brand{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13px;font-weight:800;color:var(--g-ink)}
-.grw-mk{color:var(--g-mark);flex:none}
 .grw-tk{position:relative;overflow:hidden;background:var(--g-tk);color:var(--g-tkink);border-radius:14px;padding:18px 22px;
   display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
 .grw-notch{position:absolute;top:50%;width:22px;height:22px;margin-top:-11px;border-radius:50%;background:var(--g-card)}
