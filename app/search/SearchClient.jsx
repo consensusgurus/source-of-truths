@@ -609,6 +609,11 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
   void msToMidnightET;
   void tick;
   const C = theme === 'dark';
+  // FINISHED SEARCHES (owner, 2026-11-24): a small, quiet way back to every
+  // board that has closed, beside the board's own window text. Every board but
+  // the open one has closed, since the next opens the moment one closes.
+  const done = past.filter((b) => b.num !== currentNum);
+  const pastBtn = done.length ? <button className="lnk pastl" onClick={() => setPanel(panel === 'past' ? null : 'past')}>Finished Searches</button> : null;
 
   const css = `
 .trl{--page:#f5f4f0;--card:#ffffff;--ink:#15171c;--mute:#6b7280;--line:#15171c;--soft:#e9e7e1;--good:#d9e8d0;--good-ink:#24401c;--gold:#f6e3a1;--gold-ink:#4a3b06;}
@@ -680,10 +685,14 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
 .trl .help p{margin:0 0 10px;font-size:14px;line-height:1.6;font-weight:600}
 .trl .help b{font-weight:800}
 .trl .mwin{display:none}
-@media (max-width:719px){.trl .mwin{display:block;order:6;width:100%;font:700 12px/1.3 ${SANS};color:var(--mute)}}
+@media (max-width:719px){.trl .mwin{display:flex;align-items:baseline;justify-content:space-between;gap:12px;order:6;width:100%;font:700 12px/1.3 ${SANS};color:var(--mute)}.trl .mwin .pastl{flex:none;margin-left:auto}}
 .trl .fh{margin:16px 0 4px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:800;color:var(--mute)}
 .trl .note a,.trl .arch a{color:inherit;font-weight:800}
 .trl .lnk{border:0;background:none;padding:0;font:inherit;text-decoration:underline;cursor:pointer;color:inherit}
+.trl .pastl{color:var(--mute);font-weight:700;text-underline-offset:2px;text-decoration-thickness:1px}
+.trl .pastl:hover{color:var(--ink)}
+.trl a.row{color:inherit;text-decoration:none}
+.trl a.row:hover .t{text-decoration:underline;text-underline-offset:2px}
 .trl .note{font-size:12.5px;color:var(--mute);font-weight:700;margin:10px 0 0;line-height:1.5}
 @media (max-width:719px){
   .trl .top{padding:7px 10px;gap:6px 10px}
@@ -830,9 +839,9 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
           <div title="Your points: each entry's 100 split among its finders"><b>{fmt(points)}</b>Points</div>
           <div title="Your place in today's standings"><b>{place ? `#${fmt(place.at)}` : '—'}</b>{place ? `of ${fmt(place.of)}` : 'Place'}</div>
         </div>
-        {windowText ? <div className="mwin">{windowText}</div> : null}
+        {windowText || pastBtn ? <div className="mwin">{windowText ? <span>{windowText}</span> : null}{pastBtn}</div> : null}
         <div className="sp" />
-        <div className="meta">{crowd ? `Crowd has ${fmt(crowd.crowdFound)} of ${fmt(N)} · updated ${ago(Date.now() - crowd.at)}` : 'Counting the crowd'}{windowText ? <><br />{windowText}</> : null}</div>
+        <div className="meta">{crowd ? `Crowd has ${fmt(crowd.crowdFound)} of ${fmt(N)} · updated ${ago(Date.now() - crowd.at)}` : 'Counting the crowd'}{!windowText && pastBtn ? <> · {pastBtn}</> : null}{windowText ? <><br />{windowText}{pastBtn ? <> · {pastBtn}</> : null}</> : null}</div>
         <div className="btns">
           <button className="pill" onClick={() => loadCrowd(true)} disabled={refreshing}>{refreshing ? 'Refreshing' : 'Refresh'}</button>
           <button className={'pill' + (panel === 'list' ? ' on' : '')} onClick={() => setPanel(panel === 'list' ? null : 'list')}>List</button>
@@ -867,6 +876,18 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
         {panel === 'standings' && standingsPanel}
         {panel === 'help' && helpPanel}
         {panel === 'final' && finalPanel}
+        {panel === 'past' && (
+          <div className="sheet" role="dialog" aria-label="Finished Searches">
+            <div className="hd"><h3>Finished Searches</h3><button className="x" onClick={() => setPanel(null)} aria-label="Close">&times;</button></div>
+            <div className="body">
+              <p className="note" style={{ marginTop: 4 }}>Every closed board stays here with its final results. Finds on them are for fun.</p>
+              {done.map((b) => (
+                <a key={b.num} className="row" href={`/search?b=${b.num}`}><span className="t">{b.theme}<i>No. {b.num}</i></span><span className="n z">{b.closes ? `Closed ${new Date(b.closes).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'America/New_York' })}` : 'Closed'}</span></a>
+              ))}
+              {!isCurrent && <p className="note"><a href="/search">Play the open board &rarr;</a></p>}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

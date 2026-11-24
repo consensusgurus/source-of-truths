@@ -1053,6 +1053,8 @@ applyMe(env.me);
 loadLoose();
 if(SOLO){for(const q of ['#updBox','#allBox']){const ub=root.querySelector(q);if(ub)ub.style.display='none';}$('lbBtn').textContent='The Wall';}
 $('credit').textContent=creditLine();
+/* Finished murals on the shelf (owner, 2026-11-24): the link shows once there is one to open. */
+getJSON('/api/mural/shelf').then(r=>{const n=$('pastLink');if(n&&r.ok&&r.j&&Array.isArray(r.j.murals)&&r.j.murals.length)n.hidden=false;}).catch(()=>{});
 if(PRIV){
   /* A PRIVATE MURAL'S HEADER: no Mural / MuralToo switch, a tag that says whose it is, and Invite,
      which copies the link. Site Total reads All Placed: only the people invited build it. */
