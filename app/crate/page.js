@@ -19,7 +19,7 @@ export const metadata = {
   alternates: { canonical: '/crate' },
   openGraph: {
     images: [{ url: '/og/crate.png', width: 1200, height: 630, alt: 'Crate, a daily warehouse puzzle from Mind Loft' }],
-    title: 'Crate: The Daily Warehouse Puzzle',
+    title: 'Daily Sokoban Puzzle: Crate',
     description: 'Push every crate onto a spot. No pulling, one crate at a time, and every step counts. A new warehouse every day.',
     url: '/crate',
     type: 'website',
@@ -28,7 +28,7 @@ export const metadata = {
   twitter: {
     images: ['/og/crate.png'],
     card: 'summary_large_image',
-    title: 'Crate: The Daily Warehouse Puzzle',
+    title: 'Daily Sokoban Puzzle: Crate',
     description: 'Push every crate onto a spot. No pulling, one crate at a time, and every step counts. A new warehouse every day.',
   },
 };

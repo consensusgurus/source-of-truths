@@ -19,7 +19,7 @@ export const metadata = {
   alternates: { canonical: '/peg' },
   openGraph: {
     images: [{ url: '/og/peg.png', width: 1200, height: 630, alt: 'Peg, a daily peg solitaire from Mind Loft' }],
-    title: 'Peg: The Daily Peg Solitaire',
+    title: 'Daily Peg Solitaire: Peg',
     description: 'Jump pegs off the classic cross board until one is left, in the center hole. A new starting shape every day.',
     url: '/peg',
     type: 'website',
@@ -28,7 +28,7 @@ export const metadata = {
   twitter: {
     images: ['/og/peg.png'],
     card: 'summary_large_image',
-    title: 'Peg: The Daily Peg Solitaire',
+    title: 'Daily Peg Solitaire: Peg',
     description: 'Jump pegs off the classic cross board until one is left, in the center hole. A new starting shape every day.',
   },
 };

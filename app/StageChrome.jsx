@@ -304,6 +304,9 @@ export default function StageChrome({
   // no registry row, so this is how it joins the dailies' header and looks: the
   // same top bar, the same two looks, its colour softened into the dot and the
   // tint. Null on every daily, which keeps reading its colour off the registry.
+  // THE H1 CARRIES THE GENRE for search (2026-11-24): the cap shows the short
+  // game name; h1Tail adds e.g. 'Daily Windoku' as screen-reader text only.
+  h1Tail = null,
   tint = null,
 }) {
   useRegisterStageHelp(onHelp);
@@ -489,6 +492,7 @@ export default function StageChrome({
           </i>
           <h1>
             {name}
+            {h1Tail ? <span style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>{`: ${h1Tail}`}</span> : null}
             {sunday ? <u>{sunday}</u> : null}
           </h1>
         </div>

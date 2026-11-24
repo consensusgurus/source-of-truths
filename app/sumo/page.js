@@ -25,7 +25,7 @@ export const metadata = {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
     images: [{ url: '/og/sumo.png', width: 1200, height: 630, alt: 'Sumo, a daily greater-than sudoku from Mind Loft' }],
-    title: 'Sumo: A Daily Greater-Than Sudoku',
+    title: 'Daily Greater-Than Sudoku: Sumo',
     description:
       'Sudoku with signs: every line inside a box bends toward the smaller square. Almost no digits, one logical solution, from Mind Loft, daily.',
     url: '/sumo',
@@ -35,7 +35,7 @@ export const metadata = {
   twitter: {
     images: ['/og/sumo.png'],
     card: 'summary_large_image',
-    title: 'Sumo: A Daily Greater-Than Sudoku',
+    title: 'Daily Greater-Than Sudoku: Sumo',
     description:
       'Sudoku with signs: every line inside a box bends toward the smaller square. A clean solve wins and the clock breaks the tie.',
   },

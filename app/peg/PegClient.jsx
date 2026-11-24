@@ -177,7 +177,8 @@ export const GAME = {
   pitch: (P) => `${P.count} pegs. Jump them down to one, in the center.`,
   shareLine: (P, s, won, el) => `Peg #${P.num} · ${P.count} pegs · ${won ? `${jumpsOf(s.jumps || 0)} (best ${P.count - 1}) · ${el}` : 'unfinished'}`,
   detail: (P, s, won, el) => `${P.count} pegs · ${jumpsOf(s.jumps || 0)}, best possible ${P.count - 1} · ${el}`,
-  aboutTitle: 'About Peg',
+  aboutTitle: 'About Peg: Daily Peg Solitaire',
+  h1Tail: 'Daily Peg Solitaire',
   about: [
     'Peg is a free daily peg solitaire from Mind Loft, on the classic 33-hole English cross board. A peg jumps over a neighbor into the empty hole beyond, and the jumped peg comes off. The goal is one peg left, standing in the center hole.',
     'Each day starts from a different shape instead of the full board: about ten pegs on Monday and Tuesday, thirteen to seventeen midweek, eighteen to twenty-two on Friday and Saturday, and a Sunday Edition of two dozen or more. Every start is built backwards from the finish, so every board can be solved.',

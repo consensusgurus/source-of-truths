@@ -894,6 +894,7 @@ export default function SumoClient({ puzzles = [], forceNum = null }) {
       {LOFT && !EMBED && (
         <Cap gameKey="sumo" quizId={PUZZLE.quizId}
           name="Sumo"
+          h1Tail="Daily Greater-Than Sudoku"
           cat="Sudoku"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
@@ -1268,7 +1269,7 @@ export default function SumoClient({ puzzles = [], forceNum = null }) {
       {!EMBED && <StageFold />}
       {/* About Sumo: crawlable prose, server-rendered into the HTML */}
       <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
-        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Sumo</h2>
+        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Sumo: Daily Greater-Than Sudoku</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Sumo is a free daily greater-than sudoku from Mind Loft, the variant also called inequality sudoku. Each day gives you a 9×9 grid with the usual three rules, rows, columns and 3×3 boxes each holding 1 through 9 once, plus a sign on every edge inside a box saying which of its two squares holds the bigger digit. That is 108 signs, and they carry so much of the puzzle that the board prints almost no digits at all.
         </p>

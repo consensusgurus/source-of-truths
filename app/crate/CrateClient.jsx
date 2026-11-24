@@ -262,7 +262,8 @@ export const GAME = {
   pitch: (P) => `${crates(P)} crates in the ${P.title}. Push every one onto a spot in as few moves as you can.`,
   shareLine: (P, s, won, el) => `Crate #${P.num} · ${P.title} · ${won ? `${movesOf(s.moves || 0)} (best ${P.best.moves}) · ${el}` : 'unfinished'}`,
   detail: (P, s, won, el) => `${P.title} · ${movesOf(s.moves || 0)}, best possible ${P.best.moves} · ${el}`,
-  aboutTitle: 'About Crate',
+  aboutTitle: 'About Crate: Daily Sokoban Puzzle',
+  h1Tail: 'Daily Sokoban Puzzle',
   about: [
     'Crate is a free daily warehouse puzzle from Mind Loft, played by the classic box-pushing rules. A worker stands in a warehouse with a few crates and the same number of marked spots on the floor. Walk into a crate to push it one square. You can never pull one and you can never push two at once, so a crate shoved into a corner is there for good.',
     'Monday and Tuesday have three crates, Wednesday and Thursday four, and Friday and Saturday four in a tighter, longer warehouse. The Sunday Edition has five. Every warehouse is solved exactly before it is dealt, so the shortest possible line is known, and your result shows it beside your own.',

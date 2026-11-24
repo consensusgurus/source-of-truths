@@ -362,6 +362,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
       {stage}
       {!EMBED && <StageChrome gameKey={KEY} quizId={PUZZLE.quizId}
         name={NAME}
+        h1Tail={GAME.h1Tail || null}
         cat={GAME.cat}
         outcome={playing ? null : (won ? 'won' : 'lost')}
         num={PUZZLE.num}

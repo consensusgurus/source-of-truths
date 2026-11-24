@@ -27,7 +27,7 @@ export const metadata = {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
     // opengraph-image / twitter-image routes that satori re-rendered on every deploy.
     images: [{ url: '/og/window.png', width: 1200, height: 630, alt: 'Window, a daily windoku from Mind Loft' }],
-    title: 'Window: A Daily Windoku',
+    title: 'Daily Windoku: Window',
     description:
       'One rule added to sudoku: four shaded windows hold 1 to 9 once. Fewer clues, one logical solution, from Mind Loft, daily.',
     url: '/window',
@@ -37,7 +37,7 @@ export const metadata = {
   twitter: {
     images: ['/og/window.png'],
     card: 'summary_large_image',
-    title: 'Window: A Daily Windoku',
+    title: 'Daily Windoku: Window',
     description:
       'One rule added to sudoku: four shaded windows hold 1 to 9 once. A clean solve wins and the clock breaks the tie.',
   },

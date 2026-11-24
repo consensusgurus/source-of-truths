@@ -888,6 +888,7 @@ export default function WindowClient({ puzzles = [], forceNum = null }) {
       {LOFT && !EMBED && (
         <Cap gameKey="window" quizId={PUZZLE.quizId}
           name="Window"
+          h1Tail="Daily Windoku"
           cat="Sudoku"
           outcome={playing ? null : (won ? 'won' : 'lost')}
           num={PUZZLE.num}
@@ -1263,7 +1264,7 @@ export default function WindowClient({ puzzles = [], forceNum = null }) {
       {!EMBED && <StageFold />}
       {/* About Window — crawlable prose, server-rendered into the HTML */}
       <section style={{ position: 'relative', display: (EMBED || (focusMode && !STAGE)) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
-        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Window</h2>
+        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Window: Daily Windoku</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Window is a free daily windoku from Mind Loft. Each day gives you a 9×9 grid with one rule added to the usual three: four shaded windows, the 3×3 blocks that sit between the boxes, also hold 1 through 9 exactly once. Rows, columns, and 3×3 boxes still do too, and those four extra houses do enough of the work that the board can print far fewer digits than an ordinary sudoku needs.
         </p>
