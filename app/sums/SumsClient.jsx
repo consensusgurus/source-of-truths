@@ -843,10 +843,16 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
     if (black) bg = STAGE ? 'var(--su-block, #05070d)' : '#e9edf3';
     if (peer) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 26%, ' + XW + ')' : COLORS.accentSoft;
     if (sameVal) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc-ink, var(--stg-acc)) 40%, ' + XW + ')' : COLORS.accentTint;
-    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 55%, ' + XW + ')' : COLORS.accentPick;
+    // THE PICKED SQUARE READS AT A GLANCE (owner, 2026-11-24: "the contrast on
+    // the selected square is still not great"): a 55% accent wash sat a step
+    // from the 40% same-digit squares and the 26% run squares, so on the mint
+    // Numbers board all three read as one pale green. The pick is now the
+    // accent folded DEEP into the ink (dark teal on the light page, pale mint
+    // in the dark look) with its digits in the ground colour (.su-cell.su-sel).
+    if (isSel) bg = STAGE ? 'color-mix(in srgb, var(--stg-acc) 38%, var(--stg-ink))' : COLORS.accentPick;
     return {
       background: bg,
-      boxShadow: isSel ? `inset 0 0 0 3px var(--stg-acc-ink, var(--stg-acc, ${COLORS.accent}))` : undefined,
+      boxShadow: isSel ? (STAGE ? 'inset 0 0 0 2px var(--stg-ground)' : `inset 0 0 0 3px ${COLORS.accent}`) : undefined,
       zIndex: isSel ? 1 : undefined,
       borderRight: STAGE ? '1px solid var(--stg-line2)' : '1px solid rgba(28,30,36,0.18)',
       borderBottom: STAGE ? '1px solid var(--stg-line2)' : '1px solid rgba(28,30,36,0.18)',
@@ -1009,6 +1015,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
           .su-v{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--stg-acc-ink);}
           .su-grid.big .su-v{font-size:22px;}
           .su-user{color:var(--stg-acc-ink);}
+          .su-cell.su-sel,.su-cell.su-sel .su-v,.su-cell.su-sel .su-note{color:var(--stg-ground);}
           .su-notes{position:absolute;inset:4px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);}
           .su-note{display:flex;align-items:center;justify-content:center;font-family:${SANS};font-size:11.5px;font-weight:800;line-height:1.15;color:var(--stg-ink);}
           .su-grid.big .su-notes{inset:2px;}
@@ -1179,7 +1186,7 @@ export default function SumsClient({ puzzles = [], forceNum = null }) {
                   );
                 }
                 const val = boardCells[idx];
-                const cls = `su-cell ${val ? 'su-user' : ''}`;
+                const cls = `su-cell ${val ? 'su-user' : ''}${idx === sel ? ' su-sel' : ''}`;
                 return (
                   <button key={idx} type="button" className={cls} style={cellStyle(idx)}
                     aria-label={`Row ${r + ROW_OFF}, column ${c + COL_OFF}${val ? `, ${val}` : ', empty'}${idx === sel ? ', picked' : ''}`}
@@ -1591,7 +1598,8 @@ const SUS_CSS = `
 .sus-c small{font-size:clamp(8.5px, 2.6vw, 11px);font-weight:800;color:var(--pst-ink);letter-spacing:.04em;line-height:1.1;padding:0 2px;}
 .pst .sus-c.run{background:var(--pst-pale);}
 .pst .sus-c.same{background:var(--pst-pale);box-shadow:inset 0 0 0 2px var(--pst-ink);}
-.pst .sus-c.sel{background:var(--pst-acc);color:var(--pst-on-acc);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);z-index:1;}
+.pst .sus-c.sel{background:color-mix(in srgb, var(--pst-acc) 38%, var(--pst-ink));color:var(--pst-bg);border-color:var(--pst-ink);box-shadow:inset 0 0 0 2px var(--pst-bg),0 0 0 2px var(--pst-ink);z-index:1;}
+.pst .sus-c.sel small{color:var(--pst-bg);}
 .sus-combo{border-radius:14px;background:var(--pst-cell);padding:9px 12px;display:flex;flex-direction:column;gap:6px;}
 .sus-combo>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:800;}
 .sus-combo .k{color:var(--pst-ink);}
