@@ -12,6 +12,7 @@ import TrophyPop from './TrophyPop';
 import ThanksPop from './ThanksPop';
 import CommentNotice from './community/CommentNotice';
 import EmailTicketPop from './EmailTicketPop';
+import GrowPop from './GrowPop';
 import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
 import ChunkReload from './ChunkReload';
 import VersionGuard from './VersionGuard';
@@ -227,6 +228,11 @@ export default function RootLayout({ children }) {
             with no email on file. Never while a puzzle is being played, never
             over another dialog, hidden 3 days on dismissal. app/EmailTicketPop.jsx. */}
         <EmailTicketPop />
+        {/* Owner-approved (2026-11-23): Help Us Grow, the $500 drawing invite card.
+            A few seconds after load, once a week, first in the pop-up queue (it
+            holds the visit so the new-game card waits a visit). Never mid game,
+            never inside a run, never over the entry door. app/GrowPop.jsx. */}
+        <GrowPop />
         {/* Owner-approved (2026-11-19): a quiet bar at the bottom of the screen
             when someone comments on your Idea Board idea, with an x. No scrim,
             not in the one-pop-up-a-visit budget, never mid game.

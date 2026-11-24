@@ -3108,3 +3108,14 @@ drag to the page underneath and the stage only rubber-bands back. `globals.css` 
 `overflow:hidden` on html and body while a non-inline stage is mounted and no ending is on screen (the
 same exclusions as the ending rule above it), and `overscroll-behavior:contain` on the stage. Not
 reproducible in desktop Chromium's iPhone emulation, so confirm on a real phone next Sunday.
+
+## Help Us Grow pop-up (owner, 2026-11-23)
+
+`app/GrowPop.jsx`, mounted in `app/layout.js`. The $500 drawing invite card ("Like Mind Loft? Help it
+grow."), from the Design canvas mockup. Owner: "a few seconds after first load, in place of new game
+alert ... move it to front of queue for everyone." So: while the drawing is live, once a week per
+browser (`sot_grow_last`), it holds the visit's pop-up budget on mount (`holdPop('grow')`), which makes
+the new-game card and every other self-opening card stand down for that visit without stamping, then
+opens 3.5s after load. Never mid game (if a game is already under way it waits for the post-game
+gate), never in a run, never over the entry door (a door visit is left alone; it takes the next
+visit). `?grow=1` previews it. Light and dark registers follow `readStageTheme()`.
