@@ -509,10 +509,44 @@ export default function MegaClient({ game, board, win, currentNum, past = [] }) 
     for (let j = 1; j <= cells.length; j++) { const x = cells[(k + j) % cells.length]; if (!digit(x)) { select(x); return; } }
     showSel(); redraw();
   }
+  // Undo: each step is a list of [square, digit, notes] as they were before it.
+  // Steps live in memory only, so they reach back to when this page was opened.
+  function remember(cells) {
+    if (!cells.length) return;
+    if (!G.undo) G.undo = [];
+    G.undo.push(cells.map((i) => [i, G.val[i], G.notes[i]]));
+    if (G.undo.length > 400) G.undo.shift();
+  }
+  function undo() {
+    if (!G.undo) return;
+    while (G.undo.length) {
+      const step = G.undo.pop().filter(([i]) => editable(i));
+      if (!step.length) continue;
+      const touched = new Set();
+      for (const [i, v, n] of step) { G.val[i] = v; G.notes[i] = n; for (const g of G.cellGrids[i]) touched.add(g); }
+      save();
+      for (const g of touched) if (!G.done[g] && G.grids[g].every((x) => digit(x))) offer(g);
+      const last = step[step.length - 1][0];
+      if (G.sel !== last) select(last); else { showSel(); redraw(); }
+      bump();
+      return;
+    }
+    bump();
+  }
+  // Clear every square you filled (digits and notes) in the current sudoku.
+  // Givens and squares locked by a solved neighbour stay put.
+  function clearCurrent() {
+    const cells = (G.grids[G.cur] || []).filter((i) => editable(i) && (G.val[i] || G.notes[i]));
+    if (!cells.length) return;
+    remember(cells);
+    for (const i of cells) { G.val[i] = 0; G.notes[i] = 0; }
+    save(); showSel(); redraw(); bump();
+  }
   function place(d) {
     const i = G.sel;
     if (!editable(i) || d < 1 || d > G.N) return;
-    if (noteRef.current) { if (!G.val[i]) { G.notes[i] ^= 1 << d; save(); redraw(); } return; }
+    if (noteRef.current) { if (!G.val[i]) { remember([i]); G.notes[i] ^= 1 << d; save(); redraw(); bump(); } return; }
+    remember([i]);
     G.val[i] = G.val[i] === d ? 0 : d;
     save();
     if (G.val[i]) { for (const g of G.cellGrids[i]) offer(g); autoMove(); } else { showSel(); redraw(); }
@@ -520,6 +554,7 @@ export default function MegaClient({ game, board, win, currentNum, past = [] }) 
   }
   function erase() {
     const i = G.sel; if (!editable(i)) return;
+    if (G.val[i] || G.notes[i]) remember([i]);
     G.val[i] = 0; G.notes[i] = 0; save(); showSel(); redraw(); bump();
   }
 
@@ -571,8 +606,10 @@ export default function MegaClient({ game, board, win, currentNum, past = [] }) 
     const w = (e) => { e.preventDefault(); onWheel(e); };
     cv.addEventListener('wheel', w, { passive: false });
     const key = (e) => {
-      if (panelRef.current || e.metaKey || e.ctrlKey || e.altKey) return;
       const t = e.target && e.target.tagName; if (t === 'INPUT' || t === 'TEXTAREA') return;
+      if (!panelRef.current && (e.metaKey || e.ctrlKey) && !e.shiftKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); undo(); return; }
+      if (panelRef.current || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === 'u' || e.key === 'U') { undo(); return; }
       if (e.key >= '1' && e.key <= '9') { place(Number(e.key)); return; }
       if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { erase(); return; }
       if (e.key === 'n' || e.key === 'N') { setNoteMode((v) => !v); return; }
@@ -643,6 +680,7 @@ export default function MegaClient({ game, board, win, currentNum, past = [] }) 
 .mga .btns{display:flex;gap:8px;flex-wrap:wrap}
 .mga .pill{border:1px solid var(--line);background:var(--card);color:var(--ink);font:800 12.5px/1.3 ${SANS};border-radius:999px;padding:7px 13px;cursor:pointer;white-space:nowrap}
 .mga .pill.on{background:var(--ink);color:var(--page)}
+.mga .pill:disabled{opacity:.4;cursor:default}
 .mga .focus{background:var(--f-full);border-bottom:1px solid var(--line);padding:7px 14px 8px;min-height:1px}
 .mga .frow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;line-height:1.4}
 .mga .frow+.frow{margin-top:6px}
@@ -767,7 +805,7 @@ export default function MegaClient({ game, board, win, currentNum, past = [] }) 
       <div className="body help">
         <p><b>One enormous board, and everyone plays their own copy.</b> {NAME} is a field of {fmt(SUD)} sudokus, each {G.N} by {G.N}{G.N === 6 ? ' (the digits 1 to 6, in boxes two rows tall and three columns wide)' : ''}. Every sudoku shares each of its four corner boxes with a neighbor, so a digit in a shared corner counts in both, and each one you finish starts the four around it.</p>
         <p><b>Finding your way:</b> every sudoku has a name, like D4, and a color. The one you are in is filled with its color inside a heavy outline, and the bar under the header shows its name, how many squares are empty, and a chip for each sudoku it overlaps. Tap a chip to hop there. In a shared corner box, tap the picked square again, or the Switch chip, to move between the two sudokus that share it. The number pad shows how many of each digit you still have to place in the current sudoku.</p>
-        <p><b>To play:</b> tap an empty square, then a digit. Tap the same digit again to take it back, or use Erase. Notes are yours alone. Drag to move around, pinch or scroll to zoom, and the map jumps you anywhere.</p>
+        <p><b>To play:</b> tap an empty square, then a digit. Tap the same digit again to take it back, or use Erase. Undo steps back one move (U or Ctrl+Z on a keyboard), and Clear empties every square you filled in the sudoku you are in, notes included. Notes are yours alone. Drag to move around, pinch or scroll to zoom, and the map jumps you anywhere.</p>
         <p><b>Nothing is marked right or wrong until a sudoku is full.</b> Fill all of one. If every digit is right it locks in. If not, it says something is off and you keep working. There is no penalty and no time out.</p>
         <p><b>Scoring:</b> every sudoku is a pot of <b>{MEGA_POT} points</b>, split evenly among everyone who solves it before the board closes. Solve one nobody else does and you keep all {MEGA_POT}; one that forty players solve pays 3. Nobody can take a sudoku from you, and it does not matter what hour you play.</p>
         <p><b>Who else solved a sudoku, and what it pays, stay hidden until you solve it.</b> Then a short note names them. The map shows only your own progress. Every couple of minutes a short update says who has solved how many, never which ones.</p>
@@ -894,6 +932,8 @@ export default function MegaClient({ game, board, win, currentNum, past = [] }) 
             <button className={noteMode ? 'on' : ''} onClick={() => setNoteMode(true)}>Notes</button>
           </div>
           <button className="pill" onClick={erase}>Erase</button>
+          <button className="pill" onClick={undo} disabled={!G.undo || !G.undo.length}>Undo</button>
+          <button className="pill" onClick={clearCurrent} disabled={cur < 0 || !!G.done[cur] || !(G.grids[cur] || []).some((i) => editable(i) && (G.val[i] || G.notes[i]))}>{cur >= 0 ? `Clear ${G.names[cur]}` : 'Clear'}</button>
           <div className="seg" role="group" aria-label="Which sudokus are tinted">
             <button className={tintAll ? 'on' : ''} onClick={() => { setTintAll(true); try { localStorage.setItem('sot_mega_tint', 'all'); } catch (e) {} }}>Tint All</button>
             <button className={tintAll ? '' : 'on'} onClick={() => { setTintAll(false); try { localStorage.setItem('sot_mega_tint', 'cur'); } catch (e) {} }}>Tint Current</button>

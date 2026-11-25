@@ -597,3 +597,12 @@ too", then "Implement". Mockup: project doc `claude/colossus-mammoth-grid-focus-
   across that date is approximate for the earlier solves.
 - `countriesOf` moved unchanged from the Mural wall route to `lib/player-countries.js`; both use it.
 
+### Undo and Clear (owner, 2026-11-25)
+
+The footer row has **Undo** and **Clear <name>** (for example `Clear D4`) beside Erase. Undo steps back
+one move (a digit, a note, an erase, or a whole Clear); it is an in-memory stack in `G.undo` (last 400
+steps), so it reaches back only to when the page was opened, and it skips squares a solve has since
+locked. Keyboard: U, or Ctrl/Cmd+Z. Clear empties every square the player filled (digits and notes) in
+the CURRENT sudoku only; givens and squares locked by a solved neighbour stay. No confirm dialog,
+because Undo brings a Clear back in one tap. Both buttons grey out when there is nothing to do.
+
