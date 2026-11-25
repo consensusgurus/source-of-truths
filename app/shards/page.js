@@ -14,7 +14,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // pieces into the one grid where every run is a real word.
 
 export const metadata = {
-  title: 'Daily Jigsaw Crossword: Shards | Mind Loft',
+  title: 'Free Daily Jigsaw Crossword Puzzle: Shards | Mind Loft',
   description:
     'A free daily word puzzle: a mini crossword arrives already solved but shattered into lettered puzzle pieces. Reassemble them so every across and down run is a real word. No clues, one verified solution, a fresh grid every day.',
   alternates: { canonical: '/shards' },

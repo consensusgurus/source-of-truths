@@ -14,7 +14,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 export const metadata = {
   title: "Free Daily Dot-Joining Puzzle (Numberlink): Connect | Mind Loft",
   description:
-    "A free daily numberlink puzzle: join every pair of matching dots with a line, never crossing and never through a blocked square, and use every open square. 9x9 to 12x12, one solution each.",
+    "A free daily numberlink puzzle: join every pair of matching dots without crossing lines, and fill every open square. One solution each day.",
   alternates: { canonical: '/connect' },
   openGraph: {
     images: [{ url: '/og/connect.png', width: 1200, height: 630, alt: "Connect, a daily dot-joining puzzle from Mind Loft" }],

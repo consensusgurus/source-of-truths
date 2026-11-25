@@ -19,7 +19,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // why the bank proves every placement unique.
 
 export const metadata = {
-  title: 'Daily Word Excavation Game: Strata | Mind Loft',
+  title: 'Free Daily Hidden Word Dig Puzzle: Strata | Mind Loft',
   description:
     'A free daily word game you dig out. Every letter belongs to one of the hidden words, all members of a category you are not told. Find a word and the letters above it fall, which is what lets you read the next one. Bigger grid and two threads on Sundays.',
   alternates: { canonical: '/strata' },

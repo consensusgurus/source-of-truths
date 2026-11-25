@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ searchParams }) {
   const t = String((searchParams && searchParams.t) || '');
   const img = /^\d{1,3}$/.test(t) ? `/oddjobs/card?t=${t}` : '/oddjobs/card';
-  const title = 'Odd Jobs: Daily Mop, Mow and Plow Route Puzzle Run | Mind Loft';
+  const title = 'Free Daily Route Puzzles: Mop, Mow, and Plow (Odd Jobs) | Mind Loft';
   const description = 'A free daily route puzzle run: mop a house, mow a yard and plow a town, every tile, square and street exactly once. Fewest replays win. Couch Potato to Foreman.';
   return {
     title, description,

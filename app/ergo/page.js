@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // drawn from.
 
 export const metadata = {
-  title: 'Daily If-Then Logic Puzzle: Ergo | Mind Loft',
+  title: 'Free Daily If-Then Logic Puzzle: Ergo | Mind Loft',
   description:
     'A free daily if-then logic puzzle: a few rules, one fact for today, and nine statements to sort into must be true, could be true and cannot be true.',
   alternates: { canonical: '/ergo' },

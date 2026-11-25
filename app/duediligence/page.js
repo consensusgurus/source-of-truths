@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ searchParams }) {
   const t = String((searchParams && searchParams.t) || '');
   const img = /^\d{1,2}$/.test(t) ? `/duediligence/card?t=${t}` : '/duediligence/card';
-  const title = 'Due Diligence: Daily Stock Chart, IPO Filing, Resume Run | Mind Loft';
+  const title = 'Free Daily Finance Puzzles: Stock Chart, Filing, Resume | Mind Loft';
   const description = 'A free daily business trivia run: name a stock from its chart, a company from its IPO filing, a person from their resume. Ranked Anon Fintwit to Ken Griffin.';
   return {
     title, description,

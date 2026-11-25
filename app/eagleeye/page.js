@@ -23,7 +23,7 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata({ searchParams }) {
   const t = String((searchParams && searchParams.t) || '');
   const img = /^\d{1,3}$/.test(t) ? `/eagleeye/card?t=${t}` : '/eagleeye/card';
-  const title = 'Eagle Eye: Five Daily Visual Puzzles in One Run | Mind Loft';
+  const title = 'Free Daily Visual Puzzle Challenge: Eagle Eye | Mind Loft';
   const description = 'A free daily visual puzzle run: spot the differences, build two jigsaws, sweep a word search and remember a scene. Ranked from Mole to Eagle Eye.';
   return {
     title, description,

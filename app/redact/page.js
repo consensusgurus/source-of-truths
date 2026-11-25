@@ -17,7 +17,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // view-source (the Extra stance), not a security boundary.
 
 export const metadata = {
-  title: 'Daily Uncover-the-Article Game: Redact | Mind Loft',
+  title: 'Free Daily Hidden Article Guessing Game: Redact | Mind Loft',
   description:
     'A free daily deduction game: an entire article about a mystery subject is blacked out, and every word you guess is uncovered wherever it appears. Name the subject to win. A new article every day, harder on Sundays.',
   alternates: { canonical: '/redact' },

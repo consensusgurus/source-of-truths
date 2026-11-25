@@ -17,7 +17,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // gets only the titles, labels and sizes it shows.
 
 export const metadata = {
-  title: 'Free Daily Trivia Quiz Mix: Mishmash | Mind Loft',
+  title: 'Free Daily Mixed Trivia Quiz Set: Mishmash | Mind Loft',
   description:
     'A free daily trivia mix: three quizzes to type, match and spot, sometimes on a map, each a new subject. Play all three and race the daily board.',
   alternates: { canonical: '/mishmash' },

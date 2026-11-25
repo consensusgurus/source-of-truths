@@ -17,7 +17,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // clues with its own brute-force solver, so the answer never ships.
 
 export const metadata = {
-  title: 'Daily Logic Puzzle, Solve the Whodunit: Alibi | Mind Loft',
+  title: 'Free Daily Whodunit Logic Grid Puzzle: Alibi | Mind Loft',
   description:
     'A free daily logic deduction puzzle: four suspects, four rooms, four departure times, four curious items, and five of each in the Sunday Edition. Every witness statement is true; work the deduction boards and close the case. A new mystery every day.',
   alternates: { canonical: '/alibi' },

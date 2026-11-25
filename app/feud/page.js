@@ -19,7 +19,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // questions go to the client.
 
 export const metadata = {
-  title: 'Daily Crowd Survey Game, Match What Everyone Says: Feud | Mind Loft',
+  title: 'Free Daily Survey Says Game: Feud | Mind Loft',
   description:
     'A free daily survey game with a LIVE answer key: five everyday prompts, three answers each, and the key is whatever today’s players say. Match the crowd, bank their percentages, and watch the shares shift all day.',
   alternates: { canonical: '/feud' },

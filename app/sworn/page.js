@@ -19,7 +19,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // ships.
 
 export const metadata = {
-  title: 'Daily Liars Puzzle, Find the Thief: Sworn | Mind Loft',
+  title: 'Free Daily Liar Logic Puzzle, Find the Thief: Sworn | Mind Loft',
   description:
     'A free daily Knights-and-Knaves logic puzzle: a handful of locals under oath, exactly so many of them lying, one of them a thief. Work the contradictions and name the culprit. A new inquest every day, six sworn on Sundays.',
   alternates: { canonical: '/sworn' },

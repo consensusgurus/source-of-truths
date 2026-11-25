@@ -14,7 +14,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // decide the spread.
 
 export const metadata = {
-  title: 'Daily Word Tile Endgame Puzzle, The Bag Is Empty: Babel | Mind Loft',
+  title: 'Free Daily Word Tile Endgame Puzzle: Babel | Mind Loft',
   description:
     'A free daily word puzzle for endgame players. The bag is empty, so your opponent’s rack is not a secret: it is the bag minus the board minus your own tiles. Race them out or block the lane they need, and beat the solver’s benchmark on spread.',
   alternates: { canonical: '/babel' },

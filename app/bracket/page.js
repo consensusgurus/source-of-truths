@@ -15,7 +15,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // and the client recomputes each matchup, exactly as the verifier does.
 
 export const metadata = {
-  title: 'Free Daily Puzzle, Fill the Bracket of Facts: Bracket | Mind Loft',
+  title: 'Free Daily Trivia Bracket Game: Bracket | Mind Loft',
   description:
     'A free daily bracket puzzle. Sixteen real things, one comparison question, fifteen picks, and no feedback until the end. Your picks propagate, so one bad call in round one busts everything downstream. New field every day.',
   alternates: { canonical: '/bracket' },

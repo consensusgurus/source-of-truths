@@ -19,7 +19,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // reverse-engineered before playing.
 
 export const metadata = {
-  title: 'Daily Crowd Puzzle, Predict the Crowd’s Ranking: Outrank | Mind Loft',
+  title: 'Free Daily Crowd Ranking Game: Outrank | Mind Loft',
   description:
     'A free daily puzzle where the crowd is the answer key. Vote your favorite from a themed slate, then predict how everyone playing today ranks the whole list. Seven items in the Sunday Edition. Exact slot pays double; the order shifts all day as votes arrive.',
   alternates: { canonical: '/outrank' },

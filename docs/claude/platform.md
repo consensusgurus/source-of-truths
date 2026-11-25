@@ -1003,3 +1003,22 @@ daily-unplayed, entry-boards, multiple-choice, polymath, sunday-slate and commun
   script reads. Do not import it from a route. Before adding a big import to a route, bundle it
   (`npx esbuild <route> --bundle --platform=node --packages=external --alias:@=. --loader:.js=jsx`)
   and look at the size.
+
+## Puzzle Guides: /guides and /guides/<slug> (owner, 2026-11-25)
+
+Owner asked for how-to pages and for every search title to match search intent. Thirteen guides
+live in `lib/guides.js` (sudoku, windoku, killer, greater-than, 16x16, kropki, thermo, sandwich,
+acrostic, nonogram, slitherlink, kakuro, logic grid). Each owns the "how to solve X" query; the
+game page keeps "free daily X", so the two never compete.
+
+- Linked four ways, all derived: footer "Puzzle Guides" (app/Footer.jsx), the game tail line
+  "New to X? Read How to Solve X" (app/StageTail.jsx via `guideForGame`, which also covers each
+  guide's `also` keys), every category page's "More puzzles" row (lib/puzzle-categories.js appends
+  `guidesForCategory`), and the sitemap. A new guide is one entry in lib/guides.js.
+- `node scripts/verify-guides.mjs` is the gate (titles start "How to Solve", 70/160 limits, og
+  image, no em dash, every link path wired).
+- Title pass the same day: ~27 vague or brand-first game titles, every run page (now "Free Daily
+  <genre> ...: <Run Name>"), all category and set titles cut to 70 characters or fewer (they ran to
+  130 and were truncated in results; h1s unchanged), and the home title now leads with "Free Daily
+  Puzzles". Rule going forward: every search title leads with the words a searcher types, the
+  Mind Loft name for the game or run goes last, and nothing runs past 70 characters.

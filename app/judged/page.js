@@ -36,7 +36,7 @@ export async function generateMetadata({ searchParams }) {
   const ok = /^\d{1,2}(-\d{1,2}){4}$/.test(s);
   const d = String((searchParams && searchParams.d) || '');
   const img = ok ? `/judged/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/judged/card';
-  const title = 'Judged: Five Logic Cases, One Admissions Letter | Mind Loft';
+  const title = 'Free Daily LSAT-Style Logic Challenge: Judged | Mind Loft';
   const description = 'A free daily run of five legal-reasoning puzzles: if-then rules, a logic game, an alibi, liars under oath and hearsay. Right and fast picks your law school.';
   return {
     title, description,

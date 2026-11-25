@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // browser; the rest of the bank never reaches a client.
 
 export const metadata = {
-  title: 'Free Daily The Human Body Quiz: Pulse | Mind Loft',
+  title: 'Free Daily Human Body Quiz: Pulse | Mind Loft',
   description:
     'A free daily the human body quiz: 10 questions on anatomy and health and medicine, easy to expert. One wrong answer ends the run.',
   alternates: { canonical: '/pulse' },

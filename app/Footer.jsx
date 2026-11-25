@@ -29,6 +29,9 @@ export const FOOTER_COLS = [
       // Every past board of every daily, by game and by day (owner, 2026-10-09).
       // Replaced /daily, which 308s here.
       { label: 'Puzzle Archive', href: '/archive' },
+      // How-to guides for the genres people search by name (owner, 2026-11-25).
+      // This is the hub's crawl path from every page; see lib/guides.js.
+      { label: 'Puzzle Guides', href: '/guides' },
       // Every Jig photo so far, a box a day (owner, 2026-10-16).
       { label: 'Jigsaw Puzzles', href: '/jig/shelf' },
       // Every past gauntlet question and problem, by topic (owner, 2026-11-21).

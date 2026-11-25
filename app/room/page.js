@@ -47,7 +47,7 @@ export async function generateMetadata({ searchParams }) {
   const d = String((searchParams && searchParams.d) || '');
   const ok = /^\d{1,3}(-\d{1,3}){2,3}$/.test(s);
   const img = ok ? `/room/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/room/card';
-  const title = 'Read the Room: Four Crowd Games, No Answer Key | Mind Loft';
+  const title = 'Free Daily Crowd Psychology Games: Read the Room | Mind Loft';
   const description = 'A free daily run of four crowd games: Herd, Outwit, Outrank and Feud. No answer key, only tonight\'s players, and your read moves until midnight.';
   return {
     title, description,

@@ -14,7 +14,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // same hunt with a trickier moment.
 
 export const metadata = {
-  title: 'Daily History Puzzle, Guess the Year: Circa | Mind Loft',
+  title: 'Free Daily Guess the Year History Game: Circa | Mind Loft',
   description:
     'A free daily history puzzle: one famous moment, six guesses to pin the exact year. Every miss plays hot and cold: earlier or later, and how close you are. Land within three years to solve it; a dead-on first guess is a perfect score.',
   alternates: { canonical: '/circa' },

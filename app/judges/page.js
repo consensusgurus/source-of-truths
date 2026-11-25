@@ -19,7 +19,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // the client; the browser re-derives the seating from the regions.
 
 export const metadata = {
-  title: 'Daily Logic Puzzle, Two Per Row: Judges | Mind Loft',
+  title: 'Free Daily Star Battle Puzzle (Two Not Touch): Judges | Mind Loft',
   description:
     'A free daily Star Battle logic puzzle: seat two judges in every row, column and colored court, with no two touching. One solution, pure deduction.',
   alternates: { canonical: '/judges' },

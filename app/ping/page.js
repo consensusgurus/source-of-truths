@@ -16,7 +16,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // hide a trickier city.
 
 export const metadata = {
-  title: 'Daily City Puzzle, Guess the City by Distance: Ping | Mind Loft',
+  title: 'Free Daily Guess the City Geography Game: Ping | Mind Loft',
   description:
     'A free daily geography puzzle: one secret world city, no clues. Guess any city and Ping tells you exactly how many miles away it is. Home in and keep guessing until you find it; the fewer guesses, the better your score.',
   alternates: { canonical: '/ping' },

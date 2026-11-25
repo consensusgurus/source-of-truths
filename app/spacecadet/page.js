@@ -25,7 +25,7 @@ export async function generateMetadata({ searchParams }) {
   const c = String((searchParams && searchParams.c) || '');
   const f = String((searchParams && searchParams.f) || '');
   const img = /^\d{1,3}$/.test(t) ? `/spacecadet/card?t=${t}${/^\d{1,5}$/.test(c) ? `&c=${c}` : ''}${f === '1' ? '&f=1' : ''}` : '/spacecadet/card';
-  const title = 'Space Cadet: Five Daily Spatial Puzzles in One Run | Mind Loft';
+  const title = 'Free Daily Spatial Reasoning Puzzles: Space Cadet | Mind Loft';
   const description = 'A free daily spatial run: roll a die, free a car, untangle ropes, land a block, pack a trunk. One clock ranks you from Lost in Space to Architect-Engineer.';
   return {
     title, description,

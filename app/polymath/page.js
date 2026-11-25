@@ -12,7 +12,7 @@ export async function generateMetadata({ searchParams }) {
   const share = parseShare(searchParams || {});
   const q = share ? new URLSearchParams(Object.entries({ s: searchParams.s, t: searchParams.t || '', d: searchParams.d || '' }).filter(([, v]) => v)).toString() : '';
   const img = q ? `/polymath/card?${q}` : '/polymath/card';
-  const title = 'Polymath: Trivia, Math and English, One Daily Title | Mind Loft';
+  const title = 'Free Daily Trivia, Math, and English Quiz: Polymath | Mind Loft';
   const description = 'Play the day’s Trivia, Math and English Gauntlets free. Each counts a third, and the three together earn your title, Dabbler to Polymath.';
   // OFF THE SITE (owner, 2026-11-03): Multiple Choice Leaders replaced Polymath.
   // The page still answers old share links, but nothing links here and it is

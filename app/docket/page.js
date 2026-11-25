@@ -23,7 +23,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // else's trademark.
 
 export const metadata = {
-  title: 'Daily Logic Game: Docket | Mind Loft',
+  title: 'Free Daily LSAT-Style Logic Game: Docket | Mind Loft',
   description:
     'A free daily logic game in a familiar but retired section of an important standardized test: one setup, a handful of conditions, and five questions about what those conditions force. Five a day, a bigger two-dimension board on Sundays, every answer machine-proved.',
   alternates: { canonical: '/docket' },

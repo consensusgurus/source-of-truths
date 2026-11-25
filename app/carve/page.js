@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // are a 6×6 board in six blocks; Sundays step up to a 7×7 board in nine.
 
 export const metadata = {
-  title: 'Free Daily Number Puzzle: Carve | Mind Loft',
+  title: 'Free Daily Equal-Sum Number Puzzle: Carve | Mind Loft',
   description:
     'A free daily equal-sum puzzle: carve the grid into connected blocks, one per colored anchor, so every block adds to the same target. One valid carving, a clean solve wins, and Sundays go bigger.',
   alternates: { canonical: '/carve' },

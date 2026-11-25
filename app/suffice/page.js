@@ -17,7 +17,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // answer key never ships over the wire (the Sworn pattern).
 
 export const metadata = {
-  title: 'Daily Data Sufficiency Puzzle: Suffice | Mind Loft',
+  title: 'Free Daily GMAT Data Sufficiency Puzzle: Suffice | Mind Loft',
   description:
     'A free daily logic game built on the data-sufficiency format: a question you never answer, and two statements. Three yes-or-no questions decide what is enough to settle it. Eight items a day, twelve on Sundays, every answer machine-proved.',
   alternates: { canonical: '/suffice' },

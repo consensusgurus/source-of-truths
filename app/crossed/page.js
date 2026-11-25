@@ -30,7 +30,7 @@ export async function generateMetadata({ searchParams }) {
   const d = String((searchParams && searchParams.d) || '');
   const img = ok ? `/crossed/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/crossed/card';
   const n = circuitKeysFor(CROSSED_RUN_ID, etTodayServer()).length || 5;
-  const title = `Crossed Up: ${COUNT_WORD[n] || n} Daily Crosswords in One Run | Mind Loft`;
+  const title = `Free Daily Crossword Challenge, ${COUNT_WORD[n] || n} Grids: Crossed Up | Mind Loft`;
   const description = n >= 5
     ? 'A free daily crossword run: the mini, a nine by nine, three acrostics, a no-clue code grid and a hidden quote. Solve all five fast to rank from Monday solver to In Pen.'
     : 'A free daily crossword run: the mini, a nine by nine, three acrostics and a no-clue code grid. Solve all four fast to rank from Monday solver to In Pen.';

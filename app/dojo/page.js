@@ -35,7 +35,7 @@ export async function generateMetadata({ searchParams }) {
   const ok = /^\d{1,2}(-\d{1,2}){2}$/.test(s);
   const d = String((searchParams && searchParams.d) || '');
   const img = ok ? `/dojo/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/dojo/card';
-  const title = 'Enter the Dojo: Three Daily Sudokus, One Belt | Mind Loft';
+  const title = 'Free Daily Sudoku Challenge, Three a Day: Enter the Dojo | Mind Loft';
   const description = 'A free daily sudoku run: a 6×6 warm-up, the classic 9×9, then a variant like sandwich, jigsaw or thermo. Solve all three fast to earn your belt, white to black.';
   return {
     title, description,

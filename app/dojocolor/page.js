@@ -29,7 +29,7 @@ export async function generateMetadata({ searchParams }) {
   const ok = /^\d{1,2}(-\d{1,2}){2}$/.test(s);
   const d = String((searchParams && searchParams.d) || '');
   const img = ok ? `/dojocolor/card?s=${s}${/^\d{1,3}$/.test(t) ? `&t=${t}` : ''}${/^\d{4}-\d{2}-\d{2}$/.test(d) ? `&d=${d}` : ''}` : '/dojocolor/card';
-  const title = 'Enter the Dojo: In Color, Three Daily Color Sudokus | Mind Loft';
+  const title = 'Free Daily Color Sudoku Challenge: Dojo In Color | Mind Loft';
   const description = 'A free daily color sudoku run: a 6×6 warm-up, the classic 9×9, then a variant, with colors in place of digits. Solve all three fast to earn your belt.';
   return {
     title, description,

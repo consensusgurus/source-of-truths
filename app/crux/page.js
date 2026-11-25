@@ -11,7 +11,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // /quiz/crux-* stubs canonicalize here).
 
 export const metadata = {
-  title: 'Free Daily Word Puzzle: Crux | Mind Loft',
+  title: 'Free Daily Clueless Crossword Puzzle: Crux | Mind Loft',
   description:
     'A clueless crossword and a free daily word puzzle. Eight hidden words interlock, and four categories are the only hints. New puzzle every day.',
   alternates: { canonical: '/crux' },

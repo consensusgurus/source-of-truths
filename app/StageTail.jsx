@@ -40,6 +40,7 @@ import { DAILY_GAME_MAP } from '@/lib/daily-games';
 import { runPageOf, runFaq, runFaqJsonLd, otherRuns } from '@/lib/run-seo';
 import StageFooter from './StageFooter';
 import { BANK_DB } from '@/lib/qdb';
+import { guideForGame } from '@/lib/guides';
 import LayoutC from './LayoutC';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -69,6 +70,9 @@ export default function StageTail({ self, stage = true, run = null, theme: force
   const jsonLd = runPage ? runFaqJsonLd(run) : game ? gameFaqJsonLd(self) : null;
   const rel = runPage ? otherRuns(run) : game ? relatedGames(self) : [];
   const cat = runPage ? { label: 'Runs', href: '/circuits' } : game ? gameCategory(self) : null;
+  // THE GUIDES (owner, 2026-11-25): a daily with a how-to guide links it here,
+  // and the guide links back (lib/guides.js). Server HTML, so it is crawled.
+  const guide = runPage ? null : guideForGame(self);
   return (
     <>
     {runPage ? null : <LayoutC gameKey={self} />}
@@ -98,6 +102,9 @@ export default function StageTail({ self, stage = true, run = null, theme: force
                 {rel.map((r) => <a key={r.key} href={r.href} title={r.tag}>{r.name}</a>)}
                 {cat ? <a href={cat.href} className="stq-all">All {cat.label.toLowerCase()}</a> : null}
               </nav>
+            ) : null}
+            {guide ? (
+              <p className="stq-tp">New to {game.name}? Read <a href={`/guides/${guide.slug}`}>{guide.h1}</a>, or browse all <a href="/guides">puzzle guides</a>.</p>
             ) : null}
             {/* THE QUESTION DATABASES (owner, 2026-11-21): a gauntlet daily points at its
                 topic's page, where every past question of the bank plays again. */}

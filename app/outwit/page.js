@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // crowd could be reverse-engineered before playing.
 
 export const metadata = {
-  title: 'Daily Crowd Puzzle, Beat Everyone Playing Today: Outwit | Mind Loft',
+  title: 'Free Daily Match the Crowd Game: Outwit | Mind Loft',
   description:
     'A free daily puzzle where the puzzle is other people. Five game-theory prompts against the whole field: dodge the popular pick, read the herd, meet the crowd, be the rare bird, then undercut the average by a fraction that changes daily. Six prompts in the Sunday Edition. Then see where everyone actually went.',
   alternates: { canonical: '/outwit' },

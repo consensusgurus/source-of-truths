@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // here). One cryptarithm a day, machine-verified to a unique solution.
 
 export const metadata = {
-  title: 'Daily Cryptarithm, Crack the Letter Math: Cipher | Mind Loft',
+  title: 'Free Daily Cryptarithm Puzzle (Letter Math): Cipher | Mind Loft',
   description:
     'A free daily cryptarithm: one WORD + WORD = WORD equation where every letter hides a different digit. Exactly one solution, no guessing required. Crack it clean for a perfect 10, and take on four addends in the Sunday Edition.',
   alternates: { canonical: '/cipher' },

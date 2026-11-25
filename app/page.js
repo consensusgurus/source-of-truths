@@ -7,14 +7,19 @@ import { QUIZZES } from '@/lib/quizzes';
 import { getAllSources } from '@/lib/sources';
 import { homeFaqLd } from '@/lib/home-about';
 import { cookies } from 'next/headers';
+import { DAILY_GAMES, REVIEW_HOLD } from '@/lib/daily-games';
+
+const HOLD = new Set(REVIEW_HOLD || []);
 import { homeSeed, DONE_COOKIE } from '@/lib/home-seed';
 
 const SOURCE_COUNT = getAllSources().length;
 
 export function generateMetadata() {
   const count = Array.isArray(QUIZZES) ? QUIZZES.filter((q) => !q.unlisted).length : 0;
-  const title = 'Mind Loft: Free Daily Puzzle Site | Sharpen Your Mind';
-  const description = `A free daily puzzle site: more than 80 word, number and logic puzzles, crosswords, sudoku and chess, new every day. Plus ${count}+ timed quizzes across films, music, geography, sports, and brands, from name-them-all and matching to map and multiple-choice. Then browse consensus Top 10 Lists where ${SOURCE_COUNT} experts and aggregators agree.`;
+  // Search title leads with what people type, not the brand (owner, 2026-11-25).
+  const title = 'Free Daily Puzzles: Sudoku, Crosswords, Logic, and Trivia | Mind Loft';
+  const daily = Math.floor(DAILY_GAMES.filter((g) => !HOLD.has(g.key)).length / 10) * 10;
+  const description = `${daily}+ free daily puzzles: sudoku, crosswords, logic puzzles, jigsaws, word games, and ${count}+ trivia quizzes. New every midnight. No app, no signup.`;
   const ogTitle = 'Mind Loft: Sharpen Your Mind';
 
   return {

@@ -14,7 +14,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // strips run out. Sundays run a trickier story.
 
 export const metadata = {
-  title: 'Daily History Puzzle, Name the Redacted Headline: Extra | Mind Loft',
+  title: 'Free Daily Guess the Headline History Game: Extra | Mind Loft',
   description:
     "A free daily history puzzle: one historic front page with the giveaway words blacked out. Name the story; every wrong guess tears one more word free. Six tears, one hint, and a perfect score for naming it cold.",
   alternates: { canonical: '/extra' },

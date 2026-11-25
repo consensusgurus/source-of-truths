@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // a client. The shared daily consumers get the light rows only.
 
 export const metadata = {
-  title: 'Daily Movie Puzzle, Nine Films One Thread: Thread | Mind Loft',
+  title: 'Free Daily Movie Connection Puzzle: Thread | Mind Loft',
   description:
     'A free daily movie puzzle. Nine films are each described in one sentence by someone who missed the point, and all nine share one hidden thread. Name the films, call the thread, and call it early for more points. No app, no signup, a new board every day.',
   alternates: { canonical: '/thread' },

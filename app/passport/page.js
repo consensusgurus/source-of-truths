@@ -35,7 +35,7 @@ export async function generateMetadata({ searchParams }) {
   const s = String((searchParams && searchParams.s) || '');
   const ok = /^\d{1,2}(-\d{1,2}){3,4}$/.test(s);
   const img = ok ? `/passport/card?s=${s}` : '/passport/card';
-  const title = 'Passport: A Daily Geography Run | Mind Loft';
+  const title = 'Free Daily Geography Challenge, One Country: Passport | Mind Loft';
   const trip = isTripDay(etTodayServer());
   const description = trip
     ? 'A free daily geography trip: find the secret city you leave from, cross the map by land borders, name every neighbor of where you land, then stamp each capital. Score out of 50 and earn a passport.'

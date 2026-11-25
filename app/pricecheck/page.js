@@ -49,7 +49,7 @@ export async function generateMetadata({ searchParams }) {
   const rv = String((searchParams && searchParams.r) || '');
   const rt = rv === '2' || rv === '3' || rv === '4' ? rv : '';
   const img = ok ? `/pricecheck/card?s=${s}${rt ? `&r=${rt}` : ''}` : '/pricecheck/card';
-  const title = 'Price Check: One Item, Six Picks, One House | Mind Loft';
+  const title = 'Free Daily Price Guessing Games, All in One: Price Check | Mind Loft';
   const description = 'A free daily price run: guess an everyday Amazon price, make six quick which-costs-more calls, then price a home for sale. Scored out of 50.';
   return {
     title, description,

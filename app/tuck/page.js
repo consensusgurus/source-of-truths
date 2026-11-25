@@ -14,7 +14,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // chase the solver-verified benchmark.
 
 export const metadata = {
-  title: 'Daily Word Puzzle, Same Letters, Highest Score Wins: Tuck | Mind Loft',
+  title: 'Free Daily Word Score Game, Same Letters for All: Tuck | Mind Loft',
   description:
     'A free daily word puzzle: everyone gets the same 14 letters, and 15 in the Sunday Edition. Tuck them into your own interlocking crossword grid: every run must be a word, intersections score double, and each day has a solver-verified benchmark to beat.',
   alternates: { canonical: '/tuck' },

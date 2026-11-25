@@ -13,7 +13,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // LAUNCHED 2026-10-07 into the Arcade beside Blocks, Snake and Sweep.
 
 export const metadata = {
-  title: 'Dario: A Daily Race to the Frontier | Mind Loft',
+  title: 'Free Daily Side-Scroller Game, the AI Race: Dario | Mind Loft',
   description:
     'A free daily side-scrolling platformer: three levels of the AI race on a course remixed every day for everyone. Your fastest clear goes on the leaderboard.',
   alternates: { canonical: '/dario' },

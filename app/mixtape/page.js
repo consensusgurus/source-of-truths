@@ -17,7 +17,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 // gets only the titles, labels and sizes it shows.
 
 export const metadata = {
-  title: 'Free Daily Trivia Quiz Mix: Mixtape | Mind Loft',
+  title: 'Free Daily Trivia Quizzes, Three a Day: Mixtape | Mind Loft',
   description:
     'A free daily trivia mix: three quizzes to type, match and spot, sometimes on a map, each a new subject. Play all three and race the daily board.',
   alternates: { canonical: '/mixtape' },
