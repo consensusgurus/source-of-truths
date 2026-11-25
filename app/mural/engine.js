@@ -477,7 +477,7 @@ function ui(){
   $('sPts').textContent=M.pts;$('menuBtn').textContent=PHOTO?'Menu':'Menu \u00b7 '+M.pts+' pts';$('sLeft').textContent=M.mine.size;
   /* THE SITE'S TOTAL, NOT FIRSTS (owner, 2026-11-19: "dont need to show 'firsts', instead also give total places along with %. and that number will have the '+5' or whatever on every refresh"). */
   const done=M.crowd.size+[...M.mine].filter(i=>!M.crowd.has(i)).length,pc=done/TOTAL*100;
-  $('sAll').textContent=done.toLocaleString();$('sAllLab').textContent=(PRIV?'All Placed':'Site Total')+' \u00b7 '+(pc>0&&pc<10?pc.toFixed(1):Math.round(pc))+'%';
+  $('sAll').textContent=done.toLocaleString();{const pt=(pc>0&&pc<10?pc.toFixed(1):Math.round(pc))+'%';$('sAllLab').innerHTML='<span class="lw">'+(PRIV?'All Placed':'Site Total')+' \u00b7 </span><span class="ls">'+(PRIV?'All ':'Site ')+'</span>'+pt;}
   /* PLAYERS IN THE HEADER (owner, 2026-11-19): everyone who has placed a piece, members and guests, in the stats row, no new row. */
   const ply=Math.max((STATE.players||0)+((STATE.guests&&STATE.guests.players)||0),M.mine.size?1:0);
   $('sPly').textContent=ply.toLocaleString();$('plyBox').style.display=SOLO?'none':'';
@@ -1052,7 +1052,7 @@ applyState(env.state).forEach(id=>drawPiece(cctx,id));
 applyMe(env.me);
 loadLoose();
 if(SOLO){for(const q of ['#updBox','#allBox']){const ub=root.querySelector(q);if(ub)ub.style.display='none';}$('lbBtn').textContent='The Wall';}
-$('credit').textContent=creditLine();
+$('credit').textContent=creditLine();{const hc=$('helpCredit');if(hc)hc.textContent=creditLine();const rc=$('refCv');if(rc&&creditLine())rc.title=creditLine();}
 /* Finished murals on the shelf (owner, 2026-11-24): the link shows once there is one to open. */
 getJSON('/api/mural/shelf').then(r=>{const n=$('pastLink');if(n&&r.ok&&r.j&&Array.isArray(r.j.murals)&&r.j.murals.length)n.hidden=false;}).catch(()=>{});
 if(PRIV){
