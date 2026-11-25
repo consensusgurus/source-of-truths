@@ -798,7 +798,7 @@ export default function CalcClient({ puzzles = [], forceNum = null }) {
                     <polyline points={stageLink.pts} fill="none" stroke="var(--pst-ink)" strokeWidth={N > 6 ? 5 : 6} strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
-                <div ref={stageGridRef} className="cls-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+                <div ref={stageGridRef} className="cls-grid" style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
                   {Array.from({ length: CELLS }).map((_, idx) => {
                     const v = PUZZLE.cells[idx];
                     const num = isNumCell(N, idx);
@@ -1376,8 +1376,9 @@ const CLS_CSS = `
 .cls-board{position:relative;align-self:center;width:min(100%, 440px);}
 .cls-board.n7{width:min(100%, 480px);}
 .cls-board svg{position:absolute;left:0;top:0;z-index:1;pointer-events:none;}
-.cls-grid{display:grid;gap:clamp(4px, 1.6vw, 10px);}
-.pst .cls-k{position:relative;aspect-ratio:1;border-radius:12px;border:1px solid var(--pst-ink);background:var(--pst-cell);font-size:clamp(17px, 5.6vw, 26px);font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;touch-action:manipulation;min-width:0;}
+/* Squares fill fixed row tracks on a square board, never their own aspect-ratio (iPad Safari stretched Duet's button squares, 2026-11-25). */
+.cls-grid{display:grid;aspect-ratio:1;gap:clamp(4px, 1.6vw, 10px);}
+.pst .cls-k{position:relative;min-height:0;align-self:stretch;justify-self:stretch;-webkit-appearance:none;appearance:none;margin:0;border-radius:12px;border:1px solid var(--pst-ink);background:var(--pst-cell);font-size:clamp(17px, 5.6vw, 26px);font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;touch-action:manipulation;min-width:0;}
 .cls-board.n7 .cls-k{font-size:clamp(15px, 4.8vw, 22px);border-radius:10px;}
 .pst .cls-k.o{border-radius:50%;background:var(--pst-bg);border-color:var(--pst-cell-line);font-size:clamp(15px, 5vw, 22px);}
 .pst .cls-k > span{position:relative;z-index:2;}

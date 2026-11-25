@@ -20,6 +20,7 @@
 // The model is lib/bot-engine.js. Runs on app/SimpleDaily.jsx.
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import useSquareCells from '@/lib/use-square-cells';
 import SimpleDaily from '../SimpleDaily';
 import { run, modelOf, heightAt, commandsIn, legalProgram, rowsOf, ROWS } from '@/lib/bot-engine';
 
@@ -52,8 +53,8 @@ const CSS = `
 .bot-row .nm{font:800 13px/1.3 'Manrope',system-ui,sans-serif;color:var(--bt-ink);}
 .bot-row.on .nm,.bot-row.on .nm small{color:var(--bt-row-on-ink);}
 .bot-row .nm small{display:block;font:700 11px/1.3 'Manrope',system-ui,sans-serif;color:var(--stg-mute,#8b95a8);}
-.bot-slots{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;}
-.bot-slot{all:unset;box-sizing:border-box;aspect-ratio:1;border:1px solid var(--bt-slot-line);border-radius:9px;background:var(--bt-slot);display:grid;place-items:center;}
+.bot-slots{display:grid;grid-template-columns:repeat(8,1fr);grid-auto-rows:var(--sq-cell, auto);gap:5px;}
+.bot-slot{all:unset;box-sizing:border-box;min-height:0;align-self:stretch;border:1px solid var(--bt-slot-line);border-radius:9px;background:var(--bt-slot);display:grid;place-items:center;}
 .bot-slot.full{border-color:var(--stg-cell-line,rgba(28,30,36,.35));cursor:pointer;}
 .bot-slot svg{width:80%;height:80%;}
 .bot-slot.now{outline:3px solid var(--bt-ink);outline-offset:1px;}
@@ -167,6 +168,9 @@ const BUMP = {
 function Board({ P, s, setS, active, done, onStage }) {
   const M = modelOf(P);
   const rows = rowsOf(P);
+  // Slot rows are one slot tall, measured (lib/use-square-cells.js), not the buttons' own aspect-ratio.
+  const botRef = useRef(null);
+  useSquareCells(botRef, '.bot-slots', 8);
   const startView = useMemo(() => ({ x: M.start[0], y: M.start[1], h: heightAt(M, M.start[0], M.start[1]), d: M.start[2] }), [M]);
   const [view, setView] = useState(startView);
   const [lit, setLit] = useState(() => new Array(P.lamps.length).fill(0));
@@ -274,7 +278,7 @@ function Board({ P, s, setS, active, done, onStage }) {
 
   const can = live && !busy;
   return (
-    <div className="bot" style={{ maxWidth: 640 }}>
+    <div ref={botRef} className="bot" style={{ maxWidth: 640 }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div style={{ width: '100%', maxWidth: 'min(560px, calc((100dvh - 420px) * 1.6))' }}><Scene P={P} view={view} lit={lit} /></div>
       <div className={`bot-msg${note && note.bad ? ' bad' : ''}`} aria-live="polite">{ansProg ? `The answer: ${cmdsOf(commandsIn(ansProg))}${P.sunday ? ' (par)' : ', the fewest possible'}.` : note ? note.t : ''}</div>

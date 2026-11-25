@@ -22,6 +22,7 @@
 // saves, /niche?p=N archive pinning, streaks, and the shared /api/quiz/* flow.
 
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import useSquareCells from '@/lib/use-square-cells';
 import { useSearchParams } from 'next/navigation';
 import { X, Eye, Smartphone, CornerDownLeft } from 'lucide-react';
 import Grain from '../Grain';
@@ -219,6 +220,9 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
   const U = UNIVERSE_MAP[PUZZLE.universe];
   const SIZE = PUZZLE.rows.length;
   const CELLS = SIZE * SIZE;
+  // Rows are one column tall, measured (lib/use-square-cells.js), not the buttons' own aspect-ratio.
+  const nchGridRef = useRef(null);
+  useSquareCells(nchGridRef, null, SIZE, SIZE === 4 ? 70 : 86);
   const GUESSES = CELLS + (PUZZLE.sunday ? 4 : 3);
   const STORE_KEY = `sot_niche_${PUZZLE.num}`;
   const rowAttrs = useMemo(() => PUZZLE.rows.map((id) => attrById(U, id)), [PUZZLE, U]);
@@ -654,7 +658,7 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
               .nch-ch,.nch-rh{font-size:11px;font-weight:800;line-height:1.2;display:flex;}
               .nch-ch{align-items:flex-end;justify-content:center;text-align:center;padding:0 2px 4px;}
               .nch-rh{align-items:center;justify-content:flex-start;text-align:left;border-left:4px solid var(--pst-ink);padding:0 0 0 8px;}
-              .nch-c{aspect-ratio:1;border-radius:13px;border:1px solid var(--pst-ink);background:var(--pst-tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px;min-width:0;overflow:hidden;}
+              .nch-c{min-height:0;align-self:stretch;-webkit-appearance:none;appearance:none;margin:0;border-radius:13px;border:1px solid var(--pst-ink);background:var(--pst-tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px;min-width:0;overflow:hidden;}
               .nch-c b{font-size:15px;font-weight:800;text-align:center;line-height:1.1;overflow-wrap:anywhere;}
               .nch-c i{font-style:normal;font-size:11px;font-weight:800;opacity:.85;}
               .nch-g.g4 .nch-c{border-radius:11px;}
@@ -667,8 +671,8 @@ export default function NicheClient({ puzzles = [], forceNum = null }) {
               .nch-ask{text-align:center;font-size:14px;font-weight:800;line-height:1.35;}
               .nch-sub{font-size:12px;font-weight:700;opacity:.7;margin-left:6px;}
             ` }} />
-            <div className={`nch-g${SIZE === 4 ? ' g4' : ''}`} role="grid" aria-label="Board"
-              style={{ gridTemplateColumns: `${SIZE === 4 ? 70 : 86}px repeat(${SIZE}, minmax(0, 1fr))` }}>
+            <div ref={nchGridRef} className={`nch-g${SIZE === 4 ? ' g4' : ''}`} role="grid" aria-label="Board"
+              style={{ gridTemplateColumns: `${SIZE === 4 ? 70 : 86}px repeat(${SIZE}, minmax(0, 1fr))`, gridTemplateRows: `auto repeat(${SIZE}, var(--sq-cell, auto))` }}>
               <span aria-hidden="true" />
               {colAttrs.map((a) => <span key={a.id} className="nch-ch">{a.label}</span>)}
               {rowAttrs.map((ra, r) => (

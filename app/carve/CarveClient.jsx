@@ -749,7 +749,7 @@ export default function CarveClient({ puzzles = [], forceNum = null }) {
             top={(
               <>
                 <style dangerouslySetInnerHTML={{ __html: CVS_CSS }} />
-                <div className={'cvs-grid' + (N > 6 ? ' n7' : '')} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+                <div className={'cvs-grid' + (N > 6 ? ' n7' : '')} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
                   {Array.from({ length: T }).map((_, idx) => {
                     const r = Math.floor(idx / N), c = idx % N;
                     const reg = assign[idx];
@@ -1272,9 +1272,10 @@ const CVS_CSS = `
 .pst .cvs-chip.on{box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink);}
 .cvs-chip span{display:inline-flex;align-items:center;gap:3px;}
 .cvs-chip.done i{display:none;}
-.cvs-grid{display:grid;border:1px solid var(--pst-ink);border-radius:16px;overflow:hidden;background:var(--pst-bg);width:min(100%, 460px);align-self:center;}
+/* Squares fill fixed row tracks on a square board, never their own aspect-ratio (iPad Safari stretched Duet's button squares, 2026-11-25). */
+.cvs-grid{display:grid;aspect-ratio:1;box-sizing:border-box;border:1px solid var(--pst-ink);border-radius:16px;overflow:hidden;background:var(--pst-bg);width:min(100%, 460px);align-self:center;}
 .cvs-grid.n7{width:min(100%, 560px);}
-.pst .cvs-c{position:relative;aspect-ratio:1;border:0;border-radius:0;border-right:1px solid var(--pst-cell-line);border-bottom:1px solid var(--pst-cell-line);background:var(--pst-bg);font-size:clamp(17px, 6vw, 26px);font-weight:700;padding:0;font-variant-numeric:tabular-nums;touch-action:manipulation;min-width:0;}
+.pst .cvs-c{position:relative;min-height:0;align-self:stretch;justify-self:stretch;-webkit-appearance:none;appearance:none;margin:0;border:0;border-radius:0;border-right:1px solid var(--pst-cell-line);border-bottom:1px solid var(--pst-cell-line);background:var(--pst-bg);font-size:clamp(17px, 6vw, 26px);font-weight:700;padding:0;font-variant-numeric:tabular-nums;touch-action:manipulation;min-width:0;}
 .cvs-grid.n7 .cvs-c{font-size:clamp(15px, 5vw, 24px);}
 .pst .cvs-c.er{border-right:3px solid var(--pst-ink);}
 .pst .cvs-c.eb{border-bottom:3px solid var(--pst-ink);}

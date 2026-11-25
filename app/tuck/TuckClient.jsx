@@ -1372,8 +1372,9 @@ const TKS_CSS = `
 .tks-score{display:flex;justify-content:center;align-items:baseline;gap:10px}
 .tks-score b{font-size:40px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
 .tks-score span{font-size:13px;font-weight:800;opacity:.8}
-.tks-board{align-self:center;width:100%;max-width:366px;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px}
-.pst .tks-c{position:relative;aspect-ratio:1;border:2px solid color-mix(in srgb, var(--pst-ink) 30%, transparent);border-radius:8px;background:var(--pst-tint);font-size:19px;font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;line-height:1}
+/* Squares fill fixed row tracks on a square board, never their own aspect-ratio (iPad Safari stretched Duet's button squares, 2026-11-25). */
+.tks-board{align-self:center;width:100%;max-width:366px;aspect-ratio:1;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));gap:3px}
+.pst .tks-c{position:relative;min-height:0;align-self:stretch;justify-self:stretch;-webkit-appearance:none;appearance:none;margin:0;border:2px solid color-mix(in srgb, var(--pst-ink) 30%, transparent);border-radius:8px;background:var(--pst-tint);font-size:19px;font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;line-height:1}
 .pst .tks-c.f{background:var(--pst-ink);color:var(--pst-bg);border-color:var(--pst-ink)}
 .pst .tks-c.bad{background:var(--pst-bg);color:var(--pst-ink);border:1px solid var(--pst-ink);text-decoration:underline wavy;text-underline-offset:3px}
 .pst .tks-c.now{border-color:var(--pst-ink);box-shadow:0 0 0 2px var(--pst-bg),0 0 0 4px var(--pst-ink)}
