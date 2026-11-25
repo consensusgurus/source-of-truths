@@ -14,9 +14,9 @@ import { categoryCrumb } from '@/lib/game-seo';
 // browser, so the rest of the bank never reaches a client.
 
 export const metadata = {
-  title: 'Free Daily Who Said It Trivia Game: Quotes | Mind Loft',
+  title: 'Who Said This Quote? Free Daily Quote Game: Quotes | Mind Loft',
   description:
-    'A free daily quotation quiz. Twenty-five famous lines from presidents, generals, scientists, writers and film characters climb from easy to expert, and one wrong answer ends the run. Twenty seconds a question, one life, everyone plays the same twenty-five. No app, no signup, a new twenty-five every day.',
+    'Who said this quote? A free daily guess-who-said-it game. Twenty-five famous lines from presidents, generals, scientists, writers and film characters climb from easy to expert, and one wrong answer ends the run. Twenty seconds a question, one life, everyone plays the same twenty-five. No app, no signup, a new twenty-five every day.',
   alternates: { canonical: '/quotes' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
@@ -31,7 +31,7 @@ export const metadata = {
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Quotes',
-  alternateName: 'Quotes: Daily Famous Quotations Trivia', url: `${SITE_URL}/quotes`,
+  alternateName: ['Quotes: Daily Famous Quotations Trivia', 'Who Said This Quote Game'], url: `${SITE_URL}/quotes`,
   description:
     'A free daily quotation-attribution trivia game. Twenty-five multiple-choice questions climb from easy to expert in five rounds of five, cycling the same five lanes each round: presidents and politics, history and war, science and letters and ideas, books and authors, and screen lines. Four lanes attribute real quotations to the people who actually said or wrote them; the fifth asks which fictional character speaks a line from a film or television show. One wrong answer, or a twenty-second clock at zero, ends the run, and every question cleared is a point. Everyone plays the same twenty-five questions in the same order each day, and the daily leaderboard ranks the longest runs with ties broken by time.',
   genre: ['History', 'Literature', 'Trivia', 'Quiz', 'Survival'],

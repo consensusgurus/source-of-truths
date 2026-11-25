@@ -610,6 +610,7 @@ export default function QuotesClient({ puzzles = [], questionsByNum = {}, forceN
       {LOFT && (
         <Cap gameKey="quotes" quizId={PUZZLE.quizId}
           name="Quotes"
+          h1Tail="Who Said This Quote Game"
           cat="Trivia"
           outcome={playing ? null : (won ? 'won' : (depth > 0 ? 'part' : 'lost'))}
           num={PUZZLE.num}
@@ -910,9 +911,9 @@ export default function QuotesClient({ puzzles = [], questionsByNum = {}, forceN
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
       <StageFold />
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
-        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Quotes</h2>
+        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Quotes: The Who Said This Quote Game</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Quotes is a free daily attribution quiz from Mind Loft. Twenty-five multiple-choice questions climb from lines anyone can place to lines almost nobody can, and a single wrong answer ends the run. Your score is simply how many you cleared in a row, which makes every question a small act of nerve: the further you get, the more you have to lose.
+          Quotes is a free daily who said this quote game from Mind Loft. Each question shows a famous line and asks who said it, with four names to choose from. Twenty-five multiple-choice questions climb from lines anyone can place to lines almost nobody can, and a single wrong answer ends the run. Your score is simply how many you cleared in a row, which makes every question a small act of nerve: the further you get, the more you have to lose.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Everyone plays the same twenty-five questions in the same order each day, so the daily leaderboard is a straight fight: longest run wins, and ties break by time. Twenty seconds a question keeps it honest. Every question shows the actual line, word for word, and asks you to place it. Four of the five lanes ask who really said or wrote a line, presidents and politics, history and war, science and letters, and books and authors, and the fifth asks which character speaks a line from a film or a television show. Nothing here is apocryphal: every line is one the named person is documented as having said or written, and where a famous quotation is misattributed the question asks you for the person who actually wrote it.

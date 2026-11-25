@@ -583,6 +583,7 @@ export default function DeepClient({ puzzles = [], questionsByNum = {}, forceNum
       {LOFT && (
         <Cap gameKey="deep" quizId={PUZZLE.quizId}
           name="Deep"
+          h1Tail="How Deep Is Your Knowledge Trivia Game"
           cat="Trivia"
           outcome={playing ? null : (won ? 'won' : (depth > 0 ? 'part' : 'lost'))}
           num={PUZZLE.num}
@@ -885,9 +886,9 @@ export default function DeepClient({ puzzles = [], questionsByNum = {}, forceNum
       {/* The desktop fold: the About prose below starts one screen down (app/StageFold.jsx). */}
       <StageFold />
       <section style={{ position: 'relative', display: (focusMode && !STAGE) ? 'none' : 'block', zIndex: 2, maxWidth: 620, margin: '0 auto', padding: '10px 24px 42px', fontFamily: SANS }}>
-        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Deep</h2>
+        <h2 style={{ margin: '0 0 8px', fontSize: 15, fontWeight: 800, letterSpacing: '-0.01em', color: INK }}>About Deep: How Deep Is Your Knowledge?</h2>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          Deep is a free daily trivia game from Mind Loft. Every day it picks one subject, from Ancient Rome to the periodic table, and asks fifteen questions about it that get harder the further you go. The first three are gimmes. The last three are for people who really know the thing. One wrong answer ends the dive, so your score is simply how far down you got.
+          Deep is a free daily trivia game from Mind Loft. Every day it picks one subject, from Ancient Rome to the periodic table, and asks fifteen questions about it that get harder the further you go. The first three are gimmes. The last three are for people who really know the thing. One wrong answer ends the dive, so your score is simply how far down you got. That makes it a true how deep is your knowledge game: every right answer takes you one level deeper, and the depth you reach is the answer to the question in the title.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Everyone plays the same fifteen questions in the same order each day, so the daily leaderboard is a straight fight: deepest dive wins, and ties break by time. Twenty seconds a question keeps it honest, and the clock does not pause when you switch tabs.

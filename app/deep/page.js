@@ -14,9 +14,9 @@ import { categoryCrumb } from '@/lib/game-seo';
 // fifteen ship to the browser, so the rest of the bank never reaches a client.
 
 export const metadata = {
-  title: 'Free Daily Single-Topic Trivia Game: Deep | Mind Loft',
+  title: 'How Deep Is Your Knowledge? Free Daily Trivia Game: Deep | Mind Loft',
   description:
-    'A free daily trivia dive. One subject a day, fifteen questions on it, and they get harder the deeper you go. One wrong answer ends the run. Twenty seconds a question, everyone plays the same fifteen. No app, no signup, a new topic every day.',
+    'How deep is your knowledge? A free daily trivia game: one subject a day, fifteen questions on it, and every right answer takes you one level deeper and harder. One wrong answer ends the dive. Twenty seconds a question, everyone plays the same fifteen. No app, no signup, a new topic every day.',
   alternates: { canonical: '/deep' },
   openGraph: {
     // Static share card (2026-09-02): pre-rendered once into public/og/, replacing the per-game
@@ -31,7 +31,7 @@ export const metadata = {
 
 const gameJsonLd = {
   '@context': 'https://schema.org', '@type': 'Game', name: 'Deep',
-  alternateName: 'Deep: Daily Single-Topic Trivia', url: `${SITE_URL}/deep`,
+  alternateName: ['Deep: Daily Single-Topic Trivia', 'How Deep Is Your Knowledge Game'], url: `${SITE_URL}/deep`,
   description:
     'A free daily trivia game built on one subject. Fifteen multiple-choice questions on the same topic climb from questions anyone could answer to questions only a specialist will have, in five rounds of three. One wrong answer, or a twenty-second clock at zero, ends the dive, and every question cleared is a point. Everyone plays the same fifteen questions in the same order each day, and the daily leaderboard ranks the deepest dives with ties broken by time.',
   genre: ['Trivia', 'Quiz', 'Survival'],
