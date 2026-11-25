@@ -927,7 +927,7 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
             top={(
               <div className="dus" ref={dusRef} style={{ '--dus-warn': warn, '--dus-warn-bg': warnBg, '--dus-n': N, ...(dusFit ? { '--dus-fit': `${dusFit}px` } : null) }}>
                 <style dangerouslySetInnerHTML={{ __html: DUS_CSS }} />
-                <div className={'dus-bd' + (N > 8 ? ' n10' : '')} role="grid" aria-label={`Duet board, ${N} by ${N}`} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))` }}>
+                <div className={'dus-bd' + (N > 8 ? ' n10' : '')} role="grid" aria-label={`Duet board, ${N} by ${N}`} style={{ gridTemplateColumns: `repeat(${N}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${N}, minmax(0, 1fr))` }}>
                   {Array.from({ length: CELLS }).map((_, idx) => {
                     const v = viewCells[idx];
                     const r = Math.floor(idx / N), c = idx % N, id = PUZZLE.rooms[r][c];
@@ -1388,8 +1388,17 @@ export default function DuetClient({ puzzles = [], forceNum = null }) {
 // or mark that breaks a rule is orange (Logic's wrong colour), never red.
 const DUS_CSS = `
 .dus{display:flex;flex-direction:column;gap:12px;}
-.dus-bd{position:relative;display:grid;align-self:center;width:min(100%, var(--dus-fit, 100%));border:3px solid var(--pst-ink);border-radius:14px;overflow:hidden;background:var(--pst-bg);}
-.pst .dus-c{position:relative;aspect-ratio:1;min-width:0;padding:0;border:0;border-radius:0;border-right:1px solid var(--pst-cell-line);border-bottom:1px solid var(--pst-cell-line);background:var(--pst-bg);display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+/* THE BOARD IS ONE SQUARE AND EVERY ROW IS ONE NTH OF IT (player report from an
+   iPad, 2026-11-25: walls in the wrong rows and the lower rows cut off, while the
+   = and x marks sat where they belong). The marks are placed as fractions of the
+   board, but the squares used to take their height from aspect-ratio on each
+   <button>, and iPad Safari let those buttons grow taller than wide, so the rows
+   slid down under the marks and out of the clipped board. Now the board itself is
+   square and its rows are fixed tracks (minmax(0,1fr) never grows to fit content),
+   and each square simply fills its track, so cells and marks share one geometry
+   whatever a browser does with a button's own size. */
+.dus-bd{position:relative;display:grid;align-self:center;width:min(100%, var(--dus-fit, 100%));aspect-ratio:1;grid-template-rows:repeat(var(--dus-n), minmax(0, 1fr));border:3px solid var(--pst-ink);border-radius:14px;overflow:hidden;background:var(--pst-bg);box-sizing:border-box;}
+.pst .dus-c{position:relative;-webkit-appearance:none;appearance:none;margin:0;width:auto;height:auto;min-width:0;min-height:0;align-self:stretch;justify-self:stretch;overflow:hidden;line-height:1;padding:0;border:0;border-radius:0;border-right:1px solid var(--pst-cell-line);border-bottom:1px solid var(--pst-cell-line);background:var(--pst-bg);display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
 .pst .dus-c:disabled{cursor:default;opacity:1;}
 .pst .dus-c.wr{border-right:3px solid var(--pst-ink);}
 .pst .dus-c.wb{border-bottom:3px solid var(--pst-ink);}
