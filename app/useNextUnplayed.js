@@ -40,7 +40,7 @@ import { familyAfter, spotlightFor, nextPinFor } from '@/lib/daily-games';
 const TRIVIA_DEPTS = ['movies', 'music', 'sports', 'history', 'science', 'entertainment', 'business', 'arts', 'literature', 'food', 'gaming'];
 const SUBJECT_DEPT = {
   sport: 'sports', biz: 'business', script: 'movies', thread: 'movies', sci: 'science', clade: 'science',
-  art: 'arts', foodie: 'food', music: 'arts', books: 'arts', nature: 'science', tech: 'science', myth: 'history', history: 'history', dating: 'history', circa: 'history', extra: 'history',
+  art: 'arts', foodie: 'food', music: 'arts', books: 'arts', nature: 'science', tech: 'science', myth: 'history', hired: 'business', history: 'history', dating: 'history', circa: 'history', extra: 'history',
 };
 export function quizDeptsFor(game) {
   if (!game) return null;

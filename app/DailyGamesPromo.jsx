@@ -211,6 +211,7 @@ export const DAILY_GAMES = [
   { key: 'nature', href: '/nature', name: 'Nature', tag: 'animals, plants, and weather, one life', store: 'sot_nature_day', accent: '#15803d', bg: '#e6f4ea', border: 'rgba(21,128,61,0.4)' },
   { key: 'tech', href: '/tech', name: 'Tech', tag: 'internet, games, and gadgets, one life', store: 'sot_tech_day', accent: '#0369a1', bg: '#e3f1f9', border: 'rgba(3,105,161,0.4)' },
   { key: 'myth', href: '/myth', name: 'Myth', tag: 'myths, legends, and faiths, one life', store: 'sot_myth_day', accent: '#6d28d9', bg: '#efe9fb', border: 'rgba(109,40,217,0.4)' },
+  { key: 'hired', href: '/hired', name: 'Hired', tag: 'one job a day, five rounds', store: 'sot_hired_day', accent: '#0f766e', bg: '#e2f3f1', border: 'rgba(15,118,110,0.4)' },
   { key: 'history', href: '/history', name: 'History', tag: 'history, one life', store: 'sot_history_day', accent: '#854d0e', bg: '#f8f1e4', border: 'rgba(133,77,14,0.4)' },
   { key: 'potluck', href: '/potluck', name: 'Potluck', tag: 'three quizzes, one score', store: 'sot_potluck_day', accent: '#b4532a', bg: '#fdf1ea', border: 'rgba(180,83,42,0.4)' },
   { key: 'mixtape', href: '/mixtape', name: 'Mixtape', tag: 'three more quizzes, one score', store: 'sot_mixtape_day', accent: '#9d2f6b', bg: '#fbeef5', border: 'rgba(157,47,107,0.4)' },

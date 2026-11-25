@@ -218,6 +218,7 @@ import { PUZZLES as BOOKS_FULL } from '../books/puzzles';
 import { PUZZLES as NATURE_FULL } from '../nature/puzzles';
 import { PUZZLES as TECH_FULL } from '../tech/puzzles';
 import { PUZZLES as MYTH_FULL } from '../myth/puzzles';
+import { PUZZLES as HIRED_FULL } from '../hired/puzzles';
 import { PUZZLES as POTLUCK_FULL } from '../potluck/puzzles';
 import { PUZZLES as MIXTAPE_FULL } from '../mixtape/puzzles';
 import { PUZZLES as MISHMASH_FULL } from '../mishmash/puzzles';
@@ -411,6 +412,7 @@ const BOOKS = BOOKS_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizI
 const NATURE = NATURE_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const TECH = TECH_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const MYTH = MYTH_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
+const HIRED = HIRED_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const POTLUCK = POTLUCK_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const MIXTAPE = MIXTAPE_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
 const MISHMASH = MISHMASH_FULL.map(({ num, quizId, live, dateLabel }) => ({ num, quizId, live, dateLabel }));
@@ -671,6 +673,7 @@ const GAMES = [
   { key: 'nature', name: 'Nature', path: '/nature', tag: 'Animals, plants, and weather, one life', accent: '#15803d', bg: '#e6f4ea', border: 'rgba(21,128,61,0.4)', src: NATURE },
   { key: 'tech', name: 'Tech', path: '/tech', tag: 'Internet, games, and gadgets, one life', accent: '#0369a1', bg: '#e3f1f9', border: 'rgba(3,105,161,0.4)', src: TECH },
   { key: 'myth', name: 'Myth', path: '/myth', tag: 'Myths, legends, and faiths, one life', accent: '#6d28d9', bg: '#efe9fb', border: 'rgba(109,40,217,0.4)', src: MYTH },
+  { key: 'hired', name: 'Hired', path: '/hired', tag: 'One job a day, five rounds', accent: '#0f766e', bg: '#e2f3f1', border: 'rgba(15,118,110,0.4)', src: HIRED },
   { key: 'history', name: 'History', path: '/history', tag: 'History, one life', accent: '#854d0e', bg: '#f8f1e4', border: 'rgba(133,77,14,0.4)', src: HISTORY },
   { key: 'potluck', name: 'Potluck', path: '/potluck', tag: 'Three quizzes, one score', accent: '#b4532a', bg: '#fdf1ea', border: 'rgba(180,83,42,0.4)', src: POTLUCK },
   { key: 'mixtape', name: 'Mixtape', path: '/mixtape', tag: 'Three more quizzes, one score', accent: '#9d2f6b', bg: '#fbeef5', border: 'rgba(157,47,107,0.4)', src: MIXTAPE },

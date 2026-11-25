@@ -102,7 +102,7 @@ export default function StageTail({ self, stage = true, run = null, theme: force
             {/* THE QUESTION DATABASES (owner, 2026-11-21): a gauntlet daily points at its
                 topic's page, where every past question of the bank plays again. */}
             {!runPage && BANK_DB[self] ? (
-              <p className="stq-tp"><a href={`${BANK_DB[self].base}/${BANK_DB[self].slug}`}>Play every past {BANK_DB[self].label.toLowerCase()} {BANK_DB[self].db === 'math' ? 'problem' : 'question'}</a> in the <a href={BANK_DB[self].base}>{BANK_DB[self].name}</a>.</p>
+              <p className="stq-tp"><a href={BANK_DB[self].slug ? `${BANK_DB[self].base}/${BANK_DB[self].slug}` : BANK_DB[self].base}>Play every past {BANK_DB[self].label.toLowerCase()} {BANK_DB[self].db === 'math' ? 'problem' : 'question'}</a> in the <a href={BANK_DB[self].base}>{BANK_DB[self].name}</a>.</p>
             ) : null}
           </div>
         </section>

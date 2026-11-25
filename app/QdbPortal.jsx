@@ -37,7 +37,8 @@ import { softGround, RAMP_INK } from '@/lib/category-ramp';
 import { mathText } from './MathText';
 import QdbMap from './QdbMap';
 import { readDone, markDone, doneKeysFor } from '@/lib/qdb-done';
-import { QDBS, QDB_KEYS, MODES, DIFFICULTY, COUNTS, ENDLESS_N, SPRINT_SECONDS, storeKey, setupKey, MISS_CAP, laneLabel } from '@/lib/qdb';
+import { qdbListed, QDBS, QDB_KEYS, MODES, DIFFICULTY, COUNTS, ENDLESS_N, SPRINT_SECONDS, storeKey, setupKey, MISS_CAP, laneLabel } from '@/lib/qdb';
+const etDay = () => { try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); } catch (e) { return new Date().toISOString().slice(0, 10); } };
 
 const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 const pct = (a) => (a && a[0] ? Math.round((a[1] / a[0]) * 100) : 0);
@@ -270,7 +271,8 @@ export default function QdbPortal({ db: dbKey = 'trivia', topics, topic = null, 
     return start('mix');
   };
   const hubName = picked.size === 1 ? (topics.find((t) => picked.has(t.slug)) || {}).label : picked.size > 1 ? `${picked.size} Topics, Mixed` : `${db.mix}: All ${topics.length} Topics`;
-  const others = QDB_KEYS.filter((k) => k !== dbKey).map((k) => QDBS[k]);
+  // A database not open yet (lib/qdb.js `opens`) is left out of the others' links.
+  const others = QDB_KEYS.filter((k) => k !== dbKey && qdbListed(k, etDay())).map((k) => QDBS[k]);
   const showLanes = topic ? topic.lanes.filter(([l]) => !laneQ || l.toLowerCase().includes(laneQ.toLowerCase())) : [];
   const manyLanes = topic && topic.lanes.length > 12;
   const topicOwn = topic ? (topic.own != null ? topic.own : topic.n) : 0;

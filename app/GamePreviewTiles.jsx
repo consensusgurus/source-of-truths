@@ -97,6 +97,13 @@ const Foodie = () => (
     <path d="M114 10v22M110 10v14a4 4 0 0 0 8 0v-14M114 32v44" className="s3" /><path d="M186 10c-8 6 -8 26 0 28v38" className="s3" /></g>
 );
 // The five Trivia Finale gauntlets (2026-11-23).
+// Hired: an offer letter with its round record, stamped.
+const Hired = () => (
+  <g><rect x={118} y={8} width={58} height={70} rx={3} className="w" /><rect x={126} y={16} width={30} height={4} rx={2} className="d" /><rect x={126} y={25} width={40} height={6} rx={2} className="m" />
+    <rect x={126} y={40} width={6} height={6} rx={1} className="d" /><rect x={134} y={40} width={6} height={6} rx={1} className="d" /><rect x={142} y={40} width={6} height={6} rx={1} className="d" /><rect x={150} y={40} width={6} height={6} rx={1} className="sm" />
+    <rect x={126} y={50} width={6} height={6} rx={1} className="d" /><rect x={134} y={50} width={6} height={6} rx={1} className="d" /><rect x={142} y={50} width={6} height={6} rx={1} className="sm" /><rect x={150} y={50} width={6} height={6} rx={1} className="sm" />
+    <rect x={146} y={60} width={26} height={11} rx={2} className="m" transform="rotate(-12 159 65)" /></g>
+);
 const Music = () => (
   <g><path d="M134 16l44 -8v40" className="s3" /><path d="M134 16v44" className="s3" />
     <ellipse cx={124} cy={62} rx={12} ry={9} className="d" /><ellipse cx={168} cy={50} rx={12} ry={9} className="m" /></g>
@@ -830,7 +837,7 @@ const Ping = () => (
 export const TILE_BY_KEY = {
   // Trivia
   sport: Sport, biz: Biz, script: Script, quotes: Quotes, sci: Sci, pulse: Pulse, gene: Gene, orbit: Orbit, eureka: Eureka, bond: Bond,
-  foodie: Foodie, music: Music, books: Books, nature: Nature, tech: Tech, myth: Myth, art: Art, history: History, streak: Streak, deep: Deep, dating: Dating, extra: Extra, bracket: Bracket, listed: Listed,
+  foodie: Foodie, music: Music, books: Books, nature: Nature, tech: Tech, myth: Myth, hired: Hired, art: Art, history: History, streak: Streak, deep: Deep, dating: Dating, extra: Extra, bracket: Bracket, listed: Listed,
   clade: Clade, dossier: Dossier, bacon: Bacon, resume: Resume, filing: Filing, redact: Redact, niche: Niche, potluck: Potluck, mixtape: Mixtape, mishmash: Mishmash,
   focus: Focus, thread: Thread, slot: Slot, circa: Circa, tape: Tape,
   // Geography

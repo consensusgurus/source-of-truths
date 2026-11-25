@@ -99,6 +99,7 @@ const GAMES = [
   { key: 'nature', href: '/nature', name: 'Nature', tag: 'Animals, plants, and weather, one life', img: '/games/btn-nature.png' },
   { key: 'tech', href: '/tech', name: 'Tech', tag: 'Internet, games, and gadgets, one life', img: '/games/btn-tech.png' },
   { key: 'myth', href: '/myth', name: 'Myth', tag: 'Myths, legends, and faiths, one life', img: '/games/btn-myth.png' },
+  { key: 'hired', href: '/hired', name: 'Hired', tag: 'One job a day, five rounds', img: '/games/btn-hired.png' },
   { key: 'history', href: '/history', name: 'History', tag: 'History, one life', img: '/games/btn-history.png' },
   { key: 'potluck', href: '/potluck', name: 'Potluck', tag: 'Three quizzes, one score', img: '/games/btn-potluck.png' },
   { key: 'mixtape', href: '/mixtape', name: 'Mixtape', tag: 'Three more quizzes, one score', img: '/games/btn-mixtape.png' },
@@ -281,7 +282,7 @@ const CATEGORIES = [
   // list and cannot drift apart.
   { key: 'sudoku', label: 'Sudoku', keys: ['suds', 'sudstoo', 'sixes', 'sixestoo', 'towers', 'quilt', 'cages', 'coop', 'sando', 'snack', 'mercury', 'mercurytoo', 'fever', 'arrow', 'dart', 'polka', 'dot', 'knight', 'knighttoo', 'diag', 'diagtoo', 'frame', 'trim', 'rim', 'rimtoo', 'lip', 'liptoo', 'giant', 'gianttoo', 'colossus', 'mammoth', 'sumo', 'bout', 'window', 'windowtoo', 'five', 'racecar', 'racecartoo', 'kayak', 'kayaktoo', 'whittle'] },
   { key: 'crowd', label: 'Crowd Psychology', keys: ['herd', 'poll', 'outwit', 'outrank', 'feud'] },
-  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'music', 'books', 'nature', 'tech', 'myth', 'potluck', 'mixtape', 'mishmash', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'filing', 'redact', 'dating', 'extra', 'carmen'] },
+  { key: 'trivia', label: 'Trivia', keys: ['deep', 'streak', 'atlas', 'sport', 'biz', 'script', 'quotes', 'sci', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'art', 'history', 'foodie', 'music', 'books', 'nature', 'tech', 'myth', 'hired', 'potluck', 'mixtape', 'mishmash', 'thread', 'slot', 'bracket', 'listed', 'niche', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'filing', 'redact', 'dating', 'extra', 'carmen'] },
   // Logic lost its photo, observation and moving-piece puzzles to Visual, and
   // End Game and Cards merged into Table Games (owner, 2026-11-12).
   { key: 'logic', label: 'Logic', keys: ['alibi', 'jester', 'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'etch', 'hedge', 'defuse', 'sudoclue', 'snug', 'connect', 'mop', 'mow', 'plow', 'chef', 'seated', 'bag', 'errands', 'dash', 'bot', 'duet', 'lamps', 'judges', 'fib', 'suffice', 'ergo', 'docket', 'plot'] },

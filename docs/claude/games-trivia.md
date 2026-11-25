@@ -1027,3 +1027,44 @@ cutoffs, 125 asked). It has no combined-with-the-Gauntlet board; that stays the 
   has questions of its own, its page prints those (`samples`).
 - Also fixed in this pass: the Trivia Database's "today" link for the Encore pointed at `/encore`
   (the crossword), now `/triviaencore`.
+
+## Hired (`/hired`): the daily job interview, and the Careers Database (owner, 2026-11-25)
+
+Owner: ideas for "multiple choice gauntlets ... job skills" led to Hired, "one daily puzzle" that
+"resembles a gauntlet", whose questions "fit into our databases". After the first mockup mixed five
+fields in one day ("why would you be hired for a job on different fields?") the ruling became
+**one job a day**, and "they can be very niche, like Excel tutor. Or a Chef."
+
+- **The day:** one job (`PUZZLES[n].job`, a key of `JOBS` in `app/hired/offer.js`), the same for
+  everyone. Twenty questions in that job's field, five rounds of four: Phone Screen, Technical, Case
+  Study, Panel, Final Round, tier 1 to 5. Twenty seconds a question. **A miss ends its round, not the
+  interview**: the rest of the round is skipped (`res` -1) and the next round starts. Score = right
+  answers (out of 20), ties by time; only time on questions counts (`ms`), the hand-offs are paused.
+- **Exact gauntlet look** (owner: "same style of MC play as the existing gauntlets", "exact gauntlet
+  appearance for questions"): every question is `GauntletStage`, each round on its own ladder step
+  (`ROUND_RAMP`). A miss plays the Spotlight and then the run's own hand-off (`recap`) into the next
+  round, or on round 5 into the answer; a clean round ends on the run's `GauntletBetween` Up next
+  screen. Nothing hand-drawn for the play.
+- **The ending is an offer letter** (`app/hired/HiredOffer.jsx`): the day's job at a level from the
+  total (`levelFor`: 0-4, 5-9, 10-14, 15-19, 20), the title from the job's five-rung `ladder`, the
+  salary between the job's `pay` floor and ceiling by score, plus up to a tenth more for speed once a
+  run is half right. 20 of 20 adds the corner office; 0 gets a polite no-thanks letter. Then the usual
+  LoftFinish; "Your offer letter" reopens it.
+- **Bank:** `scripts/hired-fields/pools-{a,b,c,d}.mjs` (one pool per field, entries
+  `[tier, subtopic, q, answer, [3 wrong]]`), `scripts/gen-hired.mjs` (SCHEDULE = the job per day,
+  append only; refuses to change a live day), `scripts/verify-hired.mjs`. Launch bank 11-25..12-15:
+  twelve jobs (Accountant, Software Developer, Chef, Physician, Excel Tutor, Financial Analyst,
+  Engineer, Bartender, Marketing Manager, Lab Chemist, General Contractor, Pilot). **A new niche job**
+  = a pool (20 questions per interview, four per tier), a `JOBS` entry, a `POOLS` line, days in
+  `SCHEDULE`, and a Careers Database topic.
+- **The Careers Database** (`/career-questions`, `QDBS.careers` in lib/qdb.js): one topic per field,
+  each taking ONE field of the `hired` bank (`only: { hired: '<field>' }`), subtopics from each
+  question's `sub`. Hired's chemistry is also in the Science Database's Chemistry topic (folded into
+  Bond's two lanes). `BANK_DB.hired` points at the hub. Because questions join the day after they
+  run, the database has `opens: '2026-12-02'`: until then it stays out of the sitemap and the other
+  databases' links (`qdbListed`); its pages work and Hired's About and end card link to it. **Add it
+  to the footer, the rail and StageToday's database lists once it opens.**
+- Share card `public/og/hired.png` (a desk, the offer letter, the stamp) and
+  `public/og/career-questions.png`, both from `scripts/bake-hired-og.mjs` (HAND_BAKED). Wiring:
+  `scripts/wire-hired.mjs`. Premiere pop-up 11-25 to 12-02 (one, staggered like the others). No
+  Sunday Edition.
