@@ -155,8 +155,9 @@ function vibrate(p) { try { if (typeof navigator !== 'undefined' && navigator.vi
 
 // i: the question being faced (0..19). res[k]: 1 right, 0 missed, -1 skipped
 // (a miss ends its round). card: the hand-off before round floor(i/4) is up.
-// ms: time spent on questions only.
-const freshState = () => ({ v: 1, i: 0, res: [], status: 'playing', t0: null, tEnd: null, ms: 0, card: false });
+// ms: time spent on questions only. picks[k]: the choice taken on a miss
+// (null when the clock ran out), for the answer list at the end.
+const freshState = () => ({ v: 1, i: 0, res: [], picks: [], status: 'playing', t0: null, tEnd: null, ms: 0, card: false });
 const rightOf = (res) => (res || []).filter((x) => x === 1).length;
 
 // The record under the board: one row per round, four pips.
@@ -169,6 +170,55 @@ export function RoundPips({ res, ink = 'currentColor', size = 13, gap = 6, label
           {[0, 1, 2, 3].map((k) => {
             const v = (res || [])[r * PER_ROUND + k];
             return <span key={k} aria-hidden="true" style={{ width: size, height: size, borderRadius: 3, boxSizing: 'border-box', border: `1px solid ${ink}`, background: v === 1 ? ink : v === 0 ? `color-mix(in srgb, ${ink} 30%, transparent)` : 'transparent' }} />;
+          })}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// EVERY ANSWER AT THE END (owner, 2026-11-26: "Does hired allow users to see
+// answers to all questions at end? It should."). All twenty questions, round by
+// round, each with its right answer marked, what the player picked on a miss,
+// and "Not asked" for the questions a miss skipped. Shown only once the
+// interview is over (the day's answers are public by then: the past days feed
+// the Careers Database).
+function AnswerList({ questions, res, picks, ink, faded, line, surf, good, bad }) {
+  const rows = (questions || []).slice(0, TOTAL_Q);
+  if (!rows.length) return null;
+  return (
+    <div className="hr-ans" style={{ background: surf, border: `1px solid ${line}`, borderRadius: 12, padding: '14px 16px 6px', color: ink, marginBottom: 12, textAlign: 'left' }}>
+      <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 2 }}>Every answer</div>
+      <div style={{ fontSize: 12.5, fontWeight: 600, color: faded, marginBottom: 6 }}>All {TOTAL_Q} questions, with the right answer for each.</div>
+      {ROUND_NAMES.map((nm, r) => (
+        <div key={nm} style={{ marginTop: 10 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: faded, paddingBottom: 4 }}>Round {r + 1} &middot; {nm}</div>
+          {rows.slice(r * PER_ROUND, (r + 1) * PER_ROUND).map((q, j) => {
+            const k = r * PER_ROUND + j;
+            const v = (res || [])[k];
+            const pick = (picks || [])[k];
+            const verdict = v === 1 ? { t: 'Right', c: good }
+              : v === 0 ? { t: pick == null ? 'Out of time' : 'Missed', c: bad }
+              : { t: 'Not asked', c: faded };
+            return (
+              <div key={q.id || k} style={{ borderTop: `1px solid ${line}`, padding: '10px 0' }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: faded, minWidth: 18, fontVariantNumeric: 'tabular-nums' }}>{k + 1}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, lineHeight: 1.4 }}>{q.q}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.45, marginTop: 4 }}>
+                      <span style={{ color: good }}>&#10003;</span> {q.choices[q.correct]}
+                    </div>
+                    {v === 0 && pick != null && pick !== q.correct && (
+                      <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.45, color: faded, marginTop: 2 }}>
+                        You said: {q.choices[pick]}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: verdict.c, whiteSpace: 'nowrap' }}>{verdict.t}</span>
+                </div>
+              </div>
+            );
           })}
         </div>
       ))}
@@ -424,9 +474,10 @@ export default function HiredClient({ puzzles = [], questionsByNum = {}, forceNu
     vibrate(HAPT.wrong);
     const r = Math.floor(cur.i / PER_ROUND);
     const res = cur.res.slice(); res[cur.i] = 0;
+    const picks = (cur.picks || []).slice(); picks[cur.i] = k == null ? null : k;
     for (let j = cur.i + 1; j < (r + 1) * PER_ROUND; j++) res[j] = -1;
     const nextI = (r + 1) * PER_ROUND;
-    const base = { ...cur, res, ms: cur.ms + spent() };
+    const base = { ...cur, res, picks, ms: cur.ms + spent() };
     setHold({ q: qq, i: cur.i, r, pick: k });
     if (nextI >= TOTAL_Q) {
       const done = { ...base, status: rightOf(res) === TOTAL_Q ? 'won' : 'lost', tEnd: Date.now(), card: false };
@@ -641,7 +692,14 @@ export default function HiredClient({ puzzles = [], questionsByNum = {}, forceNu
               </div>
             )}
 
-            {LOFT && !playing && !offerOpen && (
+            {!LOFT && !playing && <AnswerList questions={QUESTIONS} res={g.res} picks={g.picks} ink={INK} faded={FADED} line={SURF_B} surf={SURF} good={STAGE ? 'var(--stg-good,#6ee7b7)' : COLORS.green} bad={STAGE ? 'var(--stg-bad,#fb7185)' : '#b91c1c'} />}
+            {LOFT && !playing && !offerOpen && revealed && (
+              <>
+                <AnswerList questions={QUESTIONS} res={g.res} picks={g.picks} ink={INK} faded={FADED} line={SURF_B} surf={SURF} good={STAGE ? 'var(--stg-good,#6ee7b7)' : COLORS.green} bad={STAGE ? 'var(--stg-bad,#fb7185)' : '#b91c1c'} />
+                <button type="button" className={STAGE ? 'stf-hideboard' : 'loft-showopts'} onClick={() => setRevealed(false)}>&#8630; Back to results</button>
+              </>
+            )}
+            {LOFT && !playing && !offerOpen && !revealed && (
               <LoftFinish
                 name="Hired"
                 catRank={catRank}
@@ -663,7 +721,8 @@ export default function HiredClient({ puzzles = [], questionsByNum = {}, forceNu
                   .map((p) => ({ num: p.num, dateLabel: p.dateLabel, sunday: false, href: `/hired?p=${p.num}`, done: !!(stats && stats.rec && stats.rec[p.num]), score: (stats && stats.rec && stats.rec[p.num]) ? stats.rec[p.num].s : null }))}
                 options={[
                   { label: copied ? 'Copied' : (shareCta || 'Share'), sub: 'Your offer, no spoilers', kind: 'gold', onClick: copyShare },
-                  { tone: 'board', label: 'Your offer letter', sub: `${offer.title}, ${JOB.name} interview`, onClick: () => setOfferOpen(true) },
+                  { tone: won ? 'board' : 'reveal', label: 'See every answer', sub: 'All twenty questions, with the right answers', onClick: () => { setRevealed(true); setTimeout(() => { try { const el = document.querySelector('.hr-ans'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }, 60); } },
+                  { label: 'Your offer letter', sub: `${offer.title}, ${JOB.name} interview`, onClick: () => setOfferOpen(true) },
                   prevPuzzle && { tone: 'another', label: 'Play another Hired', sub: `No. ${prevPuzzle.num}, ${(JOBS[prevPuzzle.job] || JOB).name}`, href: `/hired?p=${prevPuzzle.num}` },
                   nextUp && { tone: 'similar', label: 'Play similar', sub: `${nextUp.name} · ${nextUp.tag}`, href: nextUp.href },
                   { tone: 'replay', label: 'Replay', sub: 'This interview again, unscored', onClick: resetGame },
