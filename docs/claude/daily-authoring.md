@@ -1299,8 +1299,8 @@ week inventory to fill earlier days and create new harder thursdays and other da
   3-letter answers are the limit (none of the common 3-letter words is missing from the banks), so Encore stays at Dec 12
   until the owner rules on the answer cap or the Sunday shapes.
 - **Picks** is the binding constraint for Price Check: a day deals 9 items, and about 4 of them must be curator rows (retail list
-  prices or auction lots priced near the cars). The pool ran dry of curator rows at Dec 8. Since 2026-11-22 Picks
-  rows need no photo, so a restock is a price read per row.
+  prices or auction lots priced near the cars). The pool ran dry of curator rows at Dec 8. Picks rows need a Commons
+  photo again (owner, 2026-11-26; the 2026-11-22 no-photo window is over).
 
 ## Scales: the daily balance-scale weights puzzle (launched 2026-11-26)
 

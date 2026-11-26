@@ -30,8 +30,8 @@ function picksItem(ref) {
   const hit = ROWS.get(ref);
   if (!hit) return null;
   const sh = shipFor(hit[0], hit[1]);
-  // Picks shows no photos (owner, 2026-11-22): names, facts and prices only.
-  return { name: sh.name, cat: sh.cat, facts: (sh.facts || []).slice(0, 2), price: sh.price, asOfShort: sh.asOfShort, href: sh.href };
+  // Picks photos are back (owner, 2026-11-26, reversing 2026-11-22).
+  return { name: sh.name, cat: sh.cat, img: sh.imgs && sh.imgs[0] ? sh.imgs[0].src : '', fit: sh.fit, facts: (sh.facts || []).slice(0, 2), price: sh.price, asOfShort: sh.asOfShort, credit: sh.credit, creditUrl: sh.creditUrl, href: sh.href };
 }
 function picksDay(p) {
   const day = { start: picksItem(p.start), chain: p.chain.map(picksItem), ou: { item: picksItem(p.ou.ref), line: p.ou.line }, tags: p.tags.map(picksItem), tagOrder: p.tagOrder };

@@ -205,7 +205,7 @@ export default function SundayLedger({ light = false, withTq = (h) => h }) {
         {m ? (
           <span className="sld-figs">
             <span className="sld-pts"><strong>{m.points.toLocaleString()}</strong> pts</span>
-            <span className="sld-gms"><strong>{m.games}</strong> games</span>
+            <span className="sld-gms"><strong>{m.games}</strong> puzzles</span>
             <span><strong>{m.daysPlayed}</strong><span className="sld-dl"> of 7 days</span><span className="sld-ds">/7</span></span>
           </span>
         ) : err ? (

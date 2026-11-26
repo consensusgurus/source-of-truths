@@ -95,7 +95,7 @@ const RUN_TAG = {
   dojo: 'Three sudokus, one score, a belt',
   dojocolor: 'Three color sudokus, one score, a belt',
   crossed: 'Four crosswords, speed decides your rank',
-  room: 'The crowd games, one read of the room',
+  room: 'The crowd puzzles, one read of the room',
   spacecadet: 'Five spatial puzzles, one clock',
   duediligence: 'A chart, a filing and a resume, fewest clues',
   eagleeye: 'Five visual puzzles, speed and accuracy',
@@ -546,7 +546,7 @@ export default function EntryDoor({ onPick }) {
                     {x.short ? <><span className="ent-cl">{x.name}</span><span className="ent-cs">{x.short}</span></> : x.name}
                   </span>
                   <span className="ent-meta">
-                    <span>{x.n ? `${x.n} games` : ''}</span>
+                    <span>{x.n ? `${x.n} puzzles` : ''}</span>
                     <span className="ent-go" aria-hidden="true">→</span>
                   </span>
                 </button>
