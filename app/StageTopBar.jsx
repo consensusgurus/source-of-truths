@@ -19,7 +19,7 @@ import { homeBackHref, markBackNav } from '@/lib/home-back';
 
 // `allLooks` is for the gauntlet and run stages, which keep all five looks;
 // every other page flips between light with color and dark with color.
-export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null, allLooks = false, onHelp = null, helpHere = null, nav = null, share = true, dot = null }) {
+export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentColor', title = null, sub = null, allLooks = false, onHelp = null, helpHere = null, nav = null, share = true, dot = null, flow = false }) {
   // SIZES MATCH THE HOME'S HEADER (owner, 2026-10-28): 34px controls, 13px type.
   // THE NEW STANDARD (owner, 2026-10-28): the header carries the way back, the
   // game's name with its colour dot, Share and the look switch, nothing else.
@@ -115,6 +115,17 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
         const mid = need <= br.width - 2 * side;
         if (bar.classList.contains('stb-mid') !== mid) bar.classList.toggle('stb-mid', mid);
       } else if (bar.classList.contains('stb-mid')) bar.classList.remove('stb-mid');
+      // FLOW (owner, 2026-11-26, the CircuitFrame pages: hub and article
+      // names are longer than game names). On a phone a name that cannot fit
+      // between the equal side margins takes the whole space between the back
+      // button and the switch instead of ending in an ellipsis. Game pages do
+      // not pass `flow`, so their names stay on the true centre (2026-10-30).
+      if (flow && phone && tx && h1) {
+        const dotEl = bar.querySelector('.stb-dot');
+        const needP = h1.scrollWidth + (dotEl ? dotEl.offsetWidth + 5 : 0);
+        const tight2 = needP > br.width - 2 * side;
+        if (bar.classList.contains('stb-flow') !== tight2) bar.classList.toggle('stb-flow', tight2);
+      }
       // Shrink to fit before the ellipsis: 19px down to 13px, then truncate.
       if (!h1) return;
       h1.style.fontSize = '';
@@ -130,7 +141,7 @@ export default function StageTopBar({ look, onFlip, href = '/', ink = 'currentCo
     try { ro = new ResizeObserver(measure); ro.observe(bar); Array.from(bar.children).forEach((c) => ro.observe(c)); } catch (e) {}
     try { document.fonts && document.fonts.ready.then(measure); } catch (e) {}
     return () => { try { ro && ro.disconnect(); } catch (e) {} };
-  }, [title, share, tight, nav, shareMsg]);
+  }, [title, share, tight, nav, shareMsg, flow]);
   const next = LOOK_NAMES[allLooks ? nextLook(look) : nextMainLook(look)];
   return (
     <div ref={barRef} className={'stb' + (title ? ' has-t' : '')} style={{ color: ink }}>
@@ -212,6 +223,8 @@ const CSS = `
   .stb.has-t .stb-tx > *{max-width:100%;pointer-events:auto;}
   .stb.has-t .stb-t{justify-content:center;max-width:100%;gap:5px;}
   .stb.has-t .stb-t h1{font-size:clamp(15px, 4.9vw, 19px);}
+  .stb.has-t.stb-flow .stb-tx{position:static;transform:none;left:auto;right:auto;flex:1;min-width:0;padding:0 8px;}
+  .stb.has-t.stb-flow .stb-tx + *{margin-left:0;}
   .stb.has-t .stb-tx + *{margin-left:auto;}
   .stb .stb-share{width:34px;padding:0;}
   .stb .stb-share .stb-share-l{display:none;}

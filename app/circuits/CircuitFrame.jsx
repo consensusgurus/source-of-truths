@@ -25,41 +25,54 @@
 // Both registers are published as --stg-acc-dk / --stg-acc-lt and globals.css
 // picks one, exactly as every daily client does: an inline style beats a
 // stylesheet, so a root setting --stg-acc directly could never be re-themed.
-import { BrandFit } from '@/lib/use-brand-fit';
 import { cycleSiteLook, useStageLook } from '@/lib/stage-look';
 import StageTopBar from '../StageTopBar';
-import { useStageTheme, useThemeQs, useThemeHint, useThemeIntro, openLook } from '@/lib/stage-theme';
-import ThemePop from '../ThemePop';
-import { categoryColor, categoryColorLight, categoryOnrampLight, categoryAccentInkLight } from '@/lib/category-ramp';
-import MindLoftMark from '../MindLoftMark';
+import { useStageTheme, useThemeQs } from '@/lib/stage-theme';
+import { categoryColor, sitePastelHex } from '@/lib/category-ramp';
 import StageFooter from '../StageFooter';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
 const SANS = 'Manrope, ui-sans-serif, system-ui, -apple-system, sans-serif';
 
-// `bar` ({ title, sub }) swaps the cap for the one-line StageTopBar every
-// puzzle and run page wears (owner, 2026-11-07: "the header needs to match
-// other pages and not wrap to two lines"). Build a Run and /run use it.
+// THE HEADER IS ALWAYS THE ONE-LINE StageTopBar (owner, 2026-11-26, on the
+// cognitive health hub: "This header format does not match our other pages ...
+// Logo should be a back button with arrow, all of this should fit in one row.
+// No need to link to quizzes. Just logo/name - page title - light dark
+// toggle"). Until then only pages passing `bar` got it (2026-11-07: Build a
+// Run, /run, About Me); every other frame page drew the old two-row cap with
+// Today and Quizzes. Now `bar` ({ title, sub, dot }) only overrides the title,
+// which otherwise is `label`. No Share on these pages, per the same ruling.
+//
+// THE ACCENT IS THE SITE PASTEL ON THE LIGHT PAGE (owner, same day: "These
+// pages also use old colors"). With no category the light register fell
+// through to the deep sky #0369a1, the retired dark blue, and with one it took
+// the deep light-ramp step. Both are replaced: the fill is the step mixed with
+// white (sitePastelHex, what the home tiles wear), text on it is dark ink, and
+// accent-as-text is the page ink, since a pastel cannot be read as type on
+// white. The dark register keeps the raw step, as before.
 export default function CircuitFrame({ cat = null, label = 'Runs', progress = null, wide = false, bar = null, children }) {
   const [theme, setTheme] = useStageTheme();
   const [look] = useStageLook();
   const tq = useThemeQs();
-  const hint = useThemeHint();
-  const intro = useThemeIntro();
   const withTq = (href) => (tq ? href + (href.includes('?') ? tq : `?${tq.slice(1)}`) : href);
 
   // No category means no accent override, so the page falls through to the
   // stage's own default sky. That is the right answer for the index, which
   // belongs to all fifteen circuits and therefore to all nine categories.
-  const acc = cat ? {
-    '--stg-acc-dk': categoryColor(cat),
-    '--stg-acc-lt': categoryColorLight(cat),
-    '--stg-onramp-lt': categoryOnrampLight(cat),
-    '--stg-acc-ink-lt': categoryAccentInkLight(cat),
-  } : null;
+  const raw = cat ? categoryColor(cat) : '#7dd3fc';
+  const acc = {
+    '--stg-acc-dk': raw,
+    '--stg-acc-lt': sitePastelHex(raw),
+    '--stg-onramp-lt': '#0b1220',
+    '--stg-acc-ink-lt': 'var(--stg-ink)',
+  };
+  // Titles are Title Case like every other header (owner, 2026-10-19); some
+  // callers pass a sentence-case label ("Logic puzzles").
+  const titleCase = (t) => String(t || '').replace(/(^|[\s/·-])([a-z])/g, (m, a, c) => a + c.toUpperCase()).replace(/\b(And|Or|The|Of|In|A|To|By|For|On|At)\b(?!$)/g, (w, x, i) => (i === 0 ? w : w.toLowerCase()));
+  const top = { title: titleCase(label), sub: null, dot: raw, ...(bar || {}) };
 
   return (
-    <div className="cfr stage-page" data-stage-theme={theme} style={acc || undefined}>
+    <div className="cfr stage-page" data-stage-theme={theme} style={acc}>
       {/* ⚠️ dangerouslySetInnerHTML, NOT <style dangerouslySetInnerHTML={{ __html: CSS }} />. React ESCAPES a
           text child on the server, so every apostrophe in the stylesheet ships
           as &#x27; — and <style> is an HTML raw-text element, so nothing decodes
@@ -74,58 +87,16 @@ export default function CircuitFrame({ cat = null, label = 'Runs', progress = nu
           getComputedStyle reported grid-template-areas: none. */}
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
-      {/* THE CAP. One line: the mark and the words, what this page is, and the
-          ways out at the right edge. No masthead and no stat bar, which is the
-          stage's first rule and the specific thing that was wrong here. */}
-      {bar ? (
-        <div className="cfr-stb">
-          <StageTopBar look={look} onFlip={() => cycleSiteLook()} ink="var(--stg-ink)" href={withTq('/')} title={bar.title || null} sub={bar.sub || null} dot={bar.dot || '#7dd3fc'} />
-        </div>
-      ) : null}
-      <div className="cfr-cap" style={bar ? { display: 'none' } : undefined}>
-        <div className="cfr-id">
-          <BrandFit><a className="cfr-brand" href={withTq('/')}>
-            <MindLoftMark size={20} ink="var(--stg-ink)" accent="var(--stg-brand,#7dd3fc)" />
-            <b>Mind <em>Loft</em></b>
-          </a></BrandFit>
-          <span className="cfr-lab">{label}</span>
-        </div>
-        <a className="cfr-cx cfr-t" href={withTq('/')}>Today</a>
-        <a className="cfr-cx cfr-q" href={withTq('/') + '#sty-quizzes'}>Quizzes</a>
-        <button
-          type="button"
-          className={`cfr-cx cfr-tg${hint ? ' hint' : ''}`}
-          data-look="" onClick={(e) => cycleSiteLook()}
-          aria-haspopup="dialog"
-          aria-label="Page look: light or dark, and how much color"
-          title="Page look"
-        >
-          {theme === 'light' ? (
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-              strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-              <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
-            </svg>
-          ) : (
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-              strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4" />
-            </svg>
-          )}
-          {intro ? <span className="stg-tlab">{intro === 'light' ? 'Light mode' : 'Dark mode'}</span> : null}
-        </button>
-        {/* THE EXPLICIT POINTER at the switch above, first visit only. It is
-            the cap's LAST CHILD on purpose: it reads its own parent to find
-            the glyph and measure itself against it. */}
-        <ThemePop />
+      {/* THE CAP: the one-line bar every puzzle and run page wears. */}
+      <div className={wide ? 'cfr-stb cfr-stb-wide' : 'cfr-stb'}>
+        <StageTopBar look={look} onFlip={() => cycleSiteLook()} ink="var(--stg-ink)" href={withTq('/')} title={top.title || null} sub={top.sub || null} dot={top.dot} share={false} flow />
       </div>
 
-      {/* The hairline reads the same as it does on the home: how much of this
-          page's run is behind you. Drawn at zero as an empty track rather than
-          hidden, so the cap does not change height when the fetch lands. */}
-      <div className="cfr-prog" style={bar ? { display: 'none' } : undefined}>
-        <span style={{ width: `${Math.max(0, Math.min(1, progress || 0)) * 100}%` }} />
-      </div>
+      {/* How much of this page's run is behind you, on the pages that pass it
+          without their own bar (circuits, IQ tests). */}
+      {progress != null && !bar ? (
+        <div className="cfr-prog"><span style={{ width: `${Math.max(0, Math.min(1, progress || 0)) * 100}%` }} /></div>
+      ) : null}
 
       <div className={wide ? 'cfr-wrap cfr-wide' : 'cfr-wrap'}>{children}</div>
 
@@ -136,7 +107,9 @@ export default function CircuitFrame({ cat = null, label = 'Runs', progress = nu
 
 // NOTE: this block is a JS template literal, so no backticks in the comments.
 const CSS = `
-.cfr-stb{max-width:720px;margin:0 auto;box-sizing:border-box;padding:max(12px, var(--safe-top, 0px)) 14px 6px;}
+.cfr-stb{max-width:1000px;margin:0 auto;box-sizing:border-box;padding:max(12px, var(--safe-top, 0px)) 22px 6px;}
+.cfr-stb-wide{max-width:1240px;}
+@media (max-width:640px){.cfr-stb{padding-left:14px;padding-right:14px;}}
 
 .cfr{min-height:100vh;background:var(--stg-ground);color:var(--stg-ink);
   font-family:${SANS};-webkit-font-smoothing:antialiased;}

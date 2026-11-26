@@ -191,7 +191,7 @@ export default function DailyFiveSummary() {
   ];
 
   return (
-    <CircuitFrame label="Run summary">
+    <CircuitFrame label="Run Summary">
     <div className="d5s">
       <style dangerouslySetInnerHTML={{ __html: `
         .d5s{max-width:860px;margin:0 auto;padding:10px 18px 70px;

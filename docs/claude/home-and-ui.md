@@ -3119,3 +3119,19 @@ the new-game card and every other self-opening card stand down for that visit wi
 opens 3.5s after load. Never mid game (if a game is already under way it waits for the post-game
 gate), never in a run, never over the entry door (a door visit is left alone; it takes the next
 visit). `?grow=1` previews it. Light and dark registers follow `readStageTheme()`.
+
+## CircuitFrame pages wear the one-line bar and the site pastels (owner, 2026-11-26)
+
+Seen on /cognitive-health: "This header format does not match our other pages ... Logo should be a
+back button with arrow, all of this should fit in one row. No need to link to quizzes. Just logo/name -
+page title - light dark toggle", then "These pages also use old colors". Every page on
+app/circuits/CircuitFrame.jsx (circuits, category pages, archive, tests, guides, cognitive health,
+Which Is Closer, IQ tests, Polymath, About Me, Build Your Day...) now draws StageTopBar: back arrow
+with the mark and name, the page title (the `label`, Title Cased, or `bar.title`), the look switch. No
+Today, no Quizzes, no Share. The old two-row `.cfr-cap` is gone. StageTopBar's new `flow` prop (frame
+pages only) lets a phone title too long for the true centre use the whole space between the pill and
+the switch rather than end in an ellipsis; game pages keep the centred rule.
+
+Colour: on the light page the frame's accent is `sitePastelHex(categoryColor(cat))` (sky with no
+category), dark ink on it, and accent-as-text is the page ink. The deep light-ramp steps and the
+#0369a1 fallback (the retired dark blue) no longer reach these pages. Dark register unchanged.

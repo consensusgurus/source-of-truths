@@ -133,7 +133,7 @@ export default function CircuitLanding({ circuit, games }) {
   return (
     <CircuitFrame
       cat={circuit.cat}
-      label={marquee ? 'The Daily Five' : `${name} circuit`}
+      label={marquee ? 'The Daily Five' : name}
       progress={n ? done / n : 0}
     >
     <div className="clp">
