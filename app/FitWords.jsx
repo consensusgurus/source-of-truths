@@ -25,13 +25,20 @@ export default function FitWords({ as: Tag = 'span', className, min = 22, childr
       const avail = parent.clientWidth - parseFloat(ps.paddingLeft || 0) - parseFloat(ps.paddingRight || 0);
       if (!(avail > 0)) return;
       const base = parseFloat(getComputedStyle(el).fontSize);
+      // max-width is lifted while measuring (2026-11-25, Hired's "Technic / al"):
+      // every title that uses FitWords also sets max-width:100%, which capped
+      // the min-content reading at exactly the available width, so the longest
+      // word never measured wider than its box and the title never shrank.
       const keepW = el.style.width;
       const keepD = el.style.display;
+      const keepM = el.style.maxWidth;
       el.style.display = 'inline-block';
       el.style.width = 'min-content';
+      el.style.maxWidth = 'none';
       const word = el.offsetWidth;
       el.style.width = keepW;
       el.style.display = keepD;
+      el.style.maxWidth = keepM;
       if (word > avail) el.style.fontSize = `${Math.max(min, Math.floor(base * (avail / word) * 0.97))}px`;
     };
     fit();

@@ -20,7 +20,7 @@
 // year to year; US practice where it matters. No Sunday Edition.
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import GauntletStage from '../GauntletStage';
+import GauntletStage, { REVEAL_DELAY } from '../GauntletStage';
 import { rampFor } from '@/lib/circuits';
 import { useHoverStale } from '@/lib/hover-armed';
 import { useSearchParams } from 'next/navigation';
@@ -77,6 +77,8 @@ export const roundGround = (r) => rampFor(ROUND_RAMP[r] ?? r);
 const SECTIONS = ROUND_NAMES.map((name, r) => ({ key: `r${r + 1}`, name, slot: ROUND_RAMP[r] }));
 // The miss hand-off counts down like a run's (RunClient VERDICT_MS), shorter here.
 const VERDICT_MS = 12000;
+// The last miss holds exactly as long as a run's (RunClient REVEAL_DELAY + FINAL_MS).
+const LAST_MISS_MS = REVEAL_DELAY + 3800;
 
 const isIosDevice = () =>
   typeof navigator !== 'undefined' &&
@@ -434,8 +436,8 @@ export default function HiredClient({ puzzles = [], questionsByNum = {}, forceNu
       commit({ ...base, i: nextI, card: true });
     }
     // The Spotlight, then the run's own hand-off: the lit answer grows into
-    // the next round's start button (GauntletStage `recap`), or on the last
-    // round into the answer itself, and moves on by itself or on a tap.
+    // the next round's start button (GauntletStage `recap`) and moves on by
+    // itself or on a tap. After the Final Round the Spotlight only holds.
   }
   // The hand-off from a miss is done: into the next round, or to the offer.
   function endHold() {
@@ -443,6 +445,15 @@ export default function HiredClient({ puzzles = [], questionsByNum = {}, forceNu
     if (gRef.current.status !== 'playing') { setOfferOpen(true); return; }
     startRound();
   }
+  // A Final Round miss stands on the Spotlight for the run's own last-miss
+  // hold (RunClient: REVEAL_DELAY + FINAL_MS), then the offer letter opens.
+  const holdFinal = !!hold && hold.r + 1 >= ROUNDS;
+  useEffect(() => {
+    if (!holdFinal) return undefined;
+    const t = setTimeout(endHold, LAST_MISS_MS);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [holdFinal]);
 
   function shareUrl() { return withRef(`mindloftdaily.com/hired${isTodays ? '' : `?p=${PUZZLE.num}`}`); }
   function shareText() {
@@ -505,14 +516,17 @@ export default function HiredClient({ puzzles = [], questionsByNum = {}, forceNu
           missRight={stageHold ? hold.q.correct : null}
           missPick={stageHold ? hold.pick : null}
           disabled={lock || !!stageHold}
-          recap={stageHold ? (hold.r + 1 >= ROUNDS
-            ? { final: true, eyebrow: 'The answer', autoMs: 5000, onGo: endHold }
-            : { eyebrow: `Up next · Round ${hold.r + 2} of ${ROUNDS}`, goName: ROUND_NAMES[hold.r + 1], goLabel: `Start round ${hold.r + 2}`,
-                sub: `${JOB.name} · four questions`, nextBg: roundGround(hold.r + 1), autoMs: VERDICT_MS, onGo: endHold }) : null}
-          frac={stageHold ? 0 : remainFrac}
+          // THE LAST MISS IS A MISS LIKE ANY OTHER (owner, 2026-11-19, the run
+          // rule, now here too): no big-answer screen after the Final Round,
+          // only the plain Spotlight, held as long as a run holds it, then the
+          // offer letter (the effect beside LAST_MISS_MS).
+          recap={stageHold && hold.r + 1 < ROUNDS
+            ? { eyebrow: `Up next · Round ${hold.r + 2} of ${ROUNDS}`, goName: ROUND_NAMES[hold.r + 1], goLabel: `Start round ${hold.r + 2}`,
+                sub: `${JOB.name} · four questions`, nextBg: roundGround(hold.r + 1), autoMs: VERDICT_MS, onGo: endHold }
+            : null}
+          frac={stageHold ? null : remainFrac}
           hot={!stageHold && remainFrac < 0.25}
-          footer={stageHold
-            ? <>Round over &middot; {(g.res || []).slice(hold.r * PER_ROUND, hold.r * PER_ROUND + PER_ROUND).filter((x) => x === 1).length} of {PER_ROUND} right</>
+          footer={stageHold ? null
             : <>{Math.ceil(remainMs / 1000)}s &middot; Question {(g.i % PER_ROUND) + 1} of {PER_ROUND} &middot; Round {round + 1} of {ROUNDS}</>}
         />
       ) : null}
