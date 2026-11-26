@@ -1022,3 +1022,23 @@ game page keeps "free daily X", so the two never compete.
   130 and were truncated in results; h1s unchanged), and the home title now leads with "Free Daily
   Puzzles". Rule going forward: every search title leads with the words a searcher types, the
   Mind Loft name for the game or run goes last, and nothing runs past 70 characters.
+
+## Mind Loft and Cognitive Health: /cognitive-health (owner, 2026-11-26)
+
+Eleven research articles on puzzles, reading, jigsaws, games, and the brain for kids, adults, and older
+adults, in `lib/cognitive-health.js`, linked from a footer column headed "Mind Loft and Cognitive Health"
+(hub plus seven articles), and the sitemap. Built from the September 2026 researcher outreach list in
+Drive (ACTIVE, COGIT, PROTECT, Rush, cognitive reserve, Lancet), each re-checked against its source, plus
+jigsaw (Fissler 2018, Levine 2012), reading (Sun 2023, Bavishi 2016), kids (chess meta-analysis, ABCD
+video gaming), and games (Lothian 1936, ASPREE 2023).
+
+- **Honesty rule, binding:** no claim that Mind Loft or any puzzle prevents, slows, or treats anything;
+  every finding names its design (trial or association); null results get equal weight; every article
+  ends in the not-medical-advice note and lists its sources. Never name the institutions of Mind Loft's
+  own research conversations.
+- `node scripts/verify-cognitive-health.mjs` is the gate: limits, sources, links, the footer matching
+  `FOOTER_ARTICLES`, and a claim-word scan (prevent, cure, protect, boost...) that fails any sentence
+  without a negation or hedge.
+- The footer column is written out in app/Footer.jsx, not imported, because Footer ships in every page's
+  client bundle. Change the labels there and in `FOOTER_ARTICLES` together.
+- A new article is one entry. Bump `COGNITIVE_HEALTH_UPDATED` when the copy changes.

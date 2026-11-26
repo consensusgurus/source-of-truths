@@ -69,6 +69,24 @@ export const FOOTER_COLS = [
       { label: 'Community Leaderboard', href: '/quizzes/community' },
     ],
   },
+  // MIND LOFT AND COGNITIVE HEALTH (owner, 2026-11-26): research articles on
+  // puzzles, reading, jigsaws, games, and the brain (lib/cognitive-health.js).
+  // Written out here, not imported, because this footer ships to every page's
+  // client bundle and the articles are long. Labels and order must match
+  // FOOTER_ARTICLES; scripts/verify-cognitive-health.mjs checks it.
+  {
+    head: 'Mind Loft and Cognitive Health',
+    links: [
+      { label: 'All Articles', href: '/cognitive-health' },
+      { label: 'Do Puzzles Keep Your Brain Sharp?', href: '/cognitive-health/do-puzzles-keep-your-brain-sharp' },
+      { label: 'Crosswords and Memory', href: '/cognitive-health/crosswords-and-memory' },
+      { label: 'Jigsaw Puzzles and the Brain', href: '/cognitive-health/jigsaw-puzzles-and-the-brain' },
+      { label: 'Reading and Brain Health', href: '/cognitive-health/reading-and-brain-health' },
+      { label: 'Puzzles and Games for Kids', href: '/cognitive-health/puzzles-and-games-for-kids' },
+      { label: 'Brain Training and the ACTIVE Trial', href: '/cognitive-health/brain-training-and-the-active-trial' },
+      { label: 'The 14 Dementia Risk Factors', href: '/cognitive-health/dementia-risk-factors' },
+    ],
+  },
   {
     head: 'Lists',
     links: [
