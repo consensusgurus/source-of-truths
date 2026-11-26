@@ -450,6 +450,7 @@ archive and hub chips use the short form `Sun`.
 | Bot | P2 and P3 rows on a bigger board (up to 7x7, five to eight lamps); its par is the setter's best, proved only to seven commands |
 | Peg | 24 to 30 pegs, against 9 to 12 on Monday and Tuesday |
 | Glimpse | a sixth flash at 1.25 seconds with two questions, and the fullest panels of the week (out of 600 against 500), from launch 2026-11-22 |
+| Scales | six shapes and six scales, two of them tilted, weights 1 to 20 (Saturday has five shapes and one or two tilted), from launch 2026-11-26 |
 
 **Every daily on the roster runs a Sunday Edition.** A new daily game should decide at launch
 whether it has one (see "Adding a BRAND NEW daily game" below).
@@ -1300,3 +1301,44 @@ week inventory to fill earlier days and create new harder thursdays and other da
 - **Picks** is the binding constraint for Price Check: a day deals 9 items, and about 4 of them must be curator rows (retail list
   prices or auction lots priced near the cars). The pool ran dry of curator rows at Dec 8. Since 2026-11-22 Picks
   rows need no photo, so a restock is a price read per row.
+
+## Scales: the daily balance-scale weights puzzle (launched 2026-11-26)
+
+Owner, 2026-11-26: picked "the weights one" from a list of new ideas, approved the mockup, ruled
+"Checks then time", approved the weekly ramp as proposed and said "build and implement".
+
+- **The game.** A few balance scales hold shapes and numbered weights. Every shape has one hidden
+  whole-number weight, the same on every scale. The player gives each shape a weight and presses
+  Check the scales: every scale swings to where THOSE weights put it, each one is marked Matches or
+  with what it should do (Should balance, Left should be heavier, Right should be heavier), and the
+  board says how many match. It never says which SHAPE is wrong. The day ends on the check that
+  matches every scale. Pressing Check twice on the same weights does nothing.
+- **Ranking: checks, then the clock** (owner). Solve or not: 10 for a solve, 0 for a give-up, so
+  Scales is on `SOLVE_ONLY`. Checks post as `guessesUsed`, which the plain board order ranks before
+  time; the registry `miss` is `Checks`. First try counts, like any ordinary daily.
+- **Weekday ramp** (`BANDS` in lib/scales-engine.js): Mon/Tue Gentle (3 shapes, 3 level scales,
+  weights 1 to 9, two or three numbered weights, no shape on both arms, solvable one unknown at a
+  time); Wed to Fri Moderate (4 shapes, weights 1 to 12, one or two numbered weights, at least one
+  scale with a shape on both arms); Sat Tough (5 shapes, weights 1 to 20, ONE numbered weight, one
+  or two tilted scales); Sun the Sunday Edition (6 shapes, two tilted scales, one or two numbered
+  weights). The number of scales always equals the number of shapes.
+- **One answer, proved.** A board ships only if exactly one set of weights in 1..max fits every
+  scale. Weights are distinct by construction, but the proof does NOT lean on that: uniqueness is
+  counted over every assignment. On Tough and Sunday every tilted scale must be needed (remove it
+  and the board has more than one answer). `scripts/verify-scales.mjs` counts the answers twice: with
+  the engine's solver and with its own plain brute force.
+- **Never rewrite a live board.** Boards are `buildBoard(seed, band)` from a stored seed; the checker
+  rebuilds each one and fails on any difference, so changing the generator changes every board. A
+  rule change must be date-gated to future boards (a new band table keyed by date), never applied to
+  the engine in place.
+- **Files.** `lib/scales-engine.js` (bands, weighing, the solver, buildBoard, the SVG drawing),
+  `app/scales/` (page, client on app/SimpleDaily.jsx, bank), `scripts/gen-scales.mjs --through
+  YYYY-MM-DD` (append only), `scripts/verify-scales.mjs`, `scripts/wire-scales.mjs` (the one-pass
+  registry wiring, safe to re-run), `scripts/gen-scales-tile.py` (both tile PNGs).
+- **Look.** The scales card is white in both looks, like Glimpse's panel; chips, keys and buttons
+  follow the stage ink. No on-screen keys on a fine pointer: desktop types weights, arrows move
+  between shapes, Enter checks. On a phone the Sunday board is sized so six scales, the chips and
+  the keys fit one screen; keep it that way if the row height changes.
+- **Placement.** Numbers; skills Math and Deduction; group Number grids (with its set page copy);
+  finish set Work it out; family beside Cipher; challenge metric checks (low is better).
+

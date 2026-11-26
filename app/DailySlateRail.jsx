@@ -41,7 +41,7 @@ const SANS = "'Manrope', system-ui, -apple-system, sans-serif";
 
 const SLATE_KEYS = [
   'crux', 'emcee', 'shards', 'garble', 'links', 'span', 'dating', 'tally', 'suds', 'sudstoo', 'quilt', 'cages', 'coop', 'sando', 'snack', 'carve',
-  'extra', 'stet', 'outwit', 'outrank', 'herd', 'poll', 'tuck', 'alibi', 'cipher', 'ping', 'carmen', 'warmer', 'jester',
+  'extra', 'stet', 'outwit', 'outrank', 'herd', 'poll', 'tuck', 'alibi', 'cipher', 'scales', 'ping', 'carmen', 'warmer', 'jester',
   'sworn', 'axiom', 'hearsay', 'venn', 'stands', 'bracket', 'lode', 'etch', 'glyph', 'hedge',
   'listed', 'mate', 'four', 'park', 'impound', 'junkyard', 'topple', 'roll', 'tangled', 'witness', 'glimpse', 'defuse', 'spot', 'sudoclue', 'snug', 'jig', 'saw', 'mural', 'muraltoo', 'swap', 'slide', 'spin', 'connect', 'mop', 'mow', 'plow', 'machine', 'crate', 'bot', 'peg', 'chef', 'seated', 'bag', 'errands', 'dash', 'pack', 'duet', 'lamps', 'clade', 'dossier', 'tape', 'bacon', 'resume', 'filing', 'judges', 'check', 'rung', 'crunch', 'taire', 'fib', 'streak',
   'feud', 'babel', 'hands', 'finesse', 'crib', 'hold', 'cell', 'mahj', 'pairs', 'swindle', 'gift', 'scram', 'arcos', 'fill', 'gram', 'vocab', 'spell', 'origin', 'idiom', 'pulse', 'gene', 'orbit', 'eureka', 'bond', 'scour', 'search', 'colossus', 'mammoth', 'chain', 'turn', 'yose', 'suffice', 'strata', 'redact', 'paths',

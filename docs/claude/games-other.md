@@ -3924,3 +3924,13 @@ Memory and Estimation, family beside Witness.
   `scripts/gen-glimpse-tile.py`, share card from `scripts/bake-og.mjs glimpse`. Bank to 2027-03-31 at launch.
 - **The panel is white in both registers** (as Witness's scene). Lit squares wear the stage accent
   (`--pst-acc`, the Visual pastel) with an ink edge; red dots are #e5484d.
+
+## Scales (launched 2026-11-26)
+
+The daily balance-scale weights puzzle, in Numbers. Shapes and numbered weights sit on a few
+scales; work out what each shape weighs, then Check. Ranked on checks, then the clock. Everything
+about the rules, the weekly ramp, the proof of one answer and the files is in
+`docs/claude/daily-authoring.md`, "Scales: the daily balance-scale weights puzzle". The short
+version: never edit a board by hand or change `buildBoard` in place (the checker rebuilds every
+board from its seed), and extend the bank with `node scripts/gen-scales.mjs --through YYYY-MM-DD`.
+

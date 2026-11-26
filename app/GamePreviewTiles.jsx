@@ -557,6 +557,12 @@ const Tally = () => (
     {['12', '9', '15'].map((t, i) => <T key={i} x={182} y={20 + i * 20} s={10}>{t}</T>)}{['8', '14', '14'].map((t, i) => <T key={i} x={122 + i * 20} y={78} s={10}>{t}</T>)}
     <T x={122} y={20} s={11}>4</T><T x={142} y={40} s={11}>5</T></g>
 );
+// Scales: a level beam on its stand, a circle and a square against a numbered weight
+const Scales = () => (
+  <g><rect x={112} y={52} width={72} height={4} rx={2} className="d" /><path d="M148 56l10 22h-20z" className="d" />
+    <circle cx={124} cy={41} r={10} className="m" /><rect x={137} y={32} width={19} height={19} rx={3} className="w" />
+    <path d="M164 34h14l5 18h-24z" className="d" /><T x={171} y={48} s={10} c="tw">9</T></g>
+);
 const Cipher = () => (
   <g><T x={168} y={22} s={14} a="end">SEND</T><T x={168} y={42} s={14} a="end">+MORE</T><path d="M112 48h60" className="s2" /><T x={168} y={66} s={14} a="end">MONEY</T>
     <rect x={174} y={8} width={14} height={18} rx={3} className="d" /><T x={181} y={21} s={10} c="tw">9</T></g>
@@ -849,7 +855,7 @@ export const TILE_BY_KEY = {
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers
   crunch: Crunch, blitz: Blitz, blitzed: Blitzed, gap: Gap, back: Back, calc: Calc, series: Series, sums: Sums, carve: Carve, tally: Tally,
-  cipher: Cipher, pricer: Pricer, dealer: Dealer, realtor: Realtor, agent: Agent, curator: Curator, picks: Picks,
+  cipher: Cipher, scales: Scales, pricer: Pricer, dealer: Dealer, realtor: Realtor, agent: Agent, curator: Curator, picks: Picks,
   // Crowd Psychology
   outwit: Outwit, outrank: Outrank, feud: Feud, herd: Herd, poll: Poll,
   // Word
