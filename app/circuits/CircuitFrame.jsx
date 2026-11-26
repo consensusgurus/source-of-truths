@@ -110,6 +110,13 @@ const CSS = `
 .cfr-stb{max-width:1000px;margin:0 auto;box-sizing:border-box;padding:max(12px, var(--safe-top, 0px)) 22px 6px;}
 .cfr-stb-wide{max-width:1240px;}
 @media (max-width:640px){.cfr-stb{padding-left:14px;padding-right:14px;}}
+/* THE BAR SPANS THE PAGE COLUMN (owner, 2026-11-26: "The header width doesn't
+   match page content width. Make header width expand to match"). StageTopBar
+   fixes itself at 1040px on desktop for the puzzle pages (2026-11-12); a frame
+   page's column is its own (1000px, or 1240px wide), and the bar shares the
+   wrap's max-width and side padding, so 100% here lines the pills up with the
+   content's edges. */
+@media (min-width:900px){.cfr-stb .stb{--stb-w:100%;width:100%;margin-left:0;}}
 
 .cfr{min-height:100vh;background:var(--stg-ground);color:var(--stg-ink);
   font-family:${SANS};-webkit-font-smoothing:antialiased;}
