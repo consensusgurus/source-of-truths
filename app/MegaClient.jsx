@@ -657,7 +657,7 @@ export default function MegaClient({ game, board, win, currentNum, past = [] }) 
     else if (!isCurrent) windowText = '';
     else windowText = Date.now() < win.min
       ? `Open until every sudoku is solved, ${whenText(win.min)} at the earliest`
-      : `Closes when every sudoku is solved, ${whenText(win.cap)} at the latest`;
+      : (win.cap ? `Closes when every sudoku is solved, ${whenText(win.cap)} at the latest` : 'Open until every sudoku is solved');
   }
   const dark = theme === 'dark';
 
@@ -809,7 +809,7 @@ export default function MegaClient({ game, board, win, currentNum, past = [] }) 
         <p><b>Nothing is marked right or wrong until a sudoku is full.</b> Fill all of one. If every digit is right it locks in. If not, it says something is off and you keep working. There is no penalty and no time out.</p>
         <p><b>Scoring:</b> every sudoku is a pot of <b>{MEGA_POT} points</b>, split evenly among everyone who solves it before the board closes. Solve one nobody else does and you keep all {MEGA_POT}; one that forty players solve pays 3. Nobody can take a sudoku from you, and it does not matter what hour you play.</p>
         <p><b>Who else solved a sudoku, and what it pays, stay hidden until you solve it.</b> Then a short note names them. The map shows only your own progress. Every couple of minutes a short update says who has solved how many, never which ones.</p>
-        <p><b>How long it runs:</b> a board stays open until every sudoku on it has been solved by at least one player, no sooner than 24 hours and no later than 72. The next board opens the moment it closes, and the points lock. Your points count toward the day you solved each sudoku. No clock and no Give up.</p>
+        <p><b>How long it runs:</b> a board stays open until every sudoku on it has been solved by at least one player, however long that takes, and no sooner than 24 hours. There is no time limit. The next board opens the moment it closes, and the points lock. Your points count toward the day you solved each sudoku. No clock and no Give up.</p>
         <p>Every sudoku has exactly one solution and can be solved from its own printed digits, with logic alone.{game === 'mammoth' ? ' For the same idea in 9 by 9, play Colossus.' : ' For a bigger field of quick 6 by 6 sudokus, play Mammoth.'}</p>
       </div>
     </div>

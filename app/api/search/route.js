@@ -12,7 +12,7 @@ import { BOARD_BY_NUM, searchSchedule, searchCrowd, publicCrowd, searchFile, sea
 //   (points first, total finds second: every entry is a 100 point pot split
 //   among its finders), every player's [points, total] so a browser can place
 //   itself, and the board's window (opens, closes once known, its 24 hour
-//   minimum and 72 hour cap, when the crowd solved it). It also stamps a board
+//   minimum, when the crowd solved it; no cap since 2026-11-26). It also stamps a board
 //   solved the moment the crowd has every entry, and files the final values
 //   once a board has closed. See lib/search-server.js for the storage.
 //

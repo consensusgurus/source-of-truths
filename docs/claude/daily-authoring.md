@@ -432,6 +432,7 @@ archive and hub chips use the short form `Sun`.
 | Jig | the 80-piece cut, the biggest of the week against Saturday's 77 (2026-10-15 to 2026-10-25; from 2026-10-30 every day is 80 pieces and there is no Sunday Edition) |
 | Mural, MuralToo | no Sunday Edition: every mural is 10,000 pieces (owner, 2026-11-19) |
 | Colossus, Mammoth | no Sunday Edition: a board runs for days and every board is already enormous (2026-11-21) |
+| Wanted | no Sunday Edition: a board runs until the crowd has found everything and every board is already enormous (2026-11-26) |
 | Sixes | a grid in the top fraction of a percent of the difficulty distribution: ten to fourteen squares reachable only by a hidden single, against none on a Monday (from launch, 2026-08-14) |
 | Etch | a 20x20 picture instead of Saturday's 15x15 and the weekday 10x10 (from 2026-08-23) |
 | Hedge | a 10x10 loop lattice instead of the weekday 7x7 |

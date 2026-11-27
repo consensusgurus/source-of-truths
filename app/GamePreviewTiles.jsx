@@ -343,6 +343,13 @@ const Glimpse = () => (
     <circle cx={130} cy={60} r={11} className="sm" /><rect x={129} y={51} width={2} height={10} className="d" /><rect x={129} y={59} width={8} height={2} className="d" />
     <rect x={154} y={57} width={24} height={6} rx={3} className="d" /></g>
 );
+// Wanted: a crowd of little heads, one of them ringed
+const Wanted = () => (
+  <g><rect x={108} y={6} width={80} height={72} rx={4} className="w" />
+    {[[118, 18], [131, 15], [145, 19], [160, 14], [174, 18], [122, 34], [137, 31], [166, 33], [179, 36], [116, 51], [130, 48], [145, 52], [173, 50], [124, 66], [139, 64], [153, 68], [168, 65], [181, 67]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r={3.5} className={i % 3 ? 'sm' : 'm'} />)}
+    <circle cx={152} cy={36} r={3.5} className="d" /><rect x={147.5} y={31} width={9} height={2} rx={1} className="d" />
+    <circle cx={152} cy={36} r={9} fill="none" stroke="#d22b2b" strokeWidth={2.5} /></g>
+);
 const Witness = () => (
   <g><rect x={112} y={6} width={72} height={72} rx={4} className="w" /><circle cx={170} cy={20} r={6} className="m" />
     <rect x={118} y={30} width={28} height={28} className="sm" /><rect x={150} y={36} width={28} height={22} className="sm" />
@@ -850,7 +857,7 @@ export const TILE_BY_KEY = {
   atlas: Atlas, carmen: Carmen, span: Span, passport: Passport, flank: Flank, ping: Ping,
   // Logic
   alibi: Alibi, jester: Jester, judges: Judges, sworn: Sworn, axiom: Axiom, hearsay: Hearsay, stands: Stands, sudoclue: Sudoclue, fib: Fib,
-  suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, glimpse: Glimpse, defuse: Defuse, spot: Spot,
+  suffice: Suffice, ergo: Ergo, docket: Docket, venn: Venn, lamps: Lamps, plot: Plot, paths: Paths, snug: Snug, tangled: Tangled, witness: Witness, glimpse: Glimpse, wanted: Wanted, defuse: Defuse, spot: Spot,
   connect: Connect, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, bot: Bot, peg: Peg, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Duet, etch: Etch, park: Park, impound: Impound, junkyard: Junkyard, chomp: Chomp, hedge: Hedge, jig: Jig, saw: Saw, mural: Mural, muraltoo: Mural,
   topple: Topple, roll: Roll, swap: Swap, slide: Slide, spin: Spin,
   // Numbers

@@ -42,7 +42,7 @@ const gameJsonLd = {
   name: 'Colossus',
   alternateName: 'Colossus: The Giant Linked Sudoku',
   url: `${SITE_URL}/colossus`,
-  description: 'A free giant sudoku. Each board is a field of 61 9x9 sudokus that overlap at their corner boxes, so a digit in a shared corner counts in both. Everyone plays their own copy; every sudoku is a 100 point pot split among the players who solve it, and a board stays open until every sudoku has been solved by somebody (24 to 72 hours). No clock, no signup.',
+  description: 'A free giant sudoku. Each board is a field of 61 9x9 sudokus that overlap at their corner boxes, so a digit in a shared corner counts in both. Everyone plays their own copy; every sudoku is a 100 point pot split among the players who solve it, and a board stays open until every sudoku has been solved by somebody, with no time limit. No clock, no signup.',
   genre: ['Number puzzle', 'Sudoku', 'Samurai sudoku', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
@@ -88,7 +88,7 @@ export default async function ColossusPage({ searchParams }) {
           <h2>About Colossus</h2>
           <p>Colossus is a free giant sudoku from Mind Loft. Each board is a field of 61 ordinary 9x9 sudokus laid in a weave, so that every sudoku shares each of its four corner boxes with a neighbor, the way the five grids of a samurai sudoku do. A digit in a shared corner counts in both sudokus, so each one you finish starts the four around it.</p>
           <p>Everyone plays their own copy of the same board, so nobody can take a sudoku from you and it does not matter what hour you play. Nothing is marked right or wrong until a whole sudoku is full: then it either locks in or tells you something is off, with no penalty. Every sudoku is a pot of 100 points split among everyone who solves it, so one you solve alone is worth 100 and one forty players solve is worth 3. Who else solved a sudoku stays hidden until you solve it.</p>
-          <p>A board stays open until every sudoku on it has been solved by at least one player, no sooner than 24 hours and no later than 72, and the next board opens the moment it closes. Every sudoku has exactly one solution, reachable by logic alone from its own printed digits. There is no clock and no Give up. No app, no signup, play free in your browser. For a bigger field of quick 6x6 sudokus, play <a href="/mammoth">Mammoth</a>. For one big grid, try <a href="/giant">Giant</a>, the daily 16x16.</p>
+          <p>A board stays open until every sudoku on it has been solved by at least one player, however long that takes and no sooner than 24 hours, and the next board opens the moment it closes. Every sudoku has exactly one solution, reachable by logic alone from its own printed digits. There is no clock and no Give up. No app, no signup, play free in your browser. For a bigger field of quick 6x6 sudokus, play <a href="/mammoth">Mammoth</a>. For one big grid, try <a href="/giant">Giant</a>, the daily 16x16.</p>
         </section>
         {board && <MegaClient key={board.num} game="colossus" board={board} win={win} currentNum={current.num} past={past} />}
       </main>

@@ -211,7 +211,7 @@ export default function MegaWall({ game, name, G, board, win, crowd, me, theme, 
           </span>
         </div>
         <h2>{fmt(SUD)} Sudokus. {fmt(solvers)} {solvers === 1 ? 'Solver' : 'Solvers'}.{hours ? ` ${fmt(hours)} Hours.` : ''}</h2>
-        <p className="sub">{cracked >= SUD ? 'Every sudoku fell.' : `${fmt(cracked)} of the ${fmt(SUD)} sudokus fell before the 72 hour cap.`} The board fills in the order the site first cracked each one, in the color of whoever got there first.</p>
+        <p className="sub">{cracked >= SUD ? 'Every sudoku fell.' : `${fmt(cracked)} of the ${fmt(SUD)} sudokus fell before the board closed.`} The board fills in the order the site first cracked each one, in the color of whoever got there first.</p>
         {!wall ? (
           <div className="wcard"><div className="pad2">
             {failed && crowd ? (

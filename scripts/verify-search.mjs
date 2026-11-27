@@ -11,7 +11,7 @@
 // day, so at least 30 days; owner, 2026-11-20: "they can repeat maybe 1 month
 // apart? or longer ideally").
 // Site days: contiguous from 2026-11-20, quizId and dateLabel agree with the date.
-// Rules: the 100 point split and the 24 to 72 hour window.
+// Rules: the 100 point split, the 24 hour minimum, and no automatic turnover.
 //   node scripts/verify-search.mjs
 import { register } from 'node:module';
 register('./alias-loader.mjs', import.meta.url);
@@ -84,6 +84,15 @@ const w4 = searchWindows(4, {}, L + 80 * H);
 if (w4[0].closes !== L + SEARCH_MAX_MS || w4.length !== 2) fail('an unsolved board closes at 72 hours');
 const w5 = searchWindows(1, {}, L + 500 * H);
 if (w5[0].closes !== null) fail('the last board in the bank stays open');
+// NO AUTOMATIC TURNOVER (owner, 2026-11-26). With the rule in force from the
+// start (noCapFrom 0): an unsolved board never closes on the clock, a board
+// solved late closes when solved, and one solved early still waits for 24 hours.
+const n1 = searchWindows(4, {}, L + 5000 * H, 0);
+if (n1.length !== 1 || n1[0].closes !== null || n1[0].cap !== null) fail('no turnover: an unsolved board stays open however long it takes');
+const n2 = searchWindows(4, { 1: L + 300 * H }, L + 301 * H, 0);
+if (n2[0].closes !== L + 300 * H || n2.length !== 2) fail('no turnover: a board closes the moment the crowd has everything');
+const n3 = searchWindows(4, { 1: L + 5 * H }, L + 30 * H, 0);
+if (n3[0].closes !== L + SEARCH_MIN_MS) fail('no turnover: a board solved early still runs 24 hours');
 
 if (fails) { console.log(`verify-search: ${fails} failure(s)`); process.exit(1); }
 console.log(`verify-search: ${BOARDS.length} board(s), ${PUZZLES.length} site days, rules clean`);

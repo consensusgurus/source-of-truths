@@ -1,6 +1,6 @@
 // The boards for Search, the enormous word search (launched 2026-11-20), in the
 // order they open. A board opens when the one before it closes: it runs until
-// the crowd has found every entry, at least 24 hours and at most 72 (lib/search.js
+// the crowd has found every entry, at least 24 hours and with no cap (lib/search.js
 // searchWindows). So boards are numbered, not dated; the Eastern days a player's
 // results are filed under are in ./puzzles.js.
 //

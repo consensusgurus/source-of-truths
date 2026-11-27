@@ -597,14 +597,15 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
   }, [P, found, listTab, q, crowd]);
   const unfoundN = crowd ? crowd.counts.filter((c) => !c).length : null;
 
-  // The board's window, in words: open until solved, between its 24 hour
-  // minimum and its 72 hour cap.
+  // The board's window, in words: open until the crowd has every entry, and
+  // never less than 24 hours. No automatic turnover (owner, 2026-11-26): the
+  // old 72 hour cap only shows on a board that still carries one (W.cap).
   const W = crowd && crowd.opens ? crowd : win;
   let windowText = '';
   if (W && hydrated) {
     if (!live) windowText = crowd && crowd.solvedAt ? 'Closed: solved by the crowd' : 'Closed';
     else if (W.solvedAt) windowText = `Solved! Closes ${whenText(W.min)}`;
-    else if (P.num === currentNum && W.cap && W.min) windowText = Date.now() < W.min ? `Open until solved, ${whenText(W.min)} at the earliest, ${whenText(W.cap)} at the latest` : `Open until solved, ${whenText(W.cap)} at the latest`;
+    else if (P.num === currentNum && W.min) windowText = W.cap ? (Date.now() < W.min ? `Open until solved, ${whenText(W.min)} at the earliest, ${whenText(W.cap)} at the latest` : `Open until solved, ${whenText(W.cap)} at the latest`) : (Date.now() < W.min ? `Open until every entry is found, ${whenText(W.min)} at the earliest` : 'Open until every entry is found');
   }
   void msToMidnightET;
   void tick;
@@ -783,7 +784,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
         <div className="body">
           {!crowd ? <p className="note">Loading the results...</p> : (
             <>
-              <p className="note" style={{ marginTop: 4 }}>{crowd.solvedAt ? `The crowd found all ${fmt(N)}.` : `The crowd found ${fmt(crowd.crowdFound)} of ${fmt(N)} before the 72 hour cap.`} {fmt(crowd.players)} {crowd.players === 1 ? 'player' : 'players'} took part.{total ? ` You found ${fmt(total)} for ${fmt(points)} points${place ? `, ${ord(place.at)} of ${fmt(place.of)}` : ''}.` : ''}</p>
+              <p className="note" style={{ marginTop: 4 }}>{crowd.solvedAt ? `The crowd found all ${fmt(N)}.` : `The crowd found ${fmt(crowd.crowdFound)} of ${fmt(N)} before the board closed.`} {fmt(crowd.players)} {crowd.players === 1 ? 'player' : 'players'} took part.{total ? ` You found ${fmt(total)} for ${fmt(points)} points${place ? `, ${ord(place.at)} of ${fmt(place.of)}` : ''}.` : ''}</p>
               <table>
                 <thead><tr><th>#</th><th>Player</th><th>Points</th><th>Found</th></tr></thead>
                 <tbody>
@@ -819,7 +820,7 @@ export default function SearchClient({ puzzle, win, currentNum, past = [] }) {
         <p><b>The list</b> stays behind the List button. Open it any time to see what is hidden, or play without it.</p>
         <p><b>Scoring:</b> everyone has the same grid, and every entry is a pot of <b>{SEARCH_POT} points</b> split evenly among the players who find it. Find one alone and you keep all {SEARCH_POT}; share it with one other player and you each get 50; a title forty players found pays 3. The standings rank points first and total finds second.</p>
         <p>Each find tells you how many players found it before you. Values move as the crowd catches up: Refresh (or wait two minutes) to see the latest.</p>
-        <p><b>How long it runs:</b> a board stays open until the crowd has found every entry, at least 24 hours and at most 72. The next topic opens the moment it closes, and the values lock. Your points count toward the day you made each find. No clock and no Give up.</p>
+        <p><b>How long it runs:</b> a board stays open until the crowd has found every entry, however long that takes, and never less than 24 hours. There is no time limit. The next topic opens the moment it closes, and the values lock. Your points count toward the day you made each find. No clock and no Give up.</p>
       </div>
     </div>
   );

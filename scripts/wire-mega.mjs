@@ -38,7 +38,7 @@ const G = [
   {
     key: 'colossus', name: 'Colossus', color: '#9a3412', navy: '#fdba74', bg: '#fdebdc', border: 'rgba(154,52,18,0.38)', diff: 3, grid: 9,
     tag: 'The giant linked sudoku', tagLong: 'Sixty-one overlapping 9x9 sudokus on one enormous board',
-    how: 'One enormous board of 61 ordinary 9x9 sudokus that overlap at their corner boxes, so a digit in a shared corner counts in both. Everyone plays their own copy. Nothing is marked right or wrong until a whole sudoku is full, and every sudoku is a pot of 100 points split among the players who solve it. A board runs until every sudoku has been solved by somebody, 24 to 72 hours. No clock and no Give up.',
+    how: 'One enormous board of 61 ordinary 9x9 sudokus that overlap at their corner boxes, so a digit in a shared corner counts in both. Everyone plays their own copy. Nothing is marked right or wrong until a whole sudoku is full, and every sudoku is a pot of 100 points split among the players who solve it. A board runs until every sudoku has been solved by somebody, however long that takes. No clock and no Give up.',
     blurb: 'Sixty-one 9x9 sudokus woven into one enormous board. Solve the ones nobody else does.',
     short: 'A giant sudoku: 61 linked 9x9 grids on one board.', label: 'Giant linked sudoku, 61 grids',
     glyph: 'M2 2h12v12H2zM10 10h12v12H10zM6 2v12M2 6h12M2 10h8M10 2v8M14 14h8M18 10v12M14 14v8M10 18h12',
@@ -46,7 +46,7 @@ const G = [
   {
     key: 'mammoth', name: 'Mammoth', color: '#1e4fa3', navy: '#93c5fd', bg: '#e3edfc', border: 'rgba(30,79,163,0.38)', diff: 2, grid: 6,
     tag: 'The giant field of 6x6 sudokus', tagLong: '257 overlapping 6x6 sudokus on one enormous board',
-    how: 'One enormous board of 257 small sudokus, each 6x6 with the digits 1 to 6, that overlap at their corner boxes, so a digit in a shared corner counts in both. Everyone plays their own copy. Nothing is marked right or wrong until a whole sudoku is full, and every sudoku is a pot of 100 points split among the players who solve it. A board runs until every sudoku has been solved by somebody, 24 to 72 hours. No clock and no Give up.',
+    how: 'One enormous board of 257 small sudokus, each 6x6 with the digits 1 to 6, that overlap at their corner boxes, so a digit in a shared corner counts in both. Everyone plays their own copy. Nothing is marked right or wrong until a whole sudoku is full, and every sudoku is a pot of 100 points split among the players who solve it. A board runs until every sudoku has been solved by somebody, however long that takes. No clock and no Give up.',
     blurb: 'A field of 257 quick 6x6 sudokus woven into one enormous board. Solve the ones nobody else does.',
     short: 'A giant mini sudoku: 257 linked 6x6 grids.', label: 'Giant linked mini sudoku, 257 grids',
     glyph: 'M2 3h9v8H2zM8 8h9v8H8zM14 13h8v8h-8zM5 3v8M2 7h9M11 8v8M8 12h9M17 13v8M14 17h8',
@@ -147,7 +147,7 @@ sub(PS, `['Do the puzzles ever need a guess?', 'No. Two independent solvers chec
     description: 'Three free giant sudokus: Colossus, 61 linked 9x9 grids on one board; Mammoth, 257 linked 6x6 grids; and Giant, a daily 16x16. One logical solution each, no signup.',
     lede: 'Three sudokus for a long sit. Colossus weaves 61 ordinary 9x9 sudokus into one enormous board, each sharing its four corner boxes with its neighbors. Mammoth does the same with 257 quick 6x6 sudokus. Giant is one grid, sixteen by sixteen, with the letters A to G beside the digits.',
     how: [
-      'On Colossus and Mammoth everyone plays their own copy of the same board. Nothing is marked right or wrong until a whole sudoku is full, every sudoku is a pot of 100 points split among the players who solve it, and a board stays open until every sudoku has been solved by somebody, between 24 and 72 hours. Giant is a new 16x16 every midnight Eastern, decided on the clock.',
+      'On Colossus and Mammoth everyone plays their own copy of the same board. Nothing is marked right or wrong until a whole sudoku is full, every sudoku is a pot of 100 points split among the players who solve it, and a board stays open until every sudoku has been solved by somebody, however long that takes. Giant is a new 16x16 every midnight Eastern, decided on the clock.',
     ],
     faq: [
       ['Do the puzzles ever need a guess?', 'No. Every sudoku on Colossus and Mammoth has one solution and can be finished from its own printed digits by logic alone, and so can every Giant.'],

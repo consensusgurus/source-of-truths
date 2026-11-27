@@ -43,7 +43,7 @@ const gameJsonLd = {
   name: 'Search',
   alternateName: 'Search: The Giant Daily Word Search',
   url: `${SITE_URL}/search`,
-  description: 'A free daily word search on an enormous scale. Each board hides hundreds of entries from one big pop culture topic, such as 700 movie titles, in one huge grid in all eight directions. Everyone plays the same grid; every entry is a 100 point pot split among the players who find it, and a board stays open until the crowd has found everything (24 to 72 hours). No clock, no signup.',
+  description: 'A free daily word search on an enormous scale. Each board hides hundreds of entries from one big pop culture topic, such as 700 movie titles, in one huge grid in all eight directions. Everyone plays the same grid; every entry is a 100 point pot split among the players who find it, and a board stays open until the crowd has found everything, with no time limit. No clock, no signup.',
   genre: ['Word puzzle', 'Word search', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
@@ -90,7 +90,7 @@ export default async function SearchPage({ searchParams }) {
           <h2>About Search</h2>
           <p>Search is a free word search from Mind Loft on an enormous scale. Each board picks one big pop culture topic and hides hundreds of entries from it in one huge grid: the first is 700 movie titles in a grid a hundred letters across. Every entry runs in a straight line in any of the eight directions, backward too, with its spaces and punctuation dropped.</p>
           <p>Everyone plays the same grid. Every entry is a pot of 100 points split among everyone who finds it, so a title you find alone is worth 100 and one forty players found is worth 3. Each find tells you how many others have it, and the standings rank points first and total finds second.</p>
-          <p>A board stays open until the crowd has found every entry, at least 24 hours and at most 72, and the next topic opens the moment it closes. The full list waits behind a button. There is no clock and no Give up. No app, no signup, play free in your browser. For a quick themed search with a stopwatch, try <a href="/scour">Scour</a>.</p>
+          <p>A board stays open until the crowd has found every entry, however long that takes and never less than 24 hours, and the next topic opens the moment it closes. The full list waits behind a button. There is no clock and no Give up. No app, no signup, play free in your browser. For a quick themed search with a stopwatch, try <a href="/scour">Scour</a>.</p>
         </section>
         {board && <SearchClient key={board.num} puzzle={board} win={win} currentNum={current.num} past={past} />}
       </main>

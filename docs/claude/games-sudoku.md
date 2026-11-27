@@ -496,6 +496,18 @@ needs the two taps.
 
 ## Colossus and Mammoth: the massive sudokus, one client and one API (launched 2026-11-21)
 
+**NO AUTOMATIC TURNOVER (owner, 2026-11-26: "rewrite the turnover rules for mammoth, colossus, and
+search, so that they all stay live until each element / word is found. No automatic turnover").** The 72
+hour cap is GONE. A board closes only when the crowd has solved every sudoku on it, and never in under 24
+hours; there is no upper limit, and the page says "Open until every sudoku is solved". Wherever the notes
+below say "at most 72", read this instead. `megaWindows(game, boardCount, solved, now, noCapFrom)` in
+`lib/mega.js`: `MEGA_NO_CAP_FROM` (2026-11-27T03:30Z) grandfathers history, so a board whose 72 hours ran
+out BEFORE that moment still closed on its cap and does not reopen (windows are recomputed from launch on
+every read, so dropping the cap outright would have rewound every past board). Never move that constant
+earlier. The risk to know about: a board with one sudoku nobody finishes stays up indefinitely, which is
+what the owner asked for; the fix is his call (a new board is never forced). `scripts/verify-mega.mjs`
+tests both the legacy cap and the open-ended rule.
+
 Keys/routes `colossus` and `mammoth`, category **Sudoku**, tally games exactly as Search is
 (`unit: 'points'`, `solvesOnScore`, `bestRun`, `miss: null`). Colossus is a board of 61 ordinary
 9x9 sudokus; Mammoth is a board of 257 6x6 sudokus (boxes two rows by three). Owner named both
@@ -522,7 +534,7 @@ for Mammoth and chose four-way: "user still has to solve plenty unconnected".
   and names no sudoku). `/api/mega` GET does carry `counts` and `by` for every sudoku; the PAGE
   hides them. Do not surface them for unsolved sudokus.
 - **Search's timing** (`megaWindows`): a board closes when every sudoku on it has been solved by at
-  least one player, at least 24 hours and at most 72; the next opens the moment it closes; the last
+  least one player, never in under 24 hours and with no upper limit (the 72 hour cap was removed 2026-11-26, see the top of this section); the next opens the moment it closes; the last
   board in the bank stays open until another is added.
 - **Mammoth keeps few clues in its middle rows** ("like Sunday Sixes"). The generator carves the
   unshared middle rows first; `verify-mega` fails a Mammoth board where an inside sudoku keeps

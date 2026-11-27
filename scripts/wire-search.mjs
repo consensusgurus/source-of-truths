@@ -52,7 +52,7 @@ function addAlt(f) {
 
 const TAG = 'The giant word search';
 const TAGLONG = 'Hundreds of words on one big topic in one enormous grid';
-const HOW = 'One enormous word search: hundreds of entries from one big pop culture topic, such as 700 movie titles, hidden in one huge grid in all eight directions. Everyone plays the same grid, and every entry is a pot of 100 points split among the players who find it. A board runs until the crowd has found everything, 24 to 72 hours. No clock and no Give up.';
+const HOW = 'One enormous word search: hundreds of entries from one big pop culture topic, such as 700 movie titles, hidden in one huge grid in all eight directions. Everyone plays the same grid, and every entry is a pot of 100 points split among the players who find it. A board runs until the crowd has found everything, however long that takes. No clock and no Give up.';
 const BLURB = 'Hundreds of hidden words on one big topic in one enormous shared grid. Find the ones nobody else finds.';
 const SHORT = 'A giant word search: hundreds of words, one topic.';
 const COLOR = '#155e75', NAVY = '#67e8f9', BG = '#e0f7fa', BORDER = 'rgba(21,94,117,0.38)';
