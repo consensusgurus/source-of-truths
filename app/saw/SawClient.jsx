@@ -435,7 +435,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
   const ORDER = useMemo(() => trayOrder(NP, PUZZLE.seed), [NP, PUZZLE.seed]);
 
   const [g, setG] = useState(() => freshState());
-  const [view, setView] = useState('edges');    // tray: edges | color | all (opens sorted)
+  const view = 'all';    // tray is one bin of loose pieces (owner, 2026-11-27: Edges / Colors sorting removed)
   const [colPick, setColPick] = useState(0);    // which color group fills the first bin
   const [groups, setGroups] = useState(null);   // color groups measured from the photo
   const [imgOk, setImgOk] = useState(true);
@@ -1404,10 +1404,9 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
       lead="Put the picture back together. Today's photo stands tall and is cut into pieces that interlock with tabs and blanks. On a computer or a tablet you build it on a loose table, the way you would at home; on a phone each piece snaps into its own spot. Pieces never need turning."
       steps={[
         <><b>On a computer or a tablet</b> there is no frame: drag a piece from the tray and it stays wherever you drop it. Bring two pieces together, side by side as they are in the picture, and they lock; a locked group moves as one, and a lone piece dragged back over the tray goes back in. <b>On a phone</b>, drop a piece near its own spot and it snaps in; anywhere else it stays where you put it, at no cost. Tap a piece to pick it, then tap the board; press and hold to lift it. Pinch the board with two fingers to zoom in, and move both fingers to slide it around.</>,
-        <><b>The tray opens sorted.</b> <b>Edges</b> splits the loose pieces into edge pieces and the middle, <b>Colors</b> into one of the picture&rsquo;s colors and the rest, and <b>All</b> shows every loose piece in one bin.</>,
         <><b>Peek</b> shows the whole picture for a moment and adds 15 seconds to your clock. Edge pieces have a straight side; corners have two.</>,
       ]}
-      knack="Do the edges first: the tray opens on Edges, so build the frame, then fill it a color at a time. A sky, a lake or a field falls fastest once its pieces are in one bin."
+      knack="Do the edges first: pick out the pieces with a straight side and build the frame, then fill it a color at a time. A sky, a lake or a field falls fast once its pieces are together."
       footer="Finish the picture and you score a perfect 10, and because nothing is counted against you, the daily leaderboard is a straight race on the clock, Peek seconds included. One free hint, on your first ever play, drops a corner in (on a computer, with its two neighbours). Every Saw photo stands tall and is cut into 77 or 80 pieces."
     />
   );
@@ -1502,7 +1501,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
 
       {playing && (
         <div className="jg-side" ref={sideRef}>
-          <div className="jg-ctl">
+          {boxMode && <div className="jg-ctl">
             {boxMode && (
               <button type="button" className="jg-more2" aria-expanded={trayOpen} onClick={toggleTray} aria-label={trayOpen ? 'Show fewer pieces' : `See more pieces, ${loose.length} left`}>
                 {trayOpen ? <ChevronDown size={15} aria-hidden="true" /> : <ChevronUp size={15} aria-hidden="true" />}{loose.length}
@@ -1514,22 +1513,8 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
                 <button type="button" onClick={() => setZoom((z) => Math.min(ZOOM_MAX, Math.round((z + 0.5) * 2) / 2))} disabled={zoom >= ZOOM_MAX} aria-label="Bigger board">+</button>
               </div>
             )}
-            <div className="jg-seg" role="group" aria-label="Sort the tray">
-              <button type="button" aria-pressed={view === 'edges'} onClick={() => setView('edges')}>Edges</button>
-              <button type="button" aria-pressed={view === 'color'} onClick={() => setView('color')} disabled={!haveColors}>Colors</button>
-              <button type="button" aria-pressed={view === 'all'} onClick={() => setView('all')}>All</button>
-            </div>
-          </div>
-          {view === 'color' && haveColors && (
-            <div className="jg-sw" role="group" aria-label="Color for the first bin">
-              {groups.map((gr, k) => (
-                <button key={gr.name} type="button" className="jg-swb" aria-pressed={k === colIdx} onClick={() => setColPick(k)}>
-                  <i style={{ background: gr.hex }} />{gr.name}
-                </button>
-              ))}
-            </div>
-          )}
-          <div className={`jg-tray${vScroll ? ' vs' : ''}${bins ? ' bins' : ''}`} style={{ maxHeight: boardH ? Math.max(220, boardH - (view === 'color' && haveColors ? 110 : 60)) : 460, '--jg-bh': `${Math.round(boardH)}px` }}>
+          </div>}
+          <div className={`jg-tray${vScroll ? ' vs' : ''}${bins ? ' bins' : ''}`} style={{ maxHeight: boardH ? Math.max(220, boardH - 60) : 460, '--jg-bh': `${Math.round(boardH)}px` }}>
             {bins ? bins.map((b) => (
               <div key={b.key} className="jg-bin">
                 <div className="jg-binlab"><b>{b.label}</b> &middot; {b.items.length}</div>
@@ -1970,7 +1955,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           Saw is a free daily online jigsaw puzzle from Mind Loft, the tall sibling of <a href="/jig" style={{ color: INK, fontWeight: 800 }}>Jig</a>. Every day brings a new portrait photograph, a featured picture from Wikimedia Commons, cut taller than wide into 77 or 80 classic interlocking pieces. Everyone gets the same picture and the same cut, so the daily leaderboard is a fair race.
         </p>
         <p style={{ margin: '0 0 8px', fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
-          On a computer you build it on a loose table: a piece stays where you drop it, and two that belong together lock when they meet. On a phone each piece snaps into its own spot. Pieces never need turning. Sort the tray into edge pieces and the middle, or one of the picture&rsquo;s colors and the rest. Peek shows the whole picture for a moment and adds 15 seconds to the clock. On a phone the board and the tray share one box: the board scrolls inside it and the plus button makes it bigger. Full screen gives the board and the tray the whole screen.
+          On a computer you build it on a loose table: a piece stays where you drop it, and two that belong together lock when they meet. On a phone each piece snaps into its own spot. Pieces never need turning. Build the frame first from the pieces with a straight side, then fill it a color at a time. Peek shows the whole picture for a moment and adds 15 seconds to the clock. On a phone the board and the tray share one box: the board scrolls inside it and the plus button makes it bigger. Full screen gives the board and the tray the whole screen.
         </p>
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.65, color: FADED, fontWeight: 600 }}>
           Finish the picture for a perfect 10; the fastest time tops the board. No app, no signup, play free in your browser. Want a wide picture? <a href="/jig" style={{ color: INK, fontWeight: 800 }}>Jig</a> is the same daily jigsaw on a landscape photo, and the photos from both come back later in <a href="/swap" style={{ color: INK, fontWeight: 800 }}>Swap</a>, <a href="/slide" style={{ color: INK, fontWeight: 800 }}>Slide</a> and <a href="/spin" style={{ color: INK, fontWeight: 800 }}>Spin</a>.

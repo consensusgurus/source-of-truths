@@ -18,7 +18,7 @@ import { categoryCrumb } from '@/lib/game-seo';
 const baseMetadata = {
   title: 'Free Daily Jigsaw Puzzle Online: Jig | Mind Loft',
   description:
-    'A free daily online jigsaw puzzle: a new photo every day, cut into 80 pieces. Sort by edges or colors and race the clock. No app, no signup.',
+    'A free daily online jigsaw puzzle: a new photo every day, cut into 80 pieces. Build it on a loose table and race the clock. No app, no signup.',
   alternates: { canonical: '/jig' },
   openGraph: {
     images: [{ url: '/og/jig.png', width: 1200, height: 630, alt: 'Jig, a daily jigsaw puzzle from Mind Loft' }],
