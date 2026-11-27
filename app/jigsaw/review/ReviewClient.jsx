@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { PHOTO_TOPICS, imgSrc } from '@/lib/photo-puzzle-shared';
+import { PHOTO_TOPICS, imgSrc, offerLabel } from '@/lib/photo-puzzle-shared';
 import { sizeLabel } from '@/lib/jigsaw-sizes';
 
-const TABS = [['pending', 'Waiting'], ['approved', 'Approved'], ['private', 'Private Links'], ['declined', 'Turned Down'], ['off', 'Turned Off']];
+const TABS = [['pending', 'Waiting'], ['offered', 'Offered for Dailies'], ['approved', 'Approved'], ['private', 'Private Links'], ['declined', 'Turned Down'], ['off', 'Turned Off']];
 const when = (iso) => { try { return new Date(iso).toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; } };
 
 export default function ReviewClient({ items: given }) {
@@ -29,14 +29,15 @@ export default function ReviewClient({ items: given }) {
     setBusy('');
   }
 
-  const shown = items.filter((m) => m.status === tab);
-  const count = (k) => items.filter((m) => m.status === k).length;
+  const inTab = (m, k) => (k === 'offered' ? (m.offer || []).length > 0 && m.status !== 'off' : m.status === k);
+  const shown = items.filter((m) => inTab(m, tab));
+  const count = (k) => items.filter((m) => inTab(m, k)).length;
   const field = { background: '#16120e', border: '1px solid rgba(244,234,216,.3)', borderRadius: 8, color: '#f4ead8', fontSize: 14, padding: '8px 10px', fontFamily: 'inherit' };
 
   return (
     <>
       <p>New submissions also email m@mindloftdaily.com the moment they are made.</p>
-      <div className="pz-sizes" role="tablist" style={{ gridTemplateColumns: 'repeat(5,minmax(0,1fr))' }}>
+      <div className="pz-sizes" role="tablist" style={{ gridTemplateColumns: 'repeat(3,minmax(0,1fr))' }}>
         {TABS.map(([k, l]) => <a key={k} href="#" role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={(e) => { e.preventDefault(); setTab(k); }}>{l}<small>{count(k)}</small></a>)}
       </div>
       {err ? <p role="alert" style={{ color: '#ffb4a8' }}>{err}</p> : null}
@@ -54,6 +55,7 @@ export default function ReviewClient({ items: given }) {
               <div style={{ flex: '1 1 260px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <b style={{ fontSize: 17 }}>{m.name}</b>
                 <span className="pz-note">By {m.by || 'not given'} · {when(m.at)} · {m.w} x {m.h} · up to {sizeLabel(m.max)} pieces</span>
+                {(m.offer || []).length ? <span className="pz-note" style={{ color: '#f3d98b', fontWeight: 700 }}>Offered for {m.offer.map(offerLabel).join(', ')}</span> : null}
                 {m.slug ? <a href={`/jigsaw/community/${m.slug}`} className="pz-note" target="_blank" rel="noopener noreferrer">/jigsaw/community/{m.slug}</a> : null}
                 {m.status === 'pending' || m.status === 'approved' ? (
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

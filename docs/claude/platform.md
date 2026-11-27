@@ -1083,3 +1083,11 @@ Design: the "Your Photo Jigsaws Mockup" canvas.
 - **Review desk:** /jigsaw/review (admin cookie): Approve (title + topic), Turn Down, Take Off
   Community, Turn Off Link (deletes the pictures). A private-only upload can never be approved.
 - **No pop-ups:** lib/game-active.js now treats /jig/big and every /jigsaw/ page as in play.
+
+**Offer for the daily puzzles (owner, 2026-11-27).** The Make Your Own form has an optional
+"Offer It for the Daily Puzzles" block: Daily Jig, Daily Saw and Mural, each enabled only when the
+cropped upload meets that game's guideline (`DAILY_OFFERS` in `lib/photo-puzzle-shared.js`: Jig wide
+5:4 to 16:9 and 2,400px wide; Saw 1.3 to 1.6 tall and 2,000px wide; Mural 3:2 to 16:9 and 3,200px
+wide), with a Photo Guidelines list under it. The server re-checks (`cleanOffer`) and stores
+`meta.offer`; the email subject names the offer and the review desk has an "Offered for Dailies" tab.
+An offer is a request only: nothing is scheduled until a row is added to a pool by hand.

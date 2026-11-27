@@ -225,6 +225,14 @@ canvas "Daily Jigsaw Mockup":
   moment and adds 15 seconds to the clock (`pen` in the save, included in `timeElapsed`). The free first-play
   hint drops a corner in. In SOLVE_ONLY.
 - Wired by `scripts/wire-jig.mjs`. Tile art `scripts/gen-jig-tile.py`. Checker `scripts/verify-jig.mjs`.
+- **Own art rows (owner, 2026-11-27).** A pool row may be the owner's own picture instead of a Commons
+  photo: `src` (file stem under `public/jig/own/`, cut as `-330/-500/-960/-1280/-full.jpg`, with a random
+  suffix so tomorrow's file cannot be guessed), `w`, `h`, `credit` (printed instead of the Commons line,
+  e.g. "Rebecca Mentz Watercolor") and `fit` (its biggest portal size, from `maxSizeFor` on the -500
+  file). `/api/jig/img` keeps the day gate and redirects to the file; the finish card, board page,
+  shelf JSON-LD, /jig/big and kids credit read `credit`; the portal hides "play together" for it and
+  the Mural pool skips it (its `t` is not a .jpg). First one: "Cleaners Needed" on 2026-11-28; every
+  unplayed day after it moved back one, the Christmas market kept on Saturday 2026-12-05.
 - **Pinch to zoom and tablets (owner, 2026-11-22; Jig and Saw alike).** In the phone play box two fingers on
   the board size it from 1x to `ZOOM_MAX` (3x) and carry it: `pinch` holds the picture point under the fingers
   (`holdAnchor`, run in a layout effect on `zoom`), so a pinch is also a two finger pan, sideways through the

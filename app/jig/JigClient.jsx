@@ -1823,8 +1823,9 @@ export default function JigClient({ puzzles = [], forceNum = null }) {
           {!playing && (
             <div style={{ maxWidth: 560, margin: '0 auto' }}>
               <p className="jg-credit">
-                Today&rsquo;s picture: <b style={{ color: INK }}>{PUZZLE.name}</b>. Photo by {PUZZLE.by}, {PUZZLE.lic}, via{' '}
-                <a href={`https://commons.wikimedia.org/wiki/File:${encodeURIComponent(PUZZLE.t.replace(/ /g, '_'))}`} target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>.
+                Today&rsquo;s picture: <b style={{ color: INK }}>{PUZZLE.name}</b>.{' '}
+                {PUZZLE.src ? <>{PUZZLE.credit}.</> : <>Photo by {PUZZLE.by}, {PUZZLE.lic}, via{' '}
+                <a href={`https://commons.wikimedia.org/wiki/File:${encodeURIComponent(PUZZLE.t.replace(/ /g, '_'))}`} target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>.</>}
               </p>
               {!STAGE && isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0' }}>

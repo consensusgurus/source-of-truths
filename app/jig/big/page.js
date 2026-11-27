@@ -40,6 +40,6 @@ export default function BigJigsawPage({ searchParams }) {
   if (!p || !(p.live < etToday())) redirect('/jig/shelf');
   if (!JIGSAW_SIZES.includes(size) || size === ownSize(p.cols, p.rows)) redirect(`/${g}?p=${p.num}`);
   const cut = cutFor(size, p.cols, p.rows);
-  const photo = { g, n: p.num, key: `${g}-${p.num}-${size}`, id: freeId(g, p.num, size), size, cols: cut.cols, rows: cut.rows, name: p.name, by: p.by, lic: p.lic };
+  const photo = { g, n: p.num, key: `${g}-${p.num}-${size}`, id: freeId(g, p.num, size), size, cols: cut.cols, rows: cut.rows, name: p.name, by: p.by, lic: p.lic, ...(p.src ? { credit: p.credit } : {}) };
   return <BigClient photo={photo} />;
 }

@@ -15,6 +15,7 @@
 //     the seed it was first dealt under the old numbering, so a board already
 //     played is never re-cut: seed = ((num - 25) * 7919 + 13) % 100003
 //   - no two boards share a seed
+import fs from 'fs';
 const BANK = process.env.VERIFY_JIG_BANK || 'app/jig/puzzles.js';
 const { PUZZLES } = await import(new URL('../' + BANK, import.meta.url));
 
@@ -53,10 +54,17 @@ PUZZLES.forEach((p, k) => {
   if (p.live >= LAUNCH && p.seed !== ((p.num - BACKFILL) * 7919 + 13) % 100003) bad(p.num, `seed ${p.seed} is not the seed this board was first dealt with`);
   if (seeds.has(p.seed)) bad(p.num, `seed ${p.seed} used twice`);
   seeds.add(p.seed);
-  if (!p.t || !/\.(jpe?g)$/i.test(p.t)) bad(p.num, `photo title ${p.t} is not a JPEG file title`);
-  if (titles.has(p.t)) bad(p.num, `photo ${p.t} used twice`);
-  titles.add(p.t);
-  if (!LIC.test(p.lic || '')) bad(p.num, `licence "${p.lic}" is not a free licence this game accepts`);
+  // Own art (a `src` row, owner 2026-11-27) is hosted on the site: its files must exist and it
+  // carries a credit line in place of a Commons title and licence.
+  if (p.src) {
+    for (const w of ['330', '500', '960', '1280', 'full']) if (!fs.existsSync(`public${p.src}-${w}.jpg`)) bad(p.num, `own art file public${p.src}-${w}.jpg is missing`);
+    if (!p.credit || !p.w || !p.h) bad(p.num, 'own art needs credit, w and h');
+  } else {
+    if (!p.t || !/\.(jpe?g)$/i.test(p.t)) bad(p.num, `photo title ${p.t} is not a JPEG file title`);
+    if (titles.has(p.t)) bad(p.num, `photo ${p.t} used twice`);
+    titles.add(p.t);
+    if (!LIC.test(p.lic || '')) bad(p.num, `licence "${p.lic}" is not a free licence this game accepts`);
+  }
   if (!p.name || p.name.length < 4) bad(p.num, 'no picture name');
   if (!p.by) bad(p.num, 'no credit');
   if (/[—]/.test(p.name)) bad(p.num, 'em dash in the picture name');

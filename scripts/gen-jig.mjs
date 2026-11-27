@@ -53,6 +53,7 @@ if (new Date(d0.getTime() + B * 86400000).toISOString().slice(0, 10) !== LAUNCH)
     cols, rows: rows_,
     seed: seedFor(num),
     t: p.t, name: p.name, lic: p.lic, by: p.by,
+    ...(p.src ? { src: p.src, w: p.w, h: p.h, credit: p.credit, fit: p.fit } : {}),
   });
 });
 

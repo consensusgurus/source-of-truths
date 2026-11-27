@@ -62,14 +62,20 @@ export const PHOTOS = [
   { t: 'Grant Park, Chicago, Illinois, Estados Unidos, 2012-10-20, DD 03.jpg', name: 'Grant Park, Chicago', lic: 'CC BY-SA 3.0', by: 'Diego Delso' },
   { t: 'Heliopsis helianthoides flower.jpg', name: 'An ox-eye sunflower', lic: 'CC BY-SA 4.0', by: 'Lystopad' },
   { t: 'Wle Calafuria 11.jpg', name: 'The Calafuria coast, Tuscany', lic: 'CC BY-SA 4.0', by: 'Anna.Massini' },
+  // OWN ART (owner, 2026-11-27): a watercolor, hosted on the site, not Commons. `src` is the
+  // file stem under public/jig/own (cut as -330, -500, -960, -1280 and -full), `w` x `h` the
+  // original, `fit` its biggest portal size (lib/jigsaw-fit.js run on the -500 file), `credit` the line printed instead of the Commons licence. Dropped in on
+  // 2026-11-28 and every unplayed day after it moved back one, except the Christmas market,
+  // which stays pinned to Saturday 2026-12-05 (the goby moved to the day after it).
+  { t: 'Cleaners Needed', src: '/jig/own/cleaners-needed-1f113e37', w: 1695, h: 1365, name: 'Cleaners Needed', lic: 'Watercolor', by: 'Rebecca Mentz', credit: 'Rebecca Mentz Watercolor', fit: 1000 },
   { t: 'Eurasian eagle-owl (44088).jpg', name: 'A Eurasian eagle-owl', lic: 'CC BY-SA 4.0', by: 'Rhododendrites' },
   { t: 'Saslonch da Sacun Gherdëina.jpg', name: 'The Sassolungo, Val Gardena', lic: 'CC BY-SA 3.0', by: 'Wolfgang Moroder' },
   { t: '26-216-0028 Rakovets Castle RB.jpg', name: 'Rakovets Castle, Ukraine', lic: 'CC BY-SA 4.0', by: 'Rbrechko' },
   { t: 'From Tennfjorden towards Raftsundet, Hinnøya, Norway, 2015 September - 2.jpg', name: 'Tennfjorden, Hinnøya, Norway', lic: 'CC BY-SA 3.0', by: 'Ximonic (Simo Räsänen)' },
   { t: '20090719 Crkva Gospa od Zdravlja Kotor Bay Montenegro.jpg', name: 'The Church of Our Lady of Health above Kotor Bay', lic: 'CC BY-SA 3.0', by: 'Ggia' },
   { t: 'Yellowstone National Park (WY, USA), Firehole River, Abflusskanal des Excelsior Geysirs -- 2022 -- 2572-4.jpg', name: 'The Firehole River, Yellowstone', lic: 'CC BY-SA 4.0', by: 'Dietmar Rabich' },
-  { t: 'Rhinogobius flumineus(Hamamatsu,Shizuoka,Japan).jpg', name: 'A goby in a Shizuoka stream', lic: 'CC BY-SA 3.0', by: 'Seotaro' },
   { t: 'Breitscheidplatz November 2013.jpg', name: 'The Christmas market at Breitscheidplatz, Berlin', lic: 'CC BY-SA 3.0', by: 'Arild Vågen' },
+  { t: 'Rhinogobius flumineus(Hamamatsu,Shizuoka,Japan).jpg', name: 'A goby in a Shizuoka stream', lic: 'CC BY-SA 3.0', by: 'Seotaro' },
   { t: 'Obersaxen Mundaun, 28-09-2025. (actm.) 07.jpg', name: 'Obersaxen Mundaun, Switzerland', lic: 'CC BY-SA 4.0', by: 'Agnes Monkelbaan' },
   { t: 'Iris ensata Thunb.jpg', name: 'A Japanese iris', lic: 'CC BY-SA 3.0', by: 'Laitche' },
   { t: 'Baltic Sea view from Schmiedeberg hill in Rerik, 2025-06-23.jpg', name: 'The Baltic Sea from Rerik', lic: 'CC BY-SA 4.0', by: 'Radomianin' },

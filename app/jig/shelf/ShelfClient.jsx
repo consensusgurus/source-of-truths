@@ -434,7 +434,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
                 );
                 return (
                   <li key={b.k} className="jp-li">
-                    {b.g === 'jig' ? (
+                    {b.g === 'jig' && !b.own ? (
                       <a className="jp-tog" href={`/mural/private?photo=${b.n}&size=${togetherKey(size, maxOf(b))}`}
                         aria-label={`Play ${b.name} together: start a private mural with your group or anyone you send the link to`}>
                         <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2" fill="none" stroke="currentColor" strokeWidth="2" /><path d="M3 19c.6-3.3 3-5 6-5s5.4 1.7 6 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><circle cx="17" cy="9" r="2.6" fill="none" stroke="currentColor" strokeWidth="2" /><path d="M16.5 14.2c2.4.1 4.1 1.6 4.5 4.3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>

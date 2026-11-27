@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { savedIdentity } from '@/lib/saved-identity';
 import { JIGSAW_SIZES, sizeLabel } from '@/lib/jigsaw-sizes';
-import { FULL_MAX, SMALL_W, MIN_LONG, MAX_BYTES, MINE_KEY, maxPiecesFor, cleanText, noteStatus } from '@/lib/photo-puzzle-shared';
+import { FULL_MAX, SMALL_W, MIN_LONG, MAX_BYTES, MINE_KEY, maxPiecesFor, cleanText, noteStatus, DAILY_OFFERS, cleanOffer } from '@/lib/photo-puzzle-shared';
 
 const SHAPES = [['photo', 'As Taken', 0], ['wide', 'Wide', 4 / 3], ['square', 'Square', 1], ['tall', 'Tall', 3 / 4]];
 const BUCKET = 'photo-puzzles';
@@ -51,6 +51,8 @@ export default function MakerClient() {
   const [share, setShare] = useState('me');
   const [reveal, setReveal] = useState(false);
   const [rights, setRights] = useState(false);
+  const [offer, setOffer] = useState([]);       // daily games the maker offers it to (DAILY_OFFERS keys)
+  const [guide, setGuide] = useState(false);
   const [busy, setBusy] = useState('');
   const [err, setErr] = useState('');
   const [done, setDone] = useState(null);       // { code, name, pieces, share }
@@ -65,6 +67,7 @@ export default function MakerClient() {
   const max = out ? maxPiecesFor(out.w, out.h) : 0;
   const tooSmall = out && Math.max(out.w, out.h) < MIN_LONG;
   useEffect(() => { if (max && pieces > max) setPieces(max); }, [max, pieces]);
+  const offered = out ? cleanOffer(offer, out.w, out.h) : [];
 
   function pick(e) {
     const f = e.target.files && e.target.files[0];
@@ -99,7 +102,7 @@ export default function MakerClient() {
       setBusy('Uploading');
       const s = await fetch('/api/photo-puzzles', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'start', name, by, pieces, share, rights, w: out.w, h: out.h, anonId, email: savedIdentity().email || undefined }),
+        body: JSON.stringify({ action: 'start', name, by, pieces, share, rights, offer: offered, w: out.w, h: out.h, anonId, email: savedIdentity().email || undefined }),
       }).then((r) => r.json());
       if (!s.ok) throw new Error(s.error || 'The upload could not start.');
       const st = supabase.storage.from(BUCKET);
@@ -119,7 +122,7 @@ export default function MakerClient() {
         localStorage.setItem(MINE_KEY, JSON.stringify(mine.slice(0, 60)));
       } catch (e) { /* storage full or blocked: the link still works */ }
       noteStatus(s.code, share === 'community' ? 'pending' : 'private');
-      setDone({ code: s.code, name: cleanText(name, 80), pieces: s.pieces, share });
+      setDone({ code: s.code, name: cleanText(name, 80), pieces: s.pieces, share, offered: offered.length > 0 });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
       setErr(e && e.message ? e.message : 'Something went wrong. Please try again.');
@@ -158,10 +161,11 @@ export default function MakerClient() {
           </>
         )}
         {done.share === 'community' ? <p className="pz-note">You published it to Community Photos. It shows there once Mind Loft has reviewed it.</p> : null}
+        {done.offered ? <p className="pz-note">Thank you for offering it for the daily puzzles. Mind Loft looks at every offer, and if it is picked it is credited to the name you gave.</p> : null}
         <div className="pz-row">
           <a className="pz-btn" href={`/jigsaw/p/${done.code}?pieces=${done.pieces}`}>Play It Now</a>
           <a className="pz-btn ghost" href="/jig/shelf?tab=yours">Go to Your Photos</a>
-          <button type="button" className="pz-btn ghost" onClick={() => { setDone(null); setImg(null); setUrl(''); setName(''); setRights(false); setShare('me'); setReveal(false); }}>Make Another</button>
+          <button type="button" className="pz-btn ghost" onClick={() => { setDone(null); setImg(null); setUrl(''); setName(''); setRights(false); setShare('me'); setReveal(false); setOffer([]); }}>Make Another</button>
         </div>
       </section>
     );
@@ -226,9 +230,37 @@ export default function MakerClient() {
             ))}
           </div>
 
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }} aria-labelledby="pz-offer">
+            <div style={{ fontWeight: 800, fontSize: 14 }} id="pz-offer">Offer It for the Daily Puzzles <span style={{ fontWeight: 600, fontSize: 12, color: 'rgba(244,234,216,.6)' }}>Optional. Mind Loft reviews every offer.</span></div>
+            {DAILY_OFFERS.map((o) => {
+              const ok = o.fits(out.w, out.h);
+              const on = ok && offer.includes(o.k);
+              return (
+                <label key={o.k} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: on ? '#2b241c' : '#16120e', border: `1px solid ${on ? '#f3d98b' : 'rgba(244,234,216,.2)'}`, borderRadius: 12, padding: '12px 14px', cursor: ok ? 'pointer' : 'default', opacity: ok ? 1 : 0.55 }}>
+                  <input type="checkbox" disabled={!ok} checked={on} onChange={(e) => setOffer((a) => (e.target.checked ? [...a.filter((x) => x !== o.k), o.k] : a.filter((x) => x !== o.k)))} style={{ width: 20, height: 20, margin: '1px 0 0', accentColor: '#f3d98b' }} />
+                  <span>
+                    <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: '#f4ead8' }}>{o.label}</span>
+                    <span style={{ display: 'block', fontSize: 13, color: 'rgba(244,234,216,.72)', marginTop: 2 }}>{ok ? `${o.shape}, ${o.min}. This photo fits.` : `Needs ${o.shape.charAt(0).toLowerCase()}${o.shape.slice(1)}, ${o.min}. This one is ${out.w} x ${out.h}.`}</span>
+                  </span>
+                </label>
+              );
+            })}
+            <button type="button" onClick={() => setGuide((g) => !g)} aria-expanded={guide} style={{ alignSelf: 'flex-start', background: 'none', border: 0, padding: 0, color: '#f3d98b', fontWeight: 700, cursor: 'pointer', font: 'inherit', fontSize: 13, textDecoration: 'underline' }}>{guide ? 'Hide Photo Guidelines' : 'Photo Guidelines'}</button>
+            {guide ? (
+              <ul className="pz-note" style={{ margin: 0, paddingLeft: 18, lineHeight: 1.55 }}>
+                <li>Daily Jig: a wide photo, 5:4 to 16:9, at least 2,400 pixels wide. It is cut into 80 pieces.</li>
+                <li>Daily Saw: a tall photo, 1.3 to 1.6 times as tall as it is wide, at least 2,000 pixels wide.</li>
+                <li>Mural: a wide photo, 3:2 to 16:9, at least 3,200 pixels wide. It is cut into 4,000 pieces, so it needs the most detail.</li>
+                <li>Send the original file from your camera or phone, not a screenshot or a photo sent through a messaging app, which shrinks it.</li>
+                <li>Sharp and in focus, with detail and color across the whole picture. Big plain areas of sky, water, or wall make pieces nobody can place.</li>
+                <li>No text, logos, borders, or watermarks, and nobody recognizable unless they are happy to be in it.</li>
+              </ul>
+            ) : null}
+          </div>
+
           <label style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: 'rgba(244,234,216,.82)', lineHeight: 1.45 }}>
             <input type="checkbox" checked={rights} onChange={(e) => setRights(e.target.checked)} style={{ width: 20, height: 20, margin: '1px 0 0', accentColor: '#f3d98b' }} />
-            <span>I took this photo or have the right to share it{share === 'community' ? ', and anyone in it is OK with it being public' : ''}.</span>
+            <span>I took this photo or have the right to share it{share === 'community' || offered.length ? ', and anyone in it is OK with it being public' : ''}{offered.length ? '. Mind Loft may use it as a daily puzzle, credited to the name above' : ''}.</span>
           </label>
 
           {err ? <p role="alert" style={{ color: '#ffb4a8', margin: 0 }}>{err}</p> : null}

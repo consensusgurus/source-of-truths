@@ -56,7 +56,7 @@ export async function generateMetadata({ searchParams }) {
   const url = `/jig?p=${p.num}`;
   const img = `/api/jig/img?n=${p.num}&w=960`;
   const title = `Jigsaw Puzzle: ${p.name} | Jig No. ${p.num}, Mind Loft`;
-  const description = `${p.name}: a free ${pieces}-piece online jigsaw puzzle, Jig No. ${p.num} from ${p.dateLabel}. A Wikimedia Commons featured photo by ${p.by}. Play it free at any size from 24 to 4,000 pieces.`;
+  const description = `${p.name}: a free ${pieces}-piece online jigsaw puzzle, Jig No. ${p.num} from ${p.dateLabel}. ${p.src ? `A ${p.credit}. Play it free at any size from 24 to ${(p.fit || 1000).toLocaleString('en-US')} pieces.` : `A Wikimedia Commons featured photo by ${p.by}. Play it free at any size from 24 to 4,000 pieces.`}`;
   const short = `${p.name}, cut into ${pieces} pieces. Play this past daily jigsaw free.`;
   return {
     title,
@@ -84,8 +84,8 @@ function boardJsonLd(p) {
     caption: `${p.name}, a ${p.cols * p.rows}-piece jigsaw puzzle`,
     contentUrl: `${SITE_URL}/api/jig/img?n=${p.num}`,
     url: `${SITE_URL}/jig?p=${p.num}`,
-    acquireLicensePage: commonsFile(p.t),
-    creditText: `${p.by}, Wikimedia Commons`,
+    ...(p.src ? {} : { acquireLicensePage: commonsFile(p.t) }),
+    creditText: p.src ? p.credit : `${p.by}, Wikimedia Commons`,
     creator: { '@type': 'Person', name: p.by },
     datePublished: p.live,
     isPartOf: { '@type': 'CollectionPage', name: 'Free Online Jigsaw Puzzles', url: `${SITE_URL}/jig/shelf` },

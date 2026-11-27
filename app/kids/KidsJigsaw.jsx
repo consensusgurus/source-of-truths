@@ -414,7 +414,7 @@ function Play({ board, n, setN, onBack, onDone }) {
           {finished ? (
             <div className="kd-cheer show">
               You did it! {board.name}.
-              <small>{board.mine ? 'Colored by you in Crayon' : `Photo: ${board.by}, ${board.lic}, via Wikimedia Commons`}</small>
+              <small>{board.mine ? 'Colored by you in Crayon' : board.credit ? board.credit : `Photo: ${board.by}, ${board.lic}, via Wikimedia Commons`}</small>
             </div>
           ) : null}
           <div className="kd-ctrls">

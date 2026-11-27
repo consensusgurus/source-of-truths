@@ -6,7 +6,7 @@ import { PUZZLES as SAW } from '@/app/saw/puzzles';
 // and photo route. Nothing that is not live yet is returned, and the Commons
 // file title (`t`) never reaches the client.
 const row = (g, p) => ({
-  key: `${g}-${p.num}`, g, num: p.num, live: p.live, name: p.name, by: p.by, lic: p.lic,
+  key: `${g}-${p.num}`, g, num: p.num, live: p.live, name: p.name, by: p.by, lic: p.lic, ...(p.src ? { credit: p.credit } : {}),
   tall: g === 'saw', img: g === 'saw' ? '/api/saw/img' : '/api/jig/img',
 });
 

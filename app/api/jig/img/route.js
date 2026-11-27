@@ -32,6 +32,16 @@ export async function GET(req) {
   const p = Number.isInteger(n) && n > 0 ? PUZZLES.find((x) => x.num === n) : null;
   if (!p || p.live > etToday()) return new Response('Not found', { status: 404 });
   const wq = Number(searchParams.get('w'));
+  // OWN ART (owner, 2026-11-27): a row with `src` is hosted on the site, cut ahead of time into
+  // -330, -500, -960, -1280 and -full under public/. The day gate above still holds; this hands
+  // on the same-origin file, so the canvas colour read works the same.
+  if (p.src) {
+    const cut = wq > 1280 ? 'full' : wq && wq <= 330 ? '330' : wq && wq <= 500 ? '500' : wq && wq <= 960 ? '960' : '1280';
+    return new Response(null, {
+      status: 307,
+      headers: { Location: `${p.src}-${cut}.jpg`, 'Cache-Control': 'public, max-age=86400, s-maxage=31536000, immutable', 'X-Jig-Day': String(p.num) },
+    });
+  }
   const width = [330, 500, 960, 1920, 3840].includes(wq) ? wq : 1280;
   const src = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(p.t)}?width=${width}`;
   let up;

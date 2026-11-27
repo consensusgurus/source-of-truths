@@ -23,7 +23,7 @@ export default function BigClient({ photo }) {
       <section style={{ maxWidth: 720, margin: '0 auto', padding: '24px 16px' }}>
         <h1>{photo.name}: a {n} piece jigsaw puzzle</h1>
         <p>A free online jigsaw puzzle of {photo.name}, cut into {n} pieces ({photo.cols} across, {photo.rows} down). Drag a piece from the tray onto its spot, or tap the piece and then the spot. Nothing is scored, there is no clock, and your progress is kept in this browser.</p>
-        <p>Photo: {photo.by}, {photo.lic}, Wikimedia Commons. Pick another picture or size on the <a href="/jig/shelf">jigsaw puzzles</a> page.</p>
+        <p>{photo.credit ? `${photo.credit}.` : `Photo: ${photo.by}, ${photo.lic}, Wikimedia Commons.`} Pick another picture or size on the <a href="/jig/shelf">jigsaw puzzles</a> page.</p>
       </section>
       <div ref={ref} className="mrl app" data-theme="light" suppressHydrationWarning dangerouslySetInnerHTML={{ __html: MURAL_HTML }} />
     </>

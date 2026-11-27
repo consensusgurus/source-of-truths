@@ -116,7 +116,7 @@ export default function JigShelfPage() {
     const todays = live.length ? live[live.length - 1] : null;
     return live.map((p) => (p === todays && p.live === today
       ? { g, k: `${g}-${p.num}`, n: p.num, d: p.live, l: p.dateLabel, s: p.sunday ? 1 : 0, c: p.cols, r: p.rows, today: 1 }
-      : { g, k: `${g}-${p.num}`, n: p.num, d: p.live, l: p.dateLabel, s: p.sunday ? 1 : 0, c: p.cols, r: p.rows, name: p.name, by: p.by, lic: p.lic, src: commonsPage(p.t), t: p.t, topic: topicOf(p.name) }));
+      : { g, k: `${g}-${p.num}`, n: p.num, d: p.live, l: p.dateLabel, s: p.sunday ? 1 : 0, c: p.cols, r: p.rows, name: p.name, by: p.by, lic: p.lic, src: p.src ? null : commonsPage(p.t), t: p.t, topic: topicOf(p.name), ...(p.src ? { credit: p.credit, own: 1 } : {}) }));
   };
   const all = [...rows('jig', PUZZLES), ...rows('saw', SAW)]
     .sort((a, b) => (a.d === b.d ? (a.g === 'jig' ? -1 : 1) : a.d < b.d ? 1 : -1));
@@ -158,9 +158,9 @@ export default function JigShelfPage() {
             '@type': 'ImageObject',
             name: `${b.name}: a free jigsaw puzzle`,
             caption: b.name,
-            contentUrl: `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(titleOf.get(b.k) || '')}`,
-            acquireLicensePage: b.src,
-            creditText: `${b.by}, Wikimedia Commons`,
+            contentUrl: b.own ? `${SITE_URL}/api/jig/img?n=${b.n}` : `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(titleOf.get(b.k) || '')}`,
+            ...(b.src ? { acquireLicensePage: b.src } : {}),
+            creditText: b.own ? b.credit : `${b.by}, Wikimedia Commons`,
             creator: { '@type': 'Person', name: b.by },
             ...(lic ? { license: lic } : {}),
             datePublished: b.d,

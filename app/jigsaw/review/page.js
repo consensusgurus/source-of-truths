@@ -14,7 +14,7 @@ export const metadata = { title: 'Photo Review | Mind Loft', robots: { index: fa
 export default async function ReviewPage() {
   const ok = isAdmin();
   const items = ok ? (await allMeta().catch(() => [])).filter((m) => m.up).map((m) => ({
-    code: m.code, name: m.name, by: m.by, w: m.w, h: m.h, max: m.max, pieces: m.pieces, status: m.status, submitted: !!m.submitted, topic: m.topic || '', slug: m.slug || '', at: m.at,
+    code: m.code, name: m.name, by: m.by, w: m.w, h: m.h, max: m.max, pieces: m.pieces, status: m.status, submitted: !!m.submitted, topic: m.topic || '', slug: m.slug || '', at: m.at, offer: m.offer || [],
   })) : [];
   return (
     <div className="pz">
