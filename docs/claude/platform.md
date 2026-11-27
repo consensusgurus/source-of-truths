@@ -1064,6 +1064,9 @@ Design: the "Your Photo Jigsaws Mockup" canvas.
   (`me`, THE DEFAULT, status private, no share UI, can reveal a link after), **Me and People I
   Send the Link To** (`link`, private) and **Publish on Community Photos** (`community`, pending
   until approved). Uploads made before this have no scope and read as `link`.
+- **Publish later (owner, 2026-11-27):** Your Photos has "Publish on Community Photos" on any
+  private one (POST `publish` with the owner token): status pending, emails the owner, then the
+  normal approval.
 - **Email:** `finish` mails m@mindloftdaily.com at once for EVERY upload (private or submitted),
   through Resend with NEWSLETTER_FROM, with the picture, the link and the review desk link.
 - **Pages:** /jigsaw/p/<code> private (noindex, nofollow, no photo share image, no sitemap);

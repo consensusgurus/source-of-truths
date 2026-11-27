@@ -38,6 +38,7 @@ const FAQ = [
   ['Who can see my puzzle?', 'Just you, unless you choose otherwise. You can share a private link with family and friends, or publish it on Community Photos, where it appears once Mind Loft approves it.'],
   ['Do my family and friends need an account to play?', 'No. Anyone with the link can play on a phone, a tablet or a computer, right in the browser.'],
   ['How many pieces can my photo have?', 'Anywhere from 24 to 4,000 pieces, depending on how many pixels the photo has. Each piece needs enough detail to stay sharp, so bigger sizes need bigger photos.'],
+  ['Can I publish my puzzle on Community Photos later?', 'Yes. Open Your Photos on the Jigsaw Puzzles page on the device you made it on and choose Publish on Community Photos. It appears there once Mind Loft has reviewed it.'],
   ['Can I turn off a link later?', 'Yes. Open Your Photos on the Jigsaw Puzzles page on the device you made it on and turn the link off. The photo is deleted and the link stops working.'],
   ['What photos are not allowed on Community Photos?', 'Photos you do not have the right to share, photos of other people without their OK, and anything that is not family friendly. Every Community Photo is reviewed before it goes up.'],
   ['Is my location saved with the photo?', 'No. Your browser redraws the photo before it is uploaded, which removes the camera data, location included.'],

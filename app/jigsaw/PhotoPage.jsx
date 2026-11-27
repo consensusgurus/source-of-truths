@@ -56,7 +56,7 @@ export default function PhotoPage({ meta, base, pieces, community, related = [] 
             ? <a key={s} href={`${base}?pieces=${s}`} className={s === start ? 'on' : ''} rel={community ? undefined : 'nofollow'}>{sizeLabel(s)}<small>pieces</small></a>
             : <span key={s} aria-disabled="true" title="This photo does not have the detail for this many pieces">{sizeLabel(s)}<small>too few pixels</small></span>))}
         </div>
-        <p className="pz-note">Sizes greyed out would cut this photo too fine to stay sharp.</p>
+        {meta.max < JIGSAW_SIZES[JIGSAW_SIZES.length - 1] ? <p className="pz-note">Sizes greyed out would cut this photo too fine to stay sharp.</p> : null}
         <div className="pz-row">
           <a className="pz-btn" href={`${base}?pieces=${start}`} rel={community ? undefined : 'nofollow'}>Start at {sizeLabel(start)} pieces</a>
           <a className="pz-btn ghost" href="/jigsaw/make-your-own">Make One From Your Photo</a>

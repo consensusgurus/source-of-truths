@@ -248,6 +248,15 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
       if (r && r.ok) setMine((a) => a.map((y) => (y.code === x.code ? { ...y, status: 'off' } : y)));
     } catch (e) { /* stays as it was */ }
   }
+  // Publish a private one later (owner, 2026-11-27): it goes to the owner's review queue.
+  async function publish(x) {
+    if (!window.confirm(`Publish "${x.name}" on Community Photos? Everyone on Mind Loft will be able to play it once Mind Loft has reviewed it.\n\nBy publishing you confirm you took this photo or have the right to share it, and that anyone in it is OK with it being public.`)) return;
+    try {
+      const r = await fetch('/api/photo-puzzles', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'publish', code: x.code, token: x.token, rights: true }) }).then((q) => q.json());
+      if (r && r.ok) setMine((a) => a.map((y) => (y.code === x.code ? { ...y, status: 'pending', scope: 'community' } : y)));
+      else if (r && r.error) window.alert(r.error);
+    } catch (e) { /* stays as it was */ }
+  }
   async function copyLink(x) {
     try { await navigator.clipboard.writeText(`${window.location.origin}/jigsaw/p/${x.code}`); setCopied(x.code); setTimeout(() => setCopied(''), 2000); } catch (e) { /* no clipboard */ }
   }
@@ -522,7 +531,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
       {tab === 'yours' ? (
         <section aria-label="Your Photos">
           <p className="jp-mlede">
-            Puzzles you made from your own photos on this device. They are private to you unless you share the link or published them on Community Photos.
+            Puzzles you made from your own photos on this device. They are private to you unless you share the link or publish them on Community Photos.
             {' '}<a href="/jigsaw/make-your-own">Make another</a>.
           </p>
           {mine === null ? <p className="jp-mnone">Loading your photos.</p> : !mine.length ? (
@@ -546,6 +555,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
                       {live ? (
                         <span className="jp-mine">
                           <button type="button" onClick={() => copyLink(x)}>{copied === x.code ? 'Copied' : 'Copy Link'}</button>
+                          {x.token && x.status === 'private' ? <button type="button" onClick={() => publish(x)}>Publish on Community Photos</button> : null}
                           {x.token ? <button type="button" onClick={() => turnOff(x)}>Turn Off</button> : null}
                         </span>
                       ) : null}

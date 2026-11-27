@@ -459,7 +459,14 @@ const TILES_KEY = 'sot_home_tiles';
 const LAUNCHED = (() => {
   const m = {};
   try {
-    for (const x of PREMIERES) if (x && x.key && x.from && (!m[x.key] || x.from < m[x.key])) m[x.key] = x.from;
+    // Same-day launches (owner, 2026-11-27: Scales showed as Newest though Wanted came later):
+    // the day's TOP PREMIERES line is the latest launch (new lines go above their day), so the
+    // key carries the line's place after the date and a later line sorts as older.
+    PREMIERES.forEach((x, i) => {
+      if (!x || !x.key || !x.from) return;
+      const v = `${x.from}#${String(9999 - i).padStart(4, '0')}`;
+      if (!m[x.key] || v < m[x.key]) m[x.key] = v;
+    });
     for (const k of Object.keys(LAUNCH_DAILY || {})) if (!m[k]) m[k] = LAUNCH_DAILY[k];
   } catch (e) { /* no dates: Newest reads A to Z */ }
   return m;

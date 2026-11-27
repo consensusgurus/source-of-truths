@@ -5,6 +5,8 @@
 //                                        a code, an owner token and two signed upload URLs
 // POST { action: 'finish', code, token } both pictures are up: open the link, email the owner
 // POST { action: 'off', code, token }    the maker turns their link off (pictures deleted)
+// POST { action: 'publish', code, token, rights } the maker publishes a private one to Community
+//                                        Photos later (owner, 2026-11-27): it waits for approval
 // POST { action: 'mine', items }         status of this device's own uploads (Your Photos tab)
 // POST { action: 'admin', op, code, ... } approve, turn down, turn off, retitle (admin cookie only)
 
@@ -42,6 +44,7 @@ export async function POST(request) {
     if (action === 'start') return await start(b, request);
     if (action === 'finish') return await finish(b);
     if (action === 'off') return await turnOff(b);
+    if (action === 'publish') return await publish(b);
     if (action === 'mine') return await mine(b);
     if (action === 'admin') return await admin(b);
   } catch (e) {
@@ -97,6 +100,20 @@ async function turnOff(b) {
   const m = await getMeta(b.code);
   if (!m || !tokenMatches(m, b.token)) return bad('That puzzle was not found.', 404);
   await offAndRemove(m);
+  return NextResponse.json({ ok: true, meta: publicMeta(m) });
+}
+
+async function publish(b) {
+  const m = await getMeta(b.code);
+  if (!m || !tokenMatches(m, b.token)) return bad('That puzzle was not found.', 404);
+  if (b.rights !== true) return bad('Please confirm you have the right to share this photo publicly.');
+  if (!m.up || m.status !== STATUS.private) return bad(m.status === STATUS.pending ? 'It is already waiting for review.' : 'This puzzle cannot be published.');
+  m.status = STATUS.pending;
+  m.scope = 'community';
+  m.submitted = true;
+  m.publishedAt = new Date().toISOString();
+  await putMeta(m);
+  m.mail = await notifySubmission(m);
   return NextResponse.json({ ok: true, meta: publicMeta(m) });
 }
 
