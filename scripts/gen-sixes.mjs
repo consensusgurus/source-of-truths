@@ -3,6 +3,8 @@
 //
 //   node scripts/gen-sixes.mjs --probe            measure what the space offers
 //   node scripts/gen-sixes.mjs --from 2026-08-14 --days 140 > app/sixes/puzzles.js
+//   node scripts/gen-sixes.mjs --append --until 2027-04-30 > /tmp/sixes-new.js   (restock;
+//     then node scripts/_splice.mjs sixes /tmp/sixes-new.js)
 //
 // HOW A BOARD IS MADE
 //   1. Fill a random complete 6x6 grid (shuffled backtracking).
@@ -155,11 +157,17 @@ const rows = (flat) => {
   return out;
 };
 
-function build(from, days, sym) {
-  const rnd = rng(60606);
+function build(from, days, sym, prior = null) {
+  // prior (the --append mode): the live bank. Its solutions and clue patterns
+  // seed the variety sets, its last board seeds the day-to-day echo rule, the
+  // numbering carries on from it, and the RNG is OFFSET by its last num so the
+  // new segment cannot replay the frozen one.
+  const base = prior ? prior.length : 0;
+  const rnd = rng(prior ? 60606 + base * 7919 : 60606);
   const out = [];
-  const seenSol = new Set();
-  const seenPattern = new Set();
+  const seenSol = new Set(prior ? prior.map((p) => p.sol.flat().join('')) : []);
+  const seenPattern = new Set(prior ? prior.map((p) => p.given.flat().map((v) => (v ? 1 : 0)).join('')) : []);
+  const lastGiven = () => (out.length ? out[out.length - 1].given : prior && prior.length ? prior[prior.length - 1].given.flat() : null);
   const start = new Date(`${from}T00:00:00Z`);
   for (let k = 0; k < days; k++) {
     const d = new Date(start.getTime() + k * 86400000);
@@ -176,14 +184,15 @@ function build(from, days, sym) {
       // clue pattern is ever reused, and a board may repeat at most ONE printed
       // digit-in-square from the day before, so consecutive grids never open
       // looking like the same puzzle.
-      const echo = out.length ? out[out.length - 1].given.reduce((n, v, i) => n + (v && v === b.given[i] ? 1 : 0), 0) : 0;
+      const prev = lastGiven();
+      const echo = prev ? prev.reduce((n, v, i) => n + (v && v === b.given[i] ? 1 : 0), 0) : 0;
       if (echo > 1) continue;
       board = b;
       seenSol.add(solKey); seenPattern.add(patKey);
     }
     if (!board) throw new Error(`could not build a cost ${band[0]}-${band[1]} board for ${ymd(d)}`);
     out.push({
-      num: k + 1,
+      num: base + k + 1,
       quizId: quizId(d),
       live: ymd(d),
       dateLabel: label(d),
@@ -255,6 +264,20 @@ const arg = (k, dflt) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1
 const sym = !args.includes('--no-sym');
 if (args.includes('--probe')) {
   probe(Number(arg('--probe-n', 400)), sym);
+} else if (args.includes('--append')) {
+  // node scripts/gen-sixes.mjs --append --until YYYY-MM-DD > /tmp/sixes-new.js
+  // then: node scripts/_splice.mjs sixes /tmp/sixes-new.js
+  // Prints ONLY the new boards (the day after the bank's last through --until);
+  // the frozen bank is never regenerated, because a full regen does not
+  // reproduce its last board.
+  const { PUZZLES } = await import('../app/sixes/puzzles.js');
+  const last = PUZZLES[PUZZLES.length - 1].live;
+  const from = new Date(`${last}T00:00:00Z`); from.setUTCDate(from.getUTCDate() + 1);
+  const days = Math.round((Date.parse(`${arg('--until')}T00:00:00Z`) - from.getTime()) / 864e5) + 1;
+  if (!(days > 0)) { process.stderr.write(`sixes already runs to ${last}\n`); process.exit(0); }
+  const bank = build(ymd(from), days, sym, PUZZLES);
+  process.stdout.write(emit(bank));
+  process.stderr.write(`built ${bank.length} new boards ${bank[0].live} to ${bank[bank.length - 1].live}\n`);
 } else {
   const bank = build(arg('--from', '2026-08-14'), Number(arg('--days', 140)), sym);
   process.stdout.write(emit(bank));

@@ -1343,3 +1343,25 @@ Owner, 2026-11-26: picked "the weights one" from a list of new ideas, approved t
 - **Placement.** Numbers; skills Math and Deduction; group Number grids (with its set page copy);
   finish set Work it out; family beside Cipher; challenge metric checks (low is better).
 
+
+## The 2026-11-27 sudoku restock: every sudoku three months further (owner: "3 months each")
+
+Every dated sudoku bank was carried three months past its own last day: Whittle to 2027-03-31; Mercury, Polka,
+Quilt, Sixes and Towers to 04-30; the nine 6x6 smalls plus KayakToo and LipToo to 05-21; Suds, Arrow, Cages, Diag,
+Five, Frame, Giant, Knight, Racecar, Rim, Sando, Sumo and Window to 06-30; the colour twins follow their originals
+by 21 days (SixesToo and MercuryToo 05-21, the rest 07-21). Colossus and Mammoth have no dates and were not touched.
+Every frozen board is byte-identical. The command per shape, for next time:
+
+- **append in place:** `gen-knight|gen-diag|gen-window|gen-sumo|gen-giant|gen-five|gen-racecar --until D`,
+  `gen-gutter.mjs frame|rim --until D`, `gen-suds.mjs --days N --write`.
+- **START/DAYS generators:** `node scripts/_extend.mjs mercury|polka|towers gen-<key>.mjs D`.
+- **Arrow** (const END, resumes from a JSONL cache keyed by num): load the bank into
+  /tmp/build/arrow-bank.jsonl, run a copy with END = D, the output is the old file plus the new tail.
+- **Whole-bank deterministic:** `node scripts/_extself.mjs cages|sando|quilt gen-<key>.mjs D "--start {FROM} --days {DAYS}"`.
+- **Sixes and Whittle** now have `--append` (a full regen does not reproduce their last board):
+  `gen-sixes.mjs --append --until D`, `gen-whittle.mjs --append --until D --seed <fresh>`, then `_splice.mjs`.
+- **6x6 smalls:** `python3 scripts/small-sudoku/append.py <key> D` (do the numbers game before its colour
+  twin; it refuses grids within 14 days of the family's and boards whose printed digits solve without the rule).
+- **Colour twins:** copy the extended originals into a scratch root, `node scripts/gen-colour-twins.mjs <root> <keys>`,
+  and append only the dates after each twin's last board (never write the regenerated file over the live one).
+- Do not run two Diag/Window-family generators while clearing /tmp/build: they resume from it and crash if it vanishes.

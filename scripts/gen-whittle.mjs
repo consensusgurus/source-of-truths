@@ -3,6 +3,8 @@
 //
 //   node scripts/gen-whittle.mjs --probe --pool 200
 //   node scripts/gen-whittle.mjs --from 2026-09-07 --days 63 > app/whittle/puzzles.js
+//   node scripts/gen-whittle.mjs --append --until 2027-03-31 --seed 271127 > /tmp/whittle-new.js
+//     (restock; then node scripts/_splice.mjs whittle /tmp/whittle-new.js)
 //
 // HOW A BOARD IS MADE
 //   1. Fill a random complete 6x6 grid.
@@ -104,11 +106,15 @@ const quizId = (d) => `whittle-${d.getUTCMonth() + 1}-${d.getUTCDate()}-${String
 const rows = (flat) => { const out = []; for (let r = 0; r < N; r++) out.push(flat.slice(r * N, r * N + N)); return out; };
 const patternOf = (given) => given.map((v) => (v ? 1 : 0)).join('');
 
-function deal(pool, from, days) {
+function deal(pool, from, days, prior = null) {
+  // prior (the --append mode): the live bank, whose solutions, clue patterns
+  // and last board seed the variety rules, and whose numbering carries on.
+  const base = prior ? prior.length : 0;
   const out = [];
   const used = new Set();
-  const seenSol = new Set();
-  const seenPattern = new Set();
+  const seenSol = new Set(prior ? prior.map((p) => p.sol.flat().join('')) : []);
+  const seenPattern = new Set(prior ? prior.map((p) => patternOf(p.given.flat())) : []);
+  const prevGiven = () => (out.length ? out[out.length - 1].given : prior && prior.length ? prior[prior.length - 1].given.flat() : null);
   const start = new Date(`${from}T00:00:00Z`);
   for (let k = 0; k < days; k++) {
     const d = new Date(start.getTime() + k * 86400000);
@@ -120,9 +126,8 @@ function deal(pool, from, days) {
       const c = pool[j];
       if (c.forgive < band.lo || c.forgive > band.hi) continue;
       if (seenSol.has(c.sol.join('')) || seenPattern.has(patternOf(c.given))) continue;
-      const echo = out.length
-        ? out[out.length - 1].given.reduce((n, v, i) => n + (v && v === c.given[i] ? 1 : 0), 0)
-        : 0;
+      const prev = prevGiven();
+      const echo = prev ? prev.reduce((n, v, i) => n + (v && v === c.given[i] ? 1 : 0), 0) : 0;
       if (echo > 1) continue;
       pick = j;
       break;
@@ -133,7 +138,7 @@ function deal(pool, from, days) {
     seenSol.add(c.sol.join(''));
     seenPattern.add(patternOf(c.given));
     out.push({
-      num: k + 1,
+      num: base + k + 1,
       quizId: quizId(d),
       live: ymd(d),
       dateLabel: label(d),
@@ -217,6 +222,25 @@ if (args.includes('--probe')) {
   process.stderr.write(`removals min ${rem[0]}  med ${rem[(rem.length / 2) | 0]}  max ${rem[rem.length - 1]}\n`);
   process.stderr.write(`over ${POOL}: ${bins.map((b) => `${b.name.slice(0, 3)} ${b.n}`).join(' · ')}\n`);
   process.stderr.write(`unusable (outside every band): ${pool.filter((c) => !BANDS.some((b) => c.forgive >= b.lo && c.forgive <= b.hi)).length}\n`);
+} else if (args.includes('--append')) {
+  // node scripts/gen-whittle.mjs --append --until YYYY-MM-DD [--seed N] > /tmp/whittle-new.js
+  // then: node scripts/_splice.mjs whittle /tmp/whittle-new.js
+  // Prints ONLY new boards, dealt from a FRESH pool (pass a seed never used
+  // before; the 2026-11-27 restock used 271127). A full regen does not
+  // reproduce the bank's last board, so the frozen bank is never rebuilt.
+  const { PUZZLES } = await import('../app/whittle/puzzles.js');
+  const last = PUZZLES[PUZZLES.length - 1].live;
+  const from = new Date(`${last}T00:00:00Z`); from.setUTCDate(from.getUTCDate() + 1);
+  const days = Math.round((Date.parse(`${arg('--until')}T00:00:00Z`) - from.getTime()) / 864e5) + 1;
+  if (!(days > 0)) { process.stderr.write(`whittle already runs to ${last}\n`); process.exit(0); }
+  if (SEED === 90701) { process.stderr.write('--append needs a fresh --seed (90701 dealt the frozen bank)\n'); process.exit(1); }
+  const t0 = Date.now();
+  const pool = buildPool(POOL, SEED, (c, n) => {
+    if (n % 25 === 0) process.stderr.write(`  measured ${n}/${POOL}  ${((Date.now() - t0) / 1000).toFixed(0)}s\n`);
+  });
+  const bank = deal(pool, ymd(from), days, PUZZLES);
+  process.stdout.write(emit(bank));
+  process.stderr.write(`built ${bank.length} new boards ${bank[0].live} to ${bank[bank.length - 1].live}\n`);
 } else {
   const days = Number(arg('--days', 63));
   const t0 = Date.now();
