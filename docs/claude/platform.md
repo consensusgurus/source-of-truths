@@ -1084,6 +1084,8 @@ Design: the "Your Photo Jigsaws Mockup" canvas.
   Community, Turn Off Link (deletes the pictures). A private-only upload can never be approved.
 - **No pop-ups:** lib/game-active.js now treats /jig/big and every /jigsaw/ page as in play.
 
+****Play Together sizes (owner, 2026-11-27).** Private murals now cut at 308 (22 x 14), 504 (28 x 18), 640, 1,000, 1,960 and 4,000 (`PRIVATE_SIZES`, keys xxs/xs/s/m/l/xl); the shelf's Play Together link rounds the chosen size up to the nearest cut the photo can do.
+
 **Offer for the daily puzzles (owner, 2026-11-27).** The Make Your Own form has an optional
 "Offer It for the Daily Puzzles" block: Daily Jig, Daily Saw and Mural, each enabled only when the
 cropped upload meets that game's guideline (`DAILY_OFFERS` in `lib/photo-puzzle-shared.js`: Jig wide

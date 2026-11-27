@@ -98,7 +98,7 @@ export default function PrivateMuralClient() {
       const p = Number(sp.get('photo'));
       if (Number.isInteger(p) && p > 0) pin = p;
       const sz = sp.get('size');
-      if (sz && /^(s|m|l|xl)$/.test(sz)) setSize(sz);
+      if (sz && /^(xxs|xs|s|m|l|xl)$/.test(sz)) setSize(sz);
     } catch (e) { /* no query */ }
     load(String(Date.now()), pin).then((j) => { if (pin && j && Array.isArray(j.options) && j.options.some((o) => o.n === pin)) setPhoto(pin); });
   }, [load]);

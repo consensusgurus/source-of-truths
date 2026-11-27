@@ -63,9 +63,9 @@ const readJSON = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'nu
 // PLAY TOGETHER (owner, 2026-11-22: "in the Mural wiring we have the option to
 // create a private group to work on a puzzle. can we do that in the jigsaw shelf
 // too?"). A wide (Jig) picture opens the Private Mural start page with itself
-// and a size chosen; the private cuts are 640, 1,000, 1,960 and 4,000, so the
+// and a size chosen; the private cuts are 308, 504, 640, 1,000, 1,960 and 4,000, so the
 // shelf's size rounds up to the nearest one, held to what the photo can do.
-const TOGETHER = [['s', 640], ['m', 1000], ['l', 1960], ['xl', 4000]];
+const TOGETHER = [['xxs', 308], ['xs', 504], ['s', 640], ['m', 1000], ['l', 1960], ['xl', 4000]];
 function togetherKey(size, max) {
   const fits = TOGETHER.filter(([, n]) => n <= max);
   const up = TOGETHER.find(([, n]) => n >= size) || TOGETHER[TOGETHER.length - 1];
