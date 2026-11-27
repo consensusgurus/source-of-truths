@@ -307,10 +307,10 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="jp-top"><StageTopBar look={tone === 'dark' ? 'dark' : 'plain'} onFlip={flipTone} ink={T.ink} href="/" share /></div>
       <nav className="jp-crumb" aria-label="Breadcrumb">
-        <a href="/">Home</a><span aria-hidden="true">/</span>
+        <a href="/" className="jp-crh">Home</a><span aria-hidden="true" className="jp-crh">/</span>
         {crumb ? <><a href={crumb.href}>{crumb.label}</a><span aria-hidden="true">/</span></> : null}
         <span aria-current="page">Jigsaw Puzzles</span>
-        <span className="jp-a2h" style={{ '--stg-raise': T.ground, '--stg-acc': T.ink, '--stg-onramp': T.ground }}><AddToHome name="Jigsaw Puzzles" compact opens="The tile opens the Jigsaw Puzzles page, with every puzzle on it." /></span>
+        <span className="jp-a2h" style={{ '--stg-raise': T.ground, '--stg-acc': T.ink, '--stg-onramp': T.ground }}><AddToHome name="Jigsaw Puzzles" compact short="Add to Home" opens="The tile opens the Jigsaw Puzzles page, with every puzzle on it." /></span>
       </nav>
 
       <header className="jp-hero">
@@ -438,7 +438,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
                       <a className="jp-tog" href={`/mural/private?photo=${b.n}&size=${togetherKey(size, maxOf(b))}`}
                         aria-label={`Play ${b.name} together: start a private mural with your group or anyone you send the link to`}>
                         <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2" fill="none" stroke="currentColor" strokeWidth="2" /><path d="M3 19c.6-3.3 3-5 6-5s5.4 1.7 6 5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><circle cx="17" cy="9" r="2.6" fill="none" stroke="currentColor" strokeWidth="2" /><path d="M16.5 14.2c2.4.1 4.1 1.6 4.5 4.3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-                        Play Together
+                        <span>Play Together</span>
                       </a>
                     ) : null}
                     {ok ? (
@@ -858,5 +858,18 @@ html:not(.lc-on) .jp-ladder,html.lc-focus .jp-ladder{top:0;}
   .jp-max b{font-size:16px;}
   .jp-max span{display:none;}
   .jp-tone span{display:none;}
+  /* TWO-ROW HEADER (owner, 2026-11-27): the breadcrumb and the Add to Home pill share one row.
+     The Home crumb goes (the Mind Loft pill above already goes home; the BreadcrumbList JSON-LD
+     keeps it for search) and the pill reads "Add to Home". */
+  .jp-table>.jp-crumb{flex-wrap:nowrap;white-space:nowrap;}
+  .jp-crumb .jp-crh{display:none;}
+  .jp-crumb>a,.jp-crumb>span[aria-current]{overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .jp-crumb .a2h-l{display:none;}
+  .jp-crumb .a2h-s{display:inline !important;}
+  /* PLAY TOGETHER is the icon alone on a phone (owner, 2026-11-27: the full pill ran into the Done
+     tag, top-right, on a two-column card). The link keeps its full aria-label; wider screens keep
+     the words. */
+  .jp-tog{width:32px;padding:0;justify-content:center;gap:0;}
+  .jp-tog span{display:none;}
 }
 `;

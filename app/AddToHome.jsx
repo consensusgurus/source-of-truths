@@ -23,7 +23,9 @@ const isIosDevice = () =>
 // ending button, and also shows on a computer whose browser offers an install.
 // `opens` replaces the "opens today's puzzle, every day" line for a page that
 // is not a daily.
-export default function AddToHome({ name, noun = 'puzzle', compact = false, opens = null }) {
+// `short` (owner, 2026-11-27, Jigsaw Puzzles header in two rows on a phone) is a shorter pill label a
+// page may switch to in its own CSS (`.a2h-s` shown, `.a2h-l` hidden); unused, nothing changes.
+export default function AddToHome({ name, noun = 'puzzle', compact = false, opens = null, short = null }) {
   const [installEvt, setInstallEvt] = useState(null);
   const [help, setHelp] = useState(false);
   const [standalone, setStandalone] = useState(false);
@@ -48,8 +50,8 @@ export default function AddToHome({ name, noun = 'puzzle', compact = false, open
   return (
     <>
       {compact ? (
-        <button type="button" onClick={click} className="a2h-pill" style={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 800, height: 34, padding: '0 13px', borderRadius: 999, border: '1px solid var(--stg-line, rgba(20,22,28,0.2))', background: 'var(--stg-surf, transparent)', color: INK, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap', flex: 'none' }}>
-          <Smartphone size={14} strokeWidth={2.5} aria-hidden="true" /> Add to Home Screen
+        <button type="button" onClick={click} className="a2h-pill" aria-label={short ? 'Add to Home Screen' : undefined} style={{ fontFamily: SANS, fontSize: 12.5, fontWeight: 800, height: 34, padding: '0 13px', borderRadius: 999, border: '1px solid var(--stg-line, rgba(20,22,28,0.2))', background: 'var(--stg-surf, transparent)', color: INK, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap', flex: 'none' }}>
+          <Smartphone size={14} strokeWidth={2.5} aria-hidden="true" /> {short ? <><span className="a2h-l">Add to Home Screen</span><span className="a2h-s" style={{ display: 'none' }}>{short}</span></> : 'Add to Home Screen'}
         </button>
       ) : (
       <button type="button" onClick={click} style={{ marginTop: 10, width: '100%', fontFamily: SANS, fontSize: 13.5, letterSpacing: '0.05em', textTransform: 'uppercase', fontWeight: 800, height: 54, borderRadius: 10, border: 'none', background: 'var(--stg-acc, #1d4ed8)', color: 'var(--stg-onramp, #ffffff)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 9, whiteSpace: 'nowrap' }}>
