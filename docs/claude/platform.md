@@ -1042,3 +1042,33 @@ video gaming), and games (Lothian 1936, ASPREE 2023).
 - The footer column is written out in app/Footer.jsx, not imported, because Footer ships in every page's
   client bundle. Change the labels there and in `FOOTER_ARTICLES` together.
 - A new article is one entry. Bump `COGNITIVE_HEALTH_UPDATED` when the copy changes.
+
+## Your Photo Jigsaws: /jigsaw/* (owner, 2026-11-27)
+
+Owner: "a feature on the puzzle shelf where users can submit and create a puzzle from their own
+photos ... a private puzzle with their contacts ... a separate tab of user submitted photos", then
+"That feature needs to be worked into SEO content" and "wire in email notices to me upon
+submission". Picks: he approves every Community Photo; private sharing is an unlisted link.
+Design: the "Your Photo Jigsaws Mockup" canvas.
+
+- **No table, no migration.** One private Storage bucket, `photo-puzzles` (lib/photo-puzzles.js):
+  `full/<code>.jpg` (long side up to 3840), `small/<code>.jpg` (960 wide), `meta/<code>.json`,
+  `index/community.json` (approved, newest first), `limit/<day>.json` (12 uploads a player a day).
+  The bucket creates itself on first use.
+- **Upload path:** /jigsaw/make-your-own (MakerClient) redraws the photo on a canvas (drops EXIF,
+  GPS included; crop As Taken / Wide / Square / Tall), POSTs `start` to /api/photo-puzzles for a
+  code, an owner token and two signed upload URLs, uploads both JPEGs straight to Storage
+  (never through a Vercel body), then POSTs `finish`. The code is the private link; the token
+  (kept in `sot_photo_puzzles` on the device, only its hash on the server) turns it off.
+- **Email:** `finish` mails m@mindloftdaily.com at once for EVERY upload (private or submitted),
+  through Resend with NEWSLETTER_FROM, with the picture, the link and the review desk link.
+- **Pages:** /jigsaw/p/<code> private (noindex, nofollow, no photo share image, no sitemap);
+  /jigsaw/community/<slug> approved (indexed, ImageObject + BreadcrumbList, topic in the title,
+  in /sitemaps/photos.xml, an async segment listed by hand in the index and robots because
+  SITEMAP_SEGMENTS must stay sync). Both play on the Mural board in photo mode (`photo.src`).
+  Sizes greyed by resolution: `maxPiecesFor` (MIN_PIECE_PX 40 a piece).
+- **Shelf:** Community Photos and Your Photos tabs, a "Your Photo" hero button, a topic-row link
+  and a FAQ entry. Footer: "Make a Jigsaw From Your Photo".
+- **Review desk:** /jigsaw/review (admin cookie): Approve (title + topic), Turn Down, Take Off
+  Community, Turn Off Link (deletes the pictures). A private-only upload can never be approved.
+- **No pop-ups:** lib/game-active.js now treats /jig/big and every /jigsaw/ page as in play.

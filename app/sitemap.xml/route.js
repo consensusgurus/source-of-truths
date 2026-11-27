@@ -35,5 +35,7 @@ export function GET() {
     };
   });
 
+  // The Community Photos segment (app/sitemaps/[file], 2026-11-27) is async and listed by hand.
+  children.push({ url: `${SITE_URL}/sitemaps/photos.xml`, lastModified: new Date() });
   return xmlResponse(sitemapIndexXml(children));
 }

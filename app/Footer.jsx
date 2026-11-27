@@ -34,6 +34,7 @@ export const FOOTER_COLS = [
       { label: 'Puzzle Guides', href: '/guides' },
       // Every Jig photo so far, a box a day (owner, 2026-10-16).
       { label: 'Jigsaw Puzzles', href: '/jig/shelf' },
+      { label: 'Make a Jigsaw From Your Photo', href: '/jigsaw/make-your-own' },
       // Every past gauntlet question and problem, by topic (owner, 2026-11-21).
       { label: 'Trivia Database', href: '/trivia-questions' },
       { label: 'Math Database', href: '/math-questions' },

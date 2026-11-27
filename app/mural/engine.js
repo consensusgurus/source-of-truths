@@ -155,7 +155,7 @@ export function bootMural(root, cfg) {
       if (cfg.photo) {
         const P = cfg.photo;
         const big = P.cols * P.rows > 1000 && !((navigator.deviceMemory || 8) <= 4);
-        const loadPhoto = (w) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('img')); i.src = `/api/${P.g}/img?n=${P.n}${w ? `&w=${w}` : ''}`; });
+        const loadPhoto = (w) => new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('img')); i.src = P.src ? `${P.src}${w ? `&w=${w}` : ''}` : `/api/${P.g}/img?n=${P.n}${w ? `&w=${w}` : ''}`; });
         bootStep('Loading the picture.');
         let img;
         try { img = await loadPhoto(big ? 3840 : 1920); }
@@ -166,7 +166,7 @@ export function bootMural(root, cfg) {
         bootStep('Setting out the pieces.');
         await paint();
         if (dead) return;
-        start({ id: P.id, board: { cols: P.cols, rows: P.rows, grades: '', opens: Date.now(), closes: Infinity, photo: { name: P.name, by: P.by, lic: P.lic } }, img, state: {}, me: { pieces: (saved && saved.pieces) || [], points: 0, firsts: 0 }, anon: null, email: '', q: '', solo: true, photo: P, crowd: {}, crowdMe: {}, wall: null });
+        start({ id: P.id, board: { cols: P.cols, rows: P.rows, grades: '', opens: Date.now(), closes: Infinity, photo: { name: P.name, by: P.by, lic: P.lic, own: !!P.src } }, img, state: {}, me: { pieces: (saved && saved.pieces) || [], points: 0, firsts: 0 }, anon: null, email: '', q: '', solo: true, photo: P, crowd: {}, crowdMe: {}, wall: null });
         hideBoot();
         return;
       }
@@ -1011,7 +1011,7 @@ function finNext(box,complete,closed){
     }).catch(()=>{});
   }
 }
-function creditLine(){const p=env.board.photo||{};return p.name?'Photo: '+p.name+(p.by?', by '+p.by:'')+(p.lic?' ('+p.lic+')':'')+', Wikimedia Commons.':'';}
+function creditLine(){const p=env.board.photo||{};if(p.own)return p.by?'Photo shared by '+p.by+'.':'';return p.name?'Photo: '+p.name+(p.by?', by '+p.by:'')+(p.lic?' ('+p.lic+')':'')+', Wikimedia Commons.':'';}
 
 /* ---------- wiring ---------- */
 /* No wait on Shuffle (owner, 2026-11-19: "Remove the refresh limit"); the 10 second timer is gone.
@@ -1095,8 +1095,8 @@ function photoFinish(){
     +'.photoFin .pfC{font-size:12.5px;font-weight:600;margin:14px 0 0;opacity:.8}</style>'
     +'<div class="pfIn"><p class="pfEb">Jigsaw Finished</p><h2>'+esc(PHOTO.name)+'</h2>'
     +'<p>All '+n+' pieces, built on your own.</p>'
-    +'<img src="/api/'+PHOTO.g+'/img?n='+PHOTO.n+'&w=960" alt="'+esc(PHOTO.name)+', finished"/>'
-    +'<div class="pfB"><a class="pfP" href="/jig/shelf">Back to Jigsaw Puzzles</a><a href="/jig">Play Today\u2019s Jig</a><button type="button" data-close="1">See Your Finished Puzzle</button></div>'
+    +'<img src="'+(PHOTO.src?PHOTO.src+'&w=960':'/api/'+PHOTO.g+'/img?n='+PHOTO.n+'&w=960')+'" alt="'+esc(PHOTO.name)+', finished"/>'
+    +'<div class="pfB">'+(PHOTO.src?'<a class="pfP" href="/jigsaw/make-your-own">Make One From Your Photo</a><a href="/jig/shelf?tab=community">More Jigsaw Puzzles</a>':'<a class="pfP" href="/jig/shelf">Back to Jigsaw Puzzles</a>')+'<a href="/jig">Play Today\u2019s Jig</a><button type="button" data-close="1">See Your Finished Puzzle</button></div>'
     +'<p class="pfC">'+esc(creditLine())+'</p></div>';
   el.addEventListener('click',e=>{if(e.target.hasAttribute('data-close'))el.remove();});
   root.appendChild(el);

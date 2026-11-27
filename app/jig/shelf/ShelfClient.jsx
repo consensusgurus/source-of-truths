@@ -42,6 +42,7 @@ import { fetchDayStatus } from '../../useDayStats';
 import { migrateJigSaves } from '@/lib/jig-renum';
 import { focusStyle } from '@/lib/photo-focus';
 import AddToHome from '../../AddToHome';
+import { MINE_KEY, imgSrc, PHOTO_TOPICS, topicLabel } from '@/lib/photo-puzzle-shared';
 import { gameColor, softGround } from '@/lib/category-ramp';
 import {
   JIGSAW_SIZES, PHONE_SIZES, ALWAYS_OK, DEFAULT_SIZE, SIZE_KEY, DONE_KEY,
@@ -72,7 +73,9 @@ function togetherKey(size, max) {
   return fits[fits.length - 1][0];
 }
 
-const TABS = [['all', 'All Puzzles'], ['daily', 'Daily Archive'], ['murals', 'Murals'], ['kids', 'Kids']];
+// YOUR PHOTO JIGSAWS (owner, 2026-11-27): Community Photos (players' photos, each approved by the
+// owner first) and Your Photos (this device's own uploads, with their private links).
+const TABS = [['all', 'All Puzzles'], ['community', 'Community Photos'], ['yours', 'Your Photos'], ['daily', 'Daily Archive'], ['murals', 'Murals'], ['kids', 'Kids']];
 const LOOK_KEY = 'sot_jigsaw_look';
 const TABLE = {
   dark: { ground: '#16120e', ink: '#f4ead8', ink2: 'rgba(244,234,216,.82)', mute: 'rgba(244,234,216,.6)', surf: '#211b15', surf2: '#2b241c', line: 'rgba(244,234,216,.16)', cut: 'rgba(255,255,255,.34)' },
@@ -131,6 +134,10 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
   const [store, setStore] = useState({ done: {}, saves: {} });
   const [marks, setMarks] = useState({ solved: new Set(), played: new Set(), open: new Set(), ready: false });
   const [murals, setMurals] = useState(null);
+  const [community, setCommunity] = useState(null);   // approved Community Photos
+  const [cTopic, setCTopic] = useState('all');
+  const [mine, setMine] = useState(null);             // this device's uploads, with status
+  const [copied, setCopied] = useState('');
   // Dark by default (owner, 2026-11-21), Light on the toggle, kept on this device.
   const [tone, setTone] = useState('dark');
   useEffect(() => { try { if (localStorage.getItem(LOOK_KEY) === 'light') setTone('light'); } catch (e) {} }, []);
@@ -209,6 +216,43 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
   }, [boards]);
 
   useEffect(() => {
+    if (tab !== 'community' || community) return undefined;
+    let alive = true;
+    fetch('/api/photo-puzzles?community=1').then((r) => r.json())
+      .then((d) => { if (alive) setCommunity(Array.isArray(d && d.items) ? d.items : []); })
+      .catch(() => { if (alive) setCommunity([]); });
+    return () => { alive = false; };
+  }, [tab, community]);
+
+  useEffect(() => {
+    if (tab !== 'yours' || mine) return undefined;
+    let alive = true;
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem(MINE_KEY) || '[]'); if (!Array.isArray(local)) local = []; } catch (e) { local = []; }
+    if (!local.length) { setMine([]); return undefined; }
+    fetch('/api/photo-puzzles', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'mine', items: local.map((x) => ({ code: x.code })) }) })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!alive) return;
+        const by = new Map(((d && d.items) || []).map((x) => [x.code, x]));
+        setMine(local.map((x) => ({ ...x, ...(by.get(x.code) || { status: 'gone' }) })));
+      })
+      .catch(() => { if (alive) setMine(local.map((x) => ({ ...x, status: 'unknown' }))); });
+    return () => { alive = false; };
+  }, [tab, mine]);
+
+  async function turnOff(x) {
+    if (!window.confirm(`Turn off the link for "${x.name}"? The photo is deleted and the link stops working for everyone.`)) return;
+    try {
+      const r = await fetch('/api/photo-puzzles', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'off', code: x.code, token: x.token }) }).then((q) => q.json());
+      if (r && r.ok) setMine((a) => a.map((y) => (y.code === x.code ? { ...y, status: 'off' } : y)));
+    } catch (e) { /* stays as it was */ }
+  }
+  async function copyLink(x) {
+    try { await navigator.clipboard.writeText(`${window.location.origin}/jigsaw/p/${x.code}`); setCopied(x.code); setTimeout(() => setCopied(''), 2000); } catch (e) { /* no clipboard */ }
+  }
+
+  useEffect(() => {
     if (tab !== 'murals' || murals) return undefined;
     let alive = true;
     fetch('/api/mural/shelf').then((r) => r.json())
@@ -283,6 +327,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
               </a>
             ))}
             <a className="jp-b" href="/mural">Mural<small>4,000 pieces, together</small></a>
+            <a className="jp-b" href="/jigsaw/make-your-own">Your Photo<small>Make your own</small></a>
           </div>
         </div>
         {hero ? (
@@ -439,6 +484,80 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
         </section>
       ) : null}
 
+      {tab === 'community' ? (
+        <section aria-label="Community Photos">
+          <p className="jp-mlede">
+            Jigsaw puzzles made from photos Mind Loft players shared: pets, home cooking, hometowns and trips. Every one is reviewed before it goes up, and each plays at any size its photo can do.
+            {' '}<a href="/jigsaw/make-your-own">Make a jigsaw from your own photo</a> and submit it here.
+          </p>
+          {community && community.length ? (
+            <div className="jp-ctopics" role="group" aria-label="Topic">
+              {[['all', 'All'], ...PHOTO_TOPICS.map((t) => [t[0], t[1]])].filter(([k]) => k === 'all' || community.some((x) => x.topic === k)).map(([k, l]) => (
+                <button key={k} type="button" className={cTopic === k ? 'on' : ''} aria-pressed={cTopic === k} onClick={() => setCTopic(k)}>{l}</button>
+              ))}
+            </div>
+          ) : null}
+          {community === null ? <p className="jp-mnone">Loading Community Photos.</p> : !community.length ? (
+            <div className="jp-none"><p>No Community Photos yet. Be the first: make a puzzle from your photo and submit it.</p><a className="jp-kbtn" href="/jigsaw/make-your-own">Upload a Photo</a></div>
+          ) : (
+            <ul className="jp-grid">
+              {community.filter((x) => cTopic === 'all' || x.topic === cTopic).map((x) => (
+                <li key={x.code}>
+                  <a className="jp-card" href={`/jigsaw/community/${x.slug}`}>
+                    <span className="jp-ph">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={`${imgSrc(x.code)}&w=500`} alt={`${x.name} jigsaw puzzle`} loading="lazy" />
+                      <span className="jp-bd res">Up to {sizeLabel(x.max)}</span>
+                    </span>
+                    <span className="jp-cap">{x.name}</span>
+                    <span className="jp-sub">Shared by {x.by || 'a Mind Loft player'} · {topicLabel(x.topic)}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ) : null}
+
+      {tab === 'yours' ? (
+        <section aria-label="Your Photos">
+          <p className="jp-mlede">
+            Puzzles you made from your own photos on this device. Each has a private link only the people you send it to can open.
+            {' '}<a href="/jigsaw/make-your-own">Make another</a>.
+          </p>
+          {mine === null ? <p className="jp-mnone">Loading your photos.</p> : !mine.length ? (
+            <div className="jp-none"><p>You have not made a photo puzzle on this device yet.</p><a className="jp-kbtn" href="/jigsaw/make-your-own">Upload a Photo</a></div>
+          ) : (
+            <ul className="jp-grid">
+              {mine.map((x) => {
+                const live = x.status === 'private' || x.status === 'pending' || x.status === 'approved';
+                const label = { private: 'Private link', pending: 'Private link · Community Photos: waiting for review', approved: 'Private link · On Community Photos', declined: 'Not approved for Community Photos, link off', off: 'Link turned off', gone: 'Not found', unknown: 'Could not check' }[x.status] || '';
+                return (
+                  <li key={x.code}>
+                    <div className={`jp-card${live ? '' : ' off'}`}>
+                      <a className="jp-ph" href={live ? `/jigsaw/p/${x.code}` : undefined}>
+                        {live ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={`${imgSrc(x.code)}&w=500`} alt={x.name} loading="lazy" />
+                        ) : null}
+                      </a>
+                      <span className="jp-cap">{x.name}</span>
+                      <span className="jp-sub">{label}</span>
+                      {live ? (
+                        <span className="jp-mine">
+                          <button type="button" onClick={() => copyLink(x)}>{copied === x.code ? 'Copied' : 'Copy Link'}</button>
+                          {x.token ? <button type="button" onClick={() => turnOff(x)}>Turn Off</button> : null}
+                        </span>
+                      ) : null}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      ) : null}
+
       {tab === 'murals' ? (
         <section aria-label="Finished murals">
           <p className="jp-mlede">
@@ -481,6 +600,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
             {topics.map((t) => <a key={t.slug} href={t.href}>{t.label} jigsaw puzzles <b>{t.count}</b></a>)}
             <a href="/mural">4,000 piece Mural</a>
             <a href="/kids/jigsaw">Kids jigsaws</a>
+            <a href="/jigsaw/make-your-own">Make a jigsaw from your photo</a>
           </div>
         </nav>
       ) : null}
@@ -589,6 +709,11 @@ a.jp-card:focus-visible{outline:3px solid var(--stg-ink);outline-offset:4px;bord
 .jp-none p{margin:0 0 12px;font-size:15px;font-weight:700;color:var(--stg-ink2);}
 .jp-none button,.jp-kbtn{font:inherit;font-size:14px;font-weight:800;min-height:44px;padding:0 22px;border-radius:12px;border:1px solid var(--stg-ink);background:var(--stg-surf);color:var(--stg-ink);cursor:pointer;display:inline-flex;align-items:center;text-decoration:none;}
 .jp-note{margin:20px 0 0;font-size:13.5px;line-height:1.55;font-weight:600;color:var(--stg-mute);max-width:760px;}
+.jp-ctopics{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px;}
+.jp-ctopics button,.jp-mine button{font:inherit;font-size:13.5px;font-weight:800;min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--stg-line);background:transparent;color:var(--stg-ink);cursor:pointer;}
+.jp-ctopics button.on{background:var(--stg-ink);color:var(--stg-ground);border-color:var(--stg-ink);}
+.jp-mine{display:flex;gap:8px;flex-wrap:wrap;}
+.jp-mine button{border-radius:10px;border-color:var(--stg-ink);}
 .jp-mlede{max-width:760px;margin:0 0 16px;font-size:15px;line-height:1.55;font-weight:600;color:var(--stg-ink2);}
 .jp-mlede a{color:var(--stg-ink);font-weight:800;}
 .jp-mnone{font-size:15px;font-weight:700;color:var(--stg-mute);padding:24px 0;}

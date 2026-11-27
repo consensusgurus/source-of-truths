@@ -96,6 +96,10 @@ const FAQ = [
     a: 'Yes. Mural and MuralToo are 4,000 piece multiplayer jigsaws the whole site builds at once, and a Private Mural is the same giant jigsaw for just your group or anyone you send the link to. Finished murals come back to the Murals tab to build alone.',
   },
   {
+    q: 'Can I make a jigsaw puzzle from my own photo?',
+    a: 'Yes, for free. Upload a photo on the Make Your Own page, pick 24 to 4,000 pieces, and get a private link to send to family and friends. You can also submit it to Community Photos, where every photo is reviewed before it goes up.',
+  },
+  {
     q: 'Where do the jigsaw pictures come from?',
     a: 'Every picture is a featured photograph from Wikimedia Commons: animals, landscapes, cities and landmarks, flowers and food from around the world. The photographer and licence are credited when you finish the puzzle.',
   },

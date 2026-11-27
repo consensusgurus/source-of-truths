@@ -10,12 +10,15 @@
 import { SITEMAP_SEGMENTS } from '@/lib/sitemap-entries';
 import { urlsetXml, xmlResponse } from '@/lib/sitemap-xml';
 import { SITE_URL } from '@/lib/site';
+import { photoSitemapEntries } from '@/lib/photo-puzzles';
 
 // The games segment's lastmod rolls at Eastern midnight; never freeze this into the build.
 export const dynamic = 'force-dynamic';
 
-export function GET(request, { params }) {
+export async function GET(request, { params }) {
   const name = String(params.file || '').replace(/\.xml$/, '');
+  // Approved Community Photos (YOUR PHOTO JIGSAWS, 2026-11-27): async, read from Storage.
+  if (name === 'photos') return xmlResponse(urlsetXml(await photoSitemapEntries(SITE_URL)));
   const segment = SITEMAP_SEGMENTS.find((candidate) => candidate.name === name);
   if (!segment) return new Response('Not found', { status: 404 });
 

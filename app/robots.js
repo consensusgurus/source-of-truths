@@ -22,6 +22,7 @@ export default function robots() {
     sitemap: [
       `${SITE_URL}/sitemap.xml`,
       ...SITEMAP_SEGMENTS.map((segment) => `${SITE_URL}/sitemaps/${segment.name}.xml`),
+      `${SITE_URL}/sitemaps/photos.xml`,
     ],
   };
 }
