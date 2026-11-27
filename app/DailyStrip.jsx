@@ -153,7 +153,7 @@ const GAMES = [
   { key: 'tangled', href: '/tangled', name: 'Tangled', img: '/games/btn-tangled.png', store: 'sot_tangled_day', tag: "Untangle the ropes" , cat: 'Visual' },
   { key: 'witness', href: '/witness', name: 'Witness', img: '/games/btn-witness.png', store: 'sot_witness_day', tag: "What did you see?" , cat: 'Visual' },
   { key: 'glimpse', href: '/glimpse', name: 'Glimpse', img: '/games/btn-glimpse.png', store: 'sot_glimpse_day', tag: "One look, then one question" , cat: 'Visual' },
-  { key: 'wanted', href: '/wanted', name: 'Wanted', img: '/games/btn-wanted.png', store: 'sot_wanted_day', tag: "The giant hidden picture hunt" , cat: 'Visual' },
+  { key: 'wanted', href: '/wanted', name: 'Wanted', img: '/games/btn-wanted.png', store: 'sot_wanted_day', tag: "The daily hidden picture hunt" , cat: 'Visual' },
   { key: 'defuse', href: '/defuse', name: 'Defuse', img: '/games/btn-defuse.png', store: 'sot_defuse_day', tag: "Cut the wires in the safe order" , cat: 'Logic' },
   { key: 'spot', href: '/spot', name: 'Spot', img: '/games/btn-spot.png', store: 'sot_spot_day', tag: "Find the seven differences" , cat: 'Visual' },
   { key: 'sudoclue', href: '/sudoclue', name: 'Sudoclue', img: '/games/btn-sudoclue.png', store: 'sot_sudoclue_day', tag: "Find the killer, place the suspects" , cat: 'Logic' },

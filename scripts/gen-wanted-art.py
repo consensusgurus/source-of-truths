@@ -16,7 +16,7 @@ from playwright.async_api import async_playwright
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 FONTS = os.environ.get('MANROPE_DIR', os.path.abspath('package/files'))
 engine = open(f'{ROOT}/lib/wanted-engine.js').read()
-line = [l for l in open(f'{ROOT}/app/wanted/boards.js').read().split('\n') if l.startswith('  {"num":1')][0].rstrip(',')
+line = [l for l in open(f'{ROOT}/app/wanted/puzzles.js').read().split('\n') if l.startswith('  {"num":1')][0].rstrip(',')
 def face(w):
     return 'data:font/woff2;base64,' + base64.b64encode(open(f'{FONTS}/manrope-latin-{w}-normal.woff2', 'rb').read()).decode()
 HTML = '''<!DOCTYPE html><html><head><style>
@@ -31,11 +31,11 @@ body{margin:0;background:#7f1d1d;font-family:Manrope}
 #card .f{font-weight:600;font-size:18px;color:#9aa3b2;margin-top:18px}
 #tile{width:304px;height:304px}
 </style></head><body><div id="og"><canvas id="scene" width="1900" height="1300" style="width:950px;height:650px"></canvas>
-<div id="card"><div class="e">THE GIANT HIDDEN PICTURE PUZZLE</div><div class="t">Wanted</div><div class="d">One enormous crowd scene, hundreds of things to find. Can you spot Otis?</div><div class="f">Mind Loft · free, every day</div></div></div>
+<div id="card"><div class="e">THE DAILY HIDDEN PICTURE PUZZLE</div><div class="t">Wanted</div><div class="d">A new crowd scene every day and a list of things to find. Can you spot Otis?</div><div class="f">Mind Loft · free, every day</div></div></div>
 <canvas id="tile" width="304" height="304"></canvas>
 <script type="module">
 %s
-// NOT a live board (the card must not give a real Otis away): its own seed, one district.
+// NOT a live day (the card must not give a real Otis away): its own seed.
 const live = %s;
 const b = wantedBuild({ seed: 4242, cols: 1, districts: ['fairground'], pool: live.pool });
 const otis = b.targets.find((t) => t.kind === 'cast' && t.name === 'Otis');

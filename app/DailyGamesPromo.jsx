@@ -77,7 +77,7 @@ export const DAILY_GAMES = [
   { key: 'tangled', href: '/tangled', name: 'Tangled', tag: 'untangle the ropes', store: 'sot_tangled_day', accent: '#0f766e', bg: '#ccfbf1', border: 'rgba(15,118,110,0.35)' },
   { key: 'witness', href: '/witness', name: 'Witness', tag: 'what did you see?', store: 'sot_witness_day', accent: '#9f1239', bg: '#ffe4e6', border: 'rgba(159,18,57,0.35)' },
   { key: 'glimpse', href: '/glimpse', name: 'Glimpse', tag: 'one look, then one question', store: 'sot_glimpse_day', accent: '#86198f', bg: '#fae8ff', border: 'rgba(134,25,143,0.35)' },
-  { key: 'wanted', href: '/wanted', name: 'Wanted', tag: 'the giant hidden picture hunt', store: 'sot_wanted_day', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.35)' },
+  { key: 'wanted', href: '/wanted', name: 'Wanted', tag: 'the daily hidden picture hunt', store: 'sot_wanted_day', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.35)' },
   { key: 'defuse', href: '/defuse', name: 'Defuse', tag: 'cut the wires in the safe order', store: 'sot_defuse_day', accent: '#7c2d12', bg: '#ffedd5', border: 'rgba(124,45,18,0.35)' },
   { key: 'spot', href: '/spot', name: 'Spot', tag: 'find the seven differences', store: 'sot_spot_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)' },
   { key: 'sudoclue', href: '/sudoclue', name: 'Sudoclue', tag: 'find the killer', store: 'sot_sudoclue_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)' },

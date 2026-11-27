@@ -1,19 +1,17 @@
+import { Suspense } from 'react';
 import WantedClient from './WantedClient';
 import StageTail from '../StageTail';
+import { isStageServer } from '@/lib/stage';
 import { PUZZLES } from './puzzles';
-import { BOARD_BY_NUM, wantedSchedule } from '@/lib/wanted-server';
-import { wantedBoardForTime, wantedPublic } from '@/lib/wanted';
 import { SITE_URL } from '@/lib/site';
 import { categoryCrumb } from '@/lib/game-seo';
 
-// Wanted (launched 2026-11-26): the enormous hidden figure hunt. One huge crowd
-// scene made of districts, with Otis, his friends, lost things and odd scenes
-// hidden in every one, and a crowd hunting the same page (owner, 2026-11-26: "as
-// interesting as a where's waldo page, but humongous. It should play like
-// search"). See lib/wanted.js, lib/wanted-engine.js and app/api/wanted/route.js.
-// No clock and no Give up. The scene is a fixed full-screen layer drawn by the
-// browser from the board's seed, so the prose below is for crawlers and for a
-// reader without scripts.
+// Wanted (launched 2026-11-26): the daily hidden picture hunt. One crowd scene a
+// day, a list of things to find in it, and the clock (owner, 2026-11-26: "make
+// each day a different scene", "Not community. Scored by time to completion").
+// The scene is drawn by the browser from the day's seed (lib/wanted-engine.js).
+// This server page filters live<=today before handing puzzles to the client, so
+// a future day's seed never reaches a browser.
 //
 // THE WHERE'S WALDO REFERENCE IS A COMPARISON, NOTHING MORE (owner, 2026-11-26:
 // "The description should reference where's Waldo"). Copy may say Wanted is in
@@ -21,13 +19,13 @@ import { categoryCrumb } from '@/lib/game-seo';
 // scene is drawn like him: the star is Otis, our own character.
 
 export const metadata = {
-  title: "Free Giant Hidden Picture Hunt Like Where's Waldo: Wanted | Mind Loft",
-  description: "A free seek-and-find puzzle in the spirit of Where's Waldo, only enormous: one giant crowd scene, hundreds of things to find, and everyone hunting it at once.",
+  title: "Free Daily Seek and Find Puzzle Like Where's Waldo: Wanted | Mind Loft",
+  description: "A free daily seek-and-find puzzle in the spirit of Where's Waldo: one new crowd scene every day and a list of things to find in it. Fastest time wins.",
   alternates: { canonical: '/wanted' },
   openGraph: {
-    images: [{ url: '/og/wanted.png', width: 1200, height: 630, alt: 'Wanted, the giant hidden picture puzzle from Mind Loft' }],
-    title: 'Wanted: The Giant Hidden Picture Puzzle',
-    description: "In the spirit of Where's Waldo, only the page is the size of a town. Find Otis, his friends, and hundreds of other things before the crowd does.",
+    images: [{ url: '/og/wanted.png', width: 1200, height: 630, alt: 'Wanted, the daily hidden picture puzzle from Mind Loft' }],
+    title: 'Wanted: The Daily Hidden Picture Puzzle',
+    description: "In the spirit of Where's Waldo: a new crowd scene every day. Find Otis, his friends, and everything else on the list, as fast as you can.",
     url: '/wanted',
     type: 'website',
     siteName: 'Mind Loft',
@@ -35,8 +33,8 @@ export const metadata = {
   twitter: {
     images: ['/og/wanted.png'],
     card: 'summary_large_image',
-    title: 'Wanted: The Giant Hidden Picture Puzzle',
-    description: "In the spirit of Where's Waldo, only enormous. One giant crowd scene and hundreds of things to find.",
+    title: 'Wanted: The Daily Hidden Picture Puzzle',
+    description: "In the spirit of Where's Waldo: a new crowd scene every day. Find everything on the list, as fast as you can.",
   },
 };
 
@@ -44,13 +42,14 @@ const gameJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Game',
   name: 'Wanted',
-  alternateName: 'Wanted: The Giant Hidden Picture Puzzle',
+  alternateName: 'Wanted: The Daily Hidden Picture Puzzle',
   url: `${SITE_URL}/wanted`,
-  description: "A free hidden picture puzzle on an enormous scale, in the spirit of Where's Waldo. Each board is one giant crowd scene made of sixteen districts, such as a fairground, a beach, and a harbor, with more than 250 things to find: Otis in his green cap and orange scarf, his friend Mabel, his dog Biscuit, lost things, odd scenes, and one-of-a-kind people. Everyone searches the same scene; every find is a 100 point pot split among the players who make it.",
+  description: "A free daily hidden picture puzzle in the spirit of Where's Waldo. Every day brings one new crowd scene, such as a fairground, a beach, or a harbor, with more than a thousand little figures and a list of things to find: Otis in his green cap and orange scarf, his friend Mabel, his dog Biscuit, lost things, odd scenes, and one-of-a-kind people. Drag and zoom to search, tap what you find, and the fastest finished hunt tops the leaderboard.",
   genre: ['Hidden object', 'Seek and find', 'Puzzle'],
   gamePlatform: 'Web browser',
   isAccessibleForFree: true,
   inLanguage: 'en',
+  numberOfPlayers: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 1 },
   image: `${SITE_URL}/og/wanted.png`,
   publisher: { '@type': 'Organization', name: 'Mind Loft', url: `${SITE_URL}` },
 };
@@ -66,38 +65,26 @@ const breadcrumbJsonLd = {
 };
 
 export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
 
-export default async function WantedPage({ searchParams }) {
-  const wins = await wantedSchedule();
-  const current = wins[wins.length - 1];
-  // ?b=<board> opens a board that has opened; ?p=<site day> (the archive's
-  // link) opens the board that was up at the end of that Eastern day.
-  let win = current;
-  const b = Number(searchParams && searchParams.b);
-  const pn = Number(searchParams && searchParams.p);
-  if (Number.isInteger(b) && b > 0) win = wins.find((w) => w.num === b) || current;
-  else if (Number.isInteger(pn) && pn > 0) {
-    const day = PUZZLES.find((d) => d.num === pn);
-    if (day) win = wantedBoardForTime(wins, Date.parse(day.live + 'T23:59:00-05:00')) || current;
-  }
-  const board = win ? BOARD_BY_NUM.get(win.num) : null;
-  const past = wins.filter((w) => w.num !== (win && win.num)).map((w) => ({ num: w.num, closes: w.closes })).reverse();
+function etTodayServer() {
+  try { return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' }); }
+  catch (e) { return new Date().toISOString().slice(0, 10); }
+}
+
+export default function Page({ searchParams }) {
+  const today = etTodayServer();
+  const visiblePuzzles = PUZZLES.filter((p) => p.live <= today);
+  const n = Number(searchParams && searchParams.p);
+  const forceNum = Number.isInteger(n) && n > 0 ? n : null;
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(gameJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
-      <main>
-        <h1>Wanted: The Giant Hidden Picture Puzzle</h1>
-        <section style={{ maxWidth: 720, margin: '0 auto', padding: '24px 16px' }}>
-          <h2>About Wanted</h2>
-          <p>Wanted is a free hidden picture puzzle from Mind Loft, a seek-and-find in the spirit of Where&rsquo;s Waldo, only on an enormous scale. Each board is one giant crowd scene made of sixteen districts, such as a fairground, a beach, a market, a harbor, a ski slope, and a zoo, with close to twenty thousand little figures going about their day. Hidden in every district are Otis, in his green cap and orange scarf, his friend Mabel, his dog Biscuit, a handful of lost things, a few odd scenes, and a couple of one-of-a-kind people: more than 250 things to find on one page.</p>
-          <p>Everyone searches the same scene. Every find is a pot of 100 points split among everyone who makes it, so something you find alone is worth 100 and something forty players found is worth 3. Each find tells you who found it before you, and the standings rank points first and total finds second. Plenty of people in the crowd look almost like Otis, and a wrong tap costs nothing.</p>
-          <p>A board stays open until the crowd has found everything on it, however long that takes and never less than 24 hours, and the next scene opens the moment it closes with districts nobody has seen before. Drag to move around, pinch or scroll to zoom, and the drawings stay sharp however close you get. The full list waits behind a button. There is no clock and no Give up. No app, no signup, no download.</p>
-        </section>
-        {board && <WantedClient key={board.num} puzzle={wantedPublic(board)} win={win} currentNum={current.num} past={past} />}
-      </main>
-      <StageTail self="wanted" />
+      {/* Suspense is required: the client reads useSearchParams. */}
+      <Suspense fallback={null}>
+        <WantedClient key={forceNum || 'today'} puzzles={visiblePuzzles} forceNum={forceNum} />
+      </Suspense>
+      <StageTail self="wanted" stage={isStageServer('wanted', searchParams)} />
     </>
   );
 }

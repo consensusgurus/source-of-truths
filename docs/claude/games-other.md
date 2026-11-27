@@ -3901,7 +3901,7 @@ until every entry is found, <24h mark> at the earliest". `searchWindows(boardCou
 moment still closed on its cap and does not reopen (windows are recomputed from launch on every read). Never
 move that constant earlier. A board with one entry nobody can find stays up indefinitely: that is the rule as
 ordered, and forcing a board over is the owner's call. `scripts/verify-search.mjs` covers both rules. The same
-change went into Colossus and Mammoth (`lib/mega.js`, see games-sudoku.md) and Wanted was born with it.
+change went into Colossus and Mammoth (`lib/mega.js`, see games-sudoku.md). Wanted launched with it too and dropped it the same night, when it became an ordinary daily.
 
 ## Glimpse: the daily flash-recall game (launched 2026-11-22)
 
@@ -3946,70 +3946,71 @@ about the rules, the weekly ramp, the proof of one answer and the files is in
 version: never edit a board by hand or change `buildBoard` in place (the checker rebuilds every
 board from its seed), and extend the bank with `node scripts/gen-scales.mjs --through YYYY-MM-DD`.
 
-## Wanted: the enormous hidden figure hunt (launched 2026-11-26)
+## Wanted: the daily hidden picture hunt (launched 2026-11-26)
 
-Owner, 2026-11-26, after turning down Highrise twice and looking at Vault and Shortcut: "I like lineup
-concept - can we make it as interesting as a where's Waldo page, but humongous? It should play like search",
-then of the mockup "This is great, but needs to be hugomgous. We can call it Wanted", then "Let's build and
-implement. Lots of different 'districts' and let's write into building instructions that every new inventory
-build will add some new districts", "Make the drawings a bit sharper", and "The description should reference
-where's Waldo". Mockup: project doc `claude/otis-mockup-2026-11-26.md`. Key/route `wanted`, category
-**Visual**, group Observation puzzles, finish set Picture hunts (Spot and Wanted, split out of Sharp eyes because a finish set holds at most four), a tally game exactly as Search is
-(`unit: 'points'`, `solvesOnScore`, `bestRun`, `miss: null`), Featured and `FEATURED_STAYS`, and
-`NEXT_PINS` hands Spot to it. No Sunday Edition.
+**What it is now.** An ordinary solo daily on the clock. Each Eastern day is ONE crowd scene (a fairground,
+a beach, a harbor: one district, 1600 x 1200, about 1,200 figures) with about sixteen things to find: Otis
+(green cap, orange scarf, mustache), his friend Mabel, his dog Biscuit, two one-of-a-kind people, five lost
+things and the scene's odd scenes. Find everything; a finished hunt ranks on the clock. Key/route `wanted`,
+category **Visual**, group Observation puzzles, finish set Picture hunts (Spot and Wanted, split out of Sharp
+eyes because a finish set holds at most four), `miss: null`, **SOLVE_ONLY** (posts 10 of 10 or 0), in
+Featured, no Sunday Edition. Runs on `app/SimpleDaily.jsx` like Spot and Fill.
 
-- **What it is.** One huge crowd scene made of DISTRICTS, 1600 x 1200 each, sixteen to a board in a 4 x 4
-  page (6400 x 4800, about 19,000 figures). In every district: Otis (green cap, orange scarf, mustache), his
-  friend Mabel, his dog Biscuit, two one-of-a-kind people, five lost things, and the district's odd scenes:
-  257 things to find on boards 1 and 2. Ten Otis lookalikes per district each have one thing wrong; tapping
-  one says what ("Close. Not Otis: wrong cap") and costs nothing.
-- **It plays like Search.** Own copy, every find a pot of 100 split among its finders (`wantedValue`),
-  standings on points then finds, a find names who else has it or says you are the first finder, the list
-  behind a button (by district, with To find / Found / Unfound / All), a "Looking for" bar that names one
-  thing and never says where, Refresh or two minutes for the crowd, a closing screen, `?b=<n>` for a past
-  board. No clock, no Give up. Storage, filing and settle are `lib/wanted-server.js`, a straight copy of
-  `lib/search-server.js` (rows on the board key `wanted-b<n>`, markers `#solved` and `#settled`).
-- **NO AUTOMATIC TURNOVER**, from birth: `wantedWindows` has no cap. A board closes when the crowd has found
-  everything, never in under 24 hours. Board 1 opened 9pm ET 2026-11-26.
-- **THE SCENE IS NOT A PICTURE.** A board in `app/wanted/boards.js` is `{ num, key, seed, cols, districts,
-  pool, n, sum }` and nothing else. `lib/wanted-engine.js` builds the whole scene from the seed in the
-  browser (about a tenth of a second) and `app/wanted/WantedClient.jsx` paints it as vectors in 512 pixel
-  tiles at the device's own density for whatever zoom the player is at, so it is sharp at any size and there
-  is nothing to host. Tiles are painted a few per frame, nearest the middle first, a coarser tile stands in
-  until the sharp one lands, and far-out zoom levels draw the lite figure (`lod` 0).
-- **THE ENGINE'S THREE RULES. Break one and every find already made on an open or closed board points at
-  the wrong spot.**
+**How it got here, all on 2026-11-26.** Owner, after turning down Highrise twice and looking at Vault and
+Shortcut: "I like lineup concept - can we make it as interesting as a where's Waldo page, but humongous? It
+should play like search", then "We can call it Wanted", "Lots of different 'districts'", "Make the drawings a
+bit sharper", "The description should reference where's Waldo". It shipped that evening as ONE sixteen
+district board (257 things) the whole site hunted together, scored like Search with split 100 point pots and
+no automatic turnover (commit feaa66e). An hour later: "I think we should pull wanted and make each day a
+different scene. Quicker resolve", then "Not community. Scored by time to completion". The community version
+was removed whole: `/api/wanted`, `lib/wanted-server.js`, `app/wanted/boards.js`, the tally registry flags,
+the Spot hand-off pin, FEATURED_STAYS. (Its `/api/wanted` GET was also broken for that hour by a bad
+search-and-replace, `wantedParams`, so the crowd never loaded.) DO NOT bring the crowd, the pots or the
+standing board back without a new order. Mockup of the first idea: project doc `claude/otis-mockup-2026-11-26.md`.
+
+- **Play.** Drag to move, pinch / scroll / buttons to zoom, Fit for the whole scene, tap what you find (a red
+  ring). The list sits under the scene with a portrait each; tapping one shows its hint in the Looking for
+  box. Ten Otis lookalikes per scene each have one thing wrong; tapping one says what ("Close. Not Otis: wrong
+  cap") and costs nothing. No misses are counted: the clock is the only cost. Give up shows what was missed
+  (white rings). The scene is not drawn until Start, so the clock is fair.
+- **THE SCENE IS NOT A PICTURE.** A row in `app/wanted/puzzles.js` is `{ num, quizId, live, dateLabel, build,
+  seed, cols: 1, districts: [one], pool, n, sum }`. `lib/wanted-engine.js` builds the scene from the seed in
+  the browser and `app/wanted/WantedClient.jsx` paints it as vectors in 512 pixel tiles at the device's own
+  density for whatever zoom the player is at, so it is sharp at any size and there is nothing to host. The
+  server page filters `live <= today`, so a future seed never reaches a browser (today's does, as every
+  daily's board does).
+- **THE ENGINE'S THREE RULES. Break one and a day that has gone live changes under its players.**
   1. Generation uses ONLY the seeded RNG and exact arithmetic. No `Math.random`, `Math.sin`, `Math.cos`,
      `Math.log`, `Math.pow`, `Date`: they differ between engines or between runs. `verify-wanted` scans for them.
-  2. A district builder is FROZEN the moment a live board uses it. Never edit one, reorder its calls, or
-     change a shared helper's use of the RNG. To change a district, write a new one under a new id.
+  2. A district builder is FROZEN the moment a live day uses it. Never edit one, reorder its calls, or change
+     a shared helper's use of the RNG. To change a district, write a new one under a new id.
   3. New THINGS, UNIQUES and shared SCENES are APPENDED to the end of their lists, never inserted or removed;
-     each board pins the pool sizes it was built with (`pool: { u, t, s }`), so an old board never sees them.
+     each row pins the pool sizes it was built with (`pool: { u, t, s }`), so an old day never sees them.
   Drawing code (how a figure looks) may change freely as long as it draws no RNG numbers and moves no hit box.
-  Every board stores a checksum (`sum`) of its built scene; `node scripts/verify-wanted.mjs` rebuilds every
-  board and fails on a mismatch. Run it after ANY engine edit.
+  Every row stores a checksum (`sum`) of its built scene; `node scripts/verify-wanted.mjs` rebuilds every day
+  and fails on a mismatch. Run it after ANY engine edit.
 - **EVERY INVENTORY BUILD ADDS NEW DISTRICTS (owner rule, 2026-11-26: "every new inventory build will add some
-  new districts").** `node scripts/gen-wanted.mjs --boards N` appends boards, and REFUSES to write a board
-  that does not include at least two districts no earlier board has used (`NEW_PER_BOARD = 2`);
-  `verify-wanted` enforces the same thing on the stored bank. So restocking Wanted is always two jobs: write
-  at least two new district builders per new board at the END of `DISTRICTS` in the engine (a ground, its
-  landmarks, three to six odd scenes of its own with names and hints, avoid areas, a crowd size), then run
-  the generator. Board 1 uses the first sixteen; board 2 brings in the film set and the building site, and
-  those were the only two spare at launch, so board 3 needs two more written first. Look at each new
-  district at full size before shipping (a page that imports the engine and calls `wantedDraw`) and check nothing ordinary
-  stands on top of a target. `--days YYYY-MM-DD` extends the site-days list (`app/wanted/puzzles.js`).
+  new districts").** Each run of `node scripts/gen-wanted.mjs --through YYYY-MM-DD` that adds days is one
+  build (`build` on every row). Every build after the first REFUSES to run unless the engine holds at least
+  two districts no earlier day has used (`NEW_PER_BUILD = 2`), and gives those the first days of the new
+  stretch; `verify-wanted` enforces the same on the stored bank. So restocking Wanted is always two jobs:
+  write at least two new district builders at the END of `DISTRICTS` in the engine (a ground, its landmarks,
+  three to six odd scenes of its own with names and hints, avoid areas, a crowd size), then run the
+  generator. Build 1 runs 2026-11-26 through 2026-12-31 and uses all eighteen districts written at launch,
+  each twice, so the January restock needs two new ones first. The same place never returns inside ten days.
+  Look at each new district at full size before shipping (a page that imports the engine and calls
+  `wantedDraw`) and check nothing ordinary stands on top of a target.
 - **The Where's Waldo reference is comparative only.** Site copy may say Wanted is "in the spirit of Where's
-  Waldo" (metadata, About prose, the help sheet, the registry `how`). Nothing may say or imply Waldo is in
-  it, and nobody is drawn like him: no red and white stripes with a bobble hat and round glasses on the
+  Waldo" (metadata, About prose, the registry `how`, category and set copy). Nothing may say or imply Waldo
+  is in it, and nobody is drawn like him: no red and white stripes with a bobble hat and round glasses on the
   star. Otis, Mabel and Biscuit are ours. Keep it that way when adding lookalikes and one-of-a-kind people,
   and do not draw any other known character either.
 - **Art.** `scripts/gen-wanted-art.py` draws both tiles and `public/og/wanted.png` from the engine. The share
-  card is built from a seed no live board uses, on purpose: a card cut from a real board would show where
-  that board's Otis is.
-- **Known gaps.** The board's seed reaches the browser, so a determined player could compute every hiding
-  place (Search sends its grid the same way). No rate limit on POST. The engine has only been checked in
-  Chromium; exact-arithmetic generation is what keeps other browsers in step, and the checksum the client
-  could compare (`wantedChecksum`) is not yet checked in the page.
-- Files: `lib/wanted.js` (rules, windows), `lib/wanted-engine.js`, `lib/wanted-server.js`,
-  `app/api/wanted/route.js`, `app/wanted/{page.js,WantedClient.jsx,boards.js,puzzles.js}`,
+  card is built from a seed no live day uses, on purpose: a card cut from a real day would show where that
+  day's Otis is.
+- **Open questions, not decided by the owner.** Sixteen things may be long for a timed daily (Spot has
+  seven); the count is whatever the district holds, so shortening it means a `take` field on new rows, never
+  an engine edit. There is no weekly ramp and no Sunday Edition. The engine has only been checked in
+  Chromium.
+- Files: `lib/wanted.js`, `lib/wanted-engine.js`, `app/wanted/{page.js,WantedClient.jsx,puzzles.js}`,
   `scripts/{gen,verify,wire}-wanted.mjs`, `scripts/gen-wanted-art.py`.

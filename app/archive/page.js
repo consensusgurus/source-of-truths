@@ -559,7 +559,7 @@ const GAMES = [
   { key: 'bot', name: 'Bot', path: '/bot', tag: 'Program the robot to light every lamp', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: BOT },
   { key: 'witness', name: 'Witness', path: '/witness', tag: 'What did you see?', accent: '#9f1239', bg: '#ffe4e6', border: 'rgba(159,18,57,0.35)', src: WITNESS },
   { key: 'glimpse', name: 'Glimpse', path: '/glimpse', tag: 'One look, then one question', accent: '#86198f', bg: '#fae8ff', border: 'rgba(134,25,143,0.35)', src: GLIMPSE },
-  { key: 'wanted', name: 'Wanted', path: '/wanted', tag: 'The giant hidden picture hunt', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.35)', src: WANTED },
+  { key: 'wanted', name: 'Wanted', path: '/wanted', tag: 'The daily hidden picture hunt', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.35)', src: WANTED },
   { key: 'defuse', name: 'Defuse', path: '/defuse', tag: 'Cut the wires in the safe order', accent: '#7c2d12', bg: '#ffedd5', border: 'rgba(124,45,18,0.35)', src: DEFUSE },
   { key: 'spot', name: 'Spot', path: '/spot', tag: 'Find the seven differences', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: SPOT },
   { key: 'sudoclue', name: 'Sudoclue', path: '/sudoclue', tag: 'Find the killer, place the suspects', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: SUDOCLUE },

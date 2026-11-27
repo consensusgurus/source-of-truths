@@ -1,11 +1,11 @@
-// scripts/wire-wanted.mjs: wires Wanted, the enormous hidden figure hunt (Visual,
+// scripts/wire-wanted.mjs: wires Wanted, the daily hidden picture hunt (Visual,
 // launched 2026-11-26), into every registry, beside Glimpse wherever Glimpse sits.
 //
-// A TALLY game like Search (unit: points, solvesOnScore, bestRun): everything on
-// the list is a 100 point pot split among its finders, and a player's result
-// for an Eastern day is the points from the finds made that day, one row per
-// player per day kept current by /api/wanted and settled when the board closes.
-// NO SUNDAY EDITION: every day is already enormous.
+// An ordinary solo daily on the clock (owner, 2026-11-26: "Not community.
+// Scored by time to completion"): miss null, SOLVE_ONLY, no Sunday Edition.
+// It was first wired that evening as a Search-style tally game; those edits
+// (unit points, the Spot hand-off pin, FEATURED_STAYS, the challenge metric,
+// the linear XP list) were taken back out by hand and are not in this script.
 //
 // Anchored edits: every anchor must match EXACTLY ONCE or the script throws,
 // and an edit whose insertion is already present is skipped, so a re-run is safe.
@@ -33,20 +33,19 @@ function afterLine(f, marker, lines) {
   wr(f, parts.join('\n')); applied++;
 }
 
-const TAG = 'The giant hidden picture hunt';
-const TAGLONG = 'One enormous crowd scene with hundreds of things to find';
-const HOW = 'One enormous crowd scene, sixteen districts wide, in the spirit of Where\\u2019s Waldo: find Otis in his green cap and orange scarf, his friend Mabel, his dog Biscuit, and the lost things, odd scenes, and one-of-a-kind people hidden in every district. Drag to move and pinch or scroll to zoom. Everyone searches the same scene, and every find is a pot of 100 points split among the players who make it. A board runs until the crowd has found everything, however long that takes. No clock and no Give up.';
-const BLURB = 'One enormous crowd scene and more than 250 things to find in it. Find the ones nobody else finds.';
-const SHORT = 'A giant crowd scene with hundreds of things to find.';
+const TAG = 'The daily hidden picture hunt';
+const TAGLONG = 'One crowd scene a day and a list of things to find in it';
+const HOW = 'One crowd scene a day, in the spirit of Where\\u2019s Waldo: a fairground, a beach, a harbor, each with more than a thousand little figures. Find everything on the list: Otis in his green cap and orange scarf, his friend Mabel, his dog Biscuit, and the lost things, odd scenes, and one-of-a-kind people hidden around them. Drag to move and pinch or scroll to zoom. A wrong tap costs nothing but time, and a finished hunt ranks on the clock.';
+const BLURB = 'A new crowd scene every day and a list of things to find in it. Find Otis and all the rest, as fast as you can.';
+const SHORT = 'A crowd scene a day: find everything on the list.';
 const COLOR = '#b91c1c', NAVY = '#fca5a5', BG = '#fee2e2', BORDER = 'rgba(185,28,28,0.35)';
 
-// 1. registry row, premiere, and the hand-off from Spot
+// 1. registry row, premiere, and SOLVE_ONLY
 afterLine('lib/daily-games.js', "{ key: 'glimpse', miss: null, name: 'Glimpse'", [
-  `  { key: 'wanted', miss: null, unit: 'points', solvesOnScore: true, bestRun: true, name: 'Wanted', cat: 'Visual', tag: '${TAG}', tagLong: '${TAGLONG}', how: '${HOW}', color: '${COLOR}', colorNavy: '${NAVY}' },`]);
+  `  { key: 'wanted', miss: null, name: 'Wanted', cat: 'Visual', tag: '${TAG}', tagLong: '${TAGLONG}', how: '${HOW}', color: '${COLOR}', colorNavy: '${NAVY}' },`]);
 afterLine('lib/daily-games.js', 'export const PREMIERES = [', [
   `  { key: 'wanted', from: '2026-11-26', until: '2026-12-03' },`]);
-sub('lib/daily-games.js', `  scour: { key: 'search', label: 'The giant word search' },\n`,
-  `  scour: { key: 'search', label: 'The giant word search' },\n  spot: { key: 'wanted', label: '${TAG}' },\n`);
+sub('lib/daily-games.js', `'defend', 'queen', 'swindle', 'gift',\n]);`, `'defend', 'queen', 'swindle', 'gift', 'wanted',\n]);`);
 
 // 2. end card and launch pins
 sub('app/DailyEndCard.jsx', `const LAUNCH_PIN = { keys: [`, `const LAUNCH_PIN = { keys: ['wanted', `);
@@ -58,7 +57,7 @@ afterLine('app/DailyEndCard.jsx', "{ key: 'glimpse',    cat: 'visual',", [
 
 // 3. promo, grid, strip
 afterLine('app/DailyGamesPromo.jsx', "{ key: 'glimpse', href: '/glimpse'", [
-  `  { key: 'wanted', href: '/wanted', name: 'Wanted', tag: 'the giant hidden picture hunt', store: 'sot_wanted_day', accent: '${COLOR}', bg: '${BG}', border: '${BORDER}' },`]);
+  `  { key: 'wanted', href: '/wanted', name: 'Wanted', tag: 'the daily hidden picture hunt', store: 'sot_wanted_day', accent: '${COLOR}', bg: '${BG}', border: '${BORDER}' },`]);
 afterLine('app/DailyGamesGrid.jsx', "{ key: 'glimpse', href: '/glimpse', name: 'Glimpse'", [
   `  { key: 'wanted', href: '/wanted', name: 'Wanted', tag: '${TAG}', img: '/games/btn-wanted.png' },`]);
 sub('app/DailyGamesGrid.jsx', `'spot', 'witness', 'glimpse', 'focus', 'park'`, `'spot', 'wanted', 'witness', 'glimpse', 'focus', 'park'`);
@@ -99,36 +98,32 @@ const Wanted = () => (
 const Witness = () => (\n`);
 sub('app/GamePreviewTiles.jsx', `glimpse: Glimpse, `, `glimpse: Glimpse, wanted: Wanted, `);
 afterLine('lib/game-blurbs.js', '  glimpse: "', [`  wanted: "${SHORT}",`]);
-afterLine('lib/daily-difficulty.js', '  glimpse: 3, // a starting estimate', [`  wanted: 1, // a starting estimate (2026-11-26): any find scores`]);
+afterLine('lib/daily-difficulty.js', '  glimpse: 3, // a starting estimate', [`  wanted: 2, // a starting estimate (2026-11-26) until a week of plays rates it`]);
 sub('lib/daily-families.js', `['alibi', 'sudoclue', 'sworn', 'hearsay', 'fib', 'witness', 'glimpse'],`, `['alibi', 'sudoclue', 'sworn', 'hearsay', 'fib', 'witness', 'glimpse'],\n  ['spot', 'wanted', 'focus'],`);
-sub('lib/quiz-xp.js', `'search', 'colossus', 'mammoth', `, `'search', 'wanted', 'colossus', 'mammoth', `);
-afterLine('lib/challenge-metric.js', "  search: { unit: 'points', one: 'point', dir: 'high', say: 'scored' },", [
-  "  wanted: { unit: 'points', one: 'point', dir: 'high', say: 'scored' },"]);
 
-// 8. featured (stays after it is played: there is always more to find), share card
+// 8. featured, share card
 sub('lib/featured.js', `export const FEATURED_KEYS = [`, `export const FEATURED_KEYS = ['wanted', `);
-sub('lib/featured.js', `export const FEATURED_STAYS = new Set([`, `export const FEATURED_STAYS = new Set(['wanted', `);
 sub('lib/og-stage-cards.js', `export const HAND_BAKED = new Set([`, `export const HAND_BAKED = new Set(['wanted', `);
 
 // 9. groups and finish sets (a finish set holds two to four: Spot and Wanted become Picture hunts), and the Observation puzzles set page: four become five
 sub('lib/daily-groups.js', `{ name: 'Observation puzzles', cat: 'Visual', keys: ['spot', 'witness', 'glimpse', 'focus'] },`, `{ name: 'Observation puzzles', cat: 'Visual', keys: ['spot', 'wanted', 'witness', 'glimpse', 'focus'] },`);
 sub('lib/finish-sets.js', `{ name: 'Sharp eyes', cat: 'Visual', keys: ['spot', 'witness', 'glimpse', 'focus'] },`, `{ name: 'Picture hunts', cat: 'Visual', keys: ['spot', 'wanted'] },\n  { name: 'Sharp eyes', cat: 'Visual', keys: ['witness', 'glimpse', 'focus'] },`);
 const PS = 'lib/puzzle-sets.js';
-sub(PS, `h1: 'Free Daily Observation Puzzles: Spot the Difference, a Scene to Remember, a Flash to Recall and a Zoomed Photo',`, `h1: 'Free Daily Observation Puzzles: Spot the Difference, a Giant Hidden Picture, Memory Games, and a Zoomed Photo',`);
-sub(PS, `description: 'Four free daily puzzles won by paying attention: two photographs with seven differences, a street scene`, `description: 'Five free daily puzzles won by paying attention: two photographs with seven differences, an enormous hidden picture hunt everyone shares, a street scene`);
-sub(PS, `lede: 'Four puzzles where everything you need is in front of you, if you look closely enough. Spot puts two copies of one photograph side by side with seven differences between them.`, `lede: 'Five puzzles where everything you need is in front of you, if you look closely enough. Spot puts two copies of one photograph side by side with seven differences between them. Wanted is one enormous crowd scene with hundreds of things to find, hunted by everyone at once.`);
-sub(PS, `because they count before the clock. Witness is a memory game:`, `because they count before the clock. Wanted is a hidden picture hunt in the spirit of Where\\u2019s Waldo, only the page is sixteen districts wide: find Otis, his friends, and more than 250 other things, each worth more the fewer players find it, on a board that stays open until the crowd has found them all. Witness is a memory game:`);
+sub(PS, `h1: 'Free Daily Observation Puzzles: Spot the Difference, a Scene to Remember, a Flash to Recall and a Zoomed Photo',`, `h1: 'Free Daily Observation Puzzles: Spot the Difference, a Hidden Picture Hunt, Memory Games, and a Zoomed Photo',`);
+sub(PS, `description: 'Four free daily puzzles won by paying attention: two photographs with seven differences, a street scene`, `description: 'Five free daily puzzles won by paying attention: two photographs with seven differences, a crowd scene with a list of things to find, a street scene`);
+sub(PS, `lede: 'Four puzzles where everything you need is in front of you, if you look closely enough. Spot puts two copies of one photograph side by side with seven differences between them.`, `lede: 'Five puzzles where everything you need is in front of you, if you look closely enough. Spot puts two copies of one photograph side by side with seven differences between them. Wanted is a new crowd scene every day with a list of things to find in it.`);
+sub(PS, `because they count before the clock. Witness is a memory game:`, `because they count before the clock. Wanted is a hidden picture hunt in the spirit of Where\\u2019s Waldo: one crowded scene a day, a fairground or a beach or a harbor, and a list of about sixteen things to find in it, starting with Otis in his green cap and orange scarf. A finished hunt ranks on the clock. Witness is a memory game:`);
 sub(PS, `and Glimpse adds a sixth, faster flash on Sunday.'],\n      ['Are they free?', 'All four, every day, no account required.'],`, `and Glimpse adds a sixth, faster flash on Sunday.'],\n      ['Are they free?', 'All five, every day, no account required.'],`);
 
 // 10. the Visual category page: one more
 const PC = 'lib/puzzle-categories.js';
 sub(PC, `description: 'Twenty-one free daily visual and spatial puzzles: two jigsaws, a 4,000 piece jigsaw everyone builds together, three more photo puzzles, spot the difference, a scene memory game,`,
-  `description: 'Twenty-two free daily visual and spatial puzzles: two jigsaws, a 4,000 piece jigsaw everyone builds together, three more photo puzzles, spot the difference, a giant hidden picture hunt, a scene memory game,`);
+  `description: 'Twenty-two free daily visual and spatial puzzles: two jigsaws, a 4,000 piece jigsaw everyone builds together, three more photo puzzles, spot the difference, a daily hidden picture hunt, a scene memory game,`);
 sub(PC, `lede: 'Twenty-one puzzles you solve with your eyes and a sense of space, one new board apiece every day. Six put a photograph back together, one of them a 4,000 piece mural the whole site builds at once, four test how closely you look,`,
   `lede: 'Twenty-two puzzles you solve with your eyes and a sense of space, one new board apiece every day. Six put a photograph back together, one of them a 4,000 piece mural the whole site builds at once, five test how closely you look,`);
 sub(PC, `'spot', 'witness', 'glimpse', 'focus', 'park', 'impound',`, `'spot', 'wanted', 'witness', 'glimpse', 'focus', 'park', 'impound',`);
-sub(PC, `spot: 'Spot the difference', witness: 'Scene memory game',`, `spot: 'Spot the difference', wanted: 'Giant hidden picture puzzle', witness: 'Scene memory game',`);
-sub(PC, `with seven differences between them. Witness shows a street scene for twenty seconds and then asks six questions`, `with seven differences between them. Wanted is one enormous crowd scene, in the spirit of Where\\u2019s Waldo, with more than 250 things to find and the whole site hunting it at once. Witness shows a street scene for twenty seconds and then asks six questions`);
+sub(PC, `spot: 'Spot the difference', witness: 'Scene memory game',`, `spot: 'Spot the difference', wanted: 'Hidden picture puzzle (seek and find)', witness: 'Scene memory game',`);
+sub(PC, `with seven differences between them. Witness shows a street scene for twenty seconds and then asks six questions`, `with seven differences between them. Wanted is a hidden picture hunt in the spirit of Where\\u2019s Waldo: a new crowd scene every day and a list of things to find in it, against the clock. Witness shows a street scene for twenty seconds and then asks six questions`);
 sub(PC, `['Are they free?', 'All twenty-one, every day, no account required.'],\n    ],\n  },\n  {\n    slug: 'number-puzzles',`, `['Are they free?', 'All twenty-two, every day, no account required.'],\n    ],\n  },\n  {\n    slug: 'number-puzzles',`);
 
 console.log(`wire-wanted: ${applied} edits applied, ${skipped} already present`);

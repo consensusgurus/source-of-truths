@@ -181,7 +181,7 @@ const GAMES = [
   { key: 'tangled', href: '/tangled', name: 'Tangled', tag: 'Untangle the ropes', img: '/games/btn-tangled.png' },
   { key: 'witness', href: '/witness', name: 'Witness', tag: 'What did you see?', img: '/games/btn-witness.png' },
   { key: 'glimpse', href: '/glimpse', name: 'Glimpse', tag: 'One look, then one question', img: '/games/btn-glimpse.png' },
-  { key: 'wanted', href: '/wanted', name: 'Wanted', tag: 'The giant hidden picture hunt', img: '/games/btn-wanted.png' },
+  { key: 'wanted', href: '/wanted', name: 'Wanted', tag: 'The daily hidden picture hunt', img: '/games/btn-wanted.png' },
   { key: 'defuse', href: '/defuse', name: 'Defuse', tag: 'Cut the wires in the safe order', img: '/games/btn-defuse.png' },
   { key: 'spot', href: '/spot', name: 'Spot', tag: 'Find the seven differences', img: '/games/btn-spot.png' },
   { key: 'sudoclue', href: '/sudoclue', name: 'Sudoclue', tag: 'Find the killer, place the suspects', img: '/games/btn-sudoclue.png' },
