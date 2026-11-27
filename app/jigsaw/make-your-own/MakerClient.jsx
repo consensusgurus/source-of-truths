@@ -46,7 +46,10 @@ export default function MakerClient() {
   const [name, setName] = useState('');
   const [by, setBy] = useState('');
   const [pieces, setPieces] = useState(150);
-  const [share, setShare] = useState('private');
+  // Owner, 2026-11-27 (later): "Just Me" is the default; sharing by link or publishing on
+  // Community Photos are opt-in.
+  const [share, setShare] = useState('me');
+  const [reveal, setReveal] = useState(false);
   const [rights, setRights] = useState(false);
   const [busy, setBusy] = useState('');
   const [err, setErr] = useState('');
@@ -134,21 +137,30 @@ export default function MakerClient() {
         <h2 style={{ marginTop: 0 }}>{done.name}</h2>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {url ? <img className="pz-pic" src={url} alt={done.name} style={{ maxHeight: 320 }} /> : null}
-        <div className="pz-link" style={{ display: 'flex', gap: 10, alignItems: 'center', margin: '14px 0', padding: '10px 12px', border: '1px solid rgba(244,234,216,.3)', borderRadius: 12, background: '#16120e' }}>
-          <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 700 }}>{link.replace(/^https?:\/\//, '')}</span>
-          <button type="button" className="pz-btn" style={{ minHeight: 40, padding: '8px 16px' }} onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
-        </div>
-        <div className="pz-row" style={{ margin: '0 0 14px' }}>
-          <a className="pz-btn ghost" href={`sms:?&body=${encodeURIComponent(msg)}`}>Text</a>
-          <a className="pz-btn ghost" href={`mailto:?subject=${encodeURIComponent(`A jigsaw puzzle for you: ${done.name}`)}&body=${encodeURIComponent(msg)}`}>Email</a>
-          {typeof navigator !== 'undefined' && navigator.share ? <button type="button" className="pz-btn ghost" onClick={() => navigator.share({ title: done.name, text: `I made you a jigsaw puzzle: ${done.name}`, url: link }).catch(() => {})}>More</button> : null}
-        </div>
-        <p className="pz-note">Only people with this link can play. It is not listed on Mind Loft and search engines are told not to show it. You can turn the link off any time from Your Photos on the Jigsaw Puzzles page.</p>
-        {done.share === 'community' ? <p className="pz-note">You also submitted it to Community Photos. It shows there once Mind Loft has reviewed it.</p> : null}
+        {done.share === 'me' && !reveal ? (
+          <>
+            <p>Saved to Your Photos. It is private to you: nobody else can find it on Mind Loft or in search.</p>
+            <button type="button" className="pz-btn ghost" style={{ marginBottom: 14 }} onClick={() => setReveal(true)}>Share a Private Link Instead</button>
+          </>
+        ) : (
+          <>
+          <div className="pz-link" style={{ display: 'flex', gap: 10, alignItems: 'center', margin: '14px 0', padding: '10px 12px', border: '1px solid rgba(244,234,216,.3)', borderRadius: 12, background: '#16120e' }}>
+            <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 700 }}>{link.replace(/^https?:\/\//, '')}</span>
+            <button type="button" className="pz-btn" style={{ minHeight: 40, padding: '8px 16px' }} onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
+          </div>
+          <div className="pz-row" style={{ margin: '0 0 14px' }}>
+            <a className="pz-btn ghost" href={`sms:?&body=${encodeURIComponent(msg)}`}>Text</a>
+            <a className="pz-btn ghost" href={`mailto:?subject=${encodeURIComponent(`A jigsaw puzzle for you: ${done.name}`)}&body=${encodeURIComponent(msg)}`}>Email</a>
+            {typeof navigator !== 'undefined' && navigator.share ? <button type="button" className="pz-btn ghost" onClick={() => navigator.share({ title: done.name, text: `I made you a jigsaw puzzle: ${done.name}`, url: link }).catch(() => {})}>More</button> : null}
+          </div>
+          <p className="pz-note">Only people with this link can play. Search engines are told not to show it. You can turn the link off any time from Your Photos on the Jigsaw Puzzles page.</p>
+          </>
+        )}
+        {done.share === 'community' ? <p className="pz-note">You published it to Community Photos. It shows there once Mind Loft has reviewed it.</p> : null}
         <div className="pz-row">
           <a className="pz-btn" href={`/jigsaw/p/${done.code}?pieces=${done.pieces}`}>Play It Now</a>
           <a className="pz-btn ghost" href="/jig/shelf?tab=yours">Go to Your Photos</a>
-          <button type="button" className="pz-btn ghost" onClick={() => { setDone(null); setImg(null); setUrl(''); setName(''); setRights(false); }}>Make Another</button>
+          <button type="button" className="pz-btn ghost" onClick={() => { setDone(null); setImg(null); setUrl(''); setName(''); setRights(false); setShare('me'); setReveal(false); }}>Make Another</button>
         </div>
       </section>
     );
@@ -202,8 +214,9 @@ export default function MakerClient() {
 
           <div role="radiogroup" aria-label="Who can play" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ fontWeight: 800, fontSize: 14 }}>Who Can Play</div>
-            {[['private', 'Only People With the Link', 'Private. Send it to family and friends. Never shown in search.'],
-              ['community', 'Link, Plus Submit to Community Photos', 'Your link works right away. Mind Loft reviews the photo before anyone else sees it.']].map(([k, t, d]) => (
+            {[['me', 'Just Me', 'Private to you. It is saved in Your Photos on this device and never shown to anyone else.'],
+              ['link', 'Me and People I Send the Link To', 'Get a private link to text or email to family and friends. Never shown in search.'],
+              ['community', 'Publish on Community Photos', 'Everyone on Mind Loft can play it once Mind Loft has reviewed the photo. You also get a link right away.']].map(([k, t, d]) => (
               <button key={k} type="button" role="radio" aria-checked={share === k} onClick={() => setShare(k)}
                 style={{ textAlign: 'left', background: share === k ? '#2b241c' : '#16120e', border: `1px solid ${share === k ? '#f3d98b' : 'rgba(244,234,216,.2)'}`, borderRadius: 12, padding: '12px 14px', color: '#f4ead8', cursor: 'pointer', fontFamily: 'inherit' }}>
                 <span style={{ display: 'block', fontSize: 15, fontWeight: 800 }}>{t}</span>

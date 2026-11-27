@@ -1060,6 +1060,10 @@ Design: the "Your Photo Jigsaws Mockup" canvas.
   code, an owner token and two signed upload URLs, uploads both JPEGs straight to Storage
   (never through a Vercel body), then POSTs `finish`. The code is the private link; the token
   (kept in `sot_photo_puzzles` on the device, only its hash on the server) turns it off.
+- **Who it is for (owner, 2026-11-27 later):** three choices, `scope` on the meta: **Just Me**
+  (`me`, THE DEFAULT, status private, no share UI, can reveal a link after), **Me and People I
+  Send the Link To** (`link`, private) and **Publish on Community Photos** (`community`, pending
+  until approved). Uploads made before this have no scope and read as `link`.
 - **Email:** `finish` mails m@mindloftdaily.com at once for EVERY upload (private or submitted),
   through Resend with NEWSLETTER_FROM, with the picture, the link and the review desk link.
 - **Pages:** /jigsaw/p/<code> private (noindex, nofollow, no photo share image, no sitemap);

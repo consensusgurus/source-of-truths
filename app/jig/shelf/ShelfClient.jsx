@@ -522,7 +522,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
       {tab === 'yours' ? (
         <section aria-label="Your Photos">
           <p className="jp-mlede">
-            Puzzles you made from your own photos on this device. Each has a private link only the people you send it to can open.
+            Puzzles you made from your own photos on this device. They are private to you unless you share the link or published them on Community Photos.
             {' '}<a href="/jigsaw/make-your-own">Make another</a>.
           </p>
           {mine === null ? <p className="jp-mnone">Loading your photos.</p> : !mine.length ? (
@@ -531,7 +531,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
             <ul className="jp-grid">
               {mine.map((x) => {
                 const live = x.status === 'private' || x.status === 'pending' || x.status === 'approved';
-                const label = { private: 'Private link', pending: 'Private link · Community Photos: waiting for review', approved: 'Private link · On Community Photos', declined: 'Not approved for Community Photos, link off', off: 'Link turned off', gone: 'Not found', unknown: 'Could not check' }[x.status] || '';
+                const label = { private: x.scope === 'me' ? 'Just you' : 'Private link', pending: 'Private link · Community Photos: waiting for review', approved: 'Private link · On Community Photos', declined: 'Not approved for Community Photos, link off', off: 'Link turned off', gone: 'Not found', unknown: 'Could not check' }[x.status] || '';
                 return (
                   <li key={x.code}>
                     <div className={`jp-card${live ? '' : ' off'}`}>

@@ -67,6 +67,9 @@ async function start(b, request) {
   const code = newCode(), token = newToken();
   const meta = {
     code, name, by, w, h, max, pieces,
+    // Who it is for (owner, 2026-11-27): 'me' (the default, private to the maker), 'link' (shared
+    // by private link) or 'community' (published once approved).
+    scope: ['me', 'link', 'community'].includes(b.share) ? b.share : 'me',
     status: b.share === 'community' ? STATUS.pending : STATUS.private,
     submitted: b.share === 'community', at: new Date().toISOString(), tok: hashToken(token), owner: hashToken(who).slice(0, 24), up: false,
   };

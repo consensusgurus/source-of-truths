@@ -41,12 +41,12 @@ export default function PhotoPage({ meta, base, pieces, community, related = [] 
           {community ? <><a href="/jig/shelf?tab=community">Community Photos</a><span aria-hidden="true">/</span></> : null}
           <span aria-current="page">{meta.name}</span>
         </nav>
-        <span className="pz-eyb">{community ? `Community Photo · ${topicLabel(meta.topic)}` : 'A private puzzle for you'}</span>
-        <h1>{community ? `${meta.name} Jigsaw Puzzle` : `${by || 'Someone'} made you a jigsaw puzzle`}</h1>
+        <span className="pz-eyb">{community ? `Community Photo · ${topicLabel(meta.topic)}` : meta.scope === 'me' ? 'Your Photos · just for you' : 'A private puzzle for you'}</span>
+        <h1>{community ? `${meta.name} Jigsaw Puzzle` : meta.scope === 'me' ? `${meta.name}: your jigsaw puzzle` : `${by || 'Someone'} made you a jigsaw puzzle`}</h1>
         <p className="pz-lede">
           {community
             ? `A free online jigsaw puzzle of ${meta.name}, from a photo shared by ${by}. Play it at any size up to ${sizeLabel(meta.max)} pieces, in your browser, with no download and no signup.`
-            : `${meta.name}, made from a photo and shared with you by link. No signup needed: pick a size and start. Only people with this link can open it.`}
+            : meta.scope === 'me' ? 'Made from your photo and kept just for you. Pick a size and start.' : `${meta.name}, made from a photo and shared with you by link. No signup needed: pick a size and start. Only people with this link can open it.`}
         </p>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="pz-pic" src={`${imgSrc(meta.code)}&w=1280`} alt={`${meta.name}, a photo jigsaw puzzle`} width={meta.w} height={meta.h} />

@@ -35,7 +35,7 @@ const SIZES = [
 ];
 const FAQ = [
   ['Is it free to make a jigsaw puzzle from my photo?', 'Yes. Making, playing and sharing photo jigsaw puzzles on Mind Loft is free, with no download and no app.'],
-  ['Who can see my puzzle?', 'Only people you send the link to. A photo appears on Community Photos only if you submit it there and Mind Loft approves it.'],
+  ['Who can see my puzzle?', 'Just you, unless you choose otherwise. You can share a private link with family and friends, or publish it on Community Photos, where it appears once Mind Loft approves it.'],
   ['Do my family and friends need an account to play?', 'No. Anyone with the link can play on a phone, a tablet or a computer, right in the browser.'],
   ['How many pieces can my photo have?', 'Anywhere from 24 to 4,000 pieces, depending on how many pixels the photo has. Each piece needs enough detail to stay sharp, so bigger sizes need bigger photos.'],
   ['Can I turn off a link later?', 'Yes. Open Your Photos on the Jigsaw Puzzles page on the device you made it on and turn the link off. The photo is deleted and the link stops working.'],
@@ -68,7 +68,7 @@ export default function MakeYourOwnPage() {
           <a href="/">Home</a><span aria-hidden="true">/</span><a href="/jig/shelf">Jigsaw Puzzles</a><span aria-hidden="true">/</span><span aria-current="page">Make Your Own</span>
         </nav>
         <h1>Make a Jigsaw Puzzle From Your Own Photo, Free</h1>
-        <p className="pz-lede">Turn any photo into an online jigsaw puzzle in seconds. Pick from 24 to 4,000 pieces, play it in your browser, and send a private link to family and friends. No app, no signup to play.</p>
+        <p className="pz-lede">Turn any photo into an online jigsaw puzzle in seconds. Pick from 24 to 4,000 pieces and play it in your browser. Keep it just for you, send a private link to family and friends, or publish it on Community Photos. No app, no signup to play.</p>
         <MakerClient />
 
         <h2>How to Make a Photo Jigsaw Puzzle</h2>
@@ -79,7 +79,7 @@ export default function MakeYourOwnPage() {
         </ol>
 
         <h2>Private Jigsaw Puzzles for Family and Friends</h2>
-        <p>A puzzle made from your photo is private by default. Only people with the link can open it, and it never appears on Mind Loft or in search results. Everyone you send it to picks their own size, so the same picture works as a quick 48 piece puzzle for a grandchild and a 1,000 piece one for a jigsaw fan. It makes an easy gift for a birthday, a holiday card or a family reunion.</p>
+        <p>A puzzle made from your photo is just for you by default: it is saved in Your Photos and nobody else can find it. Want to share it? Choose a private link instead. Only people you send the link to can open it, and it never appears on Mind Loft or in search results. Everyone you send it to picks their own size, so the same picture works as a quick 48 piece puzzle for a grandchild and a 1,000 piece one for a jigsaw fan. It makes an easy gift for a birthday, a holiday card or a family reunion.</p>
 
         <h2>How Many Pieces Can My Photo Have?</h2>
         <div className="pz-card" style={{ padding: 0, overflow: 'hidden' }}>
