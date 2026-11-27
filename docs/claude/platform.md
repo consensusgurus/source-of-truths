@@ -1067,6 +1067,10 @@ Design: the "Your Photo Jigsaws Mockup" canvas.
 - **Publish later (owner, 2026-11-27):** Your Photos has "Publish on Community Photos" on any
   private one (POST `publish` with the owner token): status pending, emails the owner, then the
   normal approval.
+- **Telling the player (owner, 2026-11-27, "use option 1"):** app/jigsaw/PhotoNotice.jsx, a quiet
+  bottom bar like the comment notice, on the device the puzzle was made on. `sot_photo_status`
+  holds the last status seen per code; only 'pending' ones are checked (POST `mine`, at most every
+  five minutes) and an approval or turn-down is shown once. No email.
 - **Email:** `finish` mails m@mindloftdaily.com at once for EVERY upload (private or submitted),
   through Resend with NEWSLETTER_FROM, with the picture, the link and the review desk link.
 - **Pages:** /jigsaw/p/<code> private (noindex, nofollow, no photo share image, no sitemap);

@@ -42,7 +42,7 @@ import { fetchDayStatus } from '../../useDayStats';
 import { migrateJigSaves } from '@/lib/jig-renum';
 import { focusStyle } from '@/lib/photo-focus';
 import AddToHome from '../../AddToHome';
-import { MINE_KEY, imgSrc, PHOTO_TOPICS, topicLabel } from '@/lib/photo-puzzle-shared';
+import { MINE_KEY, imgSrc, PHOTO_TOPICS, topicLabel, noteStatus } from '@/lib/photo-puzzle-shared';
 import { gameColor, softGround } from '@/lib/category-ramp';
 import {
   JIGSAW_SIZES, PHONE_SIZES, ALWAYS_OK, DEFAULT_SIZE, SIZE_KEY, DONE_KEY,
@@ -235,6 +235,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
       .then((d) => {
         if (!alive) return;
         const by = new Map(((d && d.items) || []).map((x) => [x.code, x]));
+        by.forEach((x) => noteStatus(x.code, x.status));
         setMine(local.map((x) => ({ ...x, ...(by.get(x.code) || { status: 'gone' }) })));
       })
       .catch(() => { if (alive) setMine(local.map((x) => ({ ...x, status: 'unknown' }))); });
@@ -253,7 +254,7 @@ export default function ShelfClient({ boards, today, crumb, faq, topics = [], al
     if (!window.confirm(`Publish "${x.name}" on Community Photos? Everyone on Mind Loft will be able to play it once Mind Loft has reviewed it.\n\nBy publishing you confirm you took this photo or have the right to share it, and that anyone in it is OK with it being public.`)) return;
     try {
       const r = await fetch('/api/photo-puzzles', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'publish', code: x.code, token: x.token, rights: true }) }).then((q) => q.json());
-      if (r && r.ok) setMine((a) => a.map((y) => (y.code === x.code ? { ...y, status: 'pending', scope: 'community' } : y)));
+      if (r && r.ok) { noteStatus(x.code, 'pending'); setMine((a) => a.map((y) => (y.code === x.code ? { ...y, status: 'pending', scope: 'community' } : y))); }
       else if (r && r.error) window.alert(r.error);
     } catch (e) { /* stays as it was */ }
   }

@@ -11,6 +11,7 @@ import DailySaveSync from './DailySaveSync';
 import TrophyPop from './TrophyPop';
 import ThanksPop from './ThanksPop';
 import CommentNotice from './community/CommentNotice';
+import PhotoNotice from './jigsaw/PhotoNotice';
 import EmailTicketPop from './EmailTicketPop';
 import GrowPop from './GrowPop';
 import { PriceCheckItemsGlobal } from './pricecheck/ItemsPop';
@@ -238,6 +239,9 @@ export default function RootLayout({ children }) {
             not in the one-pop-up-a-visit budget, never mid game.
             app/community/CommentNotice.jsx. */}
         <CommentNotice />
+        {/* Owner-approved (2026-11-27): the same quiet bar when a player's Community Photo is
+            approved or turned down, on the device it was made on. app/jigsaw/PhotoNotice.jsx. */}
+        <PhotoNotice />
         {/* Reloads once when a hashed chunk from a superseded deployment fails to
             load. See app/ChunkReload.jsx and app/error.js (2026-09-23). */}
         <ChunkReload />

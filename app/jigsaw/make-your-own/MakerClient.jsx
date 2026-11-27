@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { savedIdentity } from '@/lib/saved-identity';
 import { JIGSAW_SIZES, sizeLabel } from '@/lib/jigsaw-sizes';
-import { FULL_MAX, SMALL_W, MIN_LONG, MAX_BYTES, MINE_KEY, maxPiecesFor, cleanText } from '@/lib/photo-puzzle-shared';
+import { FULL_MAX, SMALL_W, MIN_LONG, MAX_BYTES, MINE_KEY, maxPiecesFor, cleanText, noteStatus } from '@/lib/photo-puzzle-shared';
 
 const SHAPES = [['photo', 'As Taken', 0], ['wide', 'Wide', 4 / 3], ['square', 'Square', 1], ['tall', 'Tall', 3 / 4]];
 const BUCKET = 'photo-puzzles';
@@ -118,6 +118,7 @@ export default function MakerClient() {
         mine.unshift({ code: s.code, token: s.token, name: cleanText(name, 80), at: new Date().toISOString() });
         localStorage.setItem(MINE_KEY, JSON.stringify(mine.slice(0, 60)));
       } catch (e) { /* storage full or blocked: the link still works */ }
+      noteStatus(s.code, share === 'community' ? 'pending' : 'private');
       setDone({ code: s.code, name: cleanText(name, 80), pieces: s.pieces, share });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
