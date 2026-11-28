@@ -20,7 +20,7 @@
 import { makeBoard } from './duet-core.mjs';
 
 const FIRST = '2026-10-03';
-const DAYS = 78;
+const DAYS = 90;   // was 78 (to 2026-12-19); extended to 2026-12-31 on 2026-11-27
 const SIZES = { 6: [4, 4, 4, 2, 6], 8: [4, 4, 6, 2, 4], 10: [4, 6, 4, 6, 2] };
 // dow: 0 Sun .. 6 Sat
 const SPEC = {

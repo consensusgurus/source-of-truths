@@ -103,7 +103,9 @@ const BAND_WARM = {         // read off the bank that landed, not written first
   6: [0.42, 0.52],          // Sat, the wall
   0: [0.56, 0.79],          // Sun, long rather than cold
 };
-const WORD_CAP = 3;
+// Owner ruling 2026-11-27: raised from 3 to 5 (boards from 2026-12-14 on were
+// blocked; 407 words sat at 3 and the open vocabulary had run thin).
+const WORD_CAP = 5;
 const AUTHOR_CAP = 6;
 
 const BRIT = new Set('colour honour favour labour humour neighbour behaviour odour rumour vapour harbour parlour saviour splendour endeavour centre theatre fibre litre metre calibre sombre spectre defence offence pretence jewellery programme aluminium moustache storey whilst amongst learnt spelt dreamt travelled cancelled plough draught tyre kerb grey'.split(' '));

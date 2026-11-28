@@ -78,7 +78,9 @@ const { PUZZLES } = await import(BANK.href);
 
 // ---- the verifier's constants, mirrored --------------------------------------
 const CAND_CAP = 4;
-const WORD_CAP = 3;
+// Owner ruling 2026-11-27: raised from 3 to 5 (boards from 2026-12-14 on were
+// blocked; 407 words sat at 3 and the open vocabulary had run thin).
+const WORD_CAP = 5;
 const AUTHOR_CAP = 6;
 const BAND_WARM = {
   1: [0.66, 0.81], 2: [0.61, 0.69], 3: [0.56, 0.63], 4: [0.52, 0.59],
@@ -90,6 +92,7 @@ const BRIT_RE = /(ise|ised|ises|ising|isation|isations|yse|ysed|ysing)$/;
 // Open answers the common list carries but a reader should not meet as a
 // solution: proper nouns, brands, slang, abbreviations-as-words, and the rude.
 const OPEN_BLOCK = new Set(`
+disease
 abba bigfoot chico carbs ligand cartels yang ying hijack bunnies castor
 asshole bitch bastard damn hell shit fuck crap piss slut whore sexy sexual sex porn nude naked
 penis vagina boobs breast breasts nipple rape raped rapist kill killer killed killing murder

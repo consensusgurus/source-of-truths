@@ -18,3 +18,6 @@ GEAR|Bike shifter
 OUR|We share it: ___ home
 YEA|Vote for
 ENTIRE|The whole thing
+#
+# Retired 2026-11-27 (Encore Dec 13-31 content review):
+USE|Put to work

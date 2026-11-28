@@ -1303,6 +1303,46 @@ week inventory to fill earlier days and create new harder thursdays and other da
   prices or auction lots priced near the cars). The pool ran dry of curator rows at Dec 8. Picks rows need a Commons
   photo again (owner, 2026-11-26; the 2026-11-22 no-photo window is over).
 
+## The 2026-11-27 restock toward Dec 31 (owner: "get to work building inventory where needed first")
+
+Pass one, earliest cliffs first. Shipped to Dec 31: Machine, Encore, Anon, Hired, Carmen, Ergo, Axiom, Clade,
+Dossier, Lamps, Duet and Warmer. Owner rulings this pass, all for future boards only:
+
+- **Encore: a 3-letter answer may appear on up to 5 boards** (was 3). `CAP3` in gen-encore-extend.mjs and
+  verify-encore.mjs. The Dec 13 Sunday filled at once; the run to Dec 31 took about 40 minutes. Keep the
+  `--progress` file OUTSIDE /tmp/build: another generator's cache clear deleted it mid-run once.
+- **Anon: WORD_CAP 5** (was 3), in gen-anon.mjs and verify-anon.mjs. With it, plain passages built in seconds
+  to minutes and none failed at `cover`; the only failures were missing spine letters. Review fixes: DISEASE
+  joined OPEN_BLOCK (it landed on the Christmas Eve Santa Claus editorial) and "military rank" lost soldier,
+  cadet and marine to LEGACY (they are service members, not ranks); Dec 24 to 31 were rebuilt after both.
+- **Warmer: the separation floor is 100 for any pair involving a board from 2026-12-30** (`LOOSE_FROM`,
+  `SEP_LOOSE` in verify-warmer.mjs; gen-warmer's SEP_NEW). At 150 no ordinary weekday word was left after
+  Dec 29: the 460-1200 band is gone and a vocab scan of 1200-3600 found 82 words clear of every answer, most
+  of them inflections. Run 4 (Dec 16-29) took 51 pool candidates; WK_SUB_MIN's first band is 0. Pool lines
+  are `domain pos: word`, domain FIRST (getting that backwards silently tests the domain as the word).
+- **Axiom** stalled on its own RATE_GUARD (alpha 6 of 13, a breach left by the previous run). `--salt N`
+  re-deals from another seed; salt 1 passed. The default 0 reproduces every earlier run.
+- **Ergo**: `_extfull.mjs` takes the generator name relative to scripts/ (`gen-ergo.mjs`, not
+  `scripts/gen-ergo.mjs`), and reported one changed frozen board that was only a trailing comma.
+- **Clade's DFS backtracked into banked days** when DAYS grew (it swapped Oct 10 and Oct 17). gen-clade now
+  pins every banked answer in order and searches only after them. verify-clade accepts 78 or more days.
+  Dossier, Lamps and Duet extended by raising DAYS; each came back byte-identical on its prefix.
+- **Hired**: the default `--through` in gen-hired.mjs must equal the bank's end, because verify-hired runs
+  `--check` with no arguments. A separate reviewer found 10 defects (premise, second answers, too easy for
+  the round, state-law universals); fixed in the pools. verify-hired does not run the US-spelling screen yet.
+- **Encore review**: 19 clue fixes in both word banks and on every Emcee/Encore board from 2026-09-30
+  carrying them; `USE|Put to work` retired for two earlier boards.
+
+Not done this pass, and why:
+- **Tape** (ends Dec 20): Yahoo Finance and Stooq refuse reads from the sandbox and from WebFetch. Needs a
+  session with the owner's Chrome. Filing uses W, SG, DOCU, FIVE, COCO, FIG, WING, Z, CHYM, YELP and GDDY on
+  Dec 21-31 in the held patch below, so Tape must not use them on those days.
+- **Jig** (ends Dec 26): Commons rate-limited the session (HTTP 429) and WebFetch could not read it. Swap,
+  Slide, Spin and Mural follow Jig.
+- **Books, Music, Myth, Tech, Pricer, Realtor, Picks** (end Dec 14-15): lane writers were stopped before they
+  finished. Nature, Resume and Filing were written to Dec 31 but not yet reviewed (Filing's S-1 quotes were
+  read through a summarizing fetch and need a word-for-word check); they are held out of this push.
+
 ## Scales: the daily balance-scale weights puzzle (launched 2026-11-26)
 
 Owner, 2026-11-26: picked "the weights one" from a list of new ideas, approved the mockup, ruled

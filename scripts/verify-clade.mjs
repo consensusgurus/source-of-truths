@@ -82,7 +82,8 @@ PUZZLES.forEach((p, i) => {
   if (win > 3) fail(`${tag}: ${c} ${win} times in 7 days`);
   classes.push(c);
 });
-if (PUZZLES.length !== 78) fail(`${PUZZLES.length} days, expected 78`);
+// The launch run was 78 days; restocks append (2026-11-27: to 2026-12-31). Dates are checked contiguous above.
+if (PUZZLES.length < 78) fail(`${PUZZLES.length} days, expected at least 78`);
 
 const tiers = {}, cls = {};
 for (const a of ANIMALS) { tiers[a.tier] = (tiers[a.tier] || 0) + 1; cls[classOf(a)] = (cls[classOf(a)] || 0) + 1; }

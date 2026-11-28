@@ -9,7 +9,7 @@
 import { rng, makeBoard } from './lamps-core.mjs';
 
 const FIRST = '2026-10-04';
-const DAYS = 78;
+const DAYS = 89;   // was 78 (to 2026-12-20); extended to 2026-12-31 on 2026-11-27
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 // size and the look-ahead band [lo, hi] by weekday (0 = Sunday)
 export const SPEC = {

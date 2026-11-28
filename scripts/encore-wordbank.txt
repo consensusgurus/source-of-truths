@@ -1364,7 +1364,7 @@ UPDATE|Bring it current
 UPHELD|Confirmed on appeal
 UPHILL|The hard way
 UPLIFT|Raise the spirits
-UPROAR|A right commotion
+UPROAR|Loud commotion
 UPSIDE|The good part
 UPWARD|Toward the sky
 URGENT|It cannot wait
@@ -1457,7 +1457,7 @@ WRITER|Author
 YACHTS|Marina fleet
 YEARLY|Once every twelve months
 YELLOW|Banana color
-YOGURT|Cultured breakfast pot
+YOGURT|Cultured dairy food
 YONDER|Over there
 ZEALOT|True believer, fiercely
 ZIPPER|Jacket closer
@@ -4188,7 +4188,7 @@ TUB|Bath
 TUG|Sharp pull
 TWO|Pair
 URN|Coffee dispenser
-USE|Put to work
+USE|Employ
 VAN|Delivery vehicle
 VAT|Big brewing tub
 VET|Animal doctor
@@ -4295,7 +4295,7 @@ BOIL|Bring to bubbling
 BOLD|Daring
 BOLT|Nut's partner
 BOMB|Explosive
-BOND|Tie between them
+BOND|Close connection
 BONE|Skeleton part
 BOOK|Novel
 BOOM|Loud blast, or a growth spurt
@@ -4956,7 +4956,7 @@ SAFE|Out of danger
 SAGE|Wise one
 SAID|Uttered
 SAIL|Boat's canvas
-SAKE|For heaven's
+SAKE|For heaven's ___
 SALE|Discount event
 SALT|Pepper's partner
 SAME|Not different
@@ -5039,7 +5039,7 @@ SPIN|Whirl
 SPIT|Roasting rod
 SPOT|Dot, or find
 SPUN|Whirled
-STAB|Sharp thrust
+STAB|Try, informally
 STAG|Male deer
 STAR|Night sky twinkler
 STAY|Remain
@@ -6271,7 +6271,7 @@ SEWER|Underground drain
 SHACK|Rough hut
 SHADE|Under the tree
 SHADY|Not quite honest
-SHAFT|Mine's tunnel
+SHAFT|Mine's vertical passage
 SHAKE|Wobble
 SHAKY|Unsteady
 SHALE|Layered rock
@@ -6327,7 +6327,7 @@ SKIRT|Below the waist
 SKULL|Head's bone
 SKUNK|Striped stinker
 SLACK|Not taut
-SLAIN|Killed
+SLAIN|Killed, as a dragon
 SLANG|Street talk
 SLANT|Lean
 SLASH|Big cut
@@ -6441,7 +6441,7 @@ STEAM|Kettle's cloud
 STEED|Poetic horse
 STEEL|Strong alloy
 STEEP|Sharply sloped
-STEER|Guide the wheel
+STEER|Work the wheel
 STERN|Strict, or a ship's back
 STICK|Twig
 STIFF|Not bending
@@ -6580,7 +6580,7 @@ TRAIL|Path
 TRAIN|Rail transport
 TRAIT|Characteristic
 TRAMP|Wanderer
-TRASH|Rubbish
+TRASH|Garbage
 TRAWL|Drag the net
 TREAD|Step on
 TREAT|Something nice
@@ -7354,7 +7354,7 @@ DRAWERS|Pull-outs
 DRAWING|Pencil work
 DREADED|Feared the worst of
 DREAMED|Had it in your sleep
-DREAMER|Head in the clouds
+DREAMER|One with head in the clouds
 DRESSED|Got the clothes on
 DRESSER|Bedroom chest
 DRIBBLE|Move the ball along
@@ -9048,7 +9048,7 @@ SHOWERS|Morning washes
 SHOWING|On display
 SHOWMAN|Real performer
 SHRIEKS|Screams
-SHRIMPS|Cocktail crustaceans
+SHRIMPS|Fishes for cocktail crustaceans
 SHRINES|Places of pilgrimage
 SHRINKS|Gets smaller
 SHUCKED|Opened the oyster
@@ -9346,7 +9346,7 @@ SUFFERS|Goes through it
 SUFFICE|Be enough
 SUGARED|Sweetened
 SUGGEST|Put it forward
-SUITING|Fitting them
+SUITING|Being right for
 SULKING|In a huff
 SUMMARY|The short of it
 SUMMERS|Beach seasons
@@ -9445,8 +9445,8 @@ TEDIOUS|Dull as ditchwater
 TEENAGE|Thirteen to nineteen
 TEETHED|Cut the first ones
 TELLING|Letting them know
-TEMPERS|What you lose
-TEMPEST|A right storm
+TEMPERS|What hotheads lose
+TEMPEST|Fierce storm
 TEMPLES|Places of worship
 TEMPTED|Drawn to do it
 TENANTS|The ones who rent
@@ -9559,7 +9559,7 @@ TRAINEE|Learner on the job
 TRAINER|The coach
 TRAITOR|One who sold out
 TRAMPLE|Underfoot
-TRANSIT|In
+TRANSIT|In ___ (on the way)
 TRAPEZE|Circus swing
 TRAPPED|Caught with no way out
 TRAPPER|Fur hunter

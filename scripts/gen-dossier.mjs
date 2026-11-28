@@ -7,7 +7,7 @@
 import { UNIVERSES } from '../app/dossier/universes.js';
 
 const FIRST = '2026-10-04';
-const DAYS = 78;
+const DAYS = 89;   // was 78 (to 2026-12-20); extended to 2026-12-31 on 2026-11-27
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const BY_DOW = { 1: 'presidents', 2: 'elements', 3: 'states', 4: 'presidents', 5: 'elements', 6: 'states' };
 const SUNDAYS = ['presidents', 'elements', 'states'];

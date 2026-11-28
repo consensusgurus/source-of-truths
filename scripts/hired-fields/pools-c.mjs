@@ -50,6 +50,26 @@ export const EXCEL = [
   [5, 'Formulas', 'Which of these functions is volatile, recalculating whenever anything in the workbook changes?', 'OFFSET', ['SUM', 'VLOOKUP', 'ROUND']],
   [5, 'Shortcuts', 'On Windows, which shortcut switches the sheet to show formulas instead of results?', 'Ctrl+`', ['Ctrl+1', 'Ctrl+F', 'Ctrl+H']],
   [5, 'Data Tools', 'Excel\'s Solver finds the best value of a target cell by changing which cells?', 'Variable cells, within your constraints', ['Header cells', 'Locked cells', 'Merged cells']],
+  // Restock 2026-11-27 for 2026-12-16..12-31, appended per tier (the past is frozen).
+  [1, 'Formulas', 'Which function finds the smallest number in a range?', 'MIN', ['LOW', 'LEAST', 'BOTTOM']],
+  [1, 'Shortcuts', 'On Windows, which shortcut copies the selected cells?', 'Ctrl+C', ['Ctrl+V', 'Ctrl+X', 'Ctrl+P']],
+  [1, 'Data Tools', 'An Excel file that holds one or more worksheets is called a what?', 'Workbook', ['Notebook', 'Ledger', 'Folder']],
+  [1, 'Charts and Formatting', 'In Excel, which chart type uses vertical bars to compare values across categories?', 'Column chart', ['Pie chart', 'Line chart', 'Scatter chart']],
+
+  [3, 'Lookups', 'What does the MATCH function return?', 'The position of the value in the range', ['The value itself', 'The cell address as text', 'The number of matches']],
+  [3, 'Formulas', 'Which function strips extra spaces from text, leaving single spaces between words?', 'TRIM', ['CLEAN', 'SUBSTITUTE', 'STRIP']],
+  [3, 'Data Tools', 'Which feature splits one column of text, such as "Smith, John", into separate columns using a delimiter?', 'Text to Columns', ['Remove Duplicates', 'Merge & Center', 'Wrap Text']],
+  [3, 'Shortcuts', 'On Windows, which shortcut opens the Format Cells dialog?', 'Ctrl+1', ['Ctrl+F', 'Ctrl+H', 'Alt+F1']],
+
+  [4, 'Formulas', 'Which function returns the date a given number of months before or after a start date?', 'EDATE', ['EOMONTH', 'DATEDIF', 'WORKDAY']],
+  [4, 'Lookups', 'Which function turns a reference written as text, such as "B5", into a live reference?', 'INDIRECT', ['ADDRESS', 'INDEX', 'CHOOSE']],
+  [4, 'Data Tools', 'Which What-If Analysis tool shows a formula\'s results for many input values at once in a grid?', 'Data Table', ['Goal Seek', 'Scenario Manager', 'Solver']],
+  [4, 'Charts and Formatting', 'Which tiny charts sit inside a single cell to show a trend?', 'Sparklines', ['Data bars', 'Icon sets', 'Slicers']],
+
+  [5, 'Formulas', 'Which function multiplies matching items in two or more ranges and adds up the results?', 'SUMPRODUCT', ['PRODUCT', 'SUMSQ', 'SUMIFS']],
+  [5, 'Lookups', 'In XLOOKUP, setting match_mode to 2 turns on what?', 'Wildcard matching', ['Exact match or next smaller item', 'Exact match or next larger item', 'Binary search']],
+  [5, 'Data Tools', 'Measures in the Power Pivot data model are written in which formula language?', 'DAX', ['M', 'VBA', 'SQL']],
+  [5, 'Shortcuts', 'On Windows, which shortcut opens the Visual Basic Editor?', 'Alt+F11', ['Alt+F8', 'Ctrl+F11', 'Shift+F11']],
 ];
 
 export const CHEMISTRY = [
@@ -101,6 +121,26 @@ export const CHEMISTRY = [
   [5, 'Stoichiometry', 'What is the empirical formula of glucose, C₆H₁₂O₆?', 'CH₂O', ['C₆H₁₂O₆', 'C₂H₄O₂', 'CHO']],
   [5, 'Reactions', 'For a first-order reaction, the half-life depends on what?', 'Only the rate constant', ['The starting concentration', 'The volume of the flask', 'The amount of product']],
   [5, 'Periodic Table', 'How many electrons can the second electron shell hold?', '8', ['2', '18', '32']],
+  // Restock 2026-11-27 for 2026-12-16..12-31, appended per tier (the past is frozen).
+  [1, 'Periodic Table', 'What is the chemical symbol for iron?', 'Fe', ['Ir', 'In', 'I']],
+  [1, 'Reactions', 'Burning a fuel in oxygen is which type of reaction?', 'Combustion', ['Decomposition', 'Neutralization', 'Precipitation']],
+  [1, 'Acids and Bases', 'A solution with a pH above 7 is described as what?', 'Basic', ['Acidic', 'Neutral', 'Saline']],
+  [1, 'Lab Practice', 'Which tall glassware with marked lines is used to measure liquid volumes?', 'Graduated cylinder', ['Watch glass', 'Funnel', 'Crucible']],
+
+  [2, 'Periodic Table', 'The group 1 elements below hydrogen, such as sodium and potassium, are called what?', 'Alkali metals', ['Halogens', 'Noble gases', 'Transition metals']],
+  [2, 'Stoichiometry', 'The number of protons in an atom\'s nucleus is called its what?', 'Atomic number', ['Mass number', 'Atomic mass', 'Valence']],
+  [2, 'Reactions', 'An insoluble solid that forms when two solutions are mixed is called what?', 'A precipitate', ['A catalyst', 'A solvent', 'A buffer']],
+  [2, 'Lab Practice', 'Which piece of safety equipment protects a chemist\'s eyes in the lab?', 'Safety goggles', ['A face mask', 'A lab coat', 'Nitrile gloves']],
+
+  [4, 'Periodic Table', 'Which halogen is a red-brown liquid at room temperature?', 'Bromine', ['Iodine', 'Chlorine', 'Fluorine']],
+  [4, 'Stoichiometry', 'The reactant that runs out first and caps the amount of product is called what?', 'Limiting reagent', ['Excess reagent', 'Catalyst', 'Solvent']],
+  [4, 'Reactions', 'In a galvanic cell, oxidation takes place at which electrode?', 'Anode', ['Cathode', 'Salt bridge', 'Both electrodes equally']],
+  [4, 'Lab Practice', 'Which instrument measures how much light a solution absorbs at a chosen wavelength?', 'Spectrophotometer', ['Refractometer', 'Manometer', 'Calorimeter']],
+
+  [5, 'Acids and Bases', 'At 25°C, the pH plus the pOH of any aqueous solution equals what?', '14', ['7', '1', '10']],
+  [5, 'Periodic Table', 'Which element has the ground-state electron configuration 1s² 2s² 2p⁶ 3s¹?', 'Sodium', ['Magnesium', 'Neon', 'Potassium']],
+  [5, 'Stoichiometry', 'How many moles of solute are in 250 mL of a 2 M solution?', '0.5', ['0.25', '2', '8']],
+  [5, 'Lab Practice', 'In NMR spectroscopy, which compound is the standard zero reference for chemical shifts?', 'Tetramethylsilane (TMS)', ['Deuterated chloroform', 'Benzene', 'Water']],
 ];
 
 export const TRADES = [
@@ -152,4 +192,24 @@ export const TRADES = [
   [5, 'Tools and Safety', 'Which class of fire extinguisher is rated for energized electrical equipment?', 'Class C', ['Class A', 'Class B', 'Class D']],
   [5, 'HVAC', 'An air filter\'s MERV rating describes what?', 'How well it traps particles', ['Furnace efficiency', 'Duct leakage', 'Refrigerant charge']],
   [5, 'Carpentry', 'How long is a standard US sixteen-penny (16d) common nail?', '3 1/2 inches', ['2 inches', '2 1/2 inches', '4 inches']],
+  // Restock 2026-11-27 for 2026-12-16..12-31, appended per tier (the past is frozen).
+  [1, 'Tools and Safety', 'Which weighted tool, hung from a string, marks a true vertical line?', 'Plumb bob', ['Chalk line', 'Speed square', 'Tape measure']],
+  [1, 'Carpentry', 'Which handheld tool locates the wood framing hidden behind drywall?', 'Stud finder', ['Block plane', 'Coping saw', 'Nail set']],
+  [1, 'Plumbing', 'Which valve shuts off the water to an entire house?', 'Main shutoff valve', ['Angle stop', 'Check valve', 'Hose bib']],
+  [1, 'Electrical Work', 'The metal box that holds a home\'s circuit breakers is commonly called what?', 'Breaker panel', ['Junction box', 'Meter base', 'Switch plate']],
+
+  [2, 'HVAC', 'Which device lets occupants set and hold a room\'s temperature?', 'Thermostat', ['Damper', 'Humidistat', 'Compressor']],
+  [2, 'Carpentry', 'The sloped framing members that support a roof are called what?', 'Rafters', ['Joists', 'Studs', 'Sills']],
+  [2, 'Electrical Work', 'In standard US home wiring, which insulation color usually marks a hot conductor?', 'Black', ['White', 'Green', 'Bare copper']],
+  [2, 'Tools and Safety', 'Which cordless tool drives screws with rapid rotational hammer blows?', 'Impact driver', ['Hammer drill', 'Rotary hammer', 'Oscillating multi-tool']],
+
+  [3, 'Plumbing', 'Joining copper pipe with a torch and solder is commonly called what?', 'Sweating', ['Crimping', 'Flaring', 'Threading']],
+  [3, 'HVAC', 'In a split-system air conditioner, which outdoor component gives off the heat removed from the house?', 'Condenser', ['Evaporator coil', 'Air handler', 'Plenum']],
+  [3, 'Carpentry', 'What does a header over a door or window opening do?', 'Carries the load above the opening', ['Seals out drafts', 'Holds the door hinges', 'Anchors the wall to the foundation']],
+  [3, 'Electrical Work', 'Which tool checks whether a wire is live without touching bare metal?', 'Non-contact voltage tester', ['Ohmmeter', 'Wire stripper', 'Fish tape']],
+
+  [5, 'Plumbing', 'Under the major US plumbing codes, what is the minimum water seal depth for a fixture trap?', '2 inches', ['1/2 inch', '6 inches', '8 inches']],
+  [5, 'HVAC', 'Subcooling on an air conditioner is measured where?', 'On the liquid line leaving the condenser', ['On the suction line at the evaporator', 'At the compressor discharge', 'At the return air grille']],
+  [5, 'Electrical Work', 'In a typical US home, where should the neutral be bonded to ground?', 'Only at the main service disconnect', ['At every subpanel', 'At every outlet', 'At the meter and at every subpanel']],
+  [5, 'Carpentry', 'In roof framing, the vertical cut at the top of a rafter where it meets the ridge board is called what?', 'Plumb cut', ['Bird\'s mouth', 'Seat cut', 'Tail cut']],
 ];

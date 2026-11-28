@@ -54,6 +54,21 @@ export const MEDICINE = [
   [5, 'Medical Terms', 'In a diagnosis, what does idiopathic mean?', 'Of unknown cause', ['Caused by treatment', 'Present from birth', 'Spreading quickly']],
   [5, 'Clinical Practice', 'Iatrogenic harm is harm caused by what?', 'Medical care itself', ['A genetic defect', 'An infection picked up at home', 'An accident at work']],
   [5, 'Vitals and Diagnosis', 'Kussmaul breathing, deep and labored, is classically seen in which emergency?', 'Diabetic ketoacidosis', ['An asthma attack', 'A stroke', 'A pulmonary embolism']],
+  // Restock 2026-11-27 for 2026-12-16..12-31, appended per tier (the past is frozen).
+  [1, 'Anatomy', 'Which organs exchange oxygen and carbon dioxide with the blood?', 'Lungs', ['Kidneys', 'Stomach', 'Liver']],
+  [1, 'Medical Terms', 'The prefix cardio- refers to which organ?', 'Heart', ['Lung', 'Brain', 'Stomach']],
+  [1, 'Vitals and Diagnosis', 'Which instrument does a doctor use to listen to the heart and lungs?', 'Stethoscope', ['Otoscope', 'Thermometer', 'Reflex hammer']],
+  [1, 'Pharmacology', 'Vaccines work by training which body system?', 'The immune system', ['The nervous system', 'The digestive system', 'The endocrine system']],
+
+  [4, 'Anatomy', 'Which arteries supply blood to the heart muscle itself?', 'Coronary arteries', ['Carotid arteries', 'Pulmonary arteries', 'Renal arteries']],
+  [4, 'Pharmacology', 'Drugs whose names end in -prazole, like omeprazole, belong to which class?', 'Proton pump inhibitors', ['H2 blockers', 'Antacids', 'Statins']],
+  [4, 'Vitals and Diagnosis', 'A low TSH with a high free T4 most likely points to what?', 'Primary hyperthyroidism', ['Primary hypothyroidism', 'Secondary hypothyroidism', 'Subclinical hypothyroidism']],
+  [4, 'Medical Terms', 'A stroke in the left middle cerebral artery territory most typically weakens which part of the body?', 'The right face and arm', ['The left face and arm', 'The right leg only', 'Both legs equally']],
+
+  [5, 'Anatomy', 'Which coronary artery is nicknamed the widowmaker when it is blocked near its origin?', 'Left anterior descending artery', ['Right coronary artery', 'Left circumflex artery', 'Posterior descending artery']],
+  [5, 'Pharmacology', 'Warfarin works by blocking the action of which vitamin?', 'Vitamin K', ['Vitamin C', 'Vitamin D', 'Vitamin B12']],
+  [5, 'Vitals and Diagnosis', 'Cushing\'s triad, a sign of raised pressure inside the skull, is high blood pressure, irregular breathing and what?', 'Bradycardia', ['Tachycardia', 'Fever', 'Hypotension']],
+  [5, 'Clinical Practice', 'In START triage at a mass casualty scene, a patient who can walk is tagged which color?', 'Green', ['Red', 'Yellow', 'Black']],
 ];
 
 export const ENGINEERING = [
@@ -93,9 +108,9 @@ export const ENGINEERING = [
   [4, 'Thermo and Fluids', 'No heat engine running between two temperatures can beat the efficiency of which ideal cycle?', 'Carnot cycle', ['Otto cycle', 'Rankine cycle', 'Brayton cycle']],
   [4, 'Mechanics', 'A slender column failing by bowing sideways under compression is called what?', 'Buckling', ['Shearing', 'Necking', 'Creep']],
   [4, 'Materials', 'Slow deformation under a constant load, worst at high temperature, is called what?', 'Creep', ['Fatigue', 'Spalling', 'Annealing']],
-  [4, 'Units', 'Absolute zero, 0 kelvin, is about what in Celsius?', '-273°C', ['-100°C', '-196°C', '-459°C']],
-  [4, 'Electrical', 'A transformer works only with which kind of current?', 'Alternating current', ['Direct current', 'Static charge', 'Either one equally']],
-  [4, 'Thermo and Fluids', 'Which mode of heat transfer can cross a vacuum?', 'Radiation', ['Conduction', 'Convection', 'Advection']],
+  [4, 'Materials', 'The Young\'s modulus of structural steel is roughly what?', '200 GPa', ['20 GPa', '70 GPa', '2,000 GPa']],
+  [4, 'Electrical', 'Transformers on the power grid operate on which kind of current?', 'Alternating current', ['Direct current', 'Static charge', 'Pulsed direct current only']],
+  [4, 'Thermo and Fluids', 'Which dimensionless number compares inertial forces with viscous forces in a flowing fluid?', 'Reynolds number', ['Prandtl number', 'Nusselt number', 'Mach number']],
 
   [5, 'Electrical', 'The time constant of an RC circuit equals what?', 'Resistance times capacitance', ['Resistance divided by capacitance', 'Voltage times current', 'Inductance over resistance']],
   [5, 'Mechanics', 'For a cantilever with a point load at its free end, tip deflection grows with the length to which power?', 'The third power', ['The first power', 'The second power', 'The fourth power']],
@@ -109,6 +124,21 @@ export const ENGINEERING = [
   [5, 'Electrical', 'For the same power delivered, three-phase distribution needs less of what than single-phase?', 'Conductor material', ['Insulation testing', 'Grounding', 'Metering']],
   [5, 'Units', 'One BTU is the heat needed to raise one pound of water by how much?', '1°F', ['1°C', '10°F', '100°F']],
   [5, 'Thermo and Fluids', 'In a pump, cavitation starts when local pressure falls below what?', 'The liquid\'s vapor pressure', ['Atmospheric pressure', 'The discharge pressure', 'Zero gauge pressure']],
+  // Restock 2026-11-27 for 2026-12-16..12-31, appended per tier (the past is frozen).
+  [1, 'Units', 'What is the SI unit of energy?', 'Joule', ['Watt', 'Newton', 'Volt']],
+  [1, 'Electrical', 'Electric current is measured in which unit?', 'Ampere', ['Volt', 'Ohm', 'Watt']],
+  [1, 'Materials', 'Which of these structural metals has the lowest density?', 'Aluminum', ['Steel', 'Copper', 'Lead']],
+  [1, 'Mechanics', 'The tendency of an object to resist changes in its motion is called what?', 'Inertia', ['Friction', 'Torque', 'Pressure']],
+
+  [2, 'Thermo and Fluids', 'Heat carried along by a moving fluid, such as warm air rising, is called what?', 'Convection', ['Conduction', 'Evaporation', 'Insulation']],
+  [2, 'Electrical', 'In a parallel circuit, the voltage across each branch is what?', 'The same for every branch', ['Split evenly among branches', 'Zero', 'Doubled']],
+  [2, 'Mechanics', 'Kinetic energy equals one half of mass times what?', 'Velocity squared', ['Velocity', 'Acceleration', 'Height']],
+  [2, 'Units', 'Frequency is measured in which SI unit?', 'Hertz', ['Pascal', 'Henry', 'Tesla']],
+
+  [3, 'Materials', 'A material that can be drawn into a wire without breaking is described as what?', 'Ductile', ['Brittle', 'Hard', 'Elastic']],
+  [3, 'Electrical', 'Which component lets current flow in only one direction?', 'Diode', ['Capacitor', 'Resistor', 'Inductor']],
+  [3, 'Thermo and Fluids', 'The pressure in a liquid at rest depends on its density, gravity and what?', 'Depth', ['Container shape', 'Surface area', 'Total volume']],
+  [3, 'Mechanics', 'Engineering stress is defined as force divided by what?', 'Cross-sectional area', ['Length', 'Volume', 'Mass']],
 ];
 
 export const MARKETING = [
@@ -163,5 +193,20 @@ export const MARKETING = [
   [5, 'Metrics', 'Share of voice compares a brand\'s advertising presence with what?', 'The total for its whole market', ['Its own sales', 'Its previous year', 'Its website traffic']],
   [5, 'Strategy', 'Clayton Christensen\'s theory of cheaper, simpler products overturning market leaders is called what?', 'Disruptive innovation', ['Blue ocean strategy', 'Creative destruction', 'Crossing the chasm']],
   [5, 'Branding', 'The book Blue Ocean Strategy argues firms should seek what?', 'Uncontested market space', ['The lowest cost position', 'Head-to-head rivals', 'Luxury buyers only']],
-  [5, 'Digital', 'The European data privacy law that took effect in May 2018 is known by which initials?', 'GDPR', ['CCPA', 'HIPAA', 'COPPA']],
+  [5, 'Digital', 'Under the GDPR, the top fines for the most serious violations are the higher of €20 million or what share of a company\'s worldwide annual turnover?', '4%', ['1%', '2%', '10%']],
+  // Restock 2026-11-27 for 2026-12-16..12-31, appended per tier (the past is frozen).
+  [2, 'Branding', 'The extra value a well-known brand name adds beyond the product itself is called what?', 'Brand equity', ['Brand extension', 'Market share', 'Unit margin']],
+  [2, 'Advertising', 'Each time an ad is displayed to someone, it counts as one what?', 'Impression', ['Click', 'Conversion', 'Lead']],
+  [2, 'Strategy', 'The specific group of customers a product is aimed at is called its what?', 'Target market', ['Supply chain', 'Market cap', 'Sales quota']],
+  [2, 'Digital', 'Content that spreads rapidly as people share it online is said to have gone what?', 'Viral', ['Organic', 'Native', 'Evergreen']],
+
+  [3, 'Strategy', 'A detailed, made-up profile of a typical ideal customer is called what?', 'Buyer persona', ['Mission statement', 'Brand audit', 'Focus group']],
+  [3, 'Metrics', 'A campaign\'s revenue minus its cost, divided by its cost, gives what?', 'Marketing ROI', ['ROAS', 'CPM', 'CTR']],
+  [3, 'Digital', 'Website visitors who arrive from unpaid search results are called what?', 'Organic traffic', ['Paid traffic', 'Referral traffic', 'Direct traffic']],
+  [3, 'Advertising', 'Coverage a brand gets for free through press, shares or word of mouth is called what?', 'Earned media', ['Paid media', 'Owned media', 'Rich media']],
+
+  [4, 'Strategy', 'In the product life cycle, the stage after growth, when sales level off, is called what?', 'Maturity', ['Introduction', 'Decline', 'Development']],
+  [4, 'Metrics', 'The share of a market\'s total sales that one company captures is called what?', 'Market share', ['Share of voice', 'Penetration rate', 'Net Promoter Score']],
+  [4, 'Branding', 'Two established brands teaming up on one product under both names is called what?', 'Co-branding', ['Brand extension', 'Private label', 'Rebranding']],
+  [4, 'Digital', 'In web analytics, UTM parameters added to a link are used to do what?', 'Track where a visit came from', ['Speed up page loading', 'Encrypt the link', 'Block bots']],
 ];

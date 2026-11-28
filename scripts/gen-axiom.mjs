@@ -457,7 +457,10 @@ function mulberry32(a) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-const rng = mulberry32(BASE_SEED + NUM0 * 7919);
+// --salt N (2026-11-27): a run whose own guard fails can be re-dealt from a
+// different seed; the default 0 reproduces every earlier run exactly.
+const SALT = Number(arg('--salt', 0));
+const rng = mulberry32(BASE_SEED + NUM0 * 7919 + SALT);
 const rint = (n) => Math.floor(rng() * n);
 const pick = (a) => a[rint(a.length)];
 const shuffle = (a) => { const x = a.slice(); for (let i = x.length - 1; i > 0; i--) { const j = rint(i + 1); [x[i], x[j]] = [x[j], x[i]]; } return x; };

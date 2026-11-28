@@ -45,6 +45,11 @@ const BANK = join(here, '..', 'app', 'encore', 'puzzles.js');
 
 const { PUZZLES } = await import(BANK);
 const CAP = 3;
+// Owner ruling 2026-11-27: a 3-letter answer may appear on up to 5 boards (boards
+// from 2026-12-13 on; every earlier board was dealt under 3). The Dec 13 Sunday
+// 11x11 could not be filled under 3: the 3-letter answers were the limit.
+const CAP3 = 5;
+const capFor = (w) => (w.length === 3 ? CAP3 : CAP);
 const SEED_BASE = 9_110_2026;   // not the builder's 8272026
 
 // ── the clue bank, read exactly as the builder and verifier read it ────────
@@ -118,7 +123,7 @@ for (const p of targets) {
   if (results.some((r) => r.p.quizId === p.quizId)) continue;
   const N = p.sunday ? 11 : 9;
   const banned = new Set(copyBad);
-  for (const [w, n] of uses) if (n >= CAP) banned.add(w);
+  for (const [w, n] of uses) if (n >= capFor(w)) banned.add(w);
   const okOverlap = (words) => {
     const s = new Set(words);
     for (const b of boards) {
@@ -143,7 +148,7 @@ for (const p of targets) {
     }
   }
   if (!made) {
-    const capped = [...uses.values()].filter((n) => n >= CAP).length;
+    const capped = [...uses].filter(([w, n]) => n >= capFor(w)).length;
     console.error(`FAILED to fill ${p.quizId}: ${capped} answers at cap, ${boards.length} boards to clear. Stopping; the banks are shared, do not widen them to force this.`);
     process.exit(2);
   }

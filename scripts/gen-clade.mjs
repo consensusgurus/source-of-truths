@@ -17,7 +17,7 @@
 import { ANIMALS } from '../app/clade/animals.js';
 
 const FIRST = '2026-10-04';
-const DAYS = 78;
+const DAYS = 89;   // 78 (to 2026-12-20) until 2026-11-27, when it was extended to 2026-12-31
 const TIER_BY_DOW = { 0: 4, 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 6: 3 };
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -56,7 +56,17 @@ function dfs(i) {
   }
   return false;
 }
-if (!dfs(0)) throw new Error('no legal calendar');
+// FROZEN PREFIX (2026-11-27). The search backtracks into earlier days, so a
+// longer run re-deals boards already banked (it swapped Oct 10 and Oct 17).
+// Every banked answer is therefore pinned, in order, and the search starts
+// after the last one; the past can only come back unchanged.
+const { PUZZLES: BANKED } = await import('../app/clade/puzzles.js').catch(() => ({ PUZZLES: [] }));
+for (const p of BANKED) {
+  const a = ANIMALS.find((x) => x.name === p.answer);
+  if (!a) throw new Error(`banked answer ${p.answer} is not in animals.js`);
+  used.add(a.name); picks.push(a);
+}
+if (!dfs(picks.length)) throw new Error('no legal calendar');
 
 const out = picks.map((a, i) => {
   const iso = addDays(FIRST, i);

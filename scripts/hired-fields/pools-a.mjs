@@ -56,6 +56,43 @@ export const ACCOUNTING = [
   [5, 'Standards', 'Since ASU 2015-11, most FIFO and average-cost inventory under US GAAP is measured at the lower of cost and what?', 'Net realizable value', ['Replacement cost', 'Fair value less a normal profit', 'Retail price']],
   [5, 'Journal Entries', 'Treasury stock appears on the balance sheet as what?', 'A reduction of stockholders\' equity', ['An asset', 'A liability', 'Other income']],
   [5, 'Tax', 'Form W-2 reports wages paid to employees. Which form reports pay to independent contractors?', 'Form 1099-NEC', ['Form W-4', 'Form 1040-ES', 'Form 941']],
+  // Restock 2026-11-27 for 2026-12-16..12-31, appended per tier (the past is frozen).
+  [1, 'Financial Statements', 'Which financial statement reports revenues and expenses over a period of time?', 'Income statement', ['Balance sheet', 'Statement of cash flows', 'Trial balance']],
+  [1, 'Audit', 'An independent examination of financial statements that ends in an opinion on them is called what?', 'An audit', ['A budget', 'A forecast', 'A reconciliation']],
+  [1, 'Tax', 'Money an employer holds back from each paycheck toward the employee\'s income tax is called what?', 'Withholding', ['Garnishment', 'Escrow', 'Deferral']],
+  [1, 'Journal Entries', 'Checking your cash records against the bank statement to make sure they agree is called what?', 'Bank reconciliation', ['Depreciation', 'Closing the books', 'Accrual']],
+
+  [2, 'Financial Statements', 'Net sales minus cost of goods sold equals what?', 'Gross profit', ['Net income', 'Operating cash flow', 'Retained earnings']],
+  [2, 'Journal Entries', 'Paying a full year of insurance up front creates which kind of asset?', 'Prepaid expense', ['Accrued liability', 'Unearned revenue', 'Intangible asset']],
+  [2, 'Standards', 'The principle that expenses are recorded in the same period as the revenues they help earn is called what?', 'Matching principle', ['Going concern', 'Materiality', 'Conservatism']],
+  [2, 'Audit', 'Making sure no single employee both handles cash and records it is an example of which internal control?', 'Segregation of duties', ['Auditor rotation', 'Materiality', 'Statistical sampling']],
+  [2, 'Tax', 'Which IRS form does a new employee fill out so the employer knows how much federal income tax to withhold?', 'Form W-4', ['Form W-2', 'Form 1099-NEC', 'Form 1040']],
+  [2, 'Financial Statements', 'Retained earnings grow each period by net income and shrink by what?', 'Dividends declared', ['Depreciation', 'Accounts payable', 'Capital expenditures']],
+  [2, 'Journal Entries', 'In a corporation, revenue and expense accounts are ultimately closed out at period end to which account?', 'Retained earnings', ['Cash', 'Accounts payable', 'Common stock']],
+  [2, 'Standards', 'The assumption that a business will keep operating for the foreseeable future is called what?', 'Going concern', ['Materiality', 'Consistency', 'Historical cost']],
+
+  [3, 'Financial Statements', 'The current ratio is current assets divided by what?', 'Current liabilities', ['Total assets', 'Total equity', 'Net sales']],
+  [3, 'Journal Entries', 'A company borrows cash from a bank and signs a note. Which account is credited?', 'Notes payable', ['Cash', 'Interest expense', 'Notes receivable']],
+  [3, 'Tax', 'For US federal income tax, the profits of an S corporation generally pass through to whom?', 'Its shareholders', ['The corporation itself', 'The state only', 'Its creditors']],
+  [3, 'Audit', 'An amount large enough that it could change a reader\'s decisions is described as what?', 'Material', ['Immaterial', 'Contingent', 'Deferred']],
+  [3, 'Standards', 'Under US GAAP, a loss contingency is accrued when the loss is probable and what?', 'Reasonably estimable', ['Already paid', 'Fully insured', 'Disclosed by the auditor']],
+  [3, 'Financial Statements', 'Which depreciation method charges the same expense in every year of an asset\'s life?', 'Straight-line', ['Double-declining balance', 'Sum-of-the-years\' digits', 'Units of production']],
+  [3, 'Journal Entries', 'When bad debts are estimated under the allowance method, the entry debits which account?', 'Bad debt expense', ['Allowance for doubtful accounts', 'Accounts receivable', 'Sales revenue']],
+  [3, 'Tax', 'Which IRS form does a US C corporation file as its federal income tax return?', 'Form 1120', ['Form 1065', 'Form 1040', 'Form 990']],
+
+  [4, 'Standards', 'Under US GAAP, research and development costs are generally treated how?', 'Expensed as incurred', ['Capitalized and amortized', 'Deferred until a product sells', 'Recorded as goodwill']],
+  [4, 'Financial Statements', 'Days sales outstanding measures roughly how long a company takes to do what?', 'Collect its receivables', ['Sell its inventory', 'Pay its suppliers', 'Close its books']],
+  [4, 'Audit', 'Which audit procedure asks a customer to tell the auditor directly how much it owes the company?', 'Confirmation', ['Observation', 'Recalculation', 'Analytical review']],
+  [4, 'Journal Entries', 'A company declares a cash dividend. On the declaration date, which account is credited?', 'Dividends payable', ['Cash', 'Retained earnings', 'Common stock']],
+  [4, 'Tax', 'A partnership files Form 1065 and gives each partner which schedule showing their share of income?', 'Schedule K-1', ['Schedule C', 'Schedule A', 'Schedule D']],
+  [4, 'Standards', 'Under US GAAP, a change in an accounting estimate, such as an asset\'s useful life, is applied how?', 'Prospectively', ['Retrospectively', 'By restating all prior years', 'Only in the footnotes']],
+  [4, 'Financial Statements', 'Basic earnings per share is net income available to common shareholders divided by what?', 'Weighted average common shares outstanding', ['Total shares authorized', 'Shares held in treasury', 'The year-end share price']],
+  [4, 'Audit', 'Tracing a sample of recorded sales back to shipping documents mainly tests which assertion?', 'Occurrence', ['Completeness', 'Valuation', 'Classification']],
+
+  [5, 'Standards', 'Under ASC 606, a contract\'s price is allocated to its performance obligations based on their relative what?', 'Standalone selling prices', ['Costs to produce', 'Billing dates', 'Gross margins']],
+  [5, 'Financial Statements', 'Under US GAAP, an investor that holds more than 50% of another company\'s voting stock usually does what?', 'Consolidates it', ['Uses the equity method', 'Carries it at cost', 'Reports it only in the footnotes']],
+  [5, 'Tax', 'On Form 1120, which schedule do large corporations use to reconcile book income with taxable income?', 'Schedule M-3', ['Schedule K-1', 'Schedule M-2', 'Schedule L']],
+  [5, 'Journal Entries', 'Under the effective interest method, bond interest expense equals the bond\'s carrying value times what?', 'The market rate at issuance', ['The coupon rate', 'The current Treasury rate', 'The inflation rate']],
 ];
 
 export const FINANCE = [
@@ -111,6 +148,21 @@ export const FINANCE = [
   [5, 'Markets', 'In which year did the standard US settlement cycle for most stock trades move to T+1?', '2024', ['2017', '2020', '2022']],
   [5, 'Bonds and Rates', 'Positive convexity means a bond\'s price rises more when yields fall than it falls when yields do what?', 'Rise by the same amount', ['Fall further', 'Stay flat', 'Invert']],
   [5, 'Valuation', 'In portfolio terms, alpha is return earned above what?', 'What the portfolio\'s beta would predict', ['The risk-free rate alone', 'Last year\'s return', 'The fund\'s fees']],
+  // Restock 2026-11-27 for 2026-12-16..12-31, appended per tier (the past is frozen).
+  [1, 'Bonds and Rates', 'The amount a bond repays at maturity is called its face value or its what?', 'Par value', ['Coupon', 'Yield', 'Spread']],
+  [1, 'Markets', 'What does ETF stand for?', 'Exchange-traded fund', ['Equity trust fund', 'Estimated tax filing', 'Electronic transfer fee']],
+  [1, 'Corporate Finance', 'Money a company has borrowed and must pay back is called what?', 'Debt', ['Equity', 'Revenue', 'Goodwill']],
+  [1, 'Valuation', 'A company\'s annual dividend per share divided by its share price gives what?', 'Dividend yield', ['Payout ratio', 'P/E ratio', 'Earnings per share']],
+
+  [2, 'Markets', 'Which stock index tracks about 500 large US companies?', 'S&P 500', ['Dow Jones Industrial Average', 'Nasdaq-100', 'Russell 2000']],
+  [2, 'Bonds and Rates', 'The single discount rate that makes a bond\'s price equal the present value of its cash flows is called what?', 'Yield to maturity', ['Coupon rate', 'Current yield', 'Prime rate']],
+  [2, 'Corporate Finance', 'When a company sells new shares to raise money, existing shareholders see what diluted?', 'Their ownership percentage', ['Their bond ratings', 'Their dividend history', 'Their tax bracket']],
+  [2, 'Options', 'The price a buyer pays to purchase an option is called what?', 'The premium', ['The strike', 'The margin', 'The spread']],
+
+  [5, 'Options', 'Which Greek measures how much an option\'s delta changes when the underlying price moves?', 'Gamma', ['Vega', 'Rho', 'Theta']],
+  [5, 'Valuation', 'Unlevering a company\'s beta removes the effect of what?', 'Its debt financing', ['Its market size', 'Its dividend policy', 'Its industry']],
+  [5, 'Bonds and Rates', 'The Macaulay duration of a zero-coupon bond equals what?', 'Its time to maturity', ['Half its time to maturity', 'Zero', 'Its yield']],
+  [5, 'Corporate Finance', 'When NPV and IRR rank two mutually exclusive projects differently, which measure should decide?', 'Net present value', ['Internal rate of return', 'Payback period', 'Accounting rate of return']],
 ];
 
 export const CODING = [
@@ -166,4 +218,19 @@ export const CODING = [
   [5, 'Web', 'Which HTTP status code means Too Many Requests?', '429', ['403', '418', '503']],
   [5, 'Algorithms', 'A problem built from overlapping subproblems, each solved once and reused, is a classic case for which technique?', 'Dynamic programming', ['Greedy search', 'Backtracking', 'Binary search']],
   [5, 'Databases', 'Which SQL isolation level prevents dirty reads, non-repeatable reads and phantom reads?', 'Serializable', ['Read uncommitted', 'Read committed', 'Repeatable read']],
+  // Restock 2026-11-27 for 2026-12-16..12-31, appended per tier (the past is frozen).
+  [3, 'Databases', 'Which SQL keyword removes duplicate rows from a query\'s results?', 'DISTINCT', ['ONLY', 'LIMIT', 'HAVING']],
+  [3, 'Algorithms', 'Which sorting algorithm repeatedly swaps neighboring items that are out of order?', 'Bubble sort', ['Merge sort', 'Quicksort', 'Heap sort']],
+  [3, 'Software Practice', 'Which Git command copies an existing remote repository to your machine?', 'clone', ['fork', 'pull', 'branch']],
+  [3, 'Programming Basics', 'In Python 3, what does 7 // 2 evaluate to?', '3', ['3.5', '4', '1']],
+
+  [4, 'Web', 'In CSS, which property sets the space between an element\'s content and its border?', 'padding', ['margin', 'border-spacing', 'outline']],
+  [4, 'Databases', 'A column that refers to the primary key of another table is called what?', 'Foreign key', ['Candidate key', 'Composite key', 'Surrogate key']],
+  [4, 'Algorithms', 'Which graph traversal visits all of a node\'s neighbors before going deeper, using a queue?', 'Breadth-first search', ['Depth-first search', 'Binary search', 'Linear search']],
+  [4, 'Software Practice', 'Automatically building and testing code every time changes are merged is called what?', 'Continuous integration', ['Pair programming', 'A code freeze', 'Hotfixing']],
+
+  [5, 'Algorithms', 'Building a binary heap from n unsorted items with the bottom-up method takes what time?', 'O(n)', ['O(n log n)', 'O(log n)', 'O(n²)']],
+  [5, 'Web', 'An attack that injects malicious script into pages other users view is called what?', 'Cross-site scripting', ['SQL injection', 'Clickjacking', 'DNS spoofing']],
+  [5, 'Programming Basics', 'In JavaScript, what does [] + [] evaluate to?', 'An empty string', ['0', 'An empty array', 'undefined']],
+  [5, 'Databases', 'Which kind of index stores a table\'s rows physically in the order of the index key?', 'Clustered index', ['Nonclustered index', 'Bitmap index', 'Hash index']],
 ];

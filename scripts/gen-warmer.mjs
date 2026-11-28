@@ -176,9 +176,9 @@ const EMB_DIR = path.join(CACHE, 'warmer-emb');
 const VEC_BIN = path.join(CACHE, 'warmer-vectors.bin');
 const PKG = 'wink-embeddings-sg-100d';
 
-const LAST_FROZEN = '2026-11-30';   // the bank's current last day; asserted
-const FIRST_NEW = '2026-12-01';
-const LAST_NEW = '2026-12-15';
+const LAST_FROZEN = '2026-12-29';   // the bank's current last day; asserted
+const FIRST_NEW = '2026-12-30';
+const LAST_NEW = '2026-12-31';   // run 5 (2026-11-27): Dec 30-31 at the loosened floor below
 const SEED_BASE = 0x5741524d;       // "WARM"
 
 const WK_BAND = [460, 3600];        // weekday answer vocab-rank band
@@ -190,7 +190,9 @@ const SU_SUB = [[5030, 6000], [6000, 7000], [7000, 9000]];
 // the frozen bank's own median nearest-other-answer rank is 58, 38 of its 74
 // boards sit inside 60, and its tightest pairs are at rank 2 (gold/diamond,
 // mountain/canyon). Both floors are checked in BOTH directions.
-const SEP_NEW = 150;                // against another answer in this run
+// Run 5 (Dec 30-31, owner 2026-11-27: the gap can be loosened): 100, matching
+// verify-warmer's SEP_LOOSE from LOOSE_FROM. Runs 2 to 4 were built at 150.
+const SEP_NEW = 100;                // against another answer in this run
 const SEP_FROZEN = 80;              // against a board that shipped before VARIETY_FROM
 const VARIETY_FROM = '2026-09-30';  // verify-warmer's scope line
 // verify-warmer's length cap over every board from VARIETY_FROM: 18 of the first 62,
@@ -207,24 +209,26 @@ const CLEAN_MIN = 13;               // of the top 15 neighbours, in the dictiona
 const DOMAIN_CAP = 2;               // run 2: 5 of 62
 const DOMAIN_WINDOW = 7;
 const NOUN_CAP = 10;                // run 2: 40 of 62
-const VERB_MIN = 2;                 // run 2: 8
-const ADJ_MIN = 2;                  // run 2: 8
+const VERB_MIN = 0;                 // run 5 is two boards; run 4 (16 boards) had 2, run 2: 8
+const ADJ_MIN = 0;                  // run 5 is two boards; run 4 had 2, run 2: 8
 const POS_RUN_MAX = 4;
 // Target share of the run per part of speech; the picker steers towards these
 // every day rather than only checking the caps at the end.
 const POS_TARGET = { n: 0.58, v: 0.21, a: 0.21 };
 const LEN_CAP = 5;                  // run 2: 18 of 62
-const LEN_DISTINCT_MIN = 4;         // run 2: 5
+const LEN_DISTINCT_MIN = 2;         // run 5: two boards, two lengths; run 4: 4, run 2: 5
 // Per sub-band. Run 3 found the 460-1200 band exhausted: against 136 banked
 // answers at the 150-rank floor, two ordinary words in it survive vetting
 // (forward, interested); everything else left is a function word.
-const WK_SUB_MIN = [2, 3, 3];       // run 2: 14 of 53 each
+const WK_SUB_MIN = [0, 0, 0];       // run 5 (two boards); run 4: [0, 3, 3] (460-1200 exhausted), run 3: [2, 3, 3]
 const SU_SUB_MIN = 0;               // run 2: 2 of 9; two Sundays cannot fill three sub-bands
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
   'August', 'September', 'October', 'November', 'December'];
 
 // ---------------------------------------------------------------------------
+// 2026-11-27 (run 4): the last 55 lines of WEEKDAY_POOL are candidates for Dec 16-31
+// (45 verbs, then ten words a vocab scan found clear of every banked answer), each vetted by the gates below like every other line.
 // 2026-11-22 (run 3): the first 27 lines of WEEKDAY_POOL were added after the
 // 150-rank separation against the 62 run-2 boards left 20 weekday words; each was
 // read with its top neighbours (auto-scan of VOCAB 460-3600, then hand-picked).
@@ -335,6 +339,61 @@ scale a: massive tall rough rural wide quick
 taste a: delicious brilliant excellent superb useful
 grade a: legal professional powerful digital complex correct solid comfortable critical technical mobile
 state a: negative positive permanent independent incredible similar likely private available essential accurate
+speech v: whisper
+collect v: gather
+ascend v: climb
+water v: swim
+art v: paint
+craft v: sew
+garden v: plant
+farm v: harvest
+crease v: fold
+mix v: stir
+package v: wrap
+pursuit v: chase
+conceal v: hide
+yell v: shout
+prayer v: pray
+election v: vote
+song v: sing
+dancing v: dance
+humor v: laugh
+rest v: sleep
+excavate v: dig
+liquid v: pour
+boat v: sail
+prey v: hunt
+lease v: rent
+fix v: repair
+gauge v: measure
+estimate v: guess
+dispute v: argue
+pardon v: forgive
+guest v: invite
+party v: celebrate
+theft v: steal
+discover v: explore
+roam v: wander
+loan v: borrow
+lesson v: teach
+kitchen v: cook
+rinse v: wash
+construct v: build
+increase v: grow
+lungs v: breathe
+grin v: smile
+posture v: kneel
+cold v: shiver
+refusal v: deny
+annoyance v: bother
+hush a: quiet
+lesser a: minor
+alliance n: partnership
+suppose v: thinking
+tend v: tendency
+damaged a: damage
+regime n: government
+buried a: burial
 `;
 
 const SUNDAY_POOL = `

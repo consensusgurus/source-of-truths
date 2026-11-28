@@ -3479,5 +3479,1457 @@ export const PUZZLES = [
     ]
    }
   ]
+ },
+ {
+  "num": 39,
+  "quizId": "carmen-12-16-26",
+  "live": "2026-12-16",
+  "dateLabel": "December 16, 2026",
+  "sunday": false,
+  "title": "The Stolen Pearl Necklace",
+  "suspect": "The Velvet Glove",
+  "stolen": "A pearl necklace",
+  "start": {
+   "name": "Reykjavík, Iceland",
+   "ll": [
+    -21.94,
+    64.15
+   ]
+  },
+  "legs": [
+   {
+    "name": "Beijing, China",
+    "ll": [
+     116.41,
+     39.9
+    ],
+    "id": "beijing",
+    "tier": 1,
+    "tips": [
+     "Roast duck, carved tableside at a restaurant off Wangfujing street, is circled on her food map, and in her phrasebook \"nǐ hǎo\" is underlined twice.",
+     "In the back of a pedicab she quizzed the driver about a flat, dry northern capital of hutong alleys and ring roads, the Temple of Heaven, and the Summer Palace on Kunming Lake.",
+     "Peking, as it was once spelled: home of the Forbidden City and the first city to host both the Summer and the Winter Olympic Games. She's there now."
+    ]
+   },
+   {
+    "name": "Dubrovnik, Croatia",
+    "ll": [
+     18.09,
+     42.65
+    ],
+    "id": "dubrovnik",
+    "tier": 2,
+    "tips": [
+     "Left at a cafe table: a cable car receipt and a map with the old walls traced in pen. She's headed for a walled port on the Adriatic.",
+     "She told a ferry captain she wanted to walk the Stradun and see Lovrijenac Fortress, in a city of polished limestone streets and orange roofs ringed by massive walls.",
+     "Pearl of the Adriatic, once the maritime republic of Ragusa: its old city walls stood in for King's Landing in Game of Thrones. That is where she is."
+    ]
+   },
+   {
+    "name": "Chicago, United States",
+    "ll": [
+     -87.63,
+     41.88
+    ],
+    "id": "chicago",
+    "tier": 1,
+    "tips": [
+     "Her pass for the elevated L trains that circle the Loop was found with a dollar bill and a receipt for a deep-dish pizza. She's heading for a big city on a Great Lake.",
+     "She asked a cab driver about a flat lakeside city of early skyscrapers on a river dyed green each March, and wanted to see Cloud Gate in Millennium Park and Wrigley Field.",
+     "Last ping: the Windy City on Lake Michigan, birthplace of the modern skyscraper and home of the Willis Tower, once called the Sears Tower."
+    ]
+   },
+   {
+    "name": "Colombo, Sri Lanka",
+    "ll": [
+     79.85,
+     6.93
+    ],
+    "id": "colombo",
+    "tier": 2,
+    "tips": [
+     "Her hotel bin held a tin of black tea, a receipt for hoppers and kottu, and a phrasebook that prints Sinhala and Tamil script side by side.",
+     "The tuk-tuk driver remembers her rupee tip and her questions: the seafront at Galle Face Green and the red-and-white Jami Ul-Alfar Mosque in Pettah, in a hot, palm-lined west coast port.",
+     "She is holed up in the largest city and main port of Sri Lanka, the teardrop island once called Ceylon, near the old Dutch Hospital that now holds shops and cafes."
+    ]
+   },
+   {
+    "name": "Prague, Czechia",
+    "ll": [
+     14.42,
+     50.08
+    ],
+    "id": "prague",
+    "tier": 1,
+    "tips": [
+     "A beer mat from a brewery cellar marks her place in a guidebook, next to a ticket for a medieval astronomical clock whose apostles parade on the hour.",
+     "Gothic spires and baroque domes along the Vltava: a tram driver, who watched her count her korunas, says that is what she wanted, plus the statue-lined stone bridge at dawn and the castle complex on the hill above it.",
+     "Find the Orloj, the astronomical clock on the Old Town Hall, and you find her, in the capital whose statue-lined Charles Bridge was begun in 1357."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 40,
+  "quizId": "carmen-12-17-26",
+  "live": "2026-12-17",
+  "dateLabel": "December 17, 2026",
+  "sunday": false,
+  "title": "The Stolen Antique Brass Globe",
+  "suspect": "Lady Lark",
+  "stolen": "An antique brass globe",
+  "start": {
+   "name": "Havana, Cuba",
+   "ll": [
+    -82.37,
+    23.11
+   ]
+  },
+  "legs": [
+   {
+    "name": "Bogotá, Colombia",
+    "ll": [
+     -74.07,
+     4.71
+    ],
+    "id": "bogota",
+    "tier": 2,
+    "tips": [
+     "Ajiaco soup, one bowl, is on the receipt clipped to a ticket for the Gold Museum and its hoard of pre-Columbian gold, with peso coins left as the tip. She's bound for a high Andean plateau.",
+     "La Candelaria and the Botero Museum were on her list, a street artist says, in a cool, rainy capital at 2,600 meters full of graffiti and red brick.",
+     "Look up: a cable car and a funicular climb Monserrate to a white church high above her hideout, the capital of Colombia."
+    ]
+   },
+   {
+    "name": "Amsterdam, Netherlands",
+    "ll": [
+     4.9,
+     52.37
+    ],
+    "id": "amsterdam",
+    "tier": 1,
+    "tips": [
+     "Stroopwafel wrapper, canal cruise stub, a map with the canal rings traced in pen. All of it was left behind on her way to a city built on wooden piles.",
+     "A bicycle mechanic fixed her chain, got a \"dank je wel,\" and heard her plans: the Night Watch at the Rijksmuseum, the Van Gogh Museum, and a flat city of narrow gabled houses on rings of canals.",
+     "Houseboats line the Prinsengracht in the Dutch capital, whose 17th-century canal ring is a UNESCO site and whose Royal Palace fronts the main square."
+    ]
+   },
+   {
+    "name": "Kraków, Poland",
+    "ll": [
+     19.94,
+     50.06
+    ],
+    "id": "krakow",
+    "tier": 2,
+    "tips": [
+     "An obwarzanek bread ring from a street cart, bought with zloty, and a tram ticket stuffed in a pocket. She's headed for an old royal city on the Vistula.",
+     "A carriage driver took her past the Cloth Hall. She wanted the fire-breathing dragon statue below Wawel Castle and the brick cellars of this medieval city of church spires.",
+     "On the hour, a trumpeter plays the Hejnał from St. Mary's Basilica over a vast medieval market square. She is in Poland's former royal capital."
+    ]
+   },
+   {
+    "name": "Dubai, United Arab Emirates",
+    "ll": [
+     55.27,
+     25.2
+    ],
+    "id": "dubai",
+    "tier": 1,
+    "tips": [
+     "Gold bangles from the Deira Gold Souk, bought with dirhams, and an abra water taxi ticket across the Creek. She's bound for a desert boomtown on the Gulf.",
+     "A hotel doorman says she wanted the Palm Jumeirah and the sail-shaped Burj Al Arab hotel, in a glittering desert city of glass towers and man-made islands.",
+     "Look up. She'll be spotted atop the Burj Khalifa, which took the title of world's tallest building when it opened in 2010, in this city of the United Arab Emirates."
+    ]
+   },
+   {
+    "name": "Seville, Spain",
+    "ll": [
+     -5.98,
+     37.39
+    ],
+    "id": "seville",
+    "tier": 2,
+    "tips": [
+     "Castanets and a ticket for a flamenco show in Triana, left in her hotel room. A note reads \"hasta luego.\" She's chasing a hot inland river port.",
+     "Her horse-drawn carriage stopped at the Real Alcázar and the Plaza de España; the driver says she asked about the orange trees and whitewashed lanes along the Guadalquivir.",
+     "The Giralda bell tower, once a minaret, rises over the largest Gothic cathedral in the world. She is in the capital of Andalusia."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 41,
+  "quizId": "carmen-12-18-26",
+  "live": "2026-12-18",
+  "dateLabel": "December 18, 2026",
+  "sunday": false,
+  "title": "The Stolen Gold-Leaf Manuscript",
+  "suspect": "The Silver Fox",
+  "stolen": "A gold-leaf manuscript",
+  "start": {
+   "name": "Tunis, Tunisia",
+   "ll": [
+    10.18,
+    36.81
+   ]
+  },
+  "legs": [
+   {
+    "name": "Guadalajara, Mexico",
+    "ll": [
+     -103.35,
+     20.67
+    ],
+    "id": "guadalajara",
+    "tier": 2,
+    "tips": [
+     "A flyer for a charreada rodeo was folded around a receipt for a torta ahogada from the San Juan de Dios market. She's bound for a western highland city.",
+     "The hotel porter remembers her asking for the twin-spired cathedral and the Orozco murals in the Hospicio Cabañas, in a sprawling colonial city of plazas and jacaranda trees.",
+     "Mariachi bands play for diners in the Plaza de los Mariachis, a short drive from the town that gave tequila its name. She's in the capital of Jalisco."
+    ]
+   },
+   {
+    "name": "Cusco, Peru",
+    "ll": [
+     -71.97,
+     -13.53
+    ],
+    "id": "cusco",
+    "tier": 2,
+    "tips": [
+     "A train ticket to Aguas Calientes, a coca tea bag and a phrasebook page of Quechua words were left in her hotel room. She's bound for a city high in the Andes.",
+     "Ask the llama herder: she wanted to find the twelve-angled stone and tour Sacsayhuamán, in a city at 3,400 meters with Inca stone walls under Spanish churches.",
+     "Her trail ends in the ancient capital of the Inca Empire, the base for trips to Machu Picchu, whose Plaza de Armas was once the great Inca square."
+    ]
+   },
+   {
+    "name": "Marrakesh, Morocco",
+    "ll": [
+     -7.99,
+     31.63
+    ],
+    "id": "marrakesh",
+    "tier": 1,
+    "tips": [
+     "A riad booking deep inside an old walled medina of rose-pink earth, paid for after she changed euros into dirhams. She has crossed into North Africa.",
+     "She told a guide she wanted a rooftop riad facing the snowcapped Atlas Mountains to the south, then a morning in the cobalt-blue Majorelle Garden. The city is red and walled, on a dry plain.",
+     "An informant swears she asked the way to Jemaa el-Fnaa, the great square that fills with storytellers, musicians and food stalls after dark."
+    ]
+   },
+   {
+    "name": "Kuala Lumpur, Malaysia",
+    "ll": [
+     101.69,
+     3.14
+    ],
+    "id": "kuala-lumpur",
+    "tier": 2,
+    "tips": [
+     "Left at a cafe table: a monorail ticket and a nasi lemak receipt from a stall on Jalan Alor. In her phrasebook, \"terima kasih\" is circled.",
+     "Her cabbie, paid in ringgit, remembers a hot, rainy capital that grew where two rivers meet; she wanted the 272 steps up to Batu Caves and the Moorish-style old railway station.",
+     "Beneath the Petronas Twin Towers, once the tallest buildings in the world, in the Malaysian capital whose name means \"muddy confluence.\" That's her spot."
+    ]
+   },
+   {
+    "name": "Tromsø, Norway",
+    "ll": [
+     18.96,
+     69.65
+    ],
+    "id": "tromso",
+    "tier": 3,
+    "tips": [
+     "Thermal mittens and a ticket for a northern lights bus tour, both left in her hotel room. She's headed far above the Arctic Circle.",
+     "A sled-dog musher says she asked about the Fjellheisen cable car and the Polaria aquarium, in an island city ringed by snowy peaks with weeks of polar night.",
+     "Norway's gateway to the Arctic, a base for polar expeditions since the 1800s. The white triangular Arctic Cathedral faces the island center across a long bridge."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 42,
+  "quizId": "carmen-12-19-26",
+  "live": "2026-12-19",
+  "dateLabel": "December 19, 2026",
+  "sunday": false,
+  "title": "The Stolen Carved Amber Box",
+  "suspect": "The Night Heron",
+  "stolen": "A carved amber box",
+  "start": {
+   "name": "Xi'an, China",
+   "ll": [
+    108.94,
+    34.34
+   ]
+  },
+  "legs": [
+   {
+    "name": "Cartagena, Colombia",
+    "ll": [
+     -75.51,
+     10.39
+    ],
+    "id": "cartagena",
+    "tier": 2,
+    "tips": [
+     "Coconut cocadas from a palenquera balancing a fruit bowl on her head, wrapped in a napkin that reads gracias, were left on a cafe table. She's heading for a Caribbean port.",
+     "A carriage driver says she asked about a hot, walled colonial port of bougainvillea balconies, and wanted to tour the San Felipe de Barajas Castle and the street art of Getsemaní.",
+     "Spanish treasure fleets once stopped at her hideout, the walled Caribbean port of Colombia where Gabriel García Márquez kept a home and found the setting for Love in the Time of Cholera."
+    ]
+   },
+   {
+    "name": "Valletta, Malta",
+    "ll": [
+     14.51,
+     35.9
+    ],
+    "id": "valletta",
+    "tier": 3,
+    "tips": [
+     "A pastizzi receipt and a phrasebook page with \"grazzi\" circled, left in her hotel room with euro coins stamped with an eight-pointed cross. She's headed for a tiny fortified capital on a Mediterranean island.",
+     "A harbor pilot says she asked when the noon cannon fires at the Upper Barrakka Gardens, in a honey-colored limestone city of steep stepped streets on a peninsula.",
+     "Built by the Knights of St. John in the 1560s, Malta's capital holds Caravaggio's The Beheading of Saint John in St. John's Co-Cathedral. Look there."
+    ]
+   },
+   {
+    "name": "Dakar, Senegal",
+    "ll": [
+     -17.47,
+     14.72
+    ],
+    "id": "dakar",
+    "tier": 2,
+    "tips": [
+     "Torn in half on the dock: a ferry ticket to Gorée Island. Her Wolof phrase card has \"jërëjëf\" circled, and she paid in CFA francs. She wants a windswept peninsula on the Atlantic.",
+     "A fisherman beside the painted pirogues watched her map a route: climb to the African Renaissance Monument, then walk the Corniche at sunset past the baobab trees.",
+     "Senegal's capital on the Cap-Vert peninsula is the westernmost city of mainland Africa, and for years the finish line of a famous desert rally from Paris. She is there."
+    ]
+   },
+   {
+    "name": "Amman, Jordan",
+    "ll": [
+     35.93,
+     31.95
+    ],
+    "id": "amman",
+    "tier": 2,
+    "tips": [
+     "Two tickets to the Roman Theater and a box of knafeh from Habibah sweets downtown. She's bound for a hilly Arabic-speaking capital in the Levant.",
+     "Her taxi driver, paid in dinars, remembers the route she wanted: up to the Citadel's Temple of Hercules, then the cafes of Rainbow Street, in a capital of pale limestone houses spread over many hills.",
+     "An informant places her in Jordan's capital, called Philadelphia in Roman times, a short drive from the Dead Sea and the usual starting point for trips to Petra."
+    ]
+   },
+   {
+    "name": "Kigali, Rwanda",
+    "ll": [
+     30.06,
+     -1.95
+    ],
+    "id": "kigali",
+    "tier": 3,
+    "tips": [
+     "A woven agaseke basket from Kimironko Market sits on her hotel bed, beside a phrase card with \"murakoze\" circled. She's bound for a hilly capital in East Africa.",
+     "Overheard on a moto-taxi, the fare paid in francs: she wanted a clean, green capital spread over rolling hills, the domed convention center lit up at night, and the Inema Arts Center.",
+     "On the last Saturday of each month, streets in Rwanda's capital fall quiet for Umuganda community work. She picked the Land of a Thousand Hills to hide."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 43,
+  "quizId": "carmen-12-20-26",
+  "live": "2026-12-20",
+  "dateLabel": "December 20, 2026",
+  "sunday": true,
+  "title": "The Stolen Crystal Decanter",
+  "suspect": "The Jackdaw",
+  "stolen": "A crystal decanter",
+  "start": {
+   "name": "Dublin, Ireland",
+   "ll": [
+    -6.26,
+    53.35
+   ]
+  },
+  "legs": [
+   {
+    "name": "Manila, Philippines",
+    "ll": [
+     120.98,
+     14.6
+    ],
+    "id": "manila",
+    "tier": 2,
+    "tips": [
+     "A jeepney fare stub and a halo-halo receipt from a cafe in Binondo, often called the oldest Chinatown in the world, fell out of her jacket with a few pesos.",
+     "Walking the old walled city of Intramuros with a tour guide, she asked about San Agustin Church and the famous sunsets over the bay of this hot capital.",
+     "The Pearl of the Orient: Fort Santiago guards the Pasig River and Rizal Park honors the national hero in the capital of the Philippines. She's there."
+    ]
+   },
+   {
+    "name": "Suva, Fiji",
+    "ll": [
+     178.44,
+     -18.14
+    ],
+    "id": "suva",
+    "tier": 3,
+    "tips": [
+     "Kava root, a whole bundle of it from the municipal market, was stuffed in her bag beside a bus ticket and a phrasebook with bula and vinaka circled.",
+     "Rainy, green, on a harbor peninsula of a big volcanic island: that is the capital a market vendor says she described, asking for the colonial Grand Pacific Hotel and Thurston Gardens.",
+     "Her trail ends on Viti Levu, in the capital of Fiji, home of the Fiji Museum and the main campus of the University of the South Pacific."
+    ]
+   },
+   {
+    "name": "Shiraz, Iran",
+    "ll": [
+     52.58,
+     29.59
+    ],
+    "id": "shiraz",
+    "tier": 3,
+    "tips": [
+     "A verse card quoting Hafez marks her place in a guidebook, next to a box of sweets from the Vakil Bazaar. She's after an old city of gardens in a southern highland valley.",
+     "She told a gardener she longed for rose gardens and poets' tombs, the colored glass of the Pink Mosque, Nasir al-Molk, and the cypress paths of Eram Garden. She paid in rials.",
+     "She is in the Iranian city of poets, resting place of Hafez and Saadi, and the big city travelers use as a base for day trips to the ancient ruins of Persepolis."
+    ]
+   },
+   {
+    "name": "Edinburgh, United Kingdom",
+    "ll": [
+     -3.19,
+     55.95
+    ],
+    "id": "edinburgh",
+    "tier": 2,
+    "tips": [
+     "Haggis, neeps and tatties on the Royal Mile, paid for in pounds, and a tram ticket to the airport. She's chasing a hilly northern capital.",
+     "A piper on the corner saw her set off to climb Arthur's Seat. She had asked about the Georgian streets of the New Town in this city of dark stone tenements among volcanic crags.",
+     "Every August the Fringe, the world's largest arts festival, fills this Scottish capital, with its castle perched on an extinct volcano above Princes Street."
+    ]
+   },
+   {
+    "name": "Luang Prabang, Laos",
+    "ll": [
+     102.14,
+     19.89
+    ],
+    "id": "luang-prabang",
+    "tier": 3,
+    "tips": [
+     "A ticket for the slow boat on the Mekong was tucked into a woven scarf from the night market, along with a kip receipt for a bowl of khao soi.",
+     "Overheard at the dock: she asked a boatman how to climb Mount Phousi at sunset and find the sweeping roofs of Wat Xieng Thong, in a sleepy peninsula town where two rivers meet.",
+     "She's hiding in the UNESCO-listed former royal capital of Laos, where saffron-robed monks walk the silent alms procession at dawn each morning."
+    ]
+   },
+   {
+    "name": "La Paz, Bolivia",
+    "ll": [
+     -68.15,
+     -16.5
+    ],
+    "id": "la-paz",
+    "tier": 3,
+    "tips": [
+     "A lucky charm from the Witches' Market dangles from her key ring, next to a ticket for the red line of the city's cable cars. She's heading for a canyon city high in the Andes.",
+     "A cholita wrestler says she wanted the eroded spires of the Valley of the Moon, and asked about a city in a deep canyon at about 3,600 meters under the triple peak of Illimani.",
+     "Her flight lands at El Alto, above the world's highest seat of national government, where prices are in bolivianos: Bolivia's administrative capital, while Sucre keeps the constitutional title."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 44,
+  "quizId": "carmen-12-21-26",
+  "live": "2026-12-21",
+  "dateLabel": "December 21, 2026",
+  "sunday": false,
+  "title": "The Stolen Ruby-Studded Compass",
+  "suspect": "The Velvet Glove",
+  "stolen": "A ruby-studded compass",
+  "start": {
+   "name": "Stockholm, Sweden",
+   "ll": [
+    18.07,
+    59.33
+   ]
+  },
+  "legs": [
+   {
+    "name": "Mexico City, Mexico",
+    "ll": [
+     -99.13,
+     19.43
+    ],
+    "id": "mexico-city",
+    "tier": 1,
+    "tips": [
+     "A ticket for a trajinera boat ride on the canals of Xochimilco sat in her hotel room beside a peso coin. She's heading for a capital high on a volcanic plateau.",
+     "She told a tour guide she wanted Frida Kahlo's Blue House and Chapultepec Castle, and asked about a vast, sinking city built on a drained lake bed at 2,240 meters.",
+     "Last ping: the site of the Aztec capital Tenochtitlan, where the Zócalo, one of the world's largest squares, faces the Metropolitan Cathedral."
+    ]
+   },
+   {
+    "name": "Bangkok, Thailand",
+    "ll": [
+     100.5,
+     13.76
+    ],
+    "id": "bangkok",
+    "tier": 1,
+    "tips": [
+     "A longtail boat ticket and a mango sticky rice receipt from a stall on Khao San Road, both paid in baht. She's heading for a river capital in the tropics.",
+     "The tuk-tuk driver heard her ask for the Reclining Buddha at Wat Pho and Wat Arun, the Temple of Dawn, in a hot, flat city laced with canals along the Chao Phraya.",
+     "Its full ceremonial name is among the longest place names on Earth. The Thai capital, home of the Grand Palace and the Emerald Buddha, is her hideout."
+    ]
+   },
+   {
+    "name": "Rome, Italy",
+    "ll": [
+     12.5,
+     41.9
+    ],
+    "id": "rome",
+    "tier": 1,
+    "tips": [
+     "A greasy napkin from a supplì stand near Campo de' Fiori, a gelato receipt and a stamped tram ticket. Wherever she is going, it is an ancient capital.",
+     "A cab driver took her past umbrella pines and terracotta domes along the Tiber. She wanted the Pantheon and the Trevi Fountain before dawn, in a city of seven hills.",
+     "Gladiators once fought in the Colosseum here, and a whole independent country, Vatican City, sits inside this capital of Italy."
+    ]
+   },
+   {
+    "name": "Sydney, Australia",
+    "ll": [
+     151.21,
+     -33.87
+    ],
+    "id": "sydney",
+    "tier": 1,
+    "tips": [
+     "An Opal transit card topped up for the Manly ferry was left on a cafe table, next to a flat white receipt and a dollar coin stamped with five kangaroos. She's heading for a big harbor city.",
+     "A lifeguard at Bondi Beach watched her swim, then heard she wanted the old convict-era lanes of The Rocks in a sunny harbor city of sandstone cliffs and surf beaches.",
+     "Beside the sail-roofed Opera House and the steel arch bridge nicknamed the Coathanger, in Australia's oldest city, founded in 1788. That's her landing spot."
+    ]
+   },
+   {
+    "name": "Lagos, Nigeria",
+    "ll": [
+     3.38,
+     6.52
+    ],
+    "id": "lagos",
+    "tier": 1,
+    "tips": [
+     "A map with one circle: the long canopy walkway at the Lekki Conservation Centre. Beside it, a Yoruba phrase card. She's bound for a vast lagoon city on the Gulf of Guinea.",
+     "A danfo bus driver took her naira and heard her plans: cross the Third Mainland Bridge, haggle in Balogun Market, and explore a humid, sprawling city of islands, bridges and lagoons.",
+     "Nigeria's largest city, and its capital until the government moved to Abuja in 1991. That's where she is, in the hub of the Nollywood film industry."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 45,
+  "quizId": "carmen-12-22-26",
+  "live": "2026-12-22",
+  "dateLabel": "December 22, 2026",
+  "sunday": false,
+  "title": "The Stolen First-Edition Atlas",
+  "suspect": "The Magpie",
+  "stolen": "A first-edition atlas",
+  "start": {
+   "name": "Yogyakarta, Indonesia",
+   "ll": [
+    110.36,
+    -7.8
+   ]
+  },
+  "legs": [
+   {
+    "name": "Mumbai, India",
+    "ll": [
+     72.88,
+     19.08
+    ],
+    "id": "mumbai",
+    "tier": 1,
+    "tips": [
+     "Two things on a dropped camera roll: a flight over the Arabian Sea and a curving seafront road lit up at night, nicknamed the Queen's Necklace. Her wallet now holds rupees.",
+     "According to a taxi driver, she wanted the Hindi film studios, a ride on the packed suburban trains, and a look at the dabbawalas carrying home-cooked lunches across the city.",
+     "Known as Bombay until 1995. She wants a photo at the Gateway of India, the basalt arch on the harbor built to mark a 1911 royal visit."
+    ]
+   },
+   {
+    "name": "Lima, Peru",
+    "ll": [
+     -77.04,
+     -12.05
+    ],
+    "id": "lima",
+    "tier": 1,
+    "tips": [
+     "Barranco, the bohemian seaside district, is circled on her map, and a cevichería receipt from there, paid in soles, is tucked beside it. She's heading for a desert capital on the Pacific.",
+     "The Plaza Mayor and the catacombs under San Francisco Monastery topped her list, a taxi driver says, in a gray, misty coastal city on desert cliffs where it almost never rains.",
+     "City of Kings: founded by Francisco Pizarro in 1535, now Peru's capital, where an adobe pyramid called Huaca Pucllana rises among the apartment blocks of Miraflores."
+    ]
+   },
+   {
+    "name": "Santiago, Chile",
+    "ll": [
+     -70.67,
+     -33.45
+    ],
+    "id": "santiago",
+    "tier": 2,
+    "tips": [
+     "A metro card and a receipt for a completo hot dog and a glass of Carménère from the Maipo Valley, paid in pesos. She's heading for a capital in a basin below the Andes.",
+     "She asked a ski instructor about a smoggy valley city with snowy peaks behind its towers, and wanted the funicular up Cerro San Cristóbal and a look at the Costanera Center tower.",
+     "Pedro de Valdivia founded her hideout in 1541 at the foot of Santa Lucía Hill. It is Chile's capital, a short drive from the port of Valparaíso."
+    ]
+   },
+   {
+    "name": "Rio de Janeiro, Brazil",
+    "ll": [
+     -43.17,
+     -22.91
+    ],
+    "id": "rio-de-janeiro",
+    "tier": 1,
+    "tips": [
+     "A caipirinha at a kiosk on Copacabana beach, paid in reais, is the last thing on her tab. She's heading for a coastal city on a bay of granite peaks.",
+     "According to a beach vendor, she wanted a cable car up Sugarloaf Mountain and a samba night in Lapa, in a city squeezed between jungle mountains and the Atlantic.",
+     "Christ the Redeemer watches over her hideout from atop Corcovado, in the city that is home to the Carnival Sambadrome and the Maracanã stadium."
+    ]
+   },
+   {
+    "name": "Seoul, South Korea",
+    "ll": [
+     126.98,
+     37.57
+    ],
+    "id": "seoul",
+    "tier": 1,
+    "tips": [
+     "Her subway rides went on a T-money card, her lunch was mung bean pancakes at Gwangjang Market, paid for in won, and her notebook is full of hangul letters copied out by hand.",
+     "She asked a palace guard at Gyeongbokgung Palace how to reach the hanok houses of Bukchon village, in a mountain-ringed capital split by the Han River.",
+     "Last seen under the tower on Namsan mountain: the South Korean capital, host of the 1988 Summer Olympics and home of the Gangnam district made famous in song."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 46,
+  "quizId": "carmen-12-23-26",
+  "live": "2026-12-23",
+  "dateLabel": "December 23, 2026",
+  "sunday": false,
+  "title": "The Stolen Golden Pocket Watch",
+  "suspect": "Madame Moth",
+  "stolen": "A golden pocket watch",
+  "start": {
+   "name": "Palma, Spain",
+   "ll": [
+    2.65,
+    39.57
+   ]
+  },
+  "legs": [
+   {
+    "name": "Tokyo, Japan",
+    "ll": [
+     139.69,
+     35.68
+    ],
+    "id": "tokyo",
+    "tier": 1,
+    "tips": [
+     "Her Yamanote loop line pass is still in her pocket, with a few yen coins and a receipt from a tuna stall at the old Tsukiji outer market. She wants the biggest city on the archipelago.",
+     "The hotel porter recalls her plan to cross the Shibuya scramble, then visit Sensō-ji temple in Asakusa, in a sprawling bayside metropolis of neon towers and quiet shrines.",
+     "Once called Edo, this capital keeps its Imperial Palace on the grounds of the shogun's castle while the Skytree rises over the eastern wards. She's there."
+    ]
+   },
+   {
+    "name": "Addis Ababa, Ethiopia",
+    "ll": [
+     38.74,
+     9.03
+    ],
+    "id": "addis-ababa",
+    "tier": 2,
+    "tips": [
+     "Freshly roasted beans and a ticket for the city's light rail, the first in sub-Saharan Africa, sit on the cafe table she just left. She is in coffee's claimed birthplace.",
+     "Overheard at a cafe: she paid in birr, joked about a 13-month calendar, asked for the museum that keeps Lucy, the 3.2-million-year-old skeleton, and wanted to haggle at Merkato.",
+     "Last ping: a highland capital about 2,350 meters up, home of the African Union's headquarters. Its Amharic name means \"new flower.\""
+    ]
+   },
+   {
+    "name": "Buenos Aires, Argentina",
+    "ll": [
+     -58.38,
+     -34.6
+    ],
+    "id": "buenos-aires",
+    "tier": 1,
+    "tips": [
+     "Two things on the cafe table she fled: a ticket for a tango show in San Telmo and a menu offering dulce de leche pastries. She's bound for a capital on a wide, muddy estuary.",
+     "A waiter, tipped in pesos, says she wanted the colorful houses of La Boca and the tombs of Recoleta Cemetery, in a grand city of Parisian boulevards and cafes on the Río de la Plata.",
+     "She is holed up in Argentina's capital near the Teatro Colón, where the white Obelisk rises on Avenida 9 de Julio, one of the widest avenues in the world."
+    ]
+   },
+   {
+    "name": "Vancouver, Canada",
+    "ll": [
+     -123.12,
+     49.28
+    ],
+    "id": "vancouver",
+    "tier": 2,
+    "tips": [
+     "Somebody bought salmon at the Granville Island Public Market and paid with a coin bearing a loon. The SeaBus ticket in her pocket says she's heading for the Pacific coast.",
+     "Cycling the seawall around Stanley Park and crossing the Capilano Suspension Bridge were on her list, a concierge says, in a rainy harbor city of glass towers ringed by snowy mountains.",
+     "She's bound for the British Columbia city that hosted the 2010 Winter Olympics, where the Gastown steam clock whistles near the harbor."
+    ]
+   },
+   {
+    "name": "Kyoto, Japan",
+    "ll": [
+     135.77,
+     35.01
+    ],
+    "id": "kyoto",
+    "tier": 1,
+    "tips": [
+     "A paper fan from the Gion Matsuri, the festival of floats held every July, and a matcha receipt from a teahouse. She's chasing a city of a thousand temples.",
+     "A rickshaw driver pulled her through the Arashiyama bamboo grove; she also wanted the vermilion gates of Fushimi Inari, in a valley city ringed by forested hills and laid out on an old grid.",
+     "Her train pulls into the imperial capital of Japan for more than a thousand years, where the gold-leafed Kinkaku-ji pavilion glows over its pond."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 47,
+  "quizId": "carmen-12-24-26",
+  "live": "2026-12-24",
+  "dateLabel": "December 24, 2026",
+  "sunday": false,
+  "title": "The Stolen Silver Tea Service",
+  "suspect": "The Magpie",
+  "stolen": "A silver tea service",
+  "start": {
+   "name": "Vienna, Austria",
+   "ll": [
+    16.37,
+    48.21
+   ]
+  },
+  "legs": [
+   {
+    "name": "Panama City, Panama",
+    "ll": [
+     -79.52,
+     8.98
+    ],
+    "id": "panama-city",
+    "tier": 2,
+    "tips": [
+     "Ceviche at the Mercado de Mariscos, paid for with US dollars and a balboa coin, says the receipt on her hotel desk. She's heading for a Pacific port in the tropics.",
+     "A doorman says she wanted to walk the Cinta Costera and see the Biomuseo by Frank Gehry, near a skyline of tall towers beside a colonial old quarter called Casco Viejo.",
+     "Container ships wait their turn at the Miraflores Locks near her hideout, the capital at the Pacific end of the canal that joins two oceans."
+    ]
+   },
+   {
+    "name": "San Francisco, United States",
+    "ll": [
+     -122.42,
+     37.77
+    ],
+    "id": "san-francisco",
+    "tier": 1,
+    "tips": [
+     "A cable car ticket marks a page in her guidebook, and the margin notes a sourdough bread bowl at Fisherman's Wharf. She's bound for a foggy city on the Pacific coast.",
+     "Steep hills, painted Victorian houses, a peninsula by a bay: a bellhop says she described all three, then asked for a ferry to Alcatraz and a stroll through Chinatown.",
+     "She is holed up beside the Golden Gate Bridge, in the foggy city that boomed with the 1849 gold rush and named its football team the 49ers."
+    ]
+   },
+   {
+    "name": "Melbourne, Australia",
+    "ll": [
+     144.96,
+     -37.81
+    ],
+    "id": "melbourne",
+    "tier": 2,
+    "tips": [
+     "A myki card for the free tram zone in the city center, and a receipt for a flat white bought in a graffiti laneway, are all she left behind.",
+     "Over coffee, a barista heard her ask about Flinders Street Station and Hosier Lane in a city of famously fickle weather on the Yarra River, with the world's largest tram network.",
+     "The Australian Open each January, and a horse race that stops the nation every November: she's in the Australian sports capital that hosts both."
+    ]
+   },
+   {
+    "name": "Shanghai, China",
+    "ll": [
+     121.47,
+     31.23
+    ],
+    "id": "shanghai",
+    "tier": 1,
+    "tips": [
+     "She rode the maglev in from Pudong airport, then paid in yuan coins for soup dumplings, the famous xiaolongbao of this coastal city.",
+     "Across the Huangpu River, a ferry hand heard her plans: the colonial-era waterfront of the Bund, then the rockeries of Yu Garden in the old town of a flat, humid port.",
+     "Near the mouth of the Yangtze sits the port once nicknamed the Paris of the East, its Pudong skyline marked by the pink-globed Oriental Pearl Tower. She's in it."
+    ]
+   },
+   {
+    "name": "Oslo, Norway",
+    "ll": [
+     10.75,
+     59.91
+    ],
+    "id": "oslo",
+    "tier": 2,
+    "tips": [
+     "A brown-cheese waffle receipt and a ferry ticket to Bygdøy, tucked in her passport. She's headed for a capital at the head of a fjord.",
+     "A ski instructor, tipped in kroner, heard her ask about the Holmenkollen ski jump and the Vigeland sculptures in Frogner Park, in a green city ringed by forested hills.",
+     "Visitors walk up the sloping white marble roof of its Opera House, and Edvard Munch's The Scream hangs in its museums. She is in the Norwegian capital."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 48,
+  "quizId": "carmen-12-25-26",
+  "live": "2026-12-25",
+  "dateLabel": "December 25, 2026",
+  "sunday": false,
+  "title": "The Stolen Sapphire Tiara",
+  "suspect": "Madame Moth",
+  "stolen": "A sapphire tiara",
+  "start": {
+   "name": "Manaus, Brazil",
+   "ll": [
+    -60.02,
+    -3.12
+   ]
+  },
+  "legs": [
+   {
+    "name": "Helsinki, Finland",
+    "ll": [
+     24.94,
+     60.17
+    ],
+    "id": "helsinki",
+    "tier": 2,
+    "tips": [
+     "Salmon soup at the Old Market Hall, then a ferry ticket to the sea fortress of Suomenlinna. Both stubs were in her coat. She's chasing a Nordic capital on a gulf.",
+     "Ask the deckhand: she wanted the Rock Church carved into bedrock and the steel pipes of the Sibelius Monument, in a seaside city of granite Art Nouveau buildings.",
+     "The white, green-domed Lutheran Cathedral looms over Senate Square, and Baltic ferries dock beside the Market Square. Her trail ends in the Finnish capital."
+    ]
+   },
+   {
+    "name": "Doha, Qatar",
+    "ll": [
+     51.53,
+     25.29
+    ],
+    "id": "doha",
+    "tier": 2,
+    "tips": [
+     "A falcon hood from the falcon market at Souq Waqif, bought with riyals, and a dhow cruise ticket. She's bound for a Gulf capital curving around a crescent bay.",
+     "She asked a dhow captain about a flat desert capital wrapped around a bay of towers, and about I. M. Pei's Museum of Islamic Art and the man-made island called The Pearl.",
+     "Qatar's capital, centerpiece of the 2022 FIFA World Cup, is where she landed. Look for her near the National Museum, shaped like a desert rose crystal."
+    ]
+   },
+   {
+    "name": "New York, United States",
+    "ll": [
+     -74.01,
+     40.71
+    ],
+    "id": "new-york",
+    "tier": 1,
+    "tips": [
+     "A folded subway map of the five boroughs, and a deli receipt for a bagel with lox on the Lower East Side, fell from her bag. She's heading for the Atlantic coast.",
+     "The doorman remembers she wanted directions to the Metropolitan Museum of Art and a walk across the Brooklyn Bridge, on an island of steel and glass towers between two rivers.",
+     "Big Apple, final answer. She's where the Statue of Liberty greets ships in the harbor and the billboards of Times Square glow all night."
+    ]
+   },
+   {
+    "name": "San Juan, Puerto Rico",
+    "ll": [
+     -66.11,
+     18.47
+    ],
+    "id": "san-juan",
+    "tier": 2,
+    "tips": [
+     "Mofongo from a café on blue cobblestones in the old quarter, says the receipt in her hotel room, under a note reading buen provecho. She's bound for a walled Caribbean port.",
+     "A cruise guide heard her ask about touring Castillo San Cristóbal and strolling down Calle del Cristo, in a colonial harbor city of pastel houses on a small walled islet.",
+     "Castillo San Felipe del Morro guards the bay, and a hotel bar claims to have invented the piña colada. Look in Puerto Rico's capital."
+    ]
+   },
+   {
+    "name": "Salvador, Brazil",
+    "ll": [
+     -38.5,
+     -12.97
+    ],
+    "id": "salvador",
+    "tier": 3,
+    "tips": [
+     "A ribbon wish bracelet from the Bonfim church is tied to her suitcase handle, and a receipt shows acarajé fried in palm oil. She's bound for a hilly port on the Atlantic.",
+     "The pastel Pelourinho and a ride on the Elevador Lacerda, the giant art deco elevator linking a two-level city: that is what she asked her capoeira teacher about.",
+     "Brazil's first capital, founded in 1549 on the Bay of All Saints: she's in the heart of Afro-Brazilian culture and Bahia's street Carnival."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 49,
+  "quizId": "carmen-12-26-26",
+  "live": "2026-12-26",
+  "dateLabel": "December 26, 2026",
+  "sunday": false,
+  "title": "The Stolen Bronze Telescope",
+  "suspect": "Lady Lark",
+  "stolen": "A bronze telescope",
+  "start": {
+   "name": "Auckland, New Zealand",
+   "ll": [
+    174.76,
+    -36.85
+   ]
+  },
+  "legs": [
+   {
+    "name": "Kathmandu, Nepal",
+    "ll": [
+     85.32,
+     27.72
+    ],
+    "id": "kathmandu",
+    "tier": 2,
+    "tips": [
+     "A trekking permit stub and a receipt for steamed momo dumplings from a shop in the Thamel backpacker district were left in her guesthouse. She's after a high valley capital.",
+     "Circling the white dome of Boudhanath stupa, she paid her trekking guide in rupees and said she also wanted Durbar Square, in a bowl-shaped valley city ringed by Himalayan foothills.",
+     "Swayambhunath, the hilltop Monkey Temple, watches over Nepal's capital, the usual gateway for climbers bound for Everest. She's laying low there."
+    ]
+   },
+   {
+    "name": "Windhoek, Namibia",
+    "ll": [
+     17.08,
+     -22.56
+    ],
+    "id": "windhoek",
+    "tier": 3,
+    "tips": [
+     "Kapana grilled meat from a stall in Katutura, still warm in the bag, and a German-language beer hall menu. She's bound for a small capital in a dry highland basin.",
+     "A tour guide pointed her to the German-built Christuskirche and the Independence Memorial Museum beside it, in a tidy capital ringed by low hills and savanna.",
+     "Namibia's capital, where the local dollar trades one for one with the rand: a former German colonial town known for its yearly Oktoberfest, and the gateway to the red dunes of Sossusvlei. Her trail ends there."
+    ]
+   },
+   {
+    "name": "New Orleans, United States",
+    "ll": [
+     -90.07,
+     29.95
+    ],
+    "id": "new-orleans",
+    "tier": 2,
+    "tips": [
+     "Powdered sugar from a beignet at Café du Monde dusts a dollar bill on her hotel nightstand, beside a string of purple, green and gold Mardi Gras beads. She's bound for the Gulf Coast.",
+     "A street musician heard her ask for a jazz club on Frenchmen Street and a streetcar ride on St. Charles Avenue, in a low, humid river city of iron balconies and above-ground tombs.",
+     "An informant swears she is in the Big Easy, the birthplace of jazz, where the Mississippi bends around the French Quarter and the bars of Bourbon Street."
+    ]
+   },
+   {
+    "name": "Montreal, Canada",
+    "ll": [
+     -73.57,
+     45.5
+    ],
+    "id": "montreal",
+    "tier": 2,
+    "tips": [
+     "A receipt for a wood-fired sesame bagel from Mile End was folded into a note reading merci beaucoup. She's bound for an island in the St. Lawrence River.",
+     "Overheard in a taxi, the fare paid with a two-dollar coin called a toonie: she wanted Notre-Dame Basilica and the Old Port, in a French-speaking island city around a small mountain, laced with underground shopping tunnels.",
+     "Mount Royal gave this city its name. She's there now, in the host of the 1976 Summer Olympics, where poutine and smoked meat rule the diners of Quebec."
+    ]
+   },
+   {
+    "name": "Varanasi, India",
+    "ll": [
+     83.01,
+     25.32
+    ],
+    "id": "varanasi",
+    "tier": 3,
+    "tips": [
+     "A small brass pot of holy river water rattles in her abandoned bag, next to a receipt from a silk weaver's shop paid in rupees. She's bound for the banks of a sacred river.",
+     "The boatman who rowed her says she wanted the evening aarti fire ritual at Dashashwamedh Ghat and the ruins at Sarnath, in an ancient city of stone steps stacked down to a holy river.",
+     "Benares, Kashi, call it what you like: she's in the holy city on the Ganges, one of the oldest continuously inhabited cities in the world."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 50,
+  "quizId": "carmen-12-27-26",
+  "live": "2026-12-27",
+  "dateLabel": "December 27, 2026",
+  "sunday": true,
+  "title": "The Stolen Gilded Astrolabe",
+  "suspect": "The Jackdaw",
+  "stolen": "A gilded astrolabe",
+  "start": {
+   "name": "Thimphu, Bhutan",
+   "ll": [
+    89.64,
+    27.47
+   ]
+  },
+  "legs": [
+   {
+    "name": "Taipei, Taiwan",
+    "ll": [
+     121.57,
+     25.03
+    ],
+    "id": "taipei",
+    "tier": 2,
+    "tips": [
+     "Bubble tea from a stall at Shilin Night Market and an EasyCard for the metro: everything in her hotel room points to a basin capital.",
+     "A temple keeper at Longshan Temple watched her through the incense smoke; she wanted the Beitou hot springs next, in a warm basin city ringed by green mountains.",
+     "Look up: a bamboo-shaped skyscraper named for its 101 floors, the tallest building in the world from 2004 to 2010. She's in Taiwan's capital."
+    ]
+   },
+   {
+    "name": "Wellington, New Zealand",
+    "ll": [
+     174.78,
+     -41.29
+    ],
+    "id": "wellington",
+    "tier": 3,
+    "tips": [
+     "Ticket stub: the red cable car up to Kelburn. Also on the cafe table, a receipt for a flat white. She's heading for a windy harbor in the far south.",
+     "A ferry worker heard her plan a visit to the Te Papa museum and the Mount Victoria lookout, in a famously windy city wrapped around a harbor at the foot of an island.",
+     "Southernmost capital of any sovereign state: that is her hideout, the windy city of New Zealand whose parliament meets in a building nicknamed the Beehive."
+    ]
+   },
+   {
+    "name": "Almaty, Kazakhstan",
+    "ll": [
+     76.89,
+     43.24
+    ],
+    "id": "almaty",
+    "tier": 3,
+    "tips": [
+     "A sticker of a big red apple, the fruit this city is said to be named for, was stuck to her luggage tag, next to a receipt for beshbarmak paid in tenge.",
+     "She told a ski instructor she wanted to skate at the high Medeu rink and see the TV tower atop Kok Tobe hill, in a leafy city at the foot of the snowcapped Tian Shan.",
+     "An informant swears she is in Kazakhstan's former capital and still its biggest city, which handed the capital role to a new city in the north in 1997."
+    ]
+   },
+   {
+    "name": "Accra, Ghana",
+    "ll": [
+     -0.19,
+     5.6
+    ],
+    "id": "accra",
+    "tier": 2,
+    "tips": [
+     "A strip of kente cloth, wrapped in a receipt from the stalls of Makola Market. She's bound for a coastal capital in West Africa on the Gulf of Guinea.",
+     "Her tro-tro driver, paid in cedis, recalls the plan: climb Jamestown's old lighthouse, visit the Kwame Nkrumah Mausoleum, and watch the fishing canoes in a breezy seaside capital.",
+     "Follow her to Ghana's capital, home of Black Star Square and its Independence Arch, built to mark the country's 1957 independence from Britain."
+    ]
+   },
+   {
+    "name": "Livingstone, Zambia",
+    "ll": [
+     25.86,
+     -17.85
+    ],
+    "id": "livingstone",
+    "tier": 3,
+    "tips": [
+     "A signed rafting waiver for the Batoka Gorge, and a pass for Mosi-oa-Tunya National Park. She's bound for a small riverside town in southern Africa.",
+     "Her rafting guide, paid in kwacha, heard her ask for a sunset cruise on the upper Zambezi and a swim in Devil's Pool at the lip of a giant waterfall, near a laid-back colonial town on a wide river.",
+     "The tip-off: a Zambian town named after the Scottish explorer who in 1855 became the first European to see Victoria Falls, which locals call The Smoke That Thunders."
+    ]
+   },
+   {
+    "name": "Perth, Australia",
+    "ll": [
+     115.86,
+     -31.95
+    ],
+    "id": "perth",
+    "tier": 3,
+    "tips": [
+     "A postcard of a smiling quokka was left on a cafe table with a ferry ticket to Rottnest Island. She's bound for a sunny coast facing the Indian Ocean.",
+     "She told a surfer she wanted to walk through Kings Park and visit the old port at Fremantle, and asked about a hot, dry, sunny city on the Swan River.",
+     "One of the most isolated big cities on Earth is where she landed: the capital of Western Australia, which sits closer to Bali than to Sydney."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 51,
+  "quizId": "carmen-12-28-26",
+  "live": "2026-12-28",
+  "dateLabel": "December 28, 2026",
+  "sunday": false,
+  "title": "The Stolen Ivory-Handled Fan",
+  "suspect": "The Night Heron",
+  "stolen": "An ivory-handled fan",
+  "start": {
+   "name": "Luxor, Egypt",
+   "ll": [
+    32.64,
+    25.69
+   ]
+  },
+  "legs": [
+   {
+    "name": "Nairobi, Kenya",
+    "ll": [
+     36.82,
+     -1.29
+    ],
+    "id": "nairobi",
+    "tier": 1,
+    "tips": [
+     "A ticket to the Giraffe Centre in Langata, where visitors feed giraffes by hand, was tucked inside a Swahili phrasebook with \"asante\" circled. She's bound for a highland capital.",
+     "The night porter remembers her asking about a high-altitude capital with cool evenings and leafy suburbs. She paid in shillings and wanted the Karen Blixen Museum and the Maasai Market.",
+     "An informant swears she is in Kenya's capital, once nicknamed the Green City in the Sun, where lions and rhinos roam a national park in full view of downtown skyscrapers."
+    ]
+   },
+   {
+    "name": "Cairo, Egypt",
+    "ll": [
+     31.24,
+     30.04
+    ],
+    "id": "cairo",
+    "tier": 1,
+    "tips": [
+     "A brass lantern from the Khan el-Khalili bazaar, a koshari receipt and crumpled pound notes sat on her nightstand. She's after a vast capital on a famous river.",
+     "A museum guard recalls her questions about the Citadel of Saladin and the alabaster Mosque of Muhammad Ali, in a desert megacity split by the Nile with minarets over its medieval quarter.",
+     "The skyline looks west across the Nile toward the Great Pyramid of Giza, the last surviving Wonder of the Ancient World. Her trail leads to Egypt's capital."
+    ]
+   },
+   {
+    "name": "Las Vegas, United States",
+    "ll": [
+     -115.14,
+     36.17
+    ],
+    "id": "las-vegas",
+    "tier": 1,
+    "tips": [
+     "Casino chips from a Fremont Street hotel spilled from her purse with a buffet receipt and a wedding chapel brochure. She's headed into the Mojave Desert.",
+     "According to a valet, she wanted a day trip out to the Hoover Dam and asked about a desert city of neon signs and themed resorts, with dancing fountains outside the Bellagio.",
+     "Sin City. The Strip glows all night beside a replica Eiffel Tower, and the famous Welcome sign has greeted visitors since 1959. That's where she is."
+    ]
+   },
+   {
+    "name": "Paris, France",
+    "ll": [
+     2.35,
+     48.86
+    ],
+    "id": "paris",
+    "tier": 1,
+    "tips": [
+     "A receipt for macarons from a patisserie on the Left Bank and a metro ticket were tucked in her passport, with a note in her hand: \"rendez-vous à Montmartre.\"",
+     "A museum guard says she wanted the Mona Lisa at the Louvre, then Notre-Dame's towers, then a long walk on cream stone boulevards laid out by Haussmann along a winding river.",
+     "Her train pulls into the City of Light. The wrought-iron Eiffel Tower, built for the 1889 World's Fair, rises over the Seine and the Champ de Mars."
+    ]
+   },
+   {
+    "name": "Casablanca, Morocco",
+    "ll": [
+     -7.59,
+     33.57
+    ],
+    "id": "casablanca",
+    "tier": 1,
+    "tips": [
+     "A beach club receipt from the Ain Diab corniche, a French-language tram map, and a few dirham coins. She's heading for a big Atlantic port in North Africa.",
+     "She told a dock worker she wanted to wander the Habous Quarter, admire the Art Deco boulevards of a whitewashed port, and dine at Rick's Café, built to evoke a famous 1942 film.",
+     "She is holed up in Morocco's largest city, beneath the Hassan II Mosque's minaret towering over the Atlantic, in the namesake of a 1942 Humphrey Bogart classic."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 52,
+  "quizId": "carmen-12-29-26",
+  "live": "2026-12-29",
+  "dateLabel": "December 29, 2026",
+  "sunday": false,
+  "title": "The Stolen Silver Tea Service",
+  "suspect": "The Silver Fox",
+  "stolen": "A silver tea service",
+  "start": {
+   "name": "Santa Fe, United States",
+   "ll": [
+    -105.94,
+    35.69
+   ]
+  },
+  "legs": [
+   {
+    "name": "Johannesburg, South Africa",
+    "ll": [
+     28.05,
+     -26.2
+    ],
+    "id": "johannesburg",
+    "tier": 1,
+    "tips": [
+     "Somebody bought a pass to the Gold Reef City theme park and topped up a Gautrain card. She's heading for a big inland metropolis on a high plateau, a Zulu phrase card in her pocket.",
+     "Overheard in a taxi: she wanted the fossil caves of the Cradle of Humankind, the street art of Maboneng, and a high, inland city of skyscrapers and old mine dumps.",
+     "Last ping: South Africa's largest city, founded in the 1886 gold rush on the Witwatersrand, the ridge the rand is named for, and nicknamed Egoli, the place of gold."
+    ]
+   },
+   {
+    "name": "Madrid, Spain",
+    "ll": [
+     -3.7,
+     40.42
+    ],
+    "id": "madrid",
+    "tier": 1,
+    "tips": [
+     "Chocolate con churros at San Ginés, according to the receipt in her passport, plus a metro card. The note beside it says \"nos vemos en la Plaza Mayor.\"",
+     "A bellhop pointed her to the Prado's Velázquez paintings and a rowboat on the Retiro lake, in a high, dry inland capital of grand plazas and royal parks.",
+     "Kilometer Zero is set in the pavement of the Puerta del Sol, near the center of Spain, and the Santiago Bernabéu stadium draws huge crowds. That is where she went."
+    ]
+   },
+   {
+    "name": "Samarkand, Uzbekistan",
+    "ll": [
+     66.96,
+     39.65
+    ],
+    "id": "samarkand",
+    "tier": 2,
+    "tips": [
+     "A round, stamped loaf of the bread this city is famous for was left on a bench, with a phrasebook beside it, Russian and Tajik phrases circled.",
+     "Gur-e-Amir, the tomb of Tamerlane, was the first thing she asked a carpet seller about, counting out her som. Next came the Bibi-Khanym Mosque under turquoise domes, in a dry oasis on the old Silk Road.",
+     "The tip-off is solid: she is circling the Registan, a square framed by three tiled madrasas, in a Silk Road city of Uzbekistan more than 2,500 years old."
+    ]
+   },
+   {
+    "name": "Hong Kong, China",
+    "ll": [
+     114.17,
+     22.32
+    ],
+    "id": "hong-kong",
+    "tier": 1,
+    "tips": [
+     "An Octopus transit card, a dim sum receipt written in Cantonese, and dollar coins stamped with a bauhinia flower, all left in her hotel room. She's off to a crowded harbor.",
+     "On the Star Ferry, a deckhand heard her plan to ride the Peak Tram up Victoria Peak next, on a steep, skyscraper-packed island facing Kowloon across the water.",
+     "The name means \"fragrant harbor\" in Cantonese. A bronze Buddha on Lantau Island, double-decker \"ding ding\" trams along the shore: that's where she is."
+    ]
+   },
+   {
+    "name": "Berlin, Germany",
+    "ll": [
+     13.4,
+     52.52
+    ],
+    "id": "berlin",
+    "tier": 1,
+    "tips": [
+     "A currywurst napkin folded around a U-Bahn ticket for fare zones A and B, dropped on a cafe table. She's headed for a capital on the Spree.",
+     "The hotel porter recalls her plan: the glass dome of the Reichstag and the art on Museum Island, in a flat, leafy city of lakes and wide avenues.",
+     "Wait at the Brandenburg Gate, crowned by its four-horse Quadriga, at the end of the linden-lined boulevard Unter den Linden. She is in Germany's capital."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 53,
+  "quizId": "carmen-12-30-26",
+  "live": "2026-12-30",
+  "dateLabel": "December 30, 2026",
+  "sunday": false,
+  "title": "The Stolen Pearl Necklace",
+  "suspect": "The Night Heron",
+  "stolen": "A pearl necklace",
+  "start": {
+   "name": "Bucharest, Romania",
+   "ll": [
+    26.1,
+    44.43
+   ]
+  },
+  "legs": [
+   {
+    "name": "Lisbon, Portugal",
+    "ll": [
+     -9.14,
+     38.72
+    ],
+    "id": "lisbon",
+    "tier": 1,
+    "tips": [
+     "A custard-tart receipt from a bakery in Belém is folded inside a phrasebook, \"obrigada\" circled on the torn page. Whoever she meets next is waiting in a capital on the Atlantic.",
+     "The night porter remembers her asking for the tram up to São Jorge Castle and for Alfama, the Moorish quarter that survived the 1755 earthquake, in a hilly city of tiled facades and yellow trams.",
+     "Mainland Europe's westernmost capital. Look where the Tagus meets the ocean under a red suspension bridge, and you will find her in Portugal."
+    ]
+   },
+   {
+    "name": "Colombo, Sri Lanka",
+    "ll": [
+     79.85,
+     6.93
+    ],
+    "id": "colombo",
+    "tier": 2,
+    "tips": [
+     "Her hotel bin held a tin of black tea, a receipt for hoppers and kottu, and a phrasebook that prints Sinhala and Tamil script side by side.",
+     "The tuk-tuk driver remembers her rupee tip and her questions: the seafront at Galle Face Green and the red-and-white Jami Ul-Alfar Mosque in Pettah, in a hot, palm-lined west coast port.",
+     "She is holed up in the largest city and main port of Sri Lanka, the teardrop island once called Ceylon, near the old Dutch Hospital that now holds shops and cafes."
+    ]
+   },
+   {
+    "name": "Venice, Italy",
+    "ll": [
+     12.33,
+     45.44
+    ],
+    "id": "venice",
+    "tier": 1,
+    "tips": [
+     "A glass bead from Murano rolled out of her bag, along with a used vaporetto pass. Wherever she is going, the streets are canals and the buses are boats.",
+     "A gondolier rowed her toward the Rialto Bridge and the Doge's Palace. She asked about acqua alta, the tides that flood this lagoon city of palaces on wooden piles.",
+     "La Serenissima. Pigeons and visitors crowd St. Mark's Square beneath the campanile and the basilica's golden mosaics, steps from the Grand Canal of the floating city."
+    ]
+   },
+   {
+    "name": "Reykjavík, Iceland",
+    "ll": [
+     -21.94,
+     64.15
+    ],
+    "id": "reykjavik",
+    "tier": 2,
+    "tips": [
+     "A hot dog receipt from Bæjarins Beztu and a whale-watching stub paid in krónur, with \"takk\" circled on a note. She's headed for a capital near the Arctic.",
+     "A fisherman says she photographed the glass Harpa concert hall on the waterfront and asked about Mount Esja, facing this windswept harbor town of colorful tin-clad houses.",
+     "The rocket-shaped tower of Hallgrímskirkja church crowns the northernmost capital of a sovereign state. She is in Iceland."
+    ]
+   },
+   {
+    "name": "London, United Kingdom",
+    "ll": [
+     -0.13,
+     51.51
+    ],
+    "id": "london",
+    "tier": 1,
+    "tips": [
+     "An Oyster card with its balance spent, a ten-pound note and a receipt from a cheese stall at Borough Market. She is near a capital on a tidal river.",
+     "The doorman watched her pass red double-decker buses and black cabs in the drizzle. In this sprawling city she asked about the Crown Jewels at the Tower and a play in the West End.",
+     "The tip-off is solid: the British capital, where Big Ben chimes beside the Houses of Parliament on the Thames and the Underground, the world's oldest metro, opened in 1863."
+    ]
+   }
+  ]
+ },
+ {
+  "num": 54,
+  "quizId": "carmen-12-31-26",
+  "live": "2026-12-31",
+  "dateLabel": "December 31, 2026",
+  "sunday": false,
+  "title": "The Stolen Diamond Hatpin",
+  "suspect": "The Magpie",
+  "stolen": "A diamond hatpin",
+  "start": {
+   "name": "Amsterdam, Netherlands",
+   "ll": [
+    4.9,
+    52.37
+   ]
+  },
+  "legs": [
+   {
+    "name": "Kraków, Poland",
+    "ll": [
+     19.94,
+     50.06
+    ],
+    "id": "krakow",
+    "tier": 2,
+    "tips": [
+     "An obwarzanek bread ring from a street cart, bought with zloty, and a tram ticket stuffed in a pocket. She's headed for an old royal city on the Vistula.",
+     "A carriage driver took her past the Cloth Hall. She wanted the fire-breathing dragon statue below Wawel Castle and the brick cellars of this medieval city of church spires.",
+     "On the hour, a trumpeter plays the Hejnał from St. Mary's Basilica over a vast medieval market square. She is in Poland's former royal capital."
+    ]
+   },
+   {
+    "name": "Chicago, United States",
+    "ll": [
+     -87.63,
+     41.88
+    ],
+    "id": "chicago",
+    "tier": 1,
+    "tips": [
+     "Her pass for the elevated L trains that circle the Loop was found with a dollar bill and a receipt for a deep-dish pizza. She's heading for a big city on a Great Lake.",
+     "She asked a cab driver about a flat lakeside city of early skyscrapers on a river dyed green each March, and wanted to see Cloud Gate in Millennium Park and Wrigley Field.",
+     "Last ping: the Windy City on Lake Michigan, birthplace of the modern skyscraper and home of the Willis Tower, once called the Sears Tower."
+    ]
+   },
+   {
+    "name": "Zanzibar City, Tanzania",
+    "ll": [
+     39.19,
+     -6.16
+    ],
+    "id": "zanzibar-city",
+    "tier": 2,
+    "tips": [
+     "Cloves in a paper twist, a receipt from the evening food market in Forodhani Gardens, and some shilling notes. She's bound for an island port in the Indian Ocean.",
+     "A dhow sailor watched her vanish into a maze of coral-stone lanes and carved wooden doors, asking the way to the Old Fort and the spice stalls of Darajani Market.",
+     "Stone Town, the old heart of a spice island off Tanzania, is a UNESCO World Heritage Site and the birthplace of Queen singer Freddie Mercury. She's in its lanes."
+    ]
+   },
+   {
+    "name": "Havana, Cuba",
+    "ll": [
+     -82.37,
+     23.11
+    ],
+    "id": "havana",
+    "tier": 1,
+    "tips": [
+     "Somebody ordered a daiquiri at El Floridita, the bar Hemingway loved, and kept the receipt tucked in her passport. She's bound for a Caribbean capital.",
+     "A cab driver says she wanted a sunset walk along the seawall of the Malecón and a tour of La Cabaña fortress, in a crumbling colonial port of pastel facades.",
+     "Classic 1950s American cars cruise past the domed Capitolio, and cigar factories still roll by hand. She's in Cuba's capital."
+    ]
+   },
+   {
+    "name": "Copenhagen, Denmark",
+    "ll": [
+     12.57,
+     55.68
+    ],
+    "id": "copenhagen",
+    "tier": 2,
+    "tips": [
+     "Tucked in her passport: a smørrebrød receipt, a Tivoli Gardens stub with \"tak\" written in the margin, and krone coins. She's headed for a Nordic harbor capital.",
+     "A canal boatman took her past copper spires and harborside townhouses. She asked about Amalienborg Palace and the crown jewels at Rosenborg Castle in this flat, bike-filled city.",
+     "The bronze Little Mermaid sits on a rock at Langelinie, and painted houses line the Nyhavn canal. Her flight lands in the Danish capital."
+    ]
+   }
+  ]
  }
 ];

@@ -2070,7 +2070,7 @@ UPPER|Higher
 URBAN|City-like
 URGE|Strong impulse
 URN|Coffee dispenser
-USE|Put to work
+USE|Employ
 USED|Secondhand
 USUAL|Run of the mill
 UTENSIL|Fork or spoon
@@ -3790,7 +3790,7 @@ TACTIC|Move in a plan
 TAILOR|Suit fitter
 TAKING|Helping yourself to
 TALENT|What the show hunts for
-TALLER|Higher up
+TALLER|Greater in height
 TAMPER|Meddle with
 TANDEM|Bike for two
 TANGLE|Knot of hair
@@ -3874,7 +3874,7 @@ TRIPLE|Three times over
 TRIVIA|Pub quiz stuff
 TROOPS|Soldiers
 TROPHY|Winner's cup
-TROPIC|Near the equator
+TROPIC|Cancer or Capricorn line
 TROUGH|Farm feeder
 TRUANT|School skipper
 TRUCKS|Eighteen-wheelers
@@ -3924,7 +3924,7 @@ UPHILL|The hard way
 UPHOLD|Support
 UPLIFT|Raise the spirits
 UPLOAD|Send to a server
-UPROAR|A right commotion
+UPROAR|Loud commotion
 UPROOT|Pull out of the ground
 UPTOWN|Away from the city center
 UPWARD|Toward the sky
@@ -4038,7 +4038,7 @@ WRENCH|Nut turner
 WRITER|Author
 YEARLY|Once every twelve months
 YELLOW|Banana color
-YOGURT|Cultured breakfast pot
+YOGURT|Cultured dairy food
 YONDER|Over there
 ZEBRAS|Striped animals
 ZIGZAG|Back and forth line
@@ -4327,7 +4327,7 @@ DOUBLED|Twice as much
 DOUBTED|Wasn't sure about
 DRAINED|Emptied out
 DREADED|Feared the worst of
-DREAMER|Head in the clouds
+DREAMER|One with head in the clouds
 DRESSER|Bedroom chest
 DRIFTED|Floated along
 DRILLED|Bored a hole
@@ -5087,7 +5087,7 @@ TEARFUL|In tears
 TEASING|Ribbing gently
 TEDIOUS|Dull as ditchwater
 TELLERS|Bank window staff
-TEMPEST|A right storm
+TEMPEST|Fierce storm
 TEMPLES|Places of worship
 TERMITE|Wood-eating insect
 TERRIER|Small feisty dog
@@ -5120,7 +5120,7 @@ TRADING|Buying and selling
 TRAINED|Got in shape
 TRAITOR|One who sold out
 TRAMPLE|Underfoot
-TRANSIT|In
+TRANSIT|In ___ (on the way)
 TRAPPED|Caught with no way out
 TRAWLER|Fishing boat
 TRIBUTE|Words said in honor
@@ -5822,7 +5822,7 @@ SETUP|The arrangement
 SEWER|Underground drain
 SHACK|Rough hut
 SHADY|Not quite honest
-SHAFT|Mine's tunnel
+SHAFT|Mine's vertical passage
 SHALL|Will
 SHAME|Sense of disgrace
 SHAWL|Shoulder wrap
@@ -5846,7 +5846,7 @@ SIXTH|After fifth
 SKILL|Ability
 SKUNK|Striped stinker
 SLACK|Not taut
-SLAIN|Killed
+SLAIN|Killed, as a dragon
 SLANG|Street talk
 SLANT|Lean
 SLASH|Big cut
@@ -5906,7 +5906,7 @@ SQUID|Ten armed sea creature
 STAIN|Spill's mark
 STALE|Not fresh
 STASH|Hide it away
-STEER|Guide the wheel
+STEER|Work the wheel
 STERN|Strict, or a ship's back
 STIFF|Not bending
 STINT|Spell of work
@@ -5976,7 +5976,7 @@ TRACE|Faint mark
 TRACT|Stretch of land
 TRAIT|Characteristic
 TRAMP|Wanderer
-TRASH|Rubbish
+TRASH|Garbage
 TRAWL|Drag the net
 TREAD|Step on
 TRIED|Gave it a go
@@ -6175,7 +6175,7 @@ UKE|Small Hawaiian guitar
 UMP|Balls-and-strikes caller
 VEG|Relax and do nothing
 VEX|Annoy
-VIM|Energy and pep
+VIM|Pep and vigor
 WAN|Pale and tired
 WAS|Used to be
 WIT|Quick humor

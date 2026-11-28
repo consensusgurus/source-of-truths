@@ -44,6 +44,7 @@ export const FIELDS = Object.keys(POOLS);
 export const SCHEDULE = [
   'accountant', 'developer', 'chef', 'physician', 'exceltutor', 'analyst', 'engineer', 'bartender', 'marketer', 'chemist', 'contractor', 'pilot',
   'accountant', 'developer', 'physician', 'exceltutor', 'analyst', 'engineer', 'marketer', 'chemist', 'contractor',
+  'chef', 'pilot', 'bartender', 'accountant', 'developer', 'physician', 'exceltutor', 'analyst', 'engineer', 'marketer', 'chemist', 'contractor', 'chef', 'pilot', 'bartender', 'accountant',
 ];
 const ROUNDS = 5, PER = 4, TOTAL = ROUNDS * PER;
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -51,7 +52,7 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 const argv = process.argv.slice(2);
 const CHECK = argv.includes('--check');
 const ti = argv.indexOf('--through');
-const THROUGH = ti >= 0 ? argv[ti + 1] : '2026-12-15';
+const THROUGH = ti >= 0 ? argv[ti + 1] : '2026-12-31';
 const die = (m) => { console.error(`gen-hired: ${m}`); process.exit(1); };
 
 function rng(seed) {

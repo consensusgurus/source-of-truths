@@ -45,6 +45,11 @@ const VARIETY_FROM = '2026-09-30';
 // past this rank in the in-scope one's), in both directions.
 const SEP_NEW = 150;     // against another in-scope answer
 const SEP_FROZEN = 80;   // against a board that predates VARIETY_FROM
+// Owner ruling 2026-11-27 ("gap between warmer answers can be loosened"): a pair
+// involving a board live on or after LOOSE_FROM is held to SEP_LOOSE instead, because
+// at 150 no ordinary weekday word was left. Every earlier pair keeps 150.
+const LOOSE_FROM = '2026-12-30';
+const SEP_LOOSE = 100;
 // No single answer LENGTH on more than this share of in-scope boards: 18 of
 // the 62 the 2026-09-30 extension wrote, held as that SHARE as the scope grows
 // (2026-11-22; a flat 18 over an ever-longer scope would cap the bank, not
@@ -167,7 +172,7 @@ PUZZLES.forEach((p, i) => {
       vfail(p, `shares a five-letter stem with ${q.quizId} "${v}"`);
     }
     // Semantic separation, in both directions, at the floor that applies.
-    const floor = inScope[k] ? SEP_NEW : SEP_FROZEN;
+    const floor = inScope[k] ? ((p.live >= LOOSE_FROM || q.live >= LOOSE_FROM) ? SEP_LOOSE : SEP_NEW) : SEP_FROZEN;
     const near = Math.min(rankOf[i][b], rankOf[k][a]);
     if (near <= floor) vfail(p, `only ${near} ranks from ${q.quizId} "${v}" (floor ${floor})`);
   });

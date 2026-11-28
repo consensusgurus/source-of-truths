@@ -57,6 +57,7 @@ for (const line of readFileSync(join(here, 'clue-retired.txt'), 'utf8').split('\
 const MIN_LEN = 3, MAX_LEN = 7;
 const COPY_FROM = '2026-10-26';
 const CAP = 3;                 // an answer may appear in at most 3 boards
+const CAP3 = 5;                // a 3-letter answer: 5 (owner, 2026-11-27, for the Dec 13 Sunday on)
 const SUNDAY_SIZE = 11, WEEKDAY_SIZE = 9;
 
 // geometry, recomputed here
@@ -173,7 +174,7 @@ for (const p of PUZZLES) {
 }
 
 // ── bank-wide variety ──────────────────────────────────────────────────────
-for (const [a, ids] of seenAnswers) if (ids.length > CAP) fail(`answer ${a} used ${ids.length} times (cap ${CAP}): ${ids.join(', ')}`);
+for (const [a, ids] of seenAnswers) { const cap = a.length === 3 ? CAP3 : CAP; if (ids.length > cap) fail(`answer ${a} used ${ids.length} times (cap ${cap}): ${ids.join(', ')}`); }
 for (let i = 0; i < boards.length; i++) for (let j = i + 1; j < boards.length; j++) {
   const both = boards[i].p.sunday && boards[j].p.sunday;
   let n = 0; for (const a of boards[i].answers) if (boards[j].answers.has(a)) n++;
