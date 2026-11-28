@@ -53,6 +53,7 @@ import { useRunEmbed, useRunHelp } from '../RunEmbed';
 import { embedLook } from '../LogicStage';
 import RunDoorPop from '../circuits/RunDoorPop';
 import ShelfLink from '../jig/ShelfLink';
+import JigCredit, { CREDIT_AFTER_STYLE } from '../jig/JigCredit';
 
 
 const ACCENT = '#0e7490';
@@ -399,6 +400,8 @@ const JG_ST_CSS = `
 .pst .jg-ob{font-size:14px;font-weight:700;}
 @media (max-width:820px){.pst .jg-play.box .jg-swb{font-size:12px;min-height:30px;}}
 .pst:has(.jg-play.box) .pst-col::after{content:"";display:block;flex:none;height:var(--jg-dockh, 0px);}
+/* The credit below the stage clears the phone tray dock too (owner, 2026-11-28). */
+.pst:has(.jg-play.box) .pst-aft{padding-bottom:var(--jg-dockh, 0px);}
 /* A tablet held upright (owner, 2026-11-22): the phone column is 520px, which
    left the board small on a 768 to 820px screen. The jigsaw takes more of it. */
 @media (min-width:600px) and (max-width:820px) and (min-height:700px){.pst:has(.jg-st) .pst-col{max-width:min(620px, 96vw);}}
@@ -1580,6 +1583,7 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           )}
           foot={playing ? (LOOSE ? `${biggest} of ${NP} joined` : `${placedCount} of ${NP} placed`) : (won ? 'Solved.' : 'Revealed.')}
           giveUp={playing ? { armed: !!armReveal, onPress: () => { if (armReveal) { if (Date.now() - armReveal < ARM_MIN_MS) return; setArmReveal(false); revealEnd(); } else { setArmReveal(Date.now()); } } } : null}
+          after={playing ? <JigCredit p={PUZZLE} style={CREDIT_AFTER_STYLE} /> : null}
           clock={elapsed} done={!playing} />
       )}
       {!STAGE && <Grain />}
@@ -1768,13 +1772,11 @@ export default function SawClient({ puzzles = [], forceNum = null }) {
           )}
 
           {!stageOn && jgPlay}
+          {!stageOn && playing && started && <JigCredit p={PUZZLE} nameColor={INK} style={{ textAlign: 'center', margin: '18px 0 0' }} />}
           <div className={STAGE ? undefined : 'loft-sol'}>
           {!playing && (
             <div style={{ maxWidth: 560, margin: '0 auto' }}>
-              <p className="jg-credit">
-                Today&rsquo;s picture: <b style={{ color: INK }}>{PUZZLE.name}</b>. Photo by {PUZZLE.by}, {PUZZLE.lic}, via{' '}
-                <a href={`https://commons.wikimedia.org/wiki/File:${encodeURIComponent(PUZZLE.t.replace(/ /g, '_'))}`} target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>.
-              </p>
+              <JigCredit p={PUZZLE} nameColor={INK} />
               {!STAGE && isTodays && myStats.cur >= 2 && (
                 <div style={{ fontSize: 13, fontWeight: 800, margin: '12px 0 0' }}>
                   <span style={{ color: 'var(--stg-warn, #b45309)' }}>{myStats.cur}-day streak</span>

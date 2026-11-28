@@ -56,6 +56,7 @@ export default function ReviewClient({ items: given }) {
                 <b style={{ fontSize: 17 }}>{m.name}</b>
                 <span className="pz-note">By {m.by || 'not given'} · {when(m.at)} · {m.w} x {m.h} · up to {sizeLabel(m.max)} pieces</span>
                 {(m.offer || []).length ? <span className="pz-note" style={{ color: '#f3d98b', fontWeight: 700 }}>Offered for {m.offer.map(offerLabel).join(', ')}</span> : null}
+                {(m.offer || []).length && m.credit ? <span className="pz-note">Credit: {m.credit.name || m.by || 'not given'}{m.credit.title ? `, \u201c${m.credit.title}\u201d` : ''}{m.credit.url ? <> &middot; <a href={m.credit.url} target="_blank" rel="noopener noreferrer">{m.credit.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a></> : null}</span> : null}
                 {m.slug ? <a href={`/jigsaw/community/${m.slug}`} className="pz-note" target="_blank" rel="noopener noreferrer">/jigsaw/community/{m.slug}</a> : null}
                 {m.status === 'pending' || m.status === 'approved' ? (
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

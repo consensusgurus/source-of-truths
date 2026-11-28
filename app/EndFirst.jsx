@@ -86,7 +86,7 @@ export default function EndFirst({
   gamePill = null, groupPill = null, dayPill = null, board = null,
   sim = null, run = null, gear = null, retry = null,
   chal = null, onFull, allHref = '/#all', homeHref = '/',
-  replay = null, onBack = null, backLabel = 'Show board', archiveHref = null, archiveLabel = 'Past puzzles', shelfHref = null, shelfLabel = 'All jigsaw puzzles',
+  replay = null, onBack = null, backLabel = 'Board', archiveHref = null, archiveLabel = 'Past puzzles', shelfHref = null, shelfLabel = 'Jigsaws',
   talk = null,
 }) {
   const [open, setOpen] = useState(false);
@@ -187,6 +187,11 @@ const CSS = `
 .ef-top{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .ef-dk .ef-top{position:absolute;top:16px;left:24px;right:24px;}
 .ef-tr{display:flex;align-items:center;gap:2px;margin-left:auto;}
+/* THE PHONE BAND (owner, 2026-11-28): one word per link and tighter padding so
+   All Puzzles, Jigsaws, Replay and Board fit one line on a phone, never cut off. */
+.ef-ph .ef-tr{gap:0;min-width:0;}
+.ef-ph .ef-tl{padding:0 7px;font-size:13.5px;}
+.ef-ph .ef-top{gap:4px;}
 .ef-tl{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 10px;border:0;border-radius:8px;background:transparent;
   color:var(--sst-ink);font:inherit;font-size:14px;font-weight:700;text-decoration:none;cursor:pointer;white-space:nowrap;}
 .ef-tl:hover{background:var(--sst-wash);}

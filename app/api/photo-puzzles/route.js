@@ -16,7 +16,7 @@ import {
   uploadedSizes, notifySubmission, spendUpload, communityIndex, writeCommunityIndex, removeImages,
 } from '@/lib/photo-puzzles';
 import {
-  STATUS, CODE_RE, MIN_LONG, FULL_MAX, MAX_BYTES, DAILY_LIMIT, PHOTO_TOPICS, maxPiecesFor, slugify, cleanText, cleanOffer,
+  STATUS, CODE_RE, MIN_LONG, FULL_MAX, MAX_BYTES, DAILY_LIMIT, PHOTO_TOPICS, maxPiecesFor, slugify, cleanText, cleanOffer, cleanCredit,
 } from '@/lib/photo-puzzle-shared';
 import { JIGSAW_SIZES } from '@/lib/jigsaw-sizes';
 import { isAdmin } from '@/lib/admin-auth';
@@ -77,6 +77,8 @@ async function start(b, request) {
     // Daily games the maker offered it to (owner, 2026-11-27), kept only where the photo meets that
     // game's size guideline. A request for the review desk, never a schedule.
     offer: cleanOffer(b.offer, w, h),
+    // How a daily pick is credited (owner, 2026-11-28): artist, title, website. Kept only with an offer.
+    credit: cleanOffer(b.offer, w, h).length ? cleanCredit(b.credit) : null,
     submitted: b.share === 'community', at: new Date().toISOString(), tok: hashToken(token), owner: hashToken(who).slice(0, 24), up: false,
   };
   await putMeta(meta);

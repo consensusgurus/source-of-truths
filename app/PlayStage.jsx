@@ -28,7 +28,7 @@ import { useHostedStage } from './StageHost';
 
 export { usePhoneStage } from './WordStage';
 
-export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null, inline = false, wide = false, full = false, big = false, look: lookIn = null }) {
+export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = null, bottom = null, foot = null, frac = null, giveUp = null, topKey = 0, nav = null, clock = null, done = null, inline = false, wide = false, full = false, big = false, look: lookIn = null, after = null }) {
   const [storedLook, setLook] = useStageLook();
   // A RUN'S LOOK (owner, 2026-10-31, Judged): a board embedded in a run follows
   // the run's own look switch (five looks, its own key) rather than the site's
@@ -45,7 +45,7 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
   const host = useHostedStage(inline);
   useStageChrome(host.chrome ? pal.bg : null);
   return host.render(
-    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '') + (full ? ' full' : '') + (big ? ' big' : '') + ((look === 'dark' || look === 'darktint') ? ' dk' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(mono ? null : bg, look) }}>
+    <div className={'pst' + (host.inline ? ' inl' : '') + (wide ? ' wide' : '') + (full ? ' full' : '') + (big ? ' big' : '') + ((look === 'dark' || look === 'darktint') ? ' dk' : '') + (after ? ' aft' : '')} role={host.inline ? 'region' : 'dialog'} aria-label={label} style={{ '--pst-bg': pal.bg, '--pst-ink': pal.ink, ...(pal.tile ? { '--pst-tint': pal.tile } : null), ...accentVars(mono ? null : bg, look) }}>
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="pst-col">
         {host.inline ? null : <StageTopBar look={look} onFlip={() => setLook(nextMainLook(look))} ink={pal.ink} nav={nav || host.nav} title={label} dot={bg} />}
@@ -63,6 +63,10 @@ export default function PlayStage({ bg, label = 'Puzzle', eyebrow = null, top = 
         {/* THE FOOT ROW (owner, 2026-10-28): Clock, How to play, Give up. */}
         <StageFoot clock={clock == null ? undefined : clock} done={done == null ? undefined : done} giveUp={giveUp} bg={pal.bg} />
       </div>
+      {/* AFTER THE BOARD (owner, 2026-11-28, the Jig artist credit): a line that
+          sits below the whole stage column, so it starts off screen and a
+          scroll brings it up. */}
+      {after ? <div className="pst-aft">{after}</div> : null}
     </div>
   );
 }
@@ -186,6 +190,9 @@ const CSS = `
 .pst-chip.on{background:var(--pst-ink);color:var(--pst-bg);}
 .pst-arr{width:44px;height:44px;border-radius:22px;border:1px solid var(--pst-ink);background:transparent;display:flex;align-items:center;justify-content:center;padding:0;flex:none;}
 .pst-note{text-align:center;font-size:13px;font-weight:700;opacity:.8;line-height:1.4;}
+.pst.aft{flex-wrap:wrap;align-content:flex-start;}
+.pst-aft{flex:none;width:100%;max-width:640px;color:var(--pst-ink);}
+.pst-aft a{color:inherit;text-decoration:underline;}
 .pst-foot{display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.75;}
 .pst-bar{display:block;width:120px;height:4px;border-radius:2px;background:color-mix(in srgb, var(--pst-ink) 22%, transparent);overflow:hidden;}
 .pst-bar>span{display:block;height:100%;background:var(--pst-ink);transition:width .25s;}

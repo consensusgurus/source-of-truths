@@ -1044,10 +1044,10 @@ export default function StageStick({
       replay={retry ? { onClick: retry.onReplay }
         : replayNow ? (replayNow.href ? { href: replayNow.href, onClick: replayNow.onClick || null }
           : { onClick: (e) => { if (onLeave) onLeave(); if (replayNow.onClick) replayNow.onClick(e); } }) : null}
-      onBack={back} backLabel={s.backLabel && s.backLabel !== 'Back to board' ? s.backLabel : 'Show board'}
+      onBack={back} backLabel={s.backLabel && s.backLabel !== 'Back to board' ? (s.backLabel === 'Reveal answer' ? 'Answer' : s.backLabel) : 'Board'}
       archiveHref={archiveHref} archiveLabel={archiveLabel}
       shelfHref={s.gameKey === 'jig' ? '/jig/shelf' : s.gameKey === 'saw' ? '/jig/shelf?g=saw' : BANK_DB[s.gameKey] ? (BANK_DB[s.gameKey].slug ? `${BANK_DB[s.gameKey].base}/${BANK_DB[s.gameKey].slug}` : BANK_DB[s.gameKey].base) : null}
-      shelfLabel={BANK_DB[s.gameKey] ? BANK_DB[s.gameKey].name : 'All jigsaw puzzles'}
+      shelfLabel={BANK_DB[s.gameKey] ? BANK_DB[s.gameKey].name.replace(/ Database$/, '') : 'Jigsaws'}
       talk={talkOn ? { gameKey: s.gameKey, gameName: s.gameName } : null}
     />
   );
