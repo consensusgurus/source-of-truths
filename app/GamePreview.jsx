@@ -305,6 +305,11 @@ const Crate = () => (
   <g><rect x={96} y={26} width={32} height={32} rx={3} className="m" /><path d="M100 30l24 24M124 30l-24 24" className="s2" />
     <rect x={146} y={26} width={32} height={32} rx={3} className="w" /><circle cx={162} cy={80} r={9} className="s3" /><circle cx={112} cy={80} r={10} className="d" /></g>
 );
+// Curb: a curb along the right, two parked cars, and the blue car sliding into the gap between them
+const Curb = () => (
+  <g><path d="M190 4V80" className="s5" /><rect x={166} y={6} width={18} height={26} rx={4} className="m" /><rect x={166} y={56} width={18} height={24} rx={4} className="m" />
+    <rect x={150} y={30} width={18} height={28} rx={4} className="d" transform="rotate(-14 159 44)" /><path d="M112 20v48" className="s3" /></g>
+);
 const Machine = () => (
   <g><path d="M92 22H140" className="s5" /><circle cx={130} cy={12} r={9} className="d" /><path d="M146 34L196 62" className="s5" />
     <rect x={100} y={58} width={30} height={8} rx={2} className="m" /><path d="M104 66l7 7l7-7l7 7" className="s2" /><path d="M200 74h22" className="s3" /><circle cx={178} cy={42} r={8} className="w" /></g>
@@ -453,7 +458,7 @@ const BY_KEY = {
   // Logic
   venn: Venn, lamps: Lamps, plot: Plot, paths: Track, tangled: Tangle, chomp: Maze, hedge: Maze, topple: () => <Block />,
   roll: () => <Block die />, jig: Jig, saw: Jig, mural: Jig, muraltoo: Jig, slide: () => <Slide />, swap: () => <Slide mode="swap" />, spin: () => <Slide mode="spin" />,
-  connect: Dots, mop: Mop, mow: Mow, plow: Plow, machine: Machine, crate: Crate, bot: Bot, peg: Peg, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
+  connect: Dots, mop: Mop, mow: Mow, plow: Plow, machine: Machine, curb: Curb, crate: Crate, bot: Bot, peg: Peg, chef: Chef, seated: Seated, bag: Bag, errands: Errands, dash: Dash, pack: Pack, duet: Dots, etch: Dots, park: Park, impound: Park, junkyard: Park, snug: Snug, sudoclue: LGrid,
   // End Game
   turn: Othello, four: Four, gift: Quarto, yose: Go, mate: () => <Chess target={4} />, check: () => <Chess target={11} />,
   chain: () => <Chess target={14} />, defend: () => <Chess target={21} />, swindle: () => <Chess target={7} />, queen: () => <Chess target={18} />,

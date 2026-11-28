@@ -154,6 +154,8 @@ import { PUZZLES as ERRANDS_FULL } from '../errands/puzzles';
 import { PUZZLES as DASH_FULL } from '../dash/puzzles';
 import { PUZZLES as PACK_FULL } from '../pack/puzzles';
 import { PUZZLES as MACHINE_FULL } from '../machine/puzzles';
+import { PUZZLES as CURB_FULL } from '../curb/puzzles';
+const CURB = CURB_FULL.map(({ num, quizId, live, dateLabel, sunday }) => ({ num, quizId, live, dateLabel, sunday }));
 import { PUZZLES as CRATE_FULL } from '../crate/puzzles';
 import { PUZZLES as PEG_FULL } from '../peg/puzzles';
 import { PUZZLES as BOT_FULL } from '../bot/puzzles';
@@ -554,6 +556,7 @@ const GAMES = [
   { key: 'tangled', name: 'Tangled', path: '/tangled', tag: 'Untangle the ropes', accent: '#0f766e', bg: '#ccfbf1', border: 'rgba(15,118,110,0.35)', src: TANGLED },
   { key: 'pack', name: 'Pack', path: '/pack', tag: 'Fit it all in the trunk', accent: '#a21caf', bg: '#fae8ff', border: 'rgba(162,28,175,0.35)', src: PACK },
   { key: 'machine', name: 'Machine', path: '/machine', tag: 'Combine simple machines into a solution', accent: '#b45309', bg: '#fef3c7', border: 'rgba(180,83,9,0.35)', src: MACHINE },
+  { key: 'curb', name: 'Curb', path: '/curb', tag: 'Parallel park, close and quick', accent: '#1e40af', bg: '#dbeafe', border: 'rgba(30,64,175,0.35)', src: CURB },
   { key: 'crate', name: 'Crate', path: '/crate', tag: 'Push every crate onto a spot', accent: '#a16207', bg: '#fef9c3', border: 'rgba(161,98,7,0.35)', src: CRATE },
   { key: 'peg', name: 'Peg', path: '/peg', tag: 'The daily peg solitaire', accent: '#1d6b4f', bg: '#e6f2ec', border: 'rgba(29,107,79,0.35)', src: PEG },
   { key: 'bot', name: 'Bot', path: '/bot', tag: 'Program the robot to light every lamp', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)', src: BOT },

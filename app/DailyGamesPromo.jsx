@@ -126,6 +126,7 @@ export const DAILY_GAMES = [
   { key: 'bot', href: '/bot', name: 'Bot', tag: 'program the robot to light every lamp', store: 'sot_bot_day', accent: '#be123c', bg: '#ffe4e6', border: 'rgba(190,18,60,0.35)' },
   { key: 'pack', href: '/pack', name: 'Pack', tag: 'fit it all in the trunk', store: 'sot_pack_day', accent: '#a21caf', bg: '#fae8ff', border: 'rgba(162,28,175,0.35)' },
   { key: 'machine', href: '/machine', name: 'Machine', tag: 'combine simple machines into a solution', store: 'sot_machine_day', accent: '#b45309', bg: '#fef3c7', border: 'rgba(180,83,9,0.35)' },
+  { key: 'curb', href: '/curb', name: 'Curb', tag: 'parallel park, close and quick', store: 'sot_curb_day', accent: '#1e40af', bg: '#dbeafe', border: 'rgba(30,64,175,0.35)' },
   { key: 'crate', href: '/crate', name: 'Crate', tag: 'push every crate onto a spot', store: 'sot_crate_day', accent: '#a16207', bg: '#fef9c3', border: 'rgba(161,98,7,0.35)' },
   { key: 'fill', href: '/fill', name: 'Fill', tag: 'fit every word in the grid', store: 'sot_fill_day', accent: '#047857', bg: '#d1fae5', border: 'rgba(4,120,87,0.4)' },
   { key: 'pairs', href: '/pairs', name: 'Pairs', tag: 'concentration with a real deck', store: 'sot_pairs_day', accent: '#b91c1c', bg: '#fee2e2', border: 'rgba(185,28,28,0.4)' },

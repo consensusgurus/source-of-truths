@@ -225,7 +225,11 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
   const preStart = playing && !g.t0;
   const started = playing && !!g.t0;
   const won = g.status === 'won';
-  const elapsed = g.t0 ? fmtTime((g.tEnd || nowTick) - g.t0) : '0:00';
+  // GAME.extraSec (Curb, 2026-11-28): seconds a finished day adds to the clock,
+  // so the time shown and posted is the RANKED time (Curb adds accuracy and
+  // bump seconds to the driving time). Applied only once the day is over.
+  const extraMs = (gg, isWon) => (GAME.extraSec && gg.tEnd ? Math.max(0, GAME.extraSec(PUZZLE, gg.s, isWon)) * 1000 : 0);
+  const elapsed = g.t0 ? fmtTime((g.tEnd || nowTick) - g.t0 + extraMs(g, g.status === 'won')) : '0:00';
   const [stageTheme] = useStageTheme();
   const STAGE_ACC = { '--stg-acc-dk': gameColor(KEY), '--stg-acc-lt': gameColorLight(KEY), '--stg-onramp-lt': gameOnrampLight(KEY), '--stg-acc-ink-lt': gameAccentInkLight(KEY) };
   const INK = 'var(--stg-ink,#e9edf4)';
@@ -252,7 +256,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
   });
   function postResult(g2, isWon) {
     abandon.markFlushed();
-    const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0) / 1000)) : 1;
+    const el = g2.t0 ? Math.max(1, Math.round(((g2.tEnd || Date.now()) - g2.t0 + extraMs(g2, isWon)) / 1000)) : 1;
     const r = GAME.result(PUZZLE, g2.s, isWon);
     try {
       fetch('/api/quiz/result', {
@@ -269,7 +273,7 @@ export default function SimpleDaily({ puzzles = [], forceNum = null, game: GAME 
     if (EMBED) {
       const rr = GAME.result(PUZZLE, g2.s, isWon);
       // `guesses` is the result's guessesUsed (Mop, Mow and Plow file their replays there; Odd Jobs reads it, 2026-11-21).
-      EMBED.onResult({ key: KEY, score: rr.score, total: rr.total || 10, won: isWon, t0: g2.t0, tEnd: g2.tEnd, guesses: rr.guessesUsed });
+      EMBED.onResult({ key: KEY, score: rr.score, total: rr.total || 10, won: isWon, t0: g2.t0, tEnd: g2.tEnd + extraMs(g2, isWon), guesses: rr.guessesUsed });
     }
     gRef.current = g2;
     setG(g2);

@@ -1384,6 +1384,48 @@ Owner, 2026-11-26: picked "the weights one" from a list of new ideas, approved t
   finish set Work it out; family beside Cipher; challenge metric checks (low is better).
 
 
+## Curb: the daily parking game (launched 2026-11-28)
+
+Owner, 2026-11-28: asked for "a parking simulator for parallel parking and on sundays something like
+[a tractor-trailer backing into a loading dock]... scored on accuracy and speed", approved the mockup
+and every gameplay idea for keeping it fresh, ruled OUT retention extras ("We don't need the keep them
+coming back elements like path share or stats - I only care about actual gameplay"), then "build and push".
+
+- **The game.** Top-down. Weekdays: parallel park a car between two parked cars at the curb. Sunday
+  Edition: back a tractor-trailer into the yellow bay at a loading dock (the trailer pivots on the
+  hitch, swings the opposite way in reverse, and folding past about 83 degrees is a jackknife).
+  Steering slider plus hold-to-roll Drive and Reverse; arrows or WASD and Space on a keyboard. Park
+  only when stopped and fully inside the legal space.
+- **Ranking: ONE time** = the driving clock + accuracy seconds + 5s a bump. Car: past 6 in from the
+  curb 0.25s/in, past 1 degree 1s/degree, past 12 in off center 0.1s/in. Truck: past 6 in from the
+  dock 0.1s/in, past 0.5 degree 1s/degree, past 4 in off center 0.2s/in (`RULES` in lib/curb-engine.js).
+  Park or not (10/0, SOLVE_ONLY), no miss column. The shell adds the seconds through the NEW
+  `GAME.extraSec(P, s, won)` hook in app/SimpleDaily.jsx: it applies to the shown time, the posted
+  `timeElapsed` and a run's `tEnd`, only once the day is over. First try counts.
+- **Weekly ramp** (`BANDS`): spare room beyond the car's length, Mon/Tue Gentle 1.9 to 2.3 m, Wed to
+  Fri Moderate 1.45 to 1.75 m, Sat Tough 1.05 to 1.25 m; traffic and hydrant chances rise with it.
+  Varies by day: the vehicle (compact, sedan, SUV, minivan, pickup, van with a ladder rack), curb side,
+  neighbour lengths (up to a box truck), a hydrant (red curb you may not park beside, at the front or
+  back of the gap), traffic (a car comes up the lane, waits behind you, touching it is a bump), and a
+  snow scene in Dec to Feb (look only). Sunday: 53 ft or 28 ft pup trailer, day or sleeper cab, coming
+  from the left or right, the bay.
+- **Every day proved parkable.** `plan()` (a hybrid A* over pose, plus trailer angle on Sunday) parks it
+  with the SAME `advance` and `hits` the page drives with. The generator keeps only seeds it can park;
+  `scripts/verify-curb.mjs` rebuilds every day's settings from its seed and re-plans the next 21 days
+  (`--all` for every day, about four minutes).
+- **Files.** lib/curb-engine.js (settings, geometry, physics, measurement, planner), app/curb/ (page,
+  client on SimpleDaily, bank), scripts/gen-curb.mjs `--through YYYY-MM-DD` (append only; about 2.5 s a
+  day), verify-curb.mjs, wire-curb.mjs, gen-curb-tile.py. Bank: 2026-11-28 to 2027-02-28.
+- **Look.** The board card is light in both looks (asphalt grey, white paint, site pastels, ink
+  outlines). The player's car is always sky blue and no neighbour ever is. Desktop puts the controls
+  beside the board.
+- **Placement.** Visual; skills Spatial and Planning; group Pack and untangle (five, set page copy
+  updated); new finish set Behind the wheel (Curb, Parker, Pack); family beside Parker.
+- **Not built (owner approved, still to do):** angled, perpendicular and garage back-in spots, hill and
+  beach scenes, bike lanes and driveways as hazards, blind-side and boat-trailer Sundays, a double
+  trailer boss Sunday, a ghost of yesterday's top driver, one-move days. Server replay of recorded
+  inputs is not built: the posted time is trusted like every other daily.
+
 ## The 2026-11-27 sudoku restock: every sudoku three months further (owner: "3 months each")
 
 Every dated sudoku bank was carried three months past its own last day: Whittle to 2027-03-31; Mercury, Polka,
