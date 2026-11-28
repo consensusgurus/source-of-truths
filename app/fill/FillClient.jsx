@@ -84,6 +84,14 @@ function Board({ P, s, setS, active, done }) {
     if (/^[a-zA-Z]$/.test(e.key) && !e.metaKey && !e.ctrlKey) { e.preventDefault(); type(e.key.toUpperCase()); }
   };
   useEffect(() => { if (done) setCur(null); }, [done]);
+  // Letter counts in the first square of every slot (owner, 2026-11-28): the
+  // across length top left, the down length bottom left when a square starts
+  // both, each with its arrow so the two never read as one number.
+  const lens = useMemo(() => {
+    const m = {};
+    for (const [r, c, d, n] of P.slots) (m[k(r, c)] = m[k(r, c)] || {})[d] = n;
+    return m;
+  }, [P]);
   const placed = placedCounts(P, s);
   const left = { ...placed };
   const byLen = {};
@@ -103,6 +111,11 @@ function Board({ P, s, setS, active, done }) {
 .fil-c.o.cur{background:var(--pst-acc,#7dd3fc);color:var(--pst-on-acc,#0b0f1a);box-shadow:inset 0 0 0 2px var(--pst-ink);}
 .fil-c.o.gv{color:var(--pst-mute,#3b4656);}
 .fil-g.ok .fil-c.o{background:var(--pst-pale,#e0f4fe);box-shadow:inset 0 0 0 1.5px var(--pst-acc,#7dd3fc);}
+.fil-c.o{position:relative;}
+.fil-n{position:absolute;left:2px;font-size:calc(min(560px, 100cqw) / var(--fil-cols) * 0.2);font-weight:800;line-height:1;letter-spacing:0;white-space:nowrap;opacity:.7;pointer-events:none;}
+.fil-n.a{top:2px;}
+.fil-n.d{bottom:2px;}
+.fil-n.d.solo{top:2px;bottom:auto;}
 .fil-in{position:fixed;left:0;bottom:0;width:1px;height:1px;opacity:0;font-size:16px;border:0;padding:0;}
 .fil-w{display:flex;flex-direction:column;gap:8px;}
 .fil-th{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.75;}
@@ -113,13 +126,17 @@ function Board({ P, s, setS, active, done }) {
 .fil-grp span.on{text-decoration:line-through;text-decoration-thickness:2px;opacity:.5;background:transparent;}
 ` }} />
       <div>
-        <div className={'fil-g' + (solved ? ' ok' : '')} style={{ gridTemplateColumns: `repeat(${P.cols}, 1fr)` }} role="grid" aria-label={`Fill grid, ${P.words.length} words`}>
+        <div className={'fil-g' + (solved ? ' ok' : '')} style={{ gridTemplateColumns: `repeat(${P.cols}, 1fr)`, '--fil-cols': P.cols }} role="grid" aria-label={`Fill grid, ${P.words.length} words`}>
           {Array.from({ length: P.rows }, (_, r) => Array.from({ length: P.cols }, (_, c) => {
             const key = k(r, c);
             if (!owner[key]) return <div key={key} className="fil-c x" aria-hidden="true" />;
             const ch = s.cells[key] || G[key] || '';
             const cls = 'fil-c o' + (G[key] ? ' gv' : '') + (cur && cur.r === r && cur.c === c ? ' cur' : (hl.has(key) ? ' h' : ''));
-            return <div key={key} className={cls} role="gridcell" aria-label={ch || 'empty'} onClick={() => pick(r, c)} style={{ fontSize: `calc(min(560px, 100cqw) / ${P.cols} * 0.58)` }}>{ch}</div>;
+            return <div key={key} className={cls} role="gridcell" aria-label={ch || 'empty'} onClick={() => pick(r, c)} style={{ fontSize: `calc(min(560px, 100cqw) / ${P.cols} * 0.58)` }}>
+              {lens[key] && lens[key].a ? <span className="fil-n a" aria-hidden="true">{lens[key].a}&rarr;</span> : null}
+              {lens[key] && lens[key].d ? <span className={'fil-n d' + (lens[key].a ? '' : ' solo')} aria-hidden="true">{lens[key].d}&darr;</span> : null}
+              {ch}
+            </div>;
           }))}
         </div>
         <input ref={inRef} className="fil-in" aria-label="Type a letter" autoCapitalize="characters" autoComplete="off" autoCorrect="off" spellCheck={false}
@@ -166,6 +183,7 @@ const GAME = {
     steps: [
       <>Every word on the list goes in the grid <b>exactly once</b>, across or down. The list is grouped by <b>length</b>.</>,
       <><b>Tap</b> a square and type. Tap the same square again to switch between <b>across and down</b>. Backspace clears a letter.</>,
+      <>The small number in a word&rsquo;s <b>first square</b> is its <b>length</b>: &rarr; across, &darr; down. A square that starts two words shows both.</>,
       <>One word is <b>printed to start</b>. Each word you place gives you letters in the words that cross it.</>,
       <>There is <b>one way</b> to fill every grid. A word struck off the list is spelled somewhere in the grid, right or not; the grid finishes itself when every word is in its place.</>,
     ],

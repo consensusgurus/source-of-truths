@@ -1040,6 +1040,9 @@ and Saw boards, and the Private Mural picture picks. `PHOTO_FOCUS` holds the ver
 photo, set by eye; unlisted photos default to 50 (Jig) or 40 (Saw, whose subjects sit high). A NEW
 photo that is square or tall, or whose subject is near an edge, gets a line there when its bank is
 written. Previews only: the boards keep their own cut (never rewrite a live board).
+Saw 17 to 56 were set by eye on 2026-11-28 from a contact sheet of the full photos (a tall photo in a
+shelf card shows roughly the middle 45 to 50 percent of its height; the window's top sits at about half
+the focus value). Keep the table running ahead of the Saw bank: check new photos when the bank is restocked.
 
 Owner, 2026-11-11: the shelf holds every Jig AND Saw board and is called the Jigsaw Puzzle Shelf
 (the URL stayed `/jig/shelf` to keep its search standing). Each week is a Jig plank plus, from
@@ -2323,6 +2326,8 @@ Wired by `scripts/wire-six.mjs`. Tile art `scripts/gen-six-tiles.py`; share card
   Sunday 22 on at most 17x17. One whole word is printed to start (plus up to three letters if uniqueness
   needs them); the fill is proved UNIQUE, so slots and words ship UNPAIRED (slots in reading order) and the
   client checks a finished grid from the list alone. Group Crosswords (on /crosswords), finish set Theme fits.
+  Slot lengths show in each slot's first square (owner, 2026-11-28): `5→` top left for across, `4↓` for
+  down (bottom left when the square also starts an across, top left when it starts only a down).
 - **Pairs (Cards, Concentration).** `scripts/gen-pairs.mjs`: 36 cards (Sunday 48), a pair is the same rank AND
   colour, at least four ranks dealt in both colours (the trap). The deal is lightly encoded
   (`app/pairs/deal.js`) so the page source does not read as a list of cards. Group Card tables.
