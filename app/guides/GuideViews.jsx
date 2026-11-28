@@ -62,6 +62,7 @@ export function GuidesHub({ h1, lede, groups }) {
             <a href={withTq('/logic-puzzles')}>Logic puzzles</a>
             <a href={withTq('/word-games')}>Word games</a>
             <a href={withTq('/archive')}>Puzzle archive</a>
+            <a href={withTq('/alternatives')}>Puzzle site alternatives</a>
           </div>
         </nav>
       </div>

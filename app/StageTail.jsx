@@ -41,6 +41,7 @@ import { runPageOf, runFaq, runFaqJsonLd, otherRuns } from '@/lib/run-seo';
 import StageFooter from './StageFooter';
 import { BANK_DB } from '@/lib/qdb';
 import { guideForGame } from '@/lib/guides';
+import { ALT_FOR_GAME } from '@/lib/alternatives';
 import LayoutC from './LayoutC';
 
 const MONO = "'Manrope', ui-monospace, SFMono-Regular, Menlo, monospace";
@@ -105,6 +106,11 @@ export default function StageTail({ self, stage = true, run = null, theme: force
             ) : null}
             {guide ? (
               <p className="stq-tp">New to {game.name}? Read <a href={`/guides/${guide.slug}`}>{guide.h1}</a>, or browse all <a href="/guides">puzzle guides</a>.</p>
+            ) : null}
+            {/* THE ALTERNATIVES (owner, 2026-11-28): the primary match for another
+                site's puzzle points at its comparison page (lib/alternatives.js). */}
+            {!runPage && ALT_FOR_GAME[self] ? (
+              <p className="stq-tp">Coming from {ALT_FOR_GAME[self].site}? See how {game.name} compares on our <a href={`/${ALT_FOR_GAME[self].slug}`}>{ALT_FOR_GAME[self].site} alternative</a> page.</p>
             ) : null}
             {/* THE QUESTION DATABASES (owner, 2026-11-21): a gauntlet daily points at its
                 topic's page, where every past question of the bank plays again. */}

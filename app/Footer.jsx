@@ -32,6 +32,9 @@ export const FOOTER_COLS = [
       // How-to guides for the genres people search by name (owner, 2026-11-25).
       // This is the hub's crawl path from every page; see lib/guides.js.
       { label: 'Puzzle Guides', href: '/guides' },
+      // NYT Games, Sporcle and Puzzmo alternatives (owner, 2026-11-28). The hub's
+      // crawl path from every page; see lib/alternatives.js.
+      { label: 'Puzzle Site Alternatives', href: '/alternatives' },
       // Every Jig photo so far, a box a day (owner, 2026-10-16).
       { label: 'Jigsaw Puzzles', href: '/jig/shelf' },
       { label: 'Make a Jigsaw From Your Photo', href: '/jigsaw/make-your-own' },
